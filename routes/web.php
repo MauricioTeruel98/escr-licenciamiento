@@ -21,7 +21,9 @@ Route::get('/', function () {
 Route::controller(CompanyAuthController::class)->group(function () {
     Route::get('/regard', 'showRegard')->name('regard');
     Route::get('/company-register', 'showCompanyRegister')->name('company.register');
+    Route::post('/company-register', 'storeCompany')->name('company.store');
     Route::get('/legal-id', 'showLegalId')->name('legal.id');
+    Route::post('/legal-id/verify', 'verifyLegalId')->name('legal-id.verify');
     Route::get('/company-exists', 'showCompanyExists')->name('company.exists');
 });
 
