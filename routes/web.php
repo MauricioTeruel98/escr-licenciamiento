@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Auth\CompanyAuthController;
+use App\Http\Controllers\CertificationController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -14,30 +17,25 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Rutas de autenticación y registro de empresa
+Route::controller(CompanyAuthController::class)->group(function () {
+    Route::get('/regard', 'showRegard')->name('regard');
+    Route::get('/company-register', 'showCompanyRegister')->name('company.register');
+    Route::get('/legal-id', 'showLegalId')->name('legal.id');
+    Route::get('/company-exists', 'showCompanyExists')->name('company.exists');
+});
 
-Route::get('/regard', function () {
-    return Inertia::render('Auth/Regard');
-})->name('regard');
+// Rutas del dashboard
+Route::controller(DashboardController::class)->group(function () {
+    Route::get('/dashboard', 'index')->middleware(['auth', 'verified'])->name('dashboard');
+    Route::get('/evaluation', 'showEvaluation')->name('evaluation');
+});
 
-Route::get('/company-register', function () {
-    return Inertia::render('Auth/CompanyRegister');
-})->name('company.register');
+// Rutas de certificaciones
+Route::get('/certifications/create', [CertificationController::class, 'create'])
+    ->name('certifications.create');
 
-Route::get('/legal-id', function () {
-    return Inertia::render('Auth/LegalId');
-})->name('legal.id');
-
-Route::get('/company-exists', function () {
-    return Inertia::render('Auth/CompanyExists');
-})->name('company.exists');
-
-Route::get('/evaluation', function () {
-    return Inertia::render('Dashboard/Evaluation');
-})->name('evaluation');
-
+// Rutas de perfil
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
