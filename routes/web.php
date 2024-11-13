@@ -7,14 +7,14 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
+// Ruta principal
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
 });
 
 // Rutas de autenticación y registro de empresa
@@ -29,8 +29,8 @@ Route::controller(CompanyAuthController::class)->group(function () {
 
 // Rutas del dashboard
 Route::controller(DashboardController::class)->group(function () {
-    Route::get('/dashboard', 'index')->middleware(['auth', 'verified'])->name('dashboard');
-    Route::get('/evaluation', 'showEvaluation')->name('evaluation');
+    Route::get('/dashboard', 'showEvaluation')->middleware(['auth', 'verified'])->name('dashboard');
+    //Route::get('/evaluation', 'showEvaluation')->name('evaluation');
 });
 
 // Rutas de certificaciones
