@@ -14,7 +14,7 @@ export default function Sidebar() {
         <div className="bg-green-700 min-h-screen w-64 text-white">
             <ul className="menu p-4">
                 {menuItems.map((item, index) => (
-                    <li key={index}>
+                    <li key={index} className="mb-1">
                         <a 
                             // href={route(item.route)} 
                             className={`py-2 hover:bg-green-800 rounded-lg ${
