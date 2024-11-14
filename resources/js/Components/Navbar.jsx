@@ -1,4 +1,11 @@
+import { useForm } from "@inertiajs/react";
+
 export default function Navbar({ userName }) {
+    const { post } = useForm();
+
+    const handleLogout = () => {
+        post(route('logout'));
+    };
     return (
         <div className="navbar bg-white border-b fixed top-0 w-full z-50 mb-10">
             <div className="flex-1">
@@ -37,11 +44,14 @@ export default function Navbar({ userName }) {
                             </a>
                         </li>
                         <li><a>Settings</a></li>
-                        <li><a
-                            method="post"
-                            href={route('logout')}
-                            as="button"
-                        >Logout</a></li>
+                        <li>
+                            <button
+                                type="button"
+                                onClick={handleLogout}
+                            >
+                                Cerrar Sesión
+                            </button>
+                        </li>
                     </ul>
                 </div>
             </div>

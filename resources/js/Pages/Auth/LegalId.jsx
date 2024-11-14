@@ -12,6 +12,11 @@ export default function LegalId() {
         post(route('legal-id.verify'));
     };
 
+    // Función para manejar el logout
+    const handleLogout = () => {
+        post(route('logout'));
+    };
+
     return (
         <ImageLayout title="Verificación de Identidad">
             <div className="max-w-md w-full mx-auto">
@@ -39,13 +44,23 @@ export default function LegalId() {
                         <InputError message={errors.legal_id} className="mt-2" />
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={processing}
-                        className="w-full bg-green-700 text-white py-2 px-4 rounded-md hover:bg-green-800 transition-colors"
-                    >
-                        Continuar
-                    </button>
+                    <div className="flex flex-col space-y-4">
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="w-full bg-green-700 text-white py-2 px-4 rounded-md hover:bg-green-800 transition-colors"
+                        >
+                            Continuar
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors"
+                        >
+                            Cerrar Sesión
+                        </button>
+                    </div>
 
                     <div className="text-sm text-center">
                         ¿Su empresa ya fue registrada?{" "}
