@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\EnsureUserHasCompany;
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Controllers\CompanyController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -72,6 +73,11 @@ Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {
         ->name('user.approve');
     Route::post('/reject-user/{user}', [CompanyAuthController::class, 'rejectAccess'])
         ->name('user.reject');
+});
+
+Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(function () {
+    Route::get('/company/edit', [CompanyController::class, 'edit'])->name('company.edit');
+    Route::patch('/company/update', [CompanyController::class, 'update'])->name('company.update');
 });
 
 require __DIR__.'/auth.php';

@@ -60,6 +60,15 @@ export default function Navbar({ userName, onMenuClick }) {
                     <ul
                         tabIndex={0}
                         className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+                        {
+                            auth.user.role === 'admin' && (
+                                <li>
+                                    <a href={route('company.edit')} className="justify-between">
+                                        Editar Empresa
+                                    </a>
+                                </li>
+                            )
+                        }
                         <li>
                             <a href={route('profile.edit')} className="justify-between">
                                 Editar Perfil
