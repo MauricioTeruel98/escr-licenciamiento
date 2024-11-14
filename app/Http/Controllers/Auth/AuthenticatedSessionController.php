@@ -34,8 +34,30 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if (!auth()->user()->company_id) {
+        $user = auth()->user();
+
+        // Si el usuario no tiene compañía asignada
+        if (!$user->company_id) {
             return redirect()->route('legal.id');
+        }
+
+        // Si el usuario está pendiente de aprobación
+        if ($user->status === 'pending') {
+            return redirect()->route('approval.pending');
+        }
+
+        // Si el usuario fue rechazado
+        if ($user->status === 'rejected') {
+            auth()->logout();
+            return redirect()->route('login')
+                ->with('error', 'Su solicitud de acceso ha sido rechazada.');
+        }
+
+        // Solo permitir acceso si está aprobado o es admin
+        if ($user->status !== 'approved' && !$user->isAdmin()) {
+            auth()->logout();
+            return redirect()->route('login')
+                ->with('error', 'No tiene acceso a la plataforma.');
         }
 
         return redirect()->intended(route('dashboard'));

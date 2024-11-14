@@ -1,9 +1,56 @@
+import { useForm } from '@inertiajs/react';
 import DashboardLayout from "@/Layouts/DashboardLayout";
 
-export default function Evaluation({ userName }) {
+export default function Evaluation({ userName, pendingRequests, isAdmin }) {
+    const { post } = useForm();
+
+    // Componente para las solicitudes pendientes
+    const PendingRequestsAlert = () => {
+        if (!isAdmin || !pendingRequests || pendingRequests.length === 0) return null;
+
+        return (
+            <div className="card bg-white shadow mb-8">
+                <div className="card-body">
+                    <h2 className="card-title text-xl mb-4">Solicitudes de Acceso Pendientes</h2>
+                    <div className="space-y-4">
+                        {pendingRequests.map((request) => (
+                            <div key={request.id} 
+                                className="border rounded-lg p-4 flex items-center justify-between bg-gray-50">
+                                <div className="space-y-1">
+                                    <p className="font-medium">{request.name}</p>
+                                    <p className="text-sm text-gray-600">{request.email}</p>
+                                    <p className="text-xs text-gray-500">
+                                        Solicitud recibida: {new Date(request.created_at).toLocaleDateString()}
+                                    </p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => post(route('user.approve', request.id))}
+                                        className="btn btn-success bg-green-700 text-white hover:bg-green-800"
+                                    >
+                                        Aprobar
+                                    </button>
+                                    <button
+                                        onClick={() => post(route('user.reject', request.id))}
+                                        className="btn btn-error bg-red-600 text-white hover:bg-red-700"
+                                    >
+                                        Rechazar
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <DashboardLayout userName={userName} title="Autoevaluación de Buzz">
             <div className="space-y-8">
+                {/* Alerta de solicitudes pendientes */}
+                <PendingRequestsAlert />
+
                 {/* Status Banner */}
                 <div className="text-red-500 font-medium">
                     ESTATUS: NO APTO PARA LICENCIAMIENTO

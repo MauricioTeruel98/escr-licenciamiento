@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\EnsureUserHasCompany;
+use App\Http\Middleware\EnsureUserIsAdmin;
 
 // Ruta principal
 Route::get('/', function () {
@@ -48,6 +49,29 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/approval-pending', function () {
+        $user = auth()->user();
+        return Inertia::render('Auth/PendingApproval', [
+            'status' => $user->status
+        ]);
+    })->name('approval.pending');
+});
+
+Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'showEvaluation'])
+        ->name('dashboard');
+    
+    // Otras rutas protegidas...
+});
+
+Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {
+    Route::post('/approve-user/{user}', [CompanyAuthController::class, 'approveAccess'])
+        ->name('user.approve');
+    Route::post('/reject-user/{user}', [CompanyAuthController::class, 'rejectAccess'])
+        ->name('user.reject');
 });
 
 require __DIR__.'/auth.php';

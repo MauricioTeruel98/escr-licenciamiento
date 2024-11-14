@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\NewAccessRequest;
+use App\Notifications\AccessRequestApproved;
+use App\Notifications\AccessRequestRejected;
 
 class CompanyAuthController extends Controller
 {
@@ -81,14 +86,17 @@ class CompanyAuthController extends Controller
     
             $user = Auth::user();
             $user->company_id = $companyId;
-            $user->role = 'user'; // Asignar rol de usuario común
+            $user->role = 'user';
+            $user->status = 'pending';
             $user->save();
     
             session()->forget('pending_company_id');
     
             DB::commit();
-            return redirect()->route('dashboard')
-                ->with('success', 'Has sido asociado a la empresa exitosamente.');
+            
+            // Redirigir inmediatamente a la página de espera
+            return redirect()->route('approval.pending')
+                ->with('success', 'Solicitud de acceso enviada. Espere la aprobación del administrador.');
     
 
         } catch (\Exception $e) {
@@ -99,6 +107,38 @@ class CompanyAuthController extends Controller
             ]);
             
             return back()->with('error', 'Hubo un error al procesar la solicitud. Por favor, intente nuevamente.');
+        }
+    }
+
+    public function approveAccess(Request $request, User $user)
+    {
+        try {
+            if (!Auth::user()->isAdmin()) {
+                throw new \Exception('No tiene permisos para realizar esta acción');
+            }
+
+            $user->status = 'approved';
+            $user->save();
+
+            return back()->with('success', 'Usuario aprobado exitosamente');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al aprobar el usuario');
+        }
+    }
+
+    public function rejectAccess(Request $request, User $user)
+    {
+        try {
+            if (!Auth::user()->isAdmin()) {
+                throw new \Exception('No tiene permisos para realizar esta acción');
+            }
+
+            $user->status = 'rejected';
+            $user->save();
+
+            return back()->with('success', 'Usuario rechazado');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al rechazar el usuario');
         }
     }
 
@@ -127,6 +167,7 @@ class CompanyAuthController extends Controller
             $user = Auth::user();
             $user->company_id = $company->id;
             $user->role = 'admin';
+            $user->status = 'approved';
             $user->save();
     
             DB::commit();
