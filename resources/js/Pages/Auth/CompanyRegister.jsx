@@ -17,20 +17,19 @@ export default function CompanyRegister() {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('company.store'), {
-            onError: (errors) => {
-                console.error('Errores:', errors);
-            },
-            onSuccess: () => {
-                console.log('Empresa registrada exitosamente');
-            },
-        });
+        
+        if (!data.is_exporter) {
+            // Mostrar mensaje de error
+            return;
+        }
+        
+        post(route('company.store'));
     };
 
     return (
         <ImageLayout>
-            <div className="w-full mx-auto p-6">
-                <h2 className="text-xl mb-6">Complete el registro de su empresa.</h2>
+            <div className="max-w-2xl w-full mx-auto p-6">
+                <h2 className="text-2xl font-semibold mb-4">Complete el registro de su empresa.</h2>
 
                 <form onSubmit={submit} className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
@@ -171,7 +170,10 @@ export default function CompanyRegister() {
 
                     {/* ¿Es una empresa exportadora? */}
                     <div className="mt-4">
-                        <p className="text-sm mb-2">¿Es una empresa exportadora?<span className="text-red-500">*</span></p>
+                        <p className="text-sm mb-2">
+                            ¿Es una empresa exportadora?
+                            <span className="text-red-500">*</span>
+                        </p>
                         <div className="flex gap-4">
                             <label className="flex items-center">
                                 <input
@@ -194,6 +196,21 @@ export default function CompanyRegister() {
                                 <span className="text-sm">No</span>
                             </label>
                         </div>
+                        
+                        {!data.is_exporter && (
+                            <div className="mt-2">
+                                <p className="text-red-500 text-sm">Ser empresa exportadora es un requisito obligatorio.</p>
+                                <p className="text-gray-600 text-sm">
+                                    Para excepciones{' '}
+                                    <a 
+                                        href="mailto:licenciasmarcapais@procomer.com" 
+                                        className="text-green-700 hover:underline"
+                                    >
+                                        licenciasmarcapais@procomer.com
+                                    </a>
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     <button

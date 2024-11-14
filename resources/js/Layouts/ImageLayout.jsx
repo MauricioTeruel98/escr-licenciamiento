@@ -2,9 +2,9 @@ import { Head } from '@inertiajs/react';
 
 export default function ImageLayout({ children, title }) {
     return (
-        <div className="min-h-screen grid md:grid-cols-2">
+        <div className="min-h-screen grid md:grid-cols-3">
             {/* Left side - Form */}
-            <div className="p-8 flex flex-col items-center justify-center">
+            <div className="p-8 flex flex-col items-center justify-center md:col-span-2">
                 <Head title={title} />
 
                 <div className="mb-12">
@@ -19,7 +19,7 @@ export default function ImageLayout({ children, title }) {
             </div>
 
             {/* Right side - Image */}
-            <div className="hidden md:block">
+            <div className="hidden md:block md:col-span-1">
                 <img
                     src="/assets/img/bg_register.png"
                     alt="Costa Rica Landscape"
