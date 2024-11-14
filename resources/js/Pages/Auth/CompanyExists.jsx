@@ -1,7 +1,14 @@
-import { AlertTriangle } from "lucide-react";
+import { useForm } from '@inertiajs/react';
 import ImageLayout from '@/Layouts/ImageLayout';
+import { AlertTriangle } from 'lucide-react';
 
 export default function CompanyExists() {
+    const { post, processing } = useForm();
+
+    const handleRequestAccess = () => {
+        post(route('company.request-access'));
+    };
+
     return (
         <ImageLayout title="Empresa Registrada">
             <div className="max-w-md w-full mx-auto">
@@ -24,7 +31,9 @@ export default function CompanyExists() {
                     <div className="flex flex-col sm:flex-row gap-4 w-full">
                         <button
                             type="button"
-                            className="flex-1 bg-green-700 text-white py-2 px-4 rounded-md hover:bg-green-800 transition-colors"
+                            onClick={handleRequestAccess}
+                            disabled={processing}
+                            className="flex-1 bg-green-700 text-white py-2 px-4 rounded-md hover:bg-green-800 transition-colors disabled:opacity-50"
                         >
                             Solicitar Acceso
                         </button>

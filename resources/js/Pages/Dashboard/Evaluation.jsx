@@ -2,7 +2,7 @@ import DashboardLayout from "@/Layouts/DashboardLayout";
 
 export default function Evaluation({ userName }) {
     return (
-        <DashboardLayout userName={userName}>
+        <DashboardLayout userName={userName} title="Autoevaluación de Buzz">
             <div className="space-y-8">
                 {/* Status Banner */}
                 <div className="text-red-500 font-medium">

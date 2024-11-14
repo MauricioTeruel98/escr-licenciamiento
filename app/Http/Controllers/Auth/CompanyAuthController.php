@@ -40,17 +40,13 @@ class CompanyAuthController extends Controller
 
         try {
             DB::beginTransaction();
-
             $company = Company::where('legal_id', $request->legal_id)->first();
 
             if ($company) {
-                // Si la empresa existe, asociamos el usuario actual a ella
-                $user = Auth::user();
-                $user->company_id = $company->id;
-                $user->save();
-
+                // Si la empresa existe, guardamos el ID en sesión y redirigimos a CompanyExists
+                session(['pending_company_id' => $company->id]);
                 DB::commit();
-                return redirect()->route('dashboard')->with('success', 'Has sido asociado a la empresa exitosamente.');
+                return redirect()->route('company.exists');
             }
 
             // Si la empresa no existe, guardamos el legal_id en la sesión y redirigimos al registro
@@ -70,6 +66,38 @@ class CompanyAuthController extends Controller
             return back()
                 ->withInput()
                 ->with('error', 'Hubo un error al procesar la solicitud. Por favor, intente nuevamente.');
+        }
+    }
+
+    public function requestAccess()
+    {
+        try {
+            DB::beginTransaction();
+            
+            $companyId = session('pending_company_id');
+            if (!$companyId) {
+                throw new \Exception('No hay una empresa pendiente de asignación');
+            }
+
+            $user = Auth::user();
+            $user->company_id = $companyId;
+            $user->save();
+
+            // Limpiar la sesión
+            session()->forget('pending_company_id');
+
+            DB::commit();
+            return redirect()->route('dashboard')
+                ->with('success', 'Has sido asociado a la empresa exitosamente.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al solicitar acceso:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->with('error', 'Hubo un error al procesar la solicitud. Por favor, intente nuevamente.');
         }
     }
 

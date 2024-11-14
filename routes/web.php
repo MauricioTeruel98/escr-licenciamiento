@@ -28,6 +28,7 @@ Route::controller(CompanyAuthController::class)
     Route::get('/legal-id', 'showLegalId')->name('legal.id');
     Route::post('/legal-id/verify', 'verifyLegalId')->name('legal-id.verify');
     Route::get('/company-exists', 'showCompanyExists')->name('company.exists');
+    Route::post('/company-request-access', 'requestAccess')->name('company.request-access');
 });
 
 // Rutas del dashboard

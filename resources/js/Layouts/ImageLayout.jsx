@@ -2,8 +2,10 @@ import { Head } from '@inertiajs/react';
 
 export default function ImageLayout({ children, title }) {
     return (
-        <div className="min-h-screen grid md:grid-cols-3">
-            {/* Left side - Form */}
+        <>
+            <Head title={title} />
+            <div className="min-h-screen grid md:grid-cols-3">
+                {/* Left side - Form */}
             <div className="p-8 flex flex-col items-center justify-center md:col-span-2">
                 <Head title={title} />
 
@@ -26,6 +28,7 @@ export default function ImageLayout({ children, title }) {
                     className="w-full h-full object-cover"
                 />
             </div>
-        </div>
+            </div>
+        </>
     );
 } 

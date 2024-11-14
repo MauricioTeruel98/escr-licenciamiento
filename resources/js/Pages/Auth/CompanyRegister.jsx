@@ -27,7 +27,7 @@ export default function CompanyRegister() {
     };
 
     return (
-        <ImageLayout>
+        <ImageLayout title="Registro de Empresa">
             <div className="max-w-2xl w-full mx-auto p-6">
                 <h2 className="text-2xl font-semibold mb-4">Complete el registro de su empresa.</h2>
 

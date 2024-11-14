@@ -2,7 +2,7 @@ import DashboardLayout from "@/Layouts/DashboardLayout";
 
 export default function Certifications({ userName }) {
     return (
-        <DashboardLayout userName={userName}>
+        <DashboardLayout userName={userName} title="Certificaciones">
             <div className="space-y-8">
                 <h1 className="text-2xl font-bold">
                     Certificaciones
