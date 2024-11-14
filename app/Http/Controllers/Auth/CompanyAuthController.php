@@ -78,17 +78,18 @@ class CompanyAuthController extends Controller
             if (!$companyId) {
                 throw new \Exception('No hay una empresa pendiente de asignación');
             }
-
+    
             $user = Auth::user();
             $user->company_id = $companyId;
+            $user->role = 'user'; // Asignar rol de usuario común
             $user->save();
-
-            // Limpiar la sesión
+    
             session()->forget('pending_company_id');
-
+    
             DB::commit();
             return redirect()->route('dashboard')
                 ->with('success', 'Has sido asociado a la empresa exitosamente.');
+    
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -114,28 +115,24 @@ class CompanyAuthController extends Controller
                 'mobile' => 'required|string',
                 'is_exporter' => 'required|boolean',
             ]);
-
-            Log::info('Datos validados:', $validated);
-            
+    
             DB::beginTransaction();
             
             $company = Company::create([
                 'legal_id' => session('legal_id'),
                 ...$validated
             ]);
-
-            Log::info('Empresa creada:', ['company' => $company]);
-
-            // Vincular la empresa al usuario actual
+    
+            // Vincular la empresa al usuario actual y establecerlo como admin
             $user = Auth::user();
             $user->company_id = $company->id;
+            $user->role = 'admin';
             $user->save();
-
-            Log::info('Usuario actualizado:', ['user' => $user]);
-
+    
             DB::commit();
-
+    
             return redirect()->route('dashboard')->with('success', 'Empresa registrada exitosamente');
+    
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::error('Error de validación:', [
