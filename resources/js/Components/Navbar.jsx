@@ -1,14 +1,37 @@
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 
-export default function Navbar({ userName }) {
+export default function Navbar({ userName, onMenuClick }) {
     const { post } = useForm();
+    const { auth } = usePage().props;
 
     const handleLogout = () => {
         post(route('logout'));
     };
+
+    // Función para obtener las iniciales del nombre
+    const getInitials = (name) => {
+        if (!name) return '';
+        return name
+            .split(' ')
+            .map(word => word[0])
+            .join('')
+            .toUpperCase()
+            .substring(0, 2);
+    };
+
+    console.log(getInitials(auth.user.name));
+
     return (
-        <div className="navbar bg-white border-b fixed top-0 w-full z-50 mb-10">
+        <div className="navbar bg-white border-b fixed top-0 w-full z-50">
             <div className="flex-1">
+                <button
+                    className="btn btn-ghost lg:hidden mr-2"
+                    onClick={onMenuClick}
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
                 <img
                     src="/assets/img/logo_esc.png"
                     alt="Costa Rica Logo"
@@ -27,11 +50,11 @@ export default function Navbar({ userName }) {
                     </div>
                 </div>
                 <div className="dropdown dropdown-end">
-                    <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                        <div className="w-10 rounded-full">
-                            <img
-                                alt="Tailwind CSS Navbar component"
-                                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+                    <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
+                        <div className="w-10 h-10 rounded-full bg-green-900 text-white flex items-center justify-center" style={{display: 'flex !important'}}>
+                            <p className="text-xl">
+                                {getInitials(auth.user.name)}
+                            </p>
                         </div>
                     </div>
                     <ul
