@@ -11,9 +11,9 @@ export default function Certifications({ userName }) {
                     Si su empresa cuenta con certificaciones previas, puede optar por homologarlas.
                 </p>
 
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-3 gap-8">
                     {/* Left Column - Add Certificate Form */}
-                    <div className="card bg-white shadow">
+                    <div className="card bg-white shadow col-span-1">
                         <div className="card-body">
                             <h2 className="card-title">Agregar certificado</h2>
                             <div className="space-y-4">
@@ -53,14 +53,14 @@ export default function Certifications({ userName }) {
                     </div>
 
                     {/* Right Column - Added Certifications */}
-                    <div className="card bg-white shadow">
+                    <div className="card bg-white shadow col-span-2">
                         <div className="card-body">
                             <h2 className="card-title">Certificaciones agregadas</h2>
                             
                             <div className="flex items-center justify-center min-h-[200px]">
                                 <div className="text-center space-y-4">
-                                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <div className="w-16 h-16 bg-green-200 rounded-full flex items-center justify-center mx-auto">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                     </div>

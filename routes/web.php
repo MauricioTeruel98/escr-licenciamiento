@@ -8,6 +8,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Middleware\EnsureUserHasCompany;
 
 // Ruta principal
 Route::get('/', function () {
@@ -18,7 +19,9 @@ Route::get('/', function () {
 });
 
 // Rutas de autenticación y registro de empresa
-Route::controller(CompanyAuthController::class)->group(function () {
+Route::controller(CompanyAuthController::class)
+    ->middleware(['auth'])
+    ->group(function () {
     Route::get('/regard', 'showRegard')->name('regard');
     Route::get('/company-register', 'showCompanyRegister')->name('company.register');
     Route::post('/company-register', 'storeCompany')->name('company.store');
@@ -29,7 +32,9 @@ Route::controller(CompanyAuthController::class)->group(function () {
 
 // Rutas del dashboard
 Route::controller(DashboardController::class)->group(function () {
-    Route::get('/dashboard', 'showEvaluation')->middleware(['auth', 'verified'])->name('dashboard');
+    Route::get('/dashboard', 'showEvaluation')
+        ->middleware(['auth', 'verified', EnsureUserHasCompany::class])
+        ->name('dashboard');
     //Route::get('/evaluation', 'showEvaluation')->name('evaluation');
 });
 
