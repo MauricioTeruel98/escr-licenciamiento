@@ -416,11 +416,19 @@ export default function UsersManagement() {
                                 {usuarios.map((usuario) => (
                                     <div key={usuario.id} className="bg-white p-6 rounded-lg shadow-sm">
                                         <div className="flex justify-between items-center mb-4">
-                                            <span className={`text-sm px-2 py-1 rounded ${usuario.status === 'approved'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-yellow-100 text-yellow-800'
-                                                }`}>
-                                                {usuario.status === 'approved' ? 'Aprobado' : 'Pendiente'}
+                                            <span className={`text-sm px-2 py-1 rounded ${
+                                                usuario.status === 'approved' 
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : usuario.status === 'rejected'
+                                                        ? 'bg-red-100 text-red-800' 
+                                                        : 'bg-yellow-100 text-yellow-800'
+                                            }`}>
+                                                {usuario.status === 'approved' 
+                                                    ? 'Aprobado' 
+                                                    : usuario.status === 'rejected'
+                                                        ? 'Rechazado'
+                                                        : 'Pendiente'
+                                                }
                                             </span>
                                         </div>
                                         <div className="grid md:grid-cols-2 gap-x-6 gap-y-4">
