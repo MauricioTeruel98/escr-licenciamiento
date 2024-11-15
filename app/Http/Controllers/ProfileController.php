@@ -30,6 +30,7 @@ class ProfileController extends Controller
                     'id_number' => $user->id_number,
                     'phone' => $user->phone,
                     'email' => $user->email,
+                    'role' => $user->role,
                 ],
             ],
         ]);

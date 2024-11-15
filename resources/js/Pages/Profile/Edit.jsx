@@ -33,6 +33,8 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
         });
     };
 
+    console.log(auth.user);
+
     return (
         <DashboardLayout userName={userName} title="Perfil">
             <Head title="Perfil" />
@@ -46,9 +48,13 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                    <div className="mb-6">
-                        <span className="text-sm text-green-700">Admin</span>
-                        <h1 className="text-2xl font-bold">Perfil de Usuario</h1>
+                    <div>
+                        <span className="text-md p-3 font-semibold text-green-800 mb-1 badge rounded-lg border border-green-200">
+                            {auth.user.role === 'admin' ? 'Admin' : 'Usuario'}
+                        </span>
+                        <h1 className="text-2xl font-bold text-gray-900">
+                            Perfil de Usuario
+                        </h1>
                     </div>
                     <div className="bg-white p-8 shadow sm:rounded-lg">
                         {flash.success && (

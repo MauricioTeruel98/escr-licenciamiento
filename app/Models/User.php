@@ -49,6 +49,8 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    protected $appends = ['role'];
+
     public function isAdmin()
     {
         return $this->role === 'admin';
@@ -67,5 +69,12 @@ class User extends Authenticatable
     public function isApproved()
     {
         return $this->status === 'approved';
+    }
+
+    public function toArray()
+    {
+        $array = parent::toArray();
+        $array['role'] = $this->role;
+        return $array;
     }
 }
