@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Trash2, X } from 'lucide-react';
+import axios from 'axios';
 
 // Primero, creamos el componente Modal
 const ConfirmModal = ({ isOpen, onClose, onConfirm, userName }) => {
@@ -53,39 +54,77 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, userName }) => {
 
 // Modificamos el componente principal para incluir el modal
 export default function UsersManagement() {
-    const [usuarios, setUsuarios] = useState([
-        {
-            id: 1,
-            nombreCompleto: 'Diana Badilla',
-            correo: 'diana@buzz.com',
-            puesto: 'Administrador',
-            telefono: '8162855',
-            editando: false
-        },
-        {
-            id: 2,
-            nombreCompleto: 'Fabián Sanabria',
-            correo: 'fabian@buzz.com',
-            puesto: 'Administrador',
-            telefono: '8162855',
-            editando: false
-        }
-    ]);
+    const [usuarios, setUsuarios] = useState([]);
+    const [nuevoUsuario, setNuevoUsuario] = useState({
+        nombreCompleto: '',
+        correo: '',
+        puesto: '',
+        telefono: ''
+    });
 
     // Agregamos estados para el modal
     const [modalOpen, setModalOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
 
-    const handleEdit = (id) => {
-        setUsuarios(usuarios.map(usuario =>
-            usuario.id === id ? { ...usuario, editando: true } : usuario
-        ));
+    useEffect(() => {
+        cargarUsuarios();
+    }, []);
+
+    const cargarUsuarios = async () => {
+        try {
+            console.log('Intentando cargar usuarios...');
+            const response = await axios.get('/api/users');
+            console.log('Respuesta:', response.data);
+            
+            const usuariosFormateados = response.data.map(user => ({
+                id: user.id,
+                nombreCompleto: `${user.name} ${user.lastname}`,
+                correo: user.email,
+                puesto: user.position || '',
+                telefono: user.phone || '',
+                editando: false,
+                status: user.status
+            }));
+            setUsuarios(usuariosFormateados);
+        } catch (error) {
+            console.error('Error al cargar usuarios:', error);
+            if (error.response) {
+                console.error('Respuesta del servidor:', error.response.data);
+            }
+        }
     };
 
-    const handleSave = (id) => {
-        setUsuarios(usuarios.map(usuario =>
-            usuario.id === id ? { ...usuario, editando: false } : usuario
-        ));
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post('/api/users', nuevoUsuario);
+            setNuevoUsuario({
+                nombreCompleto: '',
+                correo: '',
+                puesto: '',
+                telefono: ''
+            });
+            cargarUsuarios();
+        } catch (error) {
+            console.error('Error al crear usuario:', error);
+        }
+    };
+
+    const handleSave = async (id) => {
+        const usuario = usuarios.find(u => u.id === id);
+        try {
+            await axios.put(`/api/users/${id}`, {
+                nombreCompleto: usuario.nombreCompleto,
+                correo: usuario.correo,
+                puesto: usuario.puesto,
+                telefono: usuario.telefono
+            });
+            setUsuarios(usuarios.map(u =>
+                u.id === id ? { ...u, editando: false } : u
+            ));
+        } catch (error) {
+            console.error('Error al actualizar usuario:', error);
+        }
     };
 
     const handleDelete = (id) => {
@@ -99,18 +138,29 @@ export default function UsersManagement() {
         ));
     };
 
-    const nuevoUsuario = {
-        nombreCompleto: '',
-        correo: '',
-        puesto: '',
-        telefono: ''
+    const confirmDelete = async () => {
+        try {
+            await axios.delete(`/api/users/${userToDelete.id}`);
+            setUsuarios(usuarios.filter(usuario => usuario.id !== userToDelete.id));
+            setModalOpen(false);
+            setUserToDelete(null);
+        } catch (error) {
+            console.error('Error al eliminar usuario:', error);
+        }
     };
 
-    // Nueva función para confirmar la eliminación
-    const confirmDelete = () => {
-        setUsuarios(usuarios.filter(usuario => usuario.id !== userToDelete.id));
-        setModalOpen(false);
-        setUserToDelete(null);
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setNuevoUsuario(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleEdit = (id) => {
+        setUsuarios(usuarios.map(usuario =>
+            usuario.id === id ? { ...usuario, editando: true } : usuario
+        ));
     };
 
     return (
@@ -125,7 +175,7 @@ export default function UsersManagement() {
                     {/* Formulario para nuevo usuario */}
                     <div className="lg:w-1/4">
                         <div className="bg-gray-50 p-6 rounded-lg">
-                            <form onSubmit={''} className="grid grid-cols-1 gap-4">
+                            <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
                                 <div>
                                     <label className="block text-sm mb-1">
                                         Nombre Completo<span className="text-red-500">*</span>
@@ -134,7 +184,7 @@ export default function UsersManagement() {
                                         type="text"
                                         name="nombreCompleto"
                                         value={nuevoUsuario.nombreCompleto}
-                                        onChange={''}
+                                        onChange={handleInputChange}
                                         className="w-full rounded-md border border-gray-300 p-2"
                                         required
                                     />
@@ -148,7 +198,7 @@ export default function UsersManagement() {
                                         type="email"
                                         name="correo"
                                         value={nuevoUsuario.correo}
-                                        onChange={''}
+                                        onChange={handleInputChange}
                                         className="w-full rounded-md border border-gray-300 p-2"
                                         required
                                     />
@@ -162,7 +212,7 @@ export default function UsersManagement() {
                                         type="text"
                                         name="puesto"
                                         value={nuevoUsuario.puesto}
-                                        onChange={''}
+                                        onChange={handleInputChange}
                                         className="w-full rounded-md border border-gray-300 p-2"
                                         required
                                     />
@@ -176,7 +226,7 @@ export default function UsersManagement() {
                                         type="tel"
                                         name="telefono"
                                         value={nuevoUsuario.telefono}
-                                        onChange={''}
+                                        onChange={handleInputChange}
                                         className="w-full rounded-md border border-gray-300 p-2"
                                         required
                                     />
@@ -197,6 +247,15 @@ export default function UsersManagement() {
                         {usuarios.length > 0 ? (
                             usuarios.map((usuario) => (
                                 <div key={usuario.id} className="bg-white p-6 rounded-lg shadow-sm">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <span className={`text-sm px-2 py-1 rounded ${
+                                            usuario.status === 'approved' 
+                                                ? 'bg-green-100 text-green-800' 
+                                                : 'bg-yellow-100 text-yellow-800'
+                                        }`}>
+                                            {usuario.status === 'approved' ? 'Aprobado' : 'Pendiente'}
+                                        </span>
+                                    </div>
                                     <div className="grid md:grid-cols-2 gap-x-6 gap-y-4">
                                         <div>
                                             <label className="block text-sm mb-1">
