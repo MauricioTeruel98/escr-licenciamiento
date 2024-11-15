@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, X } from 'lucide-react';
+import { Trash2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 
 // Primero, creamos el componente Modal
@@ -65,18 +65,24 @@ export default function UsersManagement() {
     // Agregamos estados para el modal
     const [modalOpen, setModalOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
+    const [pagination, setPagination] = useState({
+        currentPage: 1,
+        lastPage: 1,
+        total: 0,
+        perPage: 10
+    });
 
     useEffect(() => {
         cargarUsuarios();
     }, []);
 
-    const cargarUsuarios = async () => {
+    const cargarUsuarios = async (page = 1) => {
         try {
             console.log('Intentando cargar usuarios...');
-            const response = await axios.get('/api/users');
+            const response = await axios.get(`/api/users?page=${page}`);
             console.log('Respuesta:', response.data);
             
-            const usuariosFormateados = response.data.map(user => ({
+            const usuariosFormateados = response.data.data.map(user => ({
                 id: user.id,
                 nombreCompleto: `${user.name} ${user.lastname}`,
                 correo: user.email,
@@ -85,7 +91,14 @@ export default function UsersManagement() {
                 editando: false,
                 status: user.status
             }));
+
             setUsuarios(usuariosFormateados);
+            setPagination({
+                currentPage: response.data.current_page,
+                lastPage: response.data.last_page,
+                total: response.data.total,
+                perPage: response.data.per_page
+            });
         } catch (error) {
             console.error('Error al cargar usuarios:', error);
             if (error.response) {
@@ -161,6 +174,100 @@ export default function UsersManagement() {
         setUsuarios(usuarios.map(usuario =>
             usuario.id === id ? { ...usuario, editando: true } : usuario
         ));
+    };
+
+    const handlePageChange = (page) => {
+        cargarUsuarios(page);
+    };
+
+    const Pagination = () => {
+        if (pagination.lastPage <= 1) return null;
+
+        return (
+            <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4 rounded-lg">
+                <div className="flex flex-1 justify-between sm:hidden">
+                    <button
+                        onClick={() => handlePageChange(pagination.currentPage - 1)}
+                        disabled={pagination.currentPage === 1}
+                        className={`relative inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
+                            pagination.currentPage === 1
+                                ? 'bg-gray-100 text-gray-400'
+                                : 'bg-white text-gray-700 hover:bg-gray-50'
+                        }`}
+                    >
+                        Anterior
+                    </button>
+                    <button
+                        onClick={() => handlePageChange(pagination.currentPage + 1)}
+                        disabled={pagination.currentPage === pagination.lastPage}
+                        className={`relative ml-3 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
+                            pagination.currentPage === pagination.lastPage
+                                ? 'bg-gray-100 text-gray-400'
+                                : 'bg-white text-gray-700 hover:bg-gray-50'
+                        }`}
+                    >
+                        Siguiente
+                    </button>
+                </div>
+                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                    <div>
+                        <p className="text-sm text-gray-700">
+                            Mostrando{' '}
+                            <span className="font-medium">
+                                {((pagination.currentPage - 1) * pagination.perPage) + 1}
+                            </span>{' '}
+                            a{' '}
+                            <span className="font-medium">
+                                {Math.min(pagination.currentPage * pagination.perPage, pagination.total)}
+                            </span>{' '}
+                            de{' '}
+                            <span className="font-medium">{pagination.total}</span>{' '}
+                            resultados
+                        </p>
+                    </div>
+                    <div>
+                        <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                            <button
+                                onClick={() => handlePageChange(pagination.currentPage - 1)}
+                                disabled={pagination.currentPage === 1}
+                                className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                                    pagination.currentPage === 1 ? 'cursor-not-allowed' : ''
+                                }`}
+                            >
+                                <span className="sr-only">Anterior</span>
+                                <ChevronLeft className="h-5 w-5" />
+                            </button>
+                            
+                            {/* Números de página */}
+                            {[...Array(pagination.lastPage)].map((_, index) => (
+                                <button
+                                    key={index + 1}
+                                    onClick={() => handlePageChange(index + 1)}
+                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                                        pagination.currentPage === index + 1
+                                            ? 'z-10 bg-green-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600'
+                                            : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                                    }`}
+                                >
+                                    {index + 1}
+                                </button>
+                            ))}
+
+                            <button
+                                onClick={() => handlePageChange(pagination.currentPage + 1)}
+                                disabled={pagination.currentPage === pagination.lastPage}
+                                className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                                    pagination.currentPage === pagination.lastPage ? 'cursor-not-allowed' : ''
+                                }`}
+                            >
+                                <span className="sr-only">Siguiente</span>
+                                <ChevronRight className="h-5 w-5" />
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     return (
@@ -245,102 +352,106 @@ export default function UsersManagement() {
                     {/* Lista de usuarios */}
                     <div className="lg:w-3/4 space-y-4">
                         {usuarios.length > 0 ? (
-                            usuarios.map((usuario) => (
-                                <div key={usuario.id} className="bg-white p-6 rounded-lg shadow-sm">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <span className={`text-sm px-2 py-1 rounded ${
-                                            usuario.status === 'approved' 
-                                                ? 'bg-green-100 text-green-800' 
-                                                : 'bg-yellow-100 text-yellow-800'
-                                        }`}>
-                                            {usuario.status === 'approved' ? 'Aprobado' : 'Pendiente'}
-                                        </span>
-                                    </div>
-                                    <div className="grid md:grid-cols-2 gap-x-6 gap-y-4">
-                                        <div>
-                                            <label className="block text-sm mb-1">
-                                                Nombre Completo
-                                                {usuario.editando && <span className="text-red-500">*</span>}
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={usuario.nombreCompleto}
-                                                onChange={(e) => handleChange(usuario.id, 'nombreCompleto', e.target.value)}
-                                                disabled={!usuario.editando}
-                                                className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
-                                            />
+                            <>
+                                {usuarios.map((usuario) => (
+                                    <div key={usuario.id} className="bg-white p-6 rounded-lg shadow-sm">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <span className={`text-sm px-2 py-1 rounded ${
+                                                usuario.status === 'approved' 
+                                                    ? 'bg-green-100 text-green-800' 
+                                                    : 'bg-yellow-100 text-yellow-800'
+                                            }`}>
+                                                {usuario.status === 'approved' ? 'Aprobado' : 'Pendiente'}
+                                            </span>
+                                        </div>
+                                        <div className="grid md:grid-cols-2 gap-x-6 gap-y-4">
+                                            <div>
+                                                <label className="block text-sm mb-1">
+                                                    Nombre Completo
+                                                    {usuario.editando && <span className="text-red-500">*</span>}
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={usuario.nombreCompleto}
+                                                    onChange={(e) => handleChange(usuario.id, 'nombreCompleto', e.target.value)}
+                                                    disabled={!usuario.editando}
+                                                    className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm mb-1">
+                                                    Correo Electrónico
+                                                    {usuario.editando && <span className="text-red-500">*</span>}
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    value={usuario.correo}
+                                                    onChange={(e) => handleChange(usuario.id, 'correo', e.target.value)}
+                                                    disabled={!usuario.editando}
+                                                    className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm mb-1">
+                                                    Puesto
+                                                    {usuario.editando && <span className="text-red-500">*</span>}
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={usuario.puesto}
+                                                    onChange={(e) => handleChange(usuario.id, 'puesto', e.target.value)}
+                                                    disabled={!usuario.editando}
+                                                    className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm mb-1">
+                                                    Teléfono
+                                                    {usuario.editando && <span className="text-red-500">*</span>}
+                                                </label>
+                                                <input
+                                                    type="tel"
+                                                    value={usuario.telefono}
+                                                    onChange={(e) => handleChange(usuario.id, 'telefono', e.target.value)}
+                                                    disabled={!usuario.editando}
+                                                    className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
+                                                />
+                                            </div>
                                         </div>
 
-                                        <div>
-                                            <label className="block text-sm mb-1">
-                                                Correo Electrónico
-                                                {usuario.editando && <span className="text-red-500">*</span>}
-                                            </label>
-                                            <input
-                                                type="email"
-                                                value={usuario.correo}
-                                                onChange={(e) => handleChange(usuario.id, 'correo', e.target.value)}
-                                                disabled={!usuario.editando}
-                                                className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm mb-1">
-                                                Puesto
-                                                {usuario.editando && <span className="text-red-500">*</span>}
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={usuario.puesto}
-                                                onChange={(e) => handleChange(usuario.id, 'puesto', e.target.value)}
-                                                disabled={!usuario.editando}
-                                                className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm mb-1">
-                                                Teléfono
-                                                {usuario.editando && <span className="text-red-500">*</span>}
-                                            </label>
-                                            <input
-                                                type="tel"
-                                                value={usuario.telefono}
-                                                onChange={(e) => handleChange(usuario.id, 'telefono', e.target.value)}
-                                                disabled={!usuario.editando}
-                                                className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-4 flex gap-2">
-                                        {usuario.editando ? (
-                                            <>
+                                        <div className="mt-4 flex gap-2">
+                                            {usuario.editando ? (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleSave(usuario.id)}
+                                                        className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-800 transition-colors"
+                                                    >
+                                                        Guardar Cambios
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(usuario.id)}
+                                                        className="text-red-600 hover:text-red-700"
+                                                    >
+                                                        <Trash2 className="h-5 w-5" />
+                                                    </button>
+                                                </>
+                                            ) : (
                                                 <button
-                                                    onClick={() => handleSave(usuario.id)}
-                                                    className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-800 transition-colors"
+                                                    onClick={() => handleEdit(usuario.id)}
+                                                    className="bg-white px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
                                                 >
-                                                    Guardar Cambios
+                                                    Editar
                                                 </button>
-                                                <button
-                                                    onClick={() => handleDelete(usuario.id)}
-                                                    className="text-red-600 hover:text-red-700"
-                                                >
-                                                    <Trash2 className="h-5 w-5" />
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <button
-                                                onClick={() => handleEdit(usuario.id)}
-                                                className="bg-white px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
-                                            >
-                                                Editar
-                                            </button>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                                ))}
+                                
+                                <Pagination />
+                            </>
                         ) : (
                             <div className="bg-white p-8 rounded-lg shadow-sm">
                                 <div className="flex flex-col items-center text-center">

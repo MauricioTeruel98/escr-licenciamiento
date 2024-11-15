@@ -17,12 +17,10 @@ class UserController extends Controller
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        Log::info('UserController@index called');
-        
         try {
             $users = User::where('company_id', auth()->user()->company_id)
                         ->where('role', 'user')
-                        ->get();
+                        ->paginate(3);
 
             Log::info('Users retrieved:', ['count' => $users->count()]);
             
