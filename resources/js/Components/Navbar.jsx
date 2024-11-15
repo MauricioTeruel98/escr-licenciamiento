@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm, usePage } from "@inertiajs/react";
+import { Link, useForm, usePage } from "@inertiajs/react";
 import axios from 'axios';
 import { CheckCircle, XCircle } from 'lucide-react';
 
@@ -65,11 +65,13 @@ export default function Navbar({ userName, onMenuClick }) {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
-                <img
-                    src="/assets/img/logo_esc.png"
-                    alt="Costa Rica Logo"
-                    className="h-8"
-                />
+                <Link href={'/'}>
+                    <img
+                        src="/assets/img/logo_esc.png"
+                        alt="Costa Rica Logo"
+                        className="h-8"
+                    />
+                </Link>
             </div>
             <div className="flex-none gap-2">
                 <div className="dropdown dropdown-end">
@@ -127,39 +129,44 @@ export default function Navbar({ userName, onMenuClick }) {
                 </div>
                 <div className="dropdown dropdown-end">
                     <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
-                        <div className="w-10 h-10 rounded-full bg-green-900 text-white flex items-center justify-center" style={{display: 'flex !important'}}>
+                        <div className="w-10 h-10 rounded-full bg-green-900 text-white flex items-center justify-center">
                             <p className="text-xl">
                                 {getInitials(auth.user.name)}
                             </p>
                         </div>
                     </div>
-                    <ul
-                        tabIndex={0}
-                        className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-                        {
-                            auth.user.role === 'admin' && (
-                                <li>
-                                    <a href={route('company.edit')} className="justify-between">
-                                        Editar Empresa
-                                    </a>
-                                </li>
-                            )
-                        }
-                        <li>
-                            <a href={route('profile.edit')} className="justify-between">
-                                Editar Perfil
-                            </a>
-                        </li>
-                        <li><a>Settings</a></li>
-                        <li>
+                    <div tabIndex={0} className="dropdown-content z-[1] mt-3 w-64 rounded-2xl shadow-lg bg-white">
+                        <div className="bg-green-900 text-white p-4 rounded-t-xl">
+                            <div className="flex justify-between items-center">
+                                <p className="text-lg font-medium">{auth.user.name}</p>
+                                <span className="bg-white text-green-900 px-3 py-1 rounded-full text-sm">
+                                    {auth.user.role === 'admin' ? 'Admin' : 'Usuario'}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="p-2">
+                            <Link
+                                href={route('profile.edit')}
+                                className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                Perfil Usuario
+                            </Link>
+                            {auth.user.role === 'admin' && (
+                                <Link
+                                    href={route('company.edit')}
+                                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                >
+                                    Perfil Empresa
+                                </Link>
+                            )}
                             <button
-                                type="button"
                                 onClick={handleLogout}
+                                className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors mt-2"
                             >
                                 Cerrar Sesión
                             </button>
-                        </li>
-                    </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
