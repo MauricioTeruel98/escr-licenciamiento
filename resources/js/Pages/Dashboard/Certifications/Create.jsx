@@ -1,6 +1,9 @@
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { useState, useRef, useEffect } from "react";
 import { Trash2, X } from 'lucide-react';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { es } from 'date-fns/locale';
 
 // Componente Modal de confirmación
 const ConfirmModal = ({ isOpen, onClose, onConfirm, certName }) => {
@@ -227,15 +230,21 @@ export default function Certifications({ userName }) {
                                         Fecha de obtención<span className="text-red-500">*</span>
                                     </span>
                                 </label>
-                                <input
-                                    type="date"
-                                    value={nuevaCertificacion.fechaObtencion}
-                                    onChange={(e) => setNuevaCertificacion({
+                                <DatePicker
+                                    selected={nuevaCertificacion.fechaObtencion ? new Date(nuevaCertificacion.fechaObtencion) : null}
+                                    onChange={(date) => setNuevaCertificacion({
                                         ...nuevaCertificacion,
-                                        fechaObtencion: e.target.value
+                                        fechaObtencion: date.toISOString().split('T')[0]
                                     })}
+                                    locale={es}
+                                    dateFormat="dd/MM/yyyy"
                                     className="w-full px-3 py-2 border rounded-md"
                                     required
+                                    showMonthDropdown
+                                    showYearDropdown
+                                    dropdownMode="select"
+                                    yearDropdownItemNumber={10}
+                                    scrollableYearDropdown
                                 />
                             </div>
 
@@ -245,15 +254,21 @@ export default function Certifications({ userName }) {
                                         Fecha de expiración<span className="text-red-500">*</span>
                                     </span>
                                 </label>
-                                <input
-                                    type="date"
-                                    value={nuevaCertificacion.fechaExpiracion}
-                                    onChange={(e) => setNuevaCertificacion({
+                                <DatePicker
+                                    selected={nuevaCertificacion.fechaExpiracion ? new Date(nuevaCertificacion.fechaExpiracion) : null}
+                                    onChange={(date) => setNuevaCertificacion({
                                         ...nuevaCertificacion,
-                                        fechaExpiracion: e.target.value
+                                        fechaExpiracion: date.toISOString().split('T')[0]
                                     })}
+                                    locale={es}
+                                    dateFormat="dd/MM/yyyy"
                                     className="w-full px-3 py-2 border rounded-md"
                                     required
+                                    showMonthDropdown
+                                    showYearDropdown
+                                    dropdownMode="select"
+                                    yearDropdownItemNumber={10}
+                                    scrollableYearDropdown
                                 />
                             </div>
 
@@ -273,7 +288,7 @@ export default function Certifications({ userName }) {
                             <div className="space-y-4">
                                 {certificaciones.map((cert) => (
                                     <div key={cert.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                                        <div className="flex justify-between space-y-4">
+                                        <div className="flex flex-col md:flex-row justify-between space-y-4">
                                             {/* Primera fila: Nombre y botón editar */}
                                             <div>
                                                 <div className="flex flex-col justify-between items-start">
@@ -296,11 +311,17 @@ export default function Certifications({ userName }) {
                                                                 Fecha de obtención<span className="text-red-500">*</span>
                                                             </label>
                                                             <div className="flex items-center h-16">
-                                                                <input
-                                                                    type="date"
-                                                                    value={cert.fechaObtencion}
-                                                                    onChange={(e) => handleChange(cert.id, 'fechaObtencion', e.target.value)}
+                                                                <DatePicker
+                                                                    selected={cert.fechaObtencion ? new Date(cert.fechaObtencion) : null}
+                                                                    onChange={(date) => handleChange(cert.id, 'fechaObtencion', date.toISOString().split('T')[0])}
+                                                                    locale={es}
+                                                                    dateFormat="dd/MM/yyyy"
                                                                     className="w-full px-3 py-2 border rounded-md"
+                                                                    showMonthDropdown
+                                                                    showYearDropdown
+                                                                    dropdownMode="select"
+                                                                    yearDropdownItemNumber={10}
+                                                                    scrollableYearDropdown
                                                                 />
                                                             </div>
                                                         </div>
@@ -309,11 +330,17 @@ export default function Certifications({ userName }) {
                                                                 Fecha de expiración<span className="text-red-500">*</span>
                                                             </label>
                                                             <div className="flex items-center h-16">
-                                                                <input
-                                                                    type="date"
-                                                                    value={cert.fechaExpiracion}
-                                                                    onChange={(e) => handleChange(cert.id, 'fechaExpiracion', e.target.value)}
+                                                                <DatePicker
+                                                                    selected={cert.fechaExpiracion ? new Date(cert.fechaExpiracion) : null}
+                                                                    onChange={(date) => handleChange(cert.id, 'fechaExpiracion', date.toISOString().split('T')[0])}
+                                                                    locale={es}
+                                                                    dateFormat="dd/MM/yyyy"
                                                                     className="w-full px-3 py-2 border rounded-md"
+                                                                    showMonthDropdown
+                                                                    showYearDropdown
+                                                                    dropdownMode="select"
+                                                                    yearDropdownItemNumber={10}
+                                                                    scrollableYearDropdown
                                                                 />
                                                             </div>
                                                         </div>
