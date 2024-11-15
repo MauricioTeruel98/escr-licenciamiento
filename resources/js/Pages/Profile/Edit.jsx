@@ -57,7 +57,7 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                             Perfil de Usuario
                         </h1>
                     </div>
-                    <div className="bg-white p-8 shadow sm:rounded-lg">
+                    <div className="bg-white p-8 shadow-sm rounded-lg border border-gray-200">
                         {flash.success && (
                             <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4">
                                 <div className="flex">

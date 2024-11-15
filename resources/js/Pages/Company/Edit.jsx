@@ -29,7 +29,7 @@ export default function CompanyEdit({ company, sectors, cities, userName }) {
         <DashboardLayout title="Perfil de Empresa" userName={userName}>
             <div className="py-6 px-4 sm:px-6 lg:px-8">
                 <h1 className="text-2xl font-bold mb-6">Perfil de Empresa</h1>
-                <div className="bg-white rounded-lg shadow p-6">
+                <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
                     {flash.success && (
                         <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4">
                             <div className="flex">
