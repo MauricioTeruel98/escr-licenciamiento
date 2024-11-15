@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Trash2, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, X, ChevronLeft, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
 import axios from 'axios';
+import { router } from '@inertiajs/react';
 
 // Primero, creamos el componente Modal
 const ConfirmModal = ({ isOpen, onClose, onConfirm, userName }) => {
@@ -55,6 +56,7 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, userName }) => {
 // Modificamos el componente principal para incluir el modal
 export default function UsersManagement() {
     const [usuarios, setUsuarios] = useState([]);
+    const [solicitudesPendientes, setSolicitudesPendientes] = useState([]);
     const [nuevoUsuario, setNuevoUsuario] = useState({
         nombreCompleto: '',
         correo: '',
@@ -74,6 +76,7 @@ export default function UsersManagement() {
 
     useEffect(() => {
         cargarUsuarios();
+        cargarSolicitudesPendientes();
     }, []);
 
     const cargarUsuarios = async (page = 1) => {
@@ -81,7 +84,7 @@ export default function UsersManagement() {
             console.log('Intentando cargar usuarios...');
             const response = await axios.get(`/api/users?page=${page}`);
             console.log('Respuesta:', response.data);
-            
+
             const usuariosFormateados = response.data.data.map(user => ({
                 id: user.id,
                 nombreCompleto: `${user.name} ${user.lastname}`,
@@ -105,6 +108,32 @@ export default function UsersManagement() {
                 console.error('Respuesta del servidor:', error.response.data);
             }
         }
+    };
+
+    const cargarSolicitudesPendientes = async () => {
+        try {
+            const response = await axios.get('/api/pending-users');
+            setSolicitudesPendientes(response.data);
+        } catch (error) {
+            console.error('Error al cargar solicitudes:', error);
+        }
+    };
+
+    const handleApprove = (userId) => {
+        router.post(route('user.approve', userId), {}, {
+            onSuccess: () => {
+                cargarUsuarios();
+                cargarSolicitudesPendientes();
+            }
+        });
+    };
+
+    const handleReject = (userId) => {
+        router.post(route('user.reject', userId), {}, {
+            onSuccess: () => {
+                cargarSolicitudesPendientes();
+            }
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -189,22 +218,20 @@ export default function UsersManagement() {
                     <button
                         onClick={() => handlePageChange(pagination.currentPage - 1)}
                         disabled={pagination.currentPage === 1}
-                        className={`relative inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
-                            pagination.currentPage === 1
-                                ? 'bg-gray-100 text-gray-400'
-                                : 'bg-white text-gray-700 hover:bg-gray-50'
-                        }`}
+                        className={`relative inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${pagination.currentPage === 1
+                            ? 'bg-gray-100 text-gray-400'
+                            : 'bg-white text-gray-700 hover:bg-gray-50'
+                            }`}
                     >
                         Anterior
                     </button>
                     <button
                         onClick={() => handlePageChange(pagination.currentPage + 1)}
                         disabled={pagination.currentPage === pagination.lastPage}
-                        className={`relative ml-3 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
-                            pagination.currentPage === pagination.lastPage
-                                ? 'bg-gray-100 text-gray-400'
-                                : 'bg-white text-gray-700 hover:bg-gray-50'
-                        }`}
+                        className={`relative ml-3 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${pagination.currentPage === pagination.lastPage
+                            ? 'bg-gray-100 text-gray-400'
+                            : 'bg-white text-gray-700 hover:bg-gray-50'
+                            }`}
                     >
                         Siguiente
                     </button>
@@ -230,24 +257,22 @@ export default function UsersManagement() {
                             <button
                                 onClick={() => handlePageChange(pagination.currentPage - 1)}
                                 disabled={pagination.currentPage === 1}
-                                className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
-                                    pagination.currentPage === 1 ? 'cursor-not-allowed' : ''
-                                }`}
+                                className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${pagination.currentPage === 1 ? 'cursor-not-allowed' : ''
+                                    }`}
                             >
                                 <span className="sr-only">Anterior</span>
                                 <ChevronLeft className="h-5 w-5" />
                             </button>
-                            
+
                             {/* Números de página */}
                             {[...Array(pagination.lastPage)].map((_, index) => (
                                 <button
                                     key={index + 1}
                                     onClick={() => handlePageChange(index + 1)}
-                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                                        pagination.currentPage === index + 1
-                                            ? 'z-10 bg-green-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600'
-                                            : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                                    }`}
+                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${pagination.currentPage === index + 1
+                                        ? 'z-10 bg-green-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600'
+                                        : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                                        }`}
                                 >
                                     {index + 1}
                                 </button>
@@ -256,9 +281,8 @@ export default function UsersManagement() {
                             <button
                                 onClick={() => handlePageChange(pagination.currentPage + 1)}
                                 disabled={pagination.currentPage === pagination.lastPage}
-                                className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
-                                    pagination.currentPage === pagination.lastPage ? 'cursor-not-allowed' : ''
-                                }`}
+                                className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${pagination.currentPage === pagination.lastPage ? 'cursor-not-allowed' : ''
+                                    }`}
                             >
                                 <span className="sr-only">Siguiente</span>
                                 <ChevronRight className="h-5 w-5" />
@@ -351,16 +375,51 @@ export default function UsersManagement() {
 
                     {/* Lista de usuarios */}
                     <div className="lg:w-3/4 space-y-4">
+                        {/* Sección de Solicitudes Pendientes */}
+                        {solicitudesPendientes.length > 0 && (
+                            <div className="mb-8">
+                                <div className="space-y-4">
+                                    {solicitudesPendientes.map((solicitud) => (
+                                        <div key={solicitud.id}
+                                            className="bg-green-100/30 p-4 rounded-lg shadow-sm flex items-center justify-between">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-4">
+                                                    <div>
+                                                        <h2 className="text-lg text-green-800 font-semibold">Solicitud de colaboración</h2>
+                                                        <p className="text-sm text-green-800">{solicitud.name} {solicitud.email}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleApprove(solicitud.id)}
+                                                    className="p-2 text-green-600 hover:text-green-700"
+                                                    title="Aprobar"
+                                                >
+                                                    <CheckCircle className="h-6 w-6" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleReject(solicitud.id)}
+                                                    className="p-2 text-red-600 hover:text-red-700"
+                                                    title="Rechazar"
+                                                >
+                                                    <XCircle className="h-6 w-6" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         {usuarios.length > 0 ? (
                             <>
                                 {usuarios.map((usuario) => (
                                     <div key={usuario.id} className="bg-white p-6 rounded-lg shadow-sm">
                                         <div className="flex justify-between items-center mb-4">
-                                            <span className={`text-sm px-2 py-1 rounded ${
-                                                usuario.status === 'approved' 
-                                                    ? 'bg-green-100 text-green-800' 
-                                                    : 'bg-yellow-100 text-yellow-800'
-                                            }`}>
+                                            <span className={`text-sm px-2 py-1 rounded ${usuario.status === 'approved'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-yellow-100 text-yellow-800'
+                                                }`}>
                                                 {usuario.status === 'approved' ? 'Aprobado' : 'Pendiente'}
                                             </span>
                                         </div>
@@ -449,7 +508,7 @@ export default function UsersManagement() {
                                         </div>
                                     </div>
                                 ))}
-                                
+
                                 <Pagination />
                             </>
                         ) : (

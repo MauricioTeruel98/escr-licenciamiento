@@ -108,4 +108,18 @@ class UserController extends Controller
         $user->delete();
         return response()->json(['message' => 'Usuario eliminado exitosamente']);
     }
+
+    public function getPendingUsers()
+    {
+        try {
+            $pendingUsers = User::where('company_id', auth()->user()->company_id)
+                            ->where('status', 'pending')
+                            ->get(['id', 'name', 'lastname', 'email', 'created_at']);
+
+            return response()->json($pendingUsers);
+        } catch (\Exception $e) {
+            Log::error('Error getting pending users: ' . $e->getMessage());
+            return response()->json(['error' => 'Error al obtener usuarios pendientes'], 500);
+        }
+    }
 } 
