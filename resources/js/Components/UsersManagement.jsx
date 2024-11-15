@@ -520,7 +520,7 @@ export default function UsersManagement() {
                                 <Pagination />
                             </>
                         ) : (
-                            <div className="bg-white p-8 rounded-lg shadow-sm">
+                            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
                                 <div className="flex flex-col items-center text-center">
                                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -31,8 +31,22 @@
             src: url('{{ asset('assets/fonts/inter/static/Inter_24pt-ExtraBold.ttf') }}') format("truetype");
         }
 
+        @font-face {
+            font-family: "Poppins";
+            font-style: normal;
+            font-weight: 400;
+            src: url('{{ asset('assets/fonts/poppins/Poppins-Regular.ttf') }}') format("truetype");
+        }
+
+        @font-face {
+            font-family: "Poppins ExtraBold";
+            font-style: normal;
+            font-weight: 400;
+            src: url('{{ asset('assets/fonts/poppins/Poppins-ExtraBold.ttf') }}') format("truetype");
+        }
+
         body {
-            font-family: "Inter", sans-serif;
+            font-family: "Poppins", sans-serif;
         }
 
         h1,
@@ -44,11 +58,11 @@
         p,
         span,
         div {
-            font-family: "Inter", sans-serif !important;
+            font-family: "Poppins", sans-serif !important;
         }
 
         h1 {
-            font-family: "Inter ExtraBold", serif !important;
+            font-family: "Poppins ExtraBold", serif !important;
         }
     </style>
 </head>
