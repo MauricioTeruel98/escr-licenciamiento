@@ -18,9 +18,20 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            'userName' => $user->name,
+            'auth' => [
+                'user' => [
+                    'name' => $user->name,
+                    'lastname' => $user->lastname,
+                    'id_number' => $user->id_number,
+                    'phone' => $user->phone,
+                    'email' => $user->email,
+                ],
+            ],
         ]);
     }
 
@@ -29,7 +40,23 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $validated = $request->validated();
+        
+        // Remover email si no ha cambiado
+        if ($request->user()->email === $validated['email']) {
+            unset($validated['email']);
+        }
+
+        // Remover campos de contraseña si no se está actualizando
+        if (empty($validated['password'])) {
+            unset($validated['password']);
+            unset($validated['password_confirmation']);
+        }
+        
+        // Siempre remover current_password ya que no es un campo del modelo
+        unset($validated['current_password']);
+
+        $request->user()->fill($validated);
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
@@ -37,7 +64,13 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit');
+        $message = 'Perfil actualizado exitosamente.';
+        if (!empty($validated['password'])) {
+            $message = 'Perfil y contraseña actualizados exitosamente.';
+        }
+
+        return Redirect::route('profile.edit')
+            ->with('success', $message);
     }
 
     /**
