@@ -49,7 +49,10 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    protected $appends = ['role'];
+    public function getRoleAttribute()
+    {
+        return $this->attributes['role'] ?? 'user';
+    }
 
     public function isAdmin()
     {

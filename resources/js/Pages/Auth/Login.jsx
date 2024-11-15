@@ -41,7 +41,7 @@ export default function Login({ status, canResetPassword }) {
                             type="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            className="w-full p-2 border rounded-md"
+                            className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="nombre@empresa.com"
                         />
                         <InputError message={errors.email} className="mt-2" />
@@ -58,7 +58,7 @@ export default function Login({ status, canResetPassword }) {
                                 type={showPassword ? "text" : "password"}
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
-                                className="w-full p-2 border rounded-md pr-10"
+                                className="w-full rounded-md border border-gray-300 p-2 pr-10"
                             />
                             <button
                                 type="button"

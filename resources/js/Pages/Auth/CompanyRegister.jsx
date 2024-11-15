@@ -43,7 +43,7 @@ export default function CompanyRegister() {
                                 type="text"
                                 value={data.name}
                                 onChange={e => setData('name', e.target.value)}
-                                className="w-full p-2 border rounded-md"
+                                className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="Nombre de la empresa"
                             />
                             <InputError message={errors.name} />
@@ -59,7 +59,7 @@ export default function CompanyRegister() {
                                 type="url"
                                 value={data.website}
                                 onChange={e => setData('website', e.target.value)}
-                                className="w-full p-2 border rounded-md"
+                                className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="www.ejemplo.com"
                             />
                             <InputError message={errors.website} />
@@ -74,7 +74,7 @@ export default function CompanyRegister() {
                                 id="sector"
                                 value={data.sector}
                                 onChange={e => setData('sector', e.target.value)}
-                                className="w-full p-2 border rounded-md"
+                                className="w-full rounded-md border border-gray-300 p-2"
                             >
                                 <option value="">Escoger sector</option>
                                 <option value="tecnologia">Tecnología</option>
@@ -93,7 +93,7 @@ export default function CompanyRegister() {
                                 id="city"
                                 value={data.city}
                                 onChange={e => setData('city', e.target.value)}
-                                className="w-full p-2 border rounded-md"
+                                className="w-full rounded-md border border-gray-300 p-2"
                             >
                                 <option value="">Escoger ciudad</option>
                                 <option value="san-jose">San José</option>
@@ -113,7 +113,7 @@ export default function CompanyRegister() {
                                 type="text"
                                 value={data.legal_id}
                                 onChange={e => setData('legal_id', e.target.value)}
-                                className="w-full p-2 border rounded-md"
+                                className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="#-###-######"
                             />
                             <InputError message={errors.legal_id} />
@@ -129,7 +129,7 @@ export default function CompanyRegister() {
                                 type="text"
                                 value={data.commercial_activity}
                                 onChange={e => setData('commercial_activity', e.target.value)}
-                                className="w-full p-2 border rounded-md"
+                                className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="Actividad comercial"
                             />
                             <InputError message={errors.commercial_activity} />
@@ -145,7 +145,7 @@ export default function CompanyRegister() {
                                 type="tel"
                                 value={data.phone}
                                 onChange={e => setData('phone', e.target.value)}
-                                className="w-full p-2 border rounded-md"
+                                className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="2222-2222"
                             />
                             <InputError message={errors.phone} />
@@ -161,7 +161,7 @@ export default function CompanyRegister() {
                                 type="tel"
                                 value={data.mobile}
                                 onChange={e => setData('mobile', e.target.value)}
-                                className="w-full p-2 border rounded-md"
+                                className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="2222-2222"
                             />
                             <InputError message={errors.mobile} />

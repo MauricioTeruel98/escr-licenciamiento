@@ -5,6 +5,7 @@ import InputError from '@/Components/InputError';
 import Toast from '@/Components/Toast';
 import { useState } from 'react';
 import { Eye, EyeOff, CheckCircle } from 'lucide-react';
+import UsersManagement from '@/Components/UsersManagement';
 
 export default function Edit({ auth, mustVerifyEmail, status, userName }) {
     const { flash } = usePage().props;
@@ -47,7 +48,7 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
             )}
 
             <div className="py-12">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+                <div className="mx-auto space-y-6 sm:px-6 lg:px-8">
                     <div>
                         <span className="text-md p-3 font-semibold text-green-800 mb-1 badge rounded-lg border border-green-200">
                             {auth.user.role === 'admin' ? 'Admin' : 'Usuario'}
@@ -233,6 +234,9 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                         </form>
                     </div>
                 </div>
+            </div>
+            <div>
+                <UsersManagement />
             </div>
         </DashboardLayout>
     );

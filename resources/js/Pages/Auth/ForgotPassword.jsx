@@ -38,7 +38,7 @@ export default function ForgotPassword({ status }) {
                     type="email"
                     name="email"
                     value={data.email}
-                    className="mt-1 block w-full"
+                    className="w-full rounded-md border border-gray-300 p-2"
                     isFocused={true}
                     onChange={(e) => setData('email', e.target.value)}
                 />

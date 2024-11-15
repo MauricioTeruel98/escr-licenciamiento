@@ -38,7 +38,7 @@ export default function Register() {
                             type="text"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
-                            className="w-full p-2 border rounded-md"
+                            className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="Juan Pérez"
                             required
                         />
@@ -55,7 +55,7 @@ export default function Register() {
                             type="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            className="w-full p-2 border rounded-md"
+                            className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="nombre@empresa.com"
                             required
                         />
@@ -73,7 +73,7 @@ export default function Register() {
                                 type={showPassword ? "text" : "password"}
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
-                                className="w-full p-2 border rounded-md pr-10"
+                                className="w-full rounded-md border border-gray-300 p-2 pr-10"
                                 required
                             />
                             <button
@@ -102,7 +102,7 @@ export default function Register() {
                                 type={showConfirmPassword ? "text" : "password"}
                                 value={data.password_confirmation}
                                 onChange={(e) => setData('password_confirmation', e.target.value)}
-                                className="w-full p-2 border rounded-md pr-10"
+                                className="w-full rounded-md border border-gray-300 p-2 pr-10"
                                 required
                             />
                             <button

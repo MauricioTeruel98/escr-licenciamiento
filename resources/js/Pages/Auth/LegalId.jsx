@@ -37,7 +37,7 @@ export default function LegalId() {
                             type="text"
                             value={data.legal_id}
                             onChange={(e) => setData('legal_id', e.target.value)}
-                            className="w-full p-2 border rounded-md"
+                            className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="#-###-######"
                             required
                         />
