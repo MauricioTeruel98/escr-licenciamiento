@@ -118,10 +118,10 @@ export default function Certifications({ certifications: initialCertifications, 
     // Función para validar la fecha de expiración
     const validarFechaExpiracion = (fecha, id = null) => {
         if (!fecha) return false;
-        
+
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
-        
+
         if (fecha < hoy) {
             if (id) {
                 setFechaErrores(prev => ({
@@ -133,7 +133,7 @@ export default function Certifications({ certifications: initialCertifications, 
             }
             return false;
         }
-        
+
         if (id) {
             setFechaErrores(prev => ({
                 ...prev,
@@ -180,7 +180,7 @@ export default function Certifications({ certifications: initialCertifications, 
 
     const handleSave = async (id) => {
         const cert = certificaciones.find(c => c.id === id);
-        
+
         // Validar fecha antes de guardar
         if (!validarFechaExpiracion(cert.fecha_expiracion, id)) return;
 
@@ -193,7 +193,7 @@ export default function Certifications({ certifications: initialCertifications, 
             setCertificaciones(certificaciones.map(cert =>
                 cert.id === id ? { ...cert, editando: false } : cert
             ));
-            
+
             // Limpiar el error después de guardar exitosamente
             setFechaErrores(prev => ({
                 ...prev,
@@ -208,7 +208,7 @@ export default function Certifications({ certifications: initialCertifications, 
         if (field === 'fecha_expiracion') {
             validarFechaExpiracion(value, id);
         }
-        
+
         setCertificaciones(certificaciones.map(cert =>
             cert.id === id ? { ...cert, [field]: value } : cert
         ));
@@ -239,6 +239,12 @@ export default function Certifications({ certifications: initialCertifications, 
         setCertificaciones(certificaciones.map(cert =>
             cert.id === id ? { ...cert, editando: true } : cert
         ));
+    };
+
+    const estaExpirado = (fecha) => {
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        return new Date(fecha) < hoy;
     };
 
     // En la parte del formulario, reemplazamos el buscador por un input simple
@@ -352,8 +358,8 @@ export default function Certifications({ certifications: initialCertifications, 
                                     locale={es}
                                     dateFormat="dd/MM/yyyy"
                                     className={`w-full px-3 py-2 border rounded-md ${fechaError
-                                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                                            : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                                        : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
                                         }`}
                                     required
                                     showMonthDropdown
@@ -385,141 +391,154 @@ export default function Certifications({ certifications: initialCertifications, 
                         <h2 className="text-xl font-semibold mb-6">Certificaciones agregadas</h2>
                         {certificaciones.length > 0 ? (
                             <div className="space-y-4">
-                                {certificaciones.map((cert) => (
-                                    <div key={cert.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                                        <div className="flex flex-col md:flex-row justify-between space-y-4">
-                                            {/* Primera fila: Nombre y botón editar */}
-                                            <div>
-                                                <div className="flex flex-col justify-between items-start">
-                                                    <h3 className="text-lg font-semibold">{cert.nombre}</h3>
-                                                    <div className="flex items-center mt-5">
-                                                        <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-sm font-semibold">
-                                                            {cert.indicadores} Indicadores homologados.
-                                                        </span>
-                                                    </div>
-                                                </div>
+                                {certificaciones.map((cert) => {
+                                    const certificadoExpirado = estaExpirado(cert.fecha_expiracion);
 
-
-                                            </div>
-
-                                            <div className="divider flex lg:hidden"></div>
-
-                                            <div>
-                                                {cert.editando ? (
-                                                    <div className="grid xl:grid-cols-2 gap-8">
-                                                        <div>
-                                                            <label className="block text-md font-semibold">
-                                                                Fecha de obtención<span className="text-red-500">*</span>
-                                                            </label>
-                                                            <div className="flex flex-col justify-center items-center h-16">
-                                                                <DatePicker
-                                                                    selected={cert.fecha_obtencion}
-                                                                    onChange={(date) => handleChange(cert.id, 'fecha_obtencion', date)}
-                                                                    locale={es}
-                                                                    dateFormat="dd/MM/yyyy"
-                                                                    className="w-full px-3 py-2 border rounded-md border-gray-300"
-                                                                    showMonthDropdown
-                                                                    showYearDropdown
-                                                                    dropdownMode="select"
-                                                                    yearDropdownItemNumber={10}
-                                                                    scrollableYearDropdown
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div>
-                                                            <label className={`block text-md font-semibold ${fechaErrores[cert.id] ? 'text-red-600' : ''}`}>
-                                                                Fecha de expiración<span className="text-red-500">*</span>
-                                                            </label>
-                                                            <div className="flex flex-col justify-center items-center h-16">
-                                                                <DatePicker
-                                                                    selected={cert.fecha_expiracion}
-                                                                    onChange={(date) => handleChange(cert.id, 'fecha_expiracion', date)}
-                                                                    locale={es}
-                                                                    dateFormat="dd/MM/yyyy"
-                                                                    className={`w-full px-3 py-2 border rounded-md ${
-                                                                        fechaErrores[cert.id] 
-                                                                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                                                                            : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
-                                                                    }`}
-                                                                    showMonthDropdown
-                                                                    showYearDropdown
-                                                                    dropdownMode="select"
-                                                                    yearDropdownItemNumber={10}
-                                                                    scrollableYearDropdown
-                                                                />
-                                                                {fechaErrores[cert.id] && (
-                                                                    <p className="mt-1 text-sm text-red-600">
-                                                                        {fechaErrores[cert.id]}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex flex-col xl:flex-row justify-between gap-6 xl:gap-10">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-md font-semibold">Fecha de obtención:</span>
-                                                            <div className="flex items-center h-16">
-                                                                <span className="text-center rounded-md bg-green-50/50 px-2 py-1 text-sm font-semibold text-green-700 ring-1 ring-inset ring-green-600/20">
-                                                                    {cert.fecha_obtencion.toLocaleDateString('es-ES', {
-                                                                        year: 'numeric',
-                                                                        month: 'short',
-                                                                        day: 'numeric'
-                                                                    })}
+                                    return (
+                                        <>
+                                            <div key={cert.id} className={`p-4 rounded-lg shadow-sm border border-gray-200 ${certificadoExpirado ? 'border-2 border-red-400 rounded-lg bg-red-100/50' : 'bg-white'}`}>
+                                                <div className="flex flex-col md:flex-row justify-between space-y-4">
+                                                    {/* Primera fila: Nombre y botón editar */}
+                                                    <div>
+                                                        <div className="flex flex-col justify-between items-start">
+                                                            <h3 className="text-lg font-semibold">{cert.nombre}</h3>
+                                                            <div className="flex items-center mt-5">
+                                                                <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-sm font-semibold">
+                                                                    {cert.indicadores} Indicadores homologados.
                                                                 </span>
                                                             </div>
                                                         </div>
-                                                        <div className="flex flex-col">
-                                                            <span className="text-md font-semibold">Fecha de expiración:</span>
-                                                            <div className="flex items-center h-16">
-                                                                <span className="text-center rounded-md bg-amber-50/50 px-2 py-1 text-sm font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/20">
-                                                                    {cert.fecha_expiracion.toLocaleDateString('es-ES', {
-                                                                        year: 'numeric',
-                                                                        month: 'short',
-                                                                        day: 'numeric'
-                                                                    })}
-                                                                </span>
+
+
+                                                    </div>
+
+                                                    <div className="divider flex lg:hidden"></div>
+
+                                                    <div>
+                                                        {cert.editando ? (
+                                                            <div className="grid xl:grid-cols-2 gap-8">
+                                                                <div>
+                                                                    <label className="block text-md font-semibold">
+                                                                        Fecha de obtención<span className="text-red-500">*</span>
+                                                                    </label>
+                                                                    <div className="flex flex-col justify-center items-center h-16">
+                                                                        <DatePicker
+                                                                            selected={cert.fecha_obtencion}
+                                                                            onChange={(date) => handleChange(cert.id, 'fecha_obtencion', date)}
+                                                                            locale={es}
+                                                                            dateFormat="dd/MM/yyyy"
+                                                                            className="w-full px-3 py-2 border rounded-md border-gray-300"
+                                                                            showMonthDropdown
+                                                                            showYearDropdown
+                                                                            dropdownMode="select"
+                                                                            yearDropdownItemNumber={10}
+                                                                            scrollableYearDropdown
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    <label className={`block text-md font-semibold ${fechaErrores[cert.id] ? 'text-red-600' : ''}`}>
+                                                                        Fecha de expiración<span className="text-red-500">*</span>
+                                                                    </label>
+                                                                    <div className="flex flex-col justify-center items-center h-16">
+                                                                        <DatePicker
+                                                                            selected={cert.fecha_expiracion}
+                                                                            onChange={(date) => handleChange(cert.id, 'fecha_expiracion', date)}
+                                                                            locale={es}
+                                                                            dateFormat="dd/MM/yyyy"
+                                                                            className={`w-full px-3 py-2 border rounded-md ${fechaErrores[cert.id]
+                                                                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                                                                                : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                                                                }`}
+                                                                            showMonthDropdown
+                                                                            showYearDropdown
+                                                                            dropdownMode="select"
+                                                                            yearDropdownItemNumber={10}
+                                                                            scrollableYearDropdown
+                                                                        />
+                                                                        {fechaErrores[cert.id] && (
+                                                                            <p className="mt-1 text-sm text-red-600">
+                                                                                {fechaErrores[cert.id]}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
                                                             </div>
+                                                        ) : (
+                                                            <div className="flex flex-col xl:flex-row justify-between gap-6 xl:gap-10">
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-md font-semibold">Fecha de obtención:</span>
+                                                                    <div className="flex items-center h-16">
+                                                                        <span className="text-center rounded-md bg-green-50/50 px-2 py-1 text-sm font-semibold text-green-700 ring-1 ring-inset ring-green-600/20">
+                                                                            {cert.fecha_obtencion.toLocaleDateString('es-ES', {
+                                                                                year: 'numeric',
+                                                                                month: 'short',
+                                                                                day: 'numeric'
+                                                                            })}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-md font-semibold">Fecha de expiración:</span>
+                                                                    <div className="flex items-center h-16">
+                                                                        <span className="text-center rounded-md bg-amber-50/50 px-2 py-1 text-sm font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/20">
+                                                                            {cert.fecha_expiracion.toLocaleDateString('es-ES', {
+                                                                                year: 'numeric',
+                                                                                month: 'short',
+                                                                                day: 'numeric'
+                                                                            })}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        <div className="mt-10">
+                                                            {!cert.editando && (
+                                                                <div className="flex justify-end gap-2">
+                                                                    <button
+                                                                        onClick={() => handleEdit(cert.id)}
+                                                                        className="px-4 py-1 text-sm border border-gray-200 rounded-md hover:bg-gray-50"
+                                                                    >
+                                                                        Editar
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                            {/* Botones de acción en modo edición */}
+                                                            {cert.editando && (
+                                                                <div className="flex justify-end gap-2 mt-4">
+                                                                    <button
+                                                                        onClick={() => handleDelete(cert)}
+                                                                        className="text-red-600 hover:text-red-700"
+                                                                    >
+                                                                        <Trash2 className="h-5 w-5" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleSave(cert.id)}
+                                                                        className={`px-4 py-1 text-sm border border-gray-200 rounded-md hover:bg-gray-50 ${fechaErrores[cert.id] ? 'opacity-50 cursor-not-allowed' : ''
+                                                                            }`}
+                                                                        disabled={fechaErrores[cert.id]}
+                                                                    >
+                                                                        Aceptar
+                                                                    </button>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                )}
-                                                <div className="mt-10">
-                                                    {!cert.editando && (
-                                                        <div className="flex justify-end gap-2">
-                                                            <button
-                                                                onClick={() => handleEdit(cert.id)}
-                                                                className="px-4 py-1 text-sm border border-gray-200 rounded-md hover:bg-gray-50"
-                                                            >
-                                                                Editar
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                    {/* Botones de acción en modo edición */}
-                                                    {cert.editando && (
-                                                        <div className="flex justify-end gap-2 mt-4">
-                                                            <button
-                                                                onClick={() => handleDelete(cert)}
-                                                                className="text-red-600 hover:text-red-700"
-                                                            >
-                                                                <Trash2 className="h-5 w-5" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleSave(cert.id)}
-                                                                className={`px-4 py-1 text-sm border border-gray-200 rounded-md hover:bg-gray-50 ${
-                                                                    fechaErrores[cert.id] ? 'opacity-50 cursor-not-allowed' : ''
-                                                                }`}
-                                                                disabled={fechaErrores[cert.id]}
-                                                            >
-                                                                Aceptar
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
 
-                                        </div>
-                                    </div>
-                                ))}
+                                                </div>
+                                                {
+                                                    certificadoExpirado && (
+                                                        <div>
+                                                            <p className="text-sm text-red-700">
+                                                                Este certificado ha expirado.
+                                                            </p>
+                                                        </div>
+                                                    )
+                                                }
+                                            </div>
+                                        </>
+                                    );
+                                })}
                             </div>
                         ) : (
                             <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
