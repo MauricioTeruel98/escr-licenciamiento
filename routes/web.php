@@ -42,8 +42,16 @@ Route::controller(DashboardController::class)->group(function () {
 });
 
 // Rutas de certificaciones
-Route::middleware('auth')->get('/certifications/create', [CertificationController::class, 'create'])
-    ->name('certifications.create');
+Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(function () {
+    Route::get('/certifications/create', [CertificationController::class, 'create'])
+        ->name('certifications.create');
+    Route::post('/certifications', [CertificationController::class, 'store'])
+        ->name('certifications.store');
+    Route::put('/certifications/{certification}', [CertificationController::class, 'update'])
+        ->name('certifications.update');
+    Route::delete('/certifications/{certification}', [CertificationController::class, 'destroy'])
+        ->name('certifications.destroy');
+});
 
 // Rutas de perfil
 Route::middleware('auth')->group(function () {
