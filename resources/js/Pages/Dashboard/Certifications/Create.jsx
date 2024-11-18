@@ -335,7 +335,7 @@ export default function Certifications({ certifications: initialCertifications, 
 
                             <div className="form-control">
                                 <label className={`label ${fechaError ? 'text-red-600' : ''}`}>
-                                    <span className="label-text text-sm font-medium">
+                                    <span className={`label-text text-sm ${fechaError ? 'text-red-600 font-bold' : ''}`}>
                                         Fecha de expiración<span className="text-red-500">*</span>
                                     </span>
                                 </label>
