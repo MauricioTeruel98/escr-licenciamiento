@@ -61,7 +61,7 @@ export default function Certifications({ certifications: initialCertifications, 
             fecha_expiracion: cert.fecha_expiracion ? new Date(cert.fecha_expiracion) : null
         }))
     );
-    
+
     // Simplificamos los estados del formulario
     const [nombreCertificacion, setNombreCertificacion] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
@@ -111,9 +111,32 @@ export default function Certifications({ certifications: initialCertifications, 
         };
     }, []);
 
+    // Agregar estado para el error de fecha
+    const [fechaError, setFechaError] = useState("");
+
+    // Función para validar la fecha de expiración
+    const validarFechaExpiracion = (fecha) => {
+        if (!fecha) return;
+
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        if (fecha < hoy) {
+            setFechaError("El certificado ha expirado.");
+            return false;
+        }
+
+        setFechaError("");
+        return true;
+    };
+
+    // Actualizar el handleSubmit para incluir la validación
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!nombreCertificacion || !nuevaCertificacion.fechaObtencion || !nuevaCertificacion.fechaExpiracion) return;
+
+        // Validar fecha de expiración antes de enviar
+        if (!validarFechaExpiracion(nuevaCertificacion.fechaExpiracion)) return;
 
         try {
             const response = await axios.post('/certifications', {
@@ -271,7 +294,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                     })}
                                     locale={es}
                                     dateFormat="dd/MM/yyyy"
-                                    className="w-full px-3 py-2 border rounded-md"
+                                    className="w-full px-3 py-2 border rounded-md border-gray-300"
                                     required
                                     showMonthDropdown
                                     showYearDropdown
@@ -282,20 +305,27 @@ export default function Certifications({ certifications: initialCertifications, 
                             </div>
 
                             <div className="form-control">
-                                <label className="label">
+                                <label className={`label ${fechaError ? 'text-red-600' : ''}`}>
                                     <span className="label-text text-sm font-medium">
                                         Fecha de expiración<span className="text-red-500">*</span>
                                     </span>
                                 </label>
+
                                 <DatePicker
                                     selected={nuevaCertificacion.fechaExpiracion}
-                                    onChange={(date) => setNuevaCertificacion({
-                                        ...nuevaCertificacion,
-                                        fechaExpiracion: date
-                                    })}
+                                    onChange={(date) => {
+                                        setNuevaCertificacion({
+                                            ...nuevaCertificacion,
+                                            fechaExpiracion: date
+                                        });
+                                        validarFechaExpiracion(date);
+                                    }}
                                     locale={es}
                                     dateFormat="dd/MM/yyyy"
-                                    className="w-full px-3 py-2 border rounded-md"
+                                    className={`w-full px-3 py-2 border rounded-md ${fechaError
+                                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                                            : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                        }`}
                                     required
                                     showMonthDropdown
                                     showYearDropdown
@@ -303,12 +333,18 @@ export default function Certifications({ certifications: initialCertifications, 
                                     yearDropdownItemNumber={10}
                                     scrollableYearDropdown
                                 />
+
+                                {fechaError && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {fechaError}
+                                    </p>
+                                )}
                             </div>
 
                             <button
                                 type="submit"
                                 className="rounded-md bg-green-700 px-4 py-2 text-white hover:bg-green-800 disabled:opacity-50"
-                                disabled={!nombreCertificacion || !nuevaCertificacion.fechaObtencion || !nuevaCertificacion.fechaExpiracion}
+                                disabled={!nombreCertificacion || !nuevaCertificacion.fechaObtencion || !nuevaCertificacion.fechaExpiracion || fechaError}
                             >
                                 Agregar
                             </button>
