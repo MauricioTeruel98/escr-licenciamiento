@@ -42,7 +42,7 @@ Route::controller(DashboardController::class)->group(function () {
 });
 
 // Rutas de certificaciones
-Route::get('/certifications/create', [CertificationController::class, 'create'])
+Route::middleware('auth')->get('/certifications/create', [CertificationController::class, 'create'])
     ->name('certifications.create');
 
 // Rutas de perfil
