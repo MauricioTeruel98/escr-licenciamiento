@@ -113,20 +113,35 @@ export default function Certifications({ certifications: initialCertifications, 
 
     // Agregar estado para el error de fecha
     const [fechaError, setFechaError] = useState("");
+    const [fechaErrores, setFechaErrores] = useState({}); // Para manejar errores por certificación
 
     // Función para validar la fecha de expiración
-    const validarFechaExpiracion = (fecha) => {
-        if (!fecha) return;
-
+    const validarFechaExpiracion = (fecha, id = null) => {
+        if (!fecha) return false;
+        
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
-
+        
         if (fecha < hoy) {
-            setFechaError("El certificado ha expirado.");
+            if (id) {
+                setFechaErrores(prev => ({
+                    ...prev,
+                    [id]: "El certificado ha expirado."
+                }));
+            } else {
+                setFechaError("El certificado ha expirado.");
+            }
             return false;
         }
-
-        setFechaError("");
+        
+        if (id) {
+            setFechaErrores(prev => ({
+                ...prev,
+                [id]: ""
+            }));
+        } else {
+            setFechaError("");
+        }
         return true;
     };
 
@@ -165,6 +180,10 @@ export default function Certifications({ certifications: initialCertifications, 
 
     const handleSave = async (id) => {
         const cert = certificaciones.find(c => c.id === id);
+        
+        // Validar fecha antes de guardar
+        if (!validarFechaExpiracion(cert.fecha_expiracion, id)) return;
+
         try {
             await axios.put(`/certifications/${id}`, {
                 fecha_obtencion: cert.fecha_obtencion.toISOString().split('T')[0],
@@ -174,12 +193,22 @@ export default function Certifications({ certifications: initialCertifications, 
             setCertificaciones(certificaciones.map(cert =>
                 cert.id === id ? { ...cert, editando: false } : cert
             ));
+            
+            // Limpiar el error después de guardar exitosamente
+            setFechaErrores(prev => ({
+                ...prev,
+                [id]: ""
+            }));
         } catch (error) {
             console.error('Error al actualizar certificación:', error);
         }
     };
 
     const handleChange = (id, field, value) => {
+        if (field === 'fecha_expiracion') {
+            validarFechaExpiracion(value, id);
+        }
+        
         setCertificaciones(certificaciones.map(cert =>
             cert.id === id ? { ...cert, [field]: value } : cert
         ));
@@ -223,7 +252,7 @@ export default function Certifications({ certifications: initialCertifications, 
                     Si su empresa cuenta con certificaciones previas, puede optar por homologarlas.
                 </p>
 
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className="md:grid md:grid-cols-3 gap-8">
                     {/* Columna izquierda - Formulario */}
                     <div className="p-6 rounded-lg">
                         <h2 className="text-xl font-semibold mb-6">Agregar certificado</h2>
@@ -373,20 +402,22 @@ export default function Certifications({ certifications: initialCertifications, 
 
                                             </div>
 
+                                            <div className="divider flex lg:hidden"></div>
+
                                             <div>
                                                 {cert.editando ? (
-                                                    <div className="grid grid-cols-2 gap-8">
+                                                    <div className="grid xl:grid-cols-2 gap-8">
                                                         <div>
                                                             <label className="block text-md font-semibold">
                                                                 Fecha de obtención<span className="text-red-500">*</span>
                                                             </label>
-                                                            <div className="flex items-center h-16">
+                                                            <div className="flex flex-col justify-center items-center h-16">
                                                                 <DatePicker
                                                                     selected={cert.fecha_obtencion}
                                                                     onChange={(date) => handleChange(cert.id, 'fecha_obtencion', date)}
                                                                     locale={es}
                                                                     dateFormat="dd/MM/yyyy"
-                                                                    className="w-full px-3 py-2 border rounded-md"
+                                                                    className="w-full px-3 py-2 border rounded-md border-gray-300"
                                                                     showMonthDropdown
                                                                     showYearDropdown
                                                                     dropdownMode="select"
@@ -396,27 +427,36 @@ export default function Certifications({ certifications: initialCertifications, 
                                                             </div>
                                                         </div>
                                                         <div>
-                                                            <label className="block text-md font-semibold">
+                                                            <label className={`block text-md font-semibold ${fechaErrores[cert.id] ? 'text-red-600' : ''}`}>
                                                                 Fecha de expiración<span className="text-red-500">*</span>
                                                             </label>
-                                                            <div className="flex items-center h-16">
+                                                            <div className="flex flex-col justify-center items-center h-16">
                                                                 <DatePicker
                                                                     selected={cert.fecha_expiracion}
                                                                     onChange={(date) => handleChange(cert.id, 'fecha_expiracion', date)}
                                                                     locale={es}
                                                                     dateFormat="dd/MM/yyyy"
-                                                                    className="w-full px-3 py-2 border rounded-md"
+                                                                    className={`w-full px-3 py-2 border rounded-md ${
+                                                                        fechaErrores[cert.id] 
+                                                                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                                                                            : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                                                    }`}
                                                                     showMonthDropdown
                                                                     showYearDropdown
                                                                     dropdownMode="select"
                                                                     yearDropdownItemNumber={10}
                                                                     scrollableYearDropdown
                                                                 />
+                                                                {fechaErrores[cert.id] && (
+                                                                    <p className="mt-1 text-sm text-red-600">
+                                                                        {fechaErrores[cert.id]}
+                                                                    </p>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="flex justify-between gap-10">
+                                                    <div className="flex flex-col xl:flex-row justify-between gap-6 xl:gap-10">
                                                         <div className="flex flex-col">
                                                             <span className="text-md font-semibold">Fecha de obtención:</span>
                                                             <div className="flex items-center h-16">
@@ -456,7 +496,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                                     )}
                                                     {/* Botones de acción en modo edición */}
                                                     {cert.editando && (
-                                                        <div className="flex justify-end gap-2">
+                                                        <div className="flex justify-end gap-2 mt-4">
                                                             <button
                                                                 onClick={() => handleDelete(cert)}
                                                                 className="text-red-600 hover:text-red-700"
@@ -465,7 +505,10 @@ export default function Certifications({ certifications: initialCertifications, 
                                                             </button>
                                                             <button
                                                                 onClick={() => handleSave(cert.id)}
-                                                                className="px-4 py-1 text-sm border border-gray-200 rounded-md hover:bg-gray-50"
+                                                                className={`px-4 py-1 text-sm border border-gray-200 rounded-md hover:bg-gray-50 ${
+                                                                    fechaErrores[cert.id] ? 'opacity-50 cursor-not-allowed' : ''
+                                                                }`}
+                                                                disabled={fechaErrores[cert.id]}
                                                             >
                                                                 Aceptar
                                                             </button>

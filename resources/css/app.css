@@ -91,3 +91,9 @@ input {
 .react-datepicker__year-dropdown-container--select {
     margin: 0px !important;
 }
+
+@media (max-width: 768px) {
+    .react-datepicker-wrapper {
+        width: 100% !important;
+    }
+}
