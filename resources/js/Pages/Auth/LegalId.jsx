@@ -19,17 +19,17 @@ export default function LegalId() {
 
     return (
         <ImageLayout title="Verificación de Identidad">
-            <div className="max-w-md w-full mx-auto">
+            <div className="max-w-lg w-full mx-auto">
                 <h1 className="text-2xl font-semibold mb-4">¡Bienvenido!</h1>
 
                 <p className="text-gray-600 mb-8">
-                    La autoevaluación estará asociada a la cédula jurídica de la empresa, no al perfil del usuario. Complete el registro de su empresa.
+                    Le invitamos a continuar con el proceso de auto-evaluación registrando la información de la empresa.
                 </p>
 
-                <form onSubmit={submit} className="space-y-6">
+                <form onSubmit={submit} className="">
                     <div className="space-y-2">
-                        <label htmlFor="legal_id" className="block text-sm">
-                            Cédula Jurídica
+                        <label htmlFor="legal_id" className="block text-sm font-semibold">
+                            Indique el número de cédula jurídica de la empresa
                             <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -37,18 +37,23 @@ export default function LegalId() {
                             type="text"
                             value={data.legal_id}
                             onChange={(e) => setData('legal_id', e.target.value)}
-                            className="w-full rounded-md border border-gray-300 p-2"
-                            placeholder="#-###-######"
+                            className="w-full rounded-lg border border-gray-300 p-2"
+                            placeholder="010101010101"
                             required
                         />
                         <InputError message={errors.legal_id} className="mt-2" />
+                        
                     </div>
 
-                    <div className="flex flex-col space-y-4">
+                    <p className="text-gray-500 text-sm mt-3">
+                            Importante: La auto-evaluación y las siguientes etapas del licenciamiento Marca País estará asociado a la cédula jurídica de la empresa y no al perfil del usuario principal.
+                        </p>
+
+                    <div className="flex gap-4 mt-10">
                         <button
                             type="submit"
                             disabled={processing}
-                            className="w-full bg-green-700 text-white py-2 px-4 rounded-md hover:bg-green-800 transition-colors"
+                            className="bg-green-700 text-white py-2 px-4 rounded-md hover:bg-green-800 transition-colors"
                         >
                             Continuar
                         </button>
@@ -56,17 +61,20 @@ export default function LegalId() {
                         <button
                             type="button"
                             onClick={handleLogout}
-                            className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors"
+                            className="text-gray-600 py-2 px-4 rounded-md hover:bg-gray-100 transition-colors border border-gray-300"
                         >
                             Cerrar Sesión
                         </button>
                     </div>
 
-                    <div className="text-sm text-center">
+                    <div className="text-sm mt-3">
                         ¿Su empresa ya fue registrada?{" "}
                         {/* <a href={route('request-access')} className="text-green-700 hover:underline">
-                                Solicitar acceso
-                            </a> */}
+                            Solicitar acceso
+                        </a> */}
+                        <a href={''} className="text-green-700 hover:underline">
+                            Solicitar acceso
+                        </a>
                     </div>
                 </form>
             </div>

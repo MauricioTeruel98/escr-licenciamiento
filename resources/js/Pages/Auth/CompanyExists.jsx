@@ -13,8 +13,8 @@ export default function CompanyExists() {
         <ImageLayout title="Empresa Registrada">
             <div className="max-w-md w-full mx-auto">
                 <div className="flex flex-col space-y-6">
-                    <div className="w-12 h-12 rounded-full bg-yellow-50 flex items-center justify-center">
-                        <AlertTriangle className="w-6 h-6 text-yellow-600" />
+                    <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                        <AlertTriangle className="w-6 h-6 text-yellow-800" />
                     </div>
 
                     <div className="space-y-4">
