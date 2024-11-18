@@ -22,7 +22,7 @@ input {
 }
 
 .react-datepicker__day--today{
-    background-color: #047857ad !important;
+    background-color: #157f3dad !important;
     color: white !important;
     border-radius: 50% !important;
 }
@@ -32,7 +32,7 @@ input {
 }
 
 .react-datepicker__day--selected {
-    background-color: #047857 !important;
+    background-color: #157f3d !important;
     color: white !important;
     border-radius: 50% !important;
 }
@@ -90,4 +90,10 @@ input {
 .react-datepicker__month-dropdown-container--select,
 .react-datepicker__year-dropdown-container--select {
     margin: 0px !important;
+}
+
+@media (max-width: 768px) {
+    .react-datepicker-wrapper {
+        width: 100% !important;
+    }
 }
