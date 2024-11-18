@@ -29,4 +29,12 @@ class Company extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    /**
+     * Obtiene las certificaciones de la empresa
+     */
+    public function certifications()
+    {
+        return $this->hasMany(Certification::class);
+    }
 } 
