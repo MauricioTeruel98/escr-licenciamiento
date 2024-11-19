@@ -13,7 +13,9 @@ export default function Navbar({ userName, onMenuClick }) {
     };
 
     useEffect(() => {
-        cargarSolicitudesPendientes();
+        if (auth.user.role === 'admin') {
+            cargarSolicitudesPendientes();
+        }
     }, []);
 
     const cargarSolicitudesPendientes = async () => {
@@ -74,59 +76,61 @@ export default function Navbar({ userName, onMenuClick }) {
                 </Link>
             </div>
             <div className="flex-none gap-2">
-                <div className="dropdown dropdown-end">
-                    <div tabIndex={0} role="button" className="btn btn-ghost btn-circle relative">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
-                        {solicitudesPendientes.length > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                                {solicitudesPendientes.length}
-                            </span>
-                        )}
-                    </div>
-                    <div tabIndex={0} className="dropdown-content z-[1] menu shadow-lg bg-base-100 rounded-lg w-80 mt-4">
-                        {solicitudesPendientes.map((solicitud) => (
-                            <div key={solicitud.id} className="p-4 hover:bg-gray-50">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                            </svg>
+                {auth.user.role === 'admin' && (
+                    <div className="dropdown dropdown-end">
+                        <div tabIndex={0} role="button" className="btn btn-ghost btn-circle relative">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            {solicitudesPendientes.length > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                                    {solicitudesPendientes.length}
+                                </span>
+                            )}
+                        </div>
+                        <div tabIndex={0} className="dropdown-content z-[1] menu shadow-lg bg-base-100 rounded-lg w-80 mt-4">
+                            {solicitudesPendientes.map((solicitud) => (
+                                <div key={solicitud.id} className="p-4 hover:bg-gray-50">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-base font-medium">Solicitud de colaboración</h3>
+                                                <p className="text-sm text-gray-600">{solicitud.name} {solicitud.lastname}</p>
+                                                <p className="text-xs text-gray-500">{solicitud.email}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h3 className="text-base font-medium">Solicitud de colaboración</h3>
-                                            <p className="text-sm text-gray-600">{solicitud.name} {solicitud.lastname}</p>
-                                            <p className="text-xs text-gray-500">{solicitud.email}</p>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={() => handleApprove(solicitud.id)}
+                                                className="p-1 text-green-600 hover:text-green-700"
+                                                title="Aprobar"
+                                            >
+                                                <CheckCircle className="h-5 w-5" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleReject(solicitud.id)}
+                                                className="p-1 text-red-600 hover:text-red-700"
+                                                title="Rechazar"
+                                            >
+                                                <XCircle className="h-5 w-5" />
+                                            </button>
                                         </div>
-                                    </div>
-                                    <div className="flex gap-1">
-                                        <button
-                                            onClick={() => handleApprove(solicitud.id)}
-                                            className="p-1 text-green-600 hover:text-green-700"
-                                            title="Aprobar"
-                                        >
-                                            <CheckCircle className="h-5 w-5" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleReject(solicitud.id)}
-                                            className="p-1 text-red-600 hover:text-red-700"
-                                            title="Rechazar"
-                                        >
-                                            <XCircle className="h-5 w-5" />
-                                        </button>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                        {solicitudesPendientes.length === 0 && (
-                            <div className="p-4 text-center text-gray-500">
-                                No hay solicitudes pendientes
-                            </div>
-                        )}
+                            ))}
+                            {solicitudesPendientes.length === 0 && (
+                                <div className="p-4 text-center text-gray-500">
+                                    No hay solicitudes pendientes
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
+                )}
                 <div className="dropdown dropdown-end">
                     <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
                         <div className="w-10 h-10 rounded-full bg-green-900 text-white flex items-center justify-center">

@@ -236,7 +236,11 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                 </div>
             </div>
             <div>
-                <UsersManagement />
+                {
+                    auth.user.role === 'admin' && (
+                        <UsersManagement />
+                    )
+                }
             </div>
         </DashboardLayout>
     );
