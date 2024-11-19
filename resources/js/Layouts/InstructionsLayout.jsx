@@ -1,70 +1,82 @@
-import { Head } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 
 export default function InstructionsLayout({ children, title }) {
+    const { url } = usePage();
+    const isLoginPage = url === '/login';
+
     return (
-        <>
-            <Head title={title} />
-            <div className="min-h-screen grid md:grid-cols-3">
-                {/* Left side - Form */}
-                <div className="p-8 flex flex-col md:relative md:col-span-2">
-                    <Head title={title} />
+        <div className="min-h-screen flex">
+            <div className="w-full md:w-2/3 flex items-center justify-center p-8">
+                {children}
+            </div>
 
-                    {/* Logo - static in mobile, absolute in desktop */}
-                    <div className="mb-8 md:mb-0 md:absolute md:top-8 md:left-8">
-                        <img
-                            src="/assets/img/logo_esc.png"
-                            alt="Costa Rica Logo"
-                            className="h-10"
-                        />
-                    </div>
-
-                    {/* Content */}
-                    <div className="md:flex-1 md:flex md:items-center md:justify-center">
-                        {children}
-                    </div>
-                </div>
-
-                {/* Right side - Instructions */}
-                <div className="bg-green-700 text-white p-8 flex items-center">
-                    <div className="max-w-md space-y-8">
-                        <p className="text-lg">
-                            Le invitamos a realizar una auto-evaluación para que conozca en cuál etapa del proceso de licenciamiento de uso corporativo estará su empresa.
-                        </p>
-
-                        <p>Estos son los pasos a seguir:</p>
-
-                        <div className="space-y-6">
-                            <div className="flex gap-4 items-start">
-                                <div className="w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0">
-                                    01
+            <div className="hidden md:flex md:w-1/3 bg-green-700 items-center justify-center p-12">
+                <div className="max-w-lg">
+                    {isLoginPage ? (
+                        <>
+                            <h2 className="text-2xl font-semibold text-white mb-6">
+                                Auto-evaluación
+                            </h2>
+                            <p className="text-white mb-6">
+                                Le invitamos a completar el proceso de auto-evaluación en el cual podrá conocer la etapa en la que se encuentra su empresa para iniciar el proceso de licenciamiento de uso corporativo de esencial COSTA RICA
+                            </p>
+                            <p className="text-white mb-6">
+                                Le recordamos que toda compañía que desee optar por el licenciamiento de la Marca País debe exportar sus productos y servicios
+                            </p>
+                            <p className="text-white mb-6">
+                                En caso de no contar con una cuenta, por favor proceda a crear una.
+                            </p>
+                            <p className="text-white">
+                                Para dudas o consultas enviar un correo electrónico a:{' '}
+                                <a
+                                    href="mailto:licenciasmarcapais@procomer.com"
+                                    className="underline hover:text-green-100"
+                                >
+                                    licenciasmarcapais@procomer.com
+                                </a>
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <h2 className="text-2xl font-semibold text-white mb-6">
+                                Instrucciones:
+                            </h2>
+                            <p className="text-white mb-6">
+                                Para crear un usuario en la plataforma de auto-evaluación siga los siguientes pasos:
+                            </p>
+                            <div className="space-y-6">
+                                <div className="flex gap-4 items-start">
+                                    <div className="w-8 h-8 rounded-full border border-white flex items-center justify-center flex-shrink-0 text-white">
+                                        01
+                                    </div>
+                                    <p className="text-white">Complete la información solicitada.</p>
                                 </div>
-                                <p>Crear su cuenta.</p>
-                            </div>
-
-                            <div className="flex gap-4 items-start">
-                                <div className="w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0">
-                                    02
+                                <div className="flex gap-4 items-start">
+                                    <div className="w-8 h-8 rounded-full border border-white flex items-center justify-center flex-shrink-0 text-white">
+                                        02
+                                    </div>
+                                    <p className="text-white">Seleccione el botón crear usuario.</p>
                                 </div>
-                                <p>Una vez complete el registro le llegará al correo electrónico registrado, la activación de la cuenta.</p>
-                            </div>
-
-                            <div className="flex gap-4 items-start">
-                                <div className="w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0">
-                                    03
+                                <div className="flex gap-4 items-start">
+                                    <div className="w-8 h-8 rounded-full border border-white flex items-center justify-center flex-shrink-0 text-white">
+                                        03
+                                    </div>
+                                    <p className="text-white">Revise su correo electrónico y confirme la creación del usuario.</p>
                                 </div>
-                                <p>Una vez que tenga la cuenta activada, podrá iniciar el proceso de auto-evaluación.</p>
                             </div>
-                        </div>
-
-                        <p className="text-sm">
-                            Para dudas o consultas nos pueden contactar al siguiente correo:{" "}
-                            <a href="mailto:licenciasmarcapais@procomer.com" className="underline">
-                                licenciasmarcapais@procomer.com
-                            </a>
-                        </p>
-                    </div>
+                            <p className="text-white mt-6">
+                                Para dudas o consultas enviar un correo electrónico a:{' '}
+                                <a
+                                    href="mailto:licenciasmarcapais@procomer.com"
+                                    className="underline hover:text-green-100"
+                                >
+                                    licenciasmarcapais@procomer.com
+                                </a>
+                            </p>
+                        </>
+                    )}
                 </div>
             </div>
-        </>
+        </div>
     );
 } 
