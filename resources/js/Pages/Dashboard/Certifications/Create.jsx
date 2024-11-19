@@ -145,12 +145,20 @@ export default function Certifications({ certifications: initialCertifications, 
         return true;
     };
 
+    // Agregar después de los estados existentes
+    const [notification, setNotification] = useState({ type: '', message: '' });
+
+    // Función helper para mostrar notificaciones
+    const showNotification = (type, message) => {
+        setNotification({ type, message });
+        setTimeout(() => setNotification({ type: '', message: '' }), 3000);
+    };
+
     // Actualizar el handleSubmit para incluir la validación
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!nombreCertificacion || !nuevaCertificacion.fechaObtencion || !nuevaCertificacion.fechaExpiracion) return;
 
-        // Validar fecha de expiración antes de enviar
         if (!validarFechaExpiracion(nuevaCertificacion.fechaExpiracion)) return;
 
         try {
@@ -161,9 +169,9 @@ export default function Certifications({ certifications: initialCertifications, 
             });
 
             const newCertification = {
-                ...response.data,
-                fecha_obtencion: new Date(response.data.fecha_obtencion),
-                fecha_expiracion: new Date(response.data.fecha_expiracion)
+                ...response.data.certification,
+                fecha_obtencion: new Date(response.data.certification.fecha_obtencion),
+                fecha_expiracion: new Date(response.data.certification.fecha_expiracion)
             };
 
             setCertificaciones([newCertification, ...certificaciones]);
@@ -173,19 +181,20 @@ export default function Certifications({ certifications: initialCertifications, 
                 fechaObtencion: null,
                 fechaExpiracion: null
             });
+            
+            showNotification('success', response.data.message);
         } catch (error) {
-            console.error('Error al crear certificación:', error);
+            showNotification('error', error.response?.data?.error || 'Error al crear la certificación');
         }
     };
 
     const handleSave = async (id) => {
         const cert = certificaciones.find(c => c.id === id);
 
-        // Validar fecha antes de guardar
         if (!validarFechaExpiracion(cert.fecha_expiracion, id)) return;
 
         try {
-            await axios.put(`/certifications/${id}`, {
+            const response = await axios.put(`/certifications/${id}`, {
                 fecha_obtencion: cert.fecha_obtencion.toISOString().split('T')[0],
                 fecha_expiracion: cert.fecha_expiracion.toISOString().split('T')[0]
             });
@@ -194,13 +203,14 @@ export default function Certifications({ certifications: initialCertifications, 
                 cert.id === id ? { ...cert, editando: false } : cert
             ));
 
-            // Limpiar el error después de guardar exitosamente
             setFechaErrores(prev => ({
                 ...prev,
                 [id]: ""
             }));
+
+            showNotification('success', response.data.message);
         } catch (error) {
-            console.error('Error al actualizar certificación:', error);
+            showNotification('error', error.response?.data?.error || 'Error al actualizar la certificación');
         }
     };
 
@@ -225,12 +235,13 @@ export default function Certifications({ certifications: initialCertifications, 
         if (!certToDelete) return;
 
         try {
-            await axios.delete(`/certifications/${certToDelete.id}`);
+            const response = await axios.delete(`/certifications/${certToDelete.id}`);
             setCertificaciones(certificaciones.filter(cert => cert.id !== certToDelete.id));
             setModalOpen(false);
             setCertToDelete(null);
+            showNotification('success', response.data.message);
         } catch (error) {
-            console.error('Error al eliminar certificación:', error);
+            showNotification('error', error.response?.data?.error || 'Error al eliminar la certificación');
         }
     };
 
@@ -571,6 +582,15 @@ export default function Certifications({ certifications: initialCertifications, 
                 onConfirm={confirmDelete}
                 certName={certToDelete?.nombre}
             />
+
+            {notification.message && (
+                <div className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg ${
+                    notification.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 
+                    'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                    <p className="text-sm font-medium">{notification.message}</p>
+                </div>
+            )}
         </DashboardLayout>
     );
 }

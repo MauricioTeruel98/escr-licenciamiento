@@ -34,14 +34,23 @@ class CertificationController extends Controller
             'fecha_expiracion' => 'required|date_format:Y-m-d|after:fecha_obtencion',
         ]);
 
-        $certification = auth()->user()->company->certifications()->create([
-            ...$validated,
-            'indicadores' => rand(1, 5) // Temporal, ajustar según lógica real
-        ]);
+        try {
+            $certification = auth()->user()->company->certifications()->create([
+                ...$validated,
+                'indicadores' => rand(1, 5) // Temporal, ajustar según lógica real
+            ]);
 
-        $certification->refresh();
+            $certification->refresh();
 
-        return response()->json($certification);
+            return response()->json([
+                'certification' => $certification,
+                'message' => 'Certificación creada exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al crear la certificación'
+            ], 500);
+        }
     }
 
     public function update(Request $request, Certification $certification)
@@ -53,17 +62,29 @@ class CertificationController extends Controller
             'fecha_expiracion' => 'required|date_format:Y-m-d|after:fecha_obtencion',
         ]);
 
-        $certification->update($validated);
+        try {
+            $certification->update($validated);
 
-        return response()->json($certification);
+            return response()->json([
+                'certification' => $certification,
+                'message' => 'Certificación actualizada exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al actualizar la certificación'
+            ], 500);
+        }
     }
 
     public function destroy(Certification $certification)
     {
         $this->authorize('delete', $certification);
         
-        $certification->delete();
-
-        return response()->json(['message' => 'Certificación eliminada exitosamente']);
+        try {
+            $certification->delete();
+            return response()->json(['message' => 'Certificación eliminada exitosamente']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al eliminar la certificación'], 500);
+        }
     }
 } 
