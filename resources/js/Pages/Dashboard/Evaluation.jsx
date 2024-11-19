@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { CircleArrowDown, CircleArrowRight } from 'lucide-react';
 import { useState } from 'react';
@@ -249,9 +249,10 @@ export default function Evaluation({ userName, pendingRequests, isAdmin }) {
                                             Si su empresa cuenta con certificaciones previas, puede optar por homologarlas.
                                         </p>
                                     </div>
-                                    <button className="px-4 py-3 mt-4 text-sm border border-gray-200 rounded-md hover:bg-gray-50">
+                                    <Link href={route('certifications.create')}
+                                        className="inline-block px-4 py-3 mt-4 text-sm border border-gray-200 rounded-md hover:bg-gray-50">
                                         Agregar Certificaciones
-                                    </button>
+                                    </Link>
                                 </div>
                             </div>
                         </div>

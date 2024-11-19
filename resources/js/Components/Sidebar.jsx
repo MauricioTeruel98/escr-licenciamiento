@@ -1,13 +1,17 @@
+import { usePage } from '@inertiajs/react';
+
 export default function Sidebar({ isOpen, setIsOpen }) {
+    const { url } = usePage();
+    
     const menuItems = [
-        { name: 'Inicio', route: 'dashboard', active: true },
-        // { name: 'Auto-evaluación', route: 'evaluation' },
-        // { name: 'Excelencia', route: 'excellence' },
-        // { name: 'Sostenibilidad', route: 'sustainability' },
-        // { name: 'Progreso Social', route: 'social-progress' },
-        // { name: 'Sostenibilidad', route: 'sustainability-2' },
-        // { name: 'Vinculación', route: 'linking' },
-        { name: 'Certificaciones', route: 'certifications.create' },
+        { name: 'Inicio', route: 'dashboard', active: url === '/dashboard' },
+        // { name: 'Auto-evaluación', route: 'evaluation', active: url === '/evaluation' },
+        // { name: 'Excelencia', route: 'excellence', active: url === '/excellence' },
+        // { name: 'Sostenibilidad', route: 'sustainability', active: url === '/sustainability' },
+        // { name: 'Progreso Social', route: 'social-progress', active: url === '/social-progress' },
+        // { name: 'Sostenibilidad', route: 'sustainability-2', active: url === '/sustainability-2' },
+        // { name: 'Vinculación', route: 'linking', active: url === '/linking' },
+        { name: 'Certificaciones', route: 'certifications.create', active: url.includes('certifications') },
     ];
 
     return (
@@ -40,8 +44,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                         <li key={index} className="mb-1">
                             <a
                                 href={route(item.route)} 
-                                className={`py-2 hover:bg-green-800 rounded-lg ${item.active ? 'bg-green-800' : ''
-                                    }`}
+                                className={`py-2 hover:bg-green-800 rounded-lg ${
+                                    item.active ? 'bg-green-800' : ''
+                                }`}
                             >
                                 {item.name}
                             </a>
