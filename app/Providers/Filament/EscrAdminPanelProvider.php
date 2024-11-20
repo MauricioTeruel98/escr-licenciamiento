@@ -17,25 +17,29 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Http\Middleware\EnsureUserIsSuperAdmin;
 
 class EscrAdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
             ->id('escr-admin')
             ->path('escr-admin')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Emerald,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->brandLogo(asset('assets/img/logo_esc.png'))
+            ->darkModeBrandLogo(asset('assets/img/logo_esc.png'))
+            ->brandLogoHeight('2rem')
+            ->darkMode(true)
+            ->discoverResources(in: app_path('Filament/EscrAdmin/Resources'), for: 'App\\Filament\\EscrAdmin\\Resources')
+            ->discoverPages(in: app_path('Filament/EscrAdmin/Pages'), for: 'App\\Filament\\EscrAdmin\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/EscrAdmin/Widgets'), for: 'App\\Filament\\EscrAdmin\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
@@ -50,9 +54,12 @@ class EscrAdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                EnsureUserIsSuperAdmin::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->authGuard('web')
+            ->login();
     }
 }

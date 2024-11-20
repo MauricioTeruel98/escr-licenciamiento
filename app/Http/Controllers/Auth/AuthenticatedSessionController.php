@@ -31,10 +31,13 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
-
         $user = auth()->user();
+
+        // Si el usuario es super_admin y está intentando acceder a escr-admin
+        if ($user->role === 'super_admin' && str_contains($request->path(), 'escr-admin')) {
+            return redirect()->intended('/escr-admin');
+        }
 
         // Si el usuario no tiene compañía asignada
         if (!$user->company_id) {
