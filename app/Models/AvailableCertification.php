@@ -8,12 +8,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class AvailableCertification extends Model
 {
     use HasFactory;
-
+    
     protected $fillable = [
         'nombre',
-        'descripcion'
+        'descripcion',
+        'activo'
     ];
 
+    protected $casts = [
+        'activo' => 'boolean',
+    ];
     /**
      * Obtiene todas las certificaciones de empresas que usan este tipo
      */
