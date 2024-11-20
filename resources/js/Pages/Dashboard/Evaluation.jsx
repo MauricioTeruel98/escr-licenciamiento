@@ -131,12 +131,16 @@ export default function Evaluation({ userName, pendingRequests, isAdmin }) {
                 {/* Alerta de solicitudes pendientes */}
                 <PendingRequestsAlert />
 
+                <div className="">
+                    <p className="text-3xl font-bold">¡Bienvenido {userName}!</p>
+                </div>
+
                 {/* Status Banner */}
-                <div className="text-red-500 font-medium">
+                <div className="text-red-500 font-medium text-md">
                     ESTATUS: NO APTO PARA LICENCIAMIENTO
                 </div>
 
-                <h1 className="text-2xl font-bold">
+                <h1 className="text-4xl font-bold">
                     Autoevaluación de Buzz
                 </h1>
 
