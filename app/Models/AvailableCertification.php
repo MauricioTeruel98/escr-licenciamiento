@@ -12,15 +12,30 @@ class AvailableCertification extends Model
     protected $fillable = [
         'nombre',
         'descripcion',
-        'activo'
+        'activo',
+        'tipo',
+        'categoria'
     ];
 
     protected $casts = [
         'activo' => 'boolean',
     ];
-    /**
-     * Obtiene todas las certificaciones de empresas que usan este tipo
-     */
+
+    public const TIPOS = [
+        'INTE' => 'INTE',
+        'ISO' => 'ISO',
+        'IEC' => 'IEC',
+        'OTRO' => 'Otro'
+    ];
+
+    public const CATEGORIAS = [
+        'EXCELENCIA' => 'Excepcional',
+        'INNOVACION' => 'Innovación',
+        'PROGRESO_SOCIAL' => 'Progreso Social',
+        'SOSTENIBILIDAD' => 'Sostenibilidad',
+        'VINCULACION' => 'Vinculación'
+    ];
+
     public function certifications()
     {
         return $this->hasMany(Certification::class, 'nombre', 'nombre');

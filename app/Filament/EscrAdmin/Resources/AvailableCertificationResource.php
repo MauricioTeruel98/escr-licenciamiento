@@ -22,6 +22,14 @@ class AvailableCertificationResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('tipo')
+                    ->options(AvailableCertification::TIPOS)
+                    ->required()
+                    ->label('Tipo de Certificación'),
+                Forms\Components\Select::make('categoria')
+                    ->options(AvailableCertification::CATEGORIAS)
+                    ->required()
+                    ->label('Categoría'),
                 Forms\Components\TextInput::make('nombre')
                     ->required()
                     ->maxLength(255)
@@ -39,6 +47,14 @@ class AvailableCertificationResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('tipo')
+                    ->searchable()
+                    ->sortable()
+                    ->label('Tipo'),
+                Tables\Columns\TextColumn::make('categoria')
+                    ->searchable()
+                    ->sortable()
+                    ->label('Categoría'),
                 Tables\Columns\TextColumn::make('nombre')
                     ->searchable()
                     ->sortable()
@@ -54,6 +70,12 @@ class AvailableCertificationResource extends Resource
                     ->label('Fecha de creación'),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('tipo')
+                    ->options(AvailableCertification::TIPOS)
+                    ->label('Tipo'),
+                Tables\Filters\SelectFilter::make('categoria')
+                    ->options(AvailableCertification::CATEGORIAS)
+                    ->label('Categoría'),
                 Tables\Filters\TernaryFilter::make('activo')
                     ->label('Estado')
                     ->placeholder('Todas')
