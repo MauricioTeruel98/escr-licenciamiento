@@ -1,32 +1,32 @@
 import { usePage } from '@inertiajs/react';
+import { useState } from 'react';
 
 export default function Sidebar({ isOpen, setIsOpen }) {
     const { url } = usePage();
+    const [isEvaluationOpen, setIsEvaluationOpen] = useState(false);
     
-    const menuItems = [
-        { name: 'Inicio', route: 'dashboard', active: url === '/dashboard' },
-        // { name: 'Auto-evaluación', route: 'evaluation', active: url === '/evaluation' },
-        // { name: 'Excelencia', route: 'excellence', active: url === '/excellence' },
-        // { name: 'Sostenibilidad', route: 'sustainability', active: url === '/sustainability' },
-        // { name: 'Progreso Social', route: 'social-progress', active: url === '/social-progress' },
-        // { name: 'Sostenibilidad', route: 'sustainability-2', active: url === '/sustainability-2' },
-        // { name: 'Vinculación', route: 'linking', active: url === '/linking' },
-        { name: 'Certificaciones', route: 'certifications.create', active: url.includes('certifications') },
+    const evaluationItems = [
+        { name: 'Valores', route: 'values', active: url === '/values' },
+        { name: 'Excelencia', route: 'excellence', active: url === '/excellence' },
+        { name: 'Innovacion', route: 'innovation', active: url === '/innovation' },
+        { name: 'Progreso Social', route: 'social-progress', active: url === '/social-progress' },
+        { name: 'Sostenibilidad', route: 'sustainability', active: url === '/sustainability' },
+        { name: 'Vinculación', route: 'linking', active: url === '/linking' },
     ];
 
     return (
         <>
             {/* Overlay para móvil */}
             <div
-                className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${isOpen ? 'block' : 'hidden'
-                    }`}
+                className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${
+                    isOpen ? 'block' : 'hidden'
+                }`}
                 onClick={() => setIsOpen(false)}
             />
 
             {/* Sidebar */}
             <div className={`
-                min-h-screen
-                fixed lg:static inset-y-0 left-0 z-50 lg:z-30
+                min-h-screen fixed lg:static inset-y-0 left-0 z-50 lg:z-30
                 transform lg:transform-none transition duration-200 ease-in-out
                 bg-green-700 w-72 text-white
                 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -40,18 +40,62 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                 </div>
 
                 <ul className="menu p-4 lg:pt-12">
-                    {menuItems.map((item, index) => (
-                        <li key={index} className="mb-1">
-                            <a
-                                href={route(item.route)} 
-                                className={`py-2 hover:bg-green-800 rounded-lg ${
-                                    item.active ? 'bg-green-800' : ''
-                                }`}
+                    <li className="mb-1">
+                        <a
+                            href={route('dashboard')}
+                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${
+                                url === '/dashboard' ? 'bg-green-800' : ''
+                            }`}
+                        >
+                            Inicio
+                        </a>
+                    </li>
+
+                    {/* Menú desplegable de Auto-evaluación */}
+                    <li className="mb-1">
+                        <button
+                            onClick={() => setIsEvaluationOpen(!isEvaluationOpen)}
+                            className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg"
+                        >
+                            <span>Auto-evaluacion</span>
+                            <svg
+                                className={`w-4 h-4 transition-transform ${isEvaluationOpen ? 'rotate-180' : ''}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
                             >
-                                {item.name}
-                            </a>
-                        </li>
-                    ))}
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        
+                        {/* Submenú de Auto-evaluación */}
+                        <ul className={`ml-4 mt-1 space-y-1 ${isEvaluationOpen ? 'block' : 'hidden'}`}>
+                            {evaluationItems.map((item, index) => (
+                                <li key={index}>
+                                    <a
+                                        //href={route(item.route)}
+                                        className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${
+                                            item.active ? 'bg-green-800' : ''
+                                        }`}
+                                    >
+                                        {item.name}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </li>
+
+                    {/* Certificaciones separado */}
+                    <li className="mb-1">
+                        <a
+                            href={route('certifications.create')}
+                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${
+                                url.includes('certifications') ? 'bg-green-800' : ''
+                            }`}
+                        >
+                            Certificaciones
+                        </a>
+                    </li>
                 </ul>
             </div>
         </>

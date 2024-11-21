@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\EnsureUserHasCompany;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\IndicadoresController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -24,14 +25,14 @@ Route::get('/', function () {
 Route::controller(CompanyAuthController::class)
     ->middleware(['auth'])
     ->group(function () {
-    Route::get('/regard', 'showRegard')->name('regard');
-    Route::get('/company-register', 'showCompanyRegister')->name('company.register');
-    Route::post('/company-register', 'storeCompany')->name('company.store');
-    Route::get('/legal-id', 'showLegalId')->name('legal.id');
-    Route::post('/legal-id/verify', 'verifyLegalId')->name('legal-id.verify');
-    Route::get('/company-exists', 'showCompanyExists')->name('company.exists');
-    Route::post('/company-request-access', 'requestAccess')->name('company.request-access');
-});
+        Route::get('/regard', 'showRegard')->name('regard');
+        Route::get('/company-register', 'showCompanyRegister')->name('company.register');
+        Route::post('/company-register', 'storeCompany')->name('company.store');
+        Route::get('/legal-id', 'showLegalId')->name('legal.id');
+        Route::post('/legal-id/verify', 'verifyLegalId')->name('legal-id.verify');
+        Route::get('/company-exists', 'showCompanyExists')->name('company.exists');
+        Route::post('/company-request-access', 'requestAccess')->name('company.request-access');
+    });
 
 // Rutas del dashboard
 Route::controller(DashboardController::class)->group(function () {
@@ -72,7 +73,8 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'showEvaluation'])
         ->name('dashboard');
-    
+    Route::get('/indicadores', [IndicadoresController::class, 'index'])
+        ->name('indicadores');
     // Otras rutas protegidas...
 });
 
@@ -88,4 +90,4 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
     Route::patch('/company/update', [CompanyController::class, 'update'])->name('company.update');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
