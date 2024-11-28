@@ -136,8 +136,10 @@ export default function Evaluation({ userName, pendingRequests, isAdmin }) {
                 </div>
 
                 {/* Status Banner */}
-                <div className="text-red-500 font-medium text-md">
-                    ESTATUS: NO APTO PARA LICENCIAMIENTO
+                <div className="flex">
+                    <span className="bg-red-50 text-red-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-red-600/20 flex items-center gap-2">
+                        ESTATUS: NO APTO PARA LICENCIAMIENTO
+                    </span>
                 </div>
 
                 <h1 className="text-4xl font-bold">

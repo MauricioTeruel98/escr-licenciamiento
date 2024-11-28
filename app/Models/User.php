@@ -80,4 +80,9 @@ class User extends Authenticatable
         $array['role'] = $this->role;
         return $array;
     }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
 }
