@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\Certification;
+use App\Models\Homologation;
+use App\Models\Indicator;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -155,5 +157,32 @@ class SuperAdminController extends Controller
         // Implementar la lógica de exportación
 
         return response()->download('path/to/generated/report');
+    }
+
+    public function values()
+    {
+        return Inertia::render('SuperAdmin/Values/Index');
+    }
+
+    public function homologations()
+    {
+        $homologations = Homologation::withCount('indicators')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return Inertia::render('SuperAdmin/Homologations/Index', [
+            'homologations' => $homologations
+        ]);
+    }
+
+    public function indicators()
+    {
+        $indicators = Indicator::with('category')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return Inertia::render('SuperAdmin/Indicators/Index', [
+            'indicators' => $indicators
+        ]);
     }
 } 

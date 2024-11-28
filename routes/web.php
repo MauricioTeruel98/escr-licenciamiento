@@ -86,6 +86,9 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/super/users', [SuperAdminController::class, 'users'])->name('super.users');
     Route::get('/super/certifications', [SuperAdminController::class, 'certifications'])->name('super.certifications');
     Route::get('/super/settings', [SuperAdminController::class, 'settings'])->name('super.settings');
+    Route::get('/super/values', [SuperAdminController::class, 'values'])->name('super.values');
+    Route::get('/super/homologations', [SuperAdminController::class, 'homologations'])->name('super.homologations');
+    Route::get('/super/indicators', [SuperAdminController::class, 'indicators'])->name('super.indicators');
 });
 
 Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {
