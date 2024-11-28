@@ -12,6 +12,8 @@ use App\Http\Middleware\EnsureUserHasCompany;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\IndicadoresController;
+use App\Http\Controllers\SuperAdminController;
+use App\Http\Middleware\EnsureUserIsSuperAdmin;
 
 // Ruta principal
 Route::get('/', function () {
@@ -76,6 +78,14 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
     Route::get('/indicadores', [IndicadoresController::class, 'index'])
         ->name('indicadores');
     // Otras rutas protegidas...
+});
+
+Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
+    Route::get('/super/dashboard', [SuperAdminController::class, 'dashboard'])->name('super.dashboard');
+    Route::get('/super/companies', [SuperAdminController::class, 'companies'])->name('super.companies');
+    Route::get('/super/users', [SuperAdminController::class, 'users'])->name('super.users');
+    Route::get('/super/certifications', [SuperAdminController::class, 'certifications'])->name('super.certifications');
+    Route::get('/super/settings', [SuperAdminController::class, 'settings'])->name('super.settings');
 });
 
 Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {
