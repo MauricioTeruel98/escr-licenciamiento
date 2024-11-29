@@ -185,12 +185,20 @@ class SuperAdminController extends Controller
 
     public function indicators()
     {
-        $indicators = Indicator::with('category')
+        $indicators = Indicator::with(['homologation', 'value', 'subcategory'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-
+        
+        // Obtenemos los datos relacionados para el selector inicial
+        $relatedData = [
+            'values' => Value::where('is_active', true)->get(['id', 'name']),
+            'subcategories' => Subcategory::where('is_active', true)->get(['id', 'name']),
+            'homologations' => AvailableCertification::where('activo', true)->get(['id', 'nombre'])
+        ];
+        
         return Inertia::render('SuperAdmin/Indicators/Index', [
-            'indicators' => $indicators
+            'initialIndicators' => $indicators,
+            'initialRelatedData' => $relatedData
         ]);
     }
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import Navbar from '@/Components/Navbar';
 import SuperAdminSidebar from '@/Components/SuperAdminSidebar';
-import { ListOrdered, Scale, Award } from 'lucide-react';
+import { ListOrdered, Scale, Award, Target } from 'lucide-react';
 
 export default function SuperAdminLayout({ children, title = null }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -26,6 +26,12 @@ export default function SuperAdminLayout({ children, title = null }) {
             href: route('super.homologations'),
             icon: Award,
             active: route().current('super.homologations')
+        },
+        {
+            name: 'Indicadores',
+            href: route('super.indicators'),
+            icon: Target,
+            active: route().current('super.indicators')
         },
         // ... otros items del menú ...
     ];
