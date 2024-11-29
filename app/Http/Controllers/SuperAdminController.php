@@ -5,6 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\Certification;
+use App\Models\Homologation;
+use App\Models\Indicator;
+use App\Models\Value;
+use App\Models\Subcategory;
+use App\Models\AvailableCertification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -13,27 +18,8 @@ class SuperAdminController extends Controller
 {
     public function dashboard()
     {
-        // Obtener estadísticas generales
-        $stats = [
-            'companies' => Company::count(),
-            'users' => User::count(),
-            'certifications' => Certification::count(),
-            'pending_approvals' => User::where('status', 'pending')->count(),
-        ];
-
-        // Obtener datos para gráficos si los necesitas
-        $monthlyRegistrations = Company::select(
-            DB::raw('COUNT(*) as count'), 
-            DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month')
-        )
-            ->groupBy('month')
-            ->orderBy('month')
-            ->limit(6)
-            ->get();
-
         return Inertia::render('SuperAdmin/Dashboard', [
-            'stats' => $stats,
-            'monthlyData' => $monthlyRegistrations
+            'title' => 'Dashboard Super Admin'
         ]);
     }
 
@@ -46,7 +32,7 @@ class SuperAdminController extends Controller
             ->latest()
             ->paginate(10);
 
-        return Inertia::render('SuperAdmin/Companies', [
+        return Inertia::render('SuperAdmin/Companies/Index', [
             'companies' => $companies
         ]);
     }
@@ -57,18 +43,18 @@ class SuperAdminController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return Inertia::render('SuperAdmin/Users', [
+        return Inertia::render('SuperAdmin/Users/Index', [
             'users' => $users
         ]);
     }
 
     public function certifications()
     {
-        $certifications = Certification::withCount('companies')
+        $certifications = Certification::with('company')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return Inertia::render('SuperAdmin/Certifications', [
+        return Inertia::render('SuperAdmin/Certifications/Index', [
             'certifications' => $certifications
         ]);
     }
@@ -155,5 +141,67 @@ class SuperAdminController extends Controller
         // Implementar la lógica de exportación
 
         return response()->download('path/to/generated/report');
+    }
+
+    public function values()
+    {
+        $values = Value::orderBy('created_at', 'desc')->paginate(10);
+        
+        return Inertia::render('SuperAdmin/Values/Index', [
+            'initialValues' => $values
+        ]);
+    }
+
+    public function homologations()
+    {
+        $homologations = AvailableCertification::orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        return Inertia::render('SuperAdmin/Homologations/Index', [
+            'initialHomologations' => $homologations,
+            'tipos' => AvailableCertification::TIPOS,
+            'categorias' => AvailableCertification::CATEGORIAS
+        ]);
+    }
+
+    public function indicators()
+    {
+        $indicators = Indicator::with(['homologation', 'value', 'subcategory'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        // Obtenemos los datos relacionados para el selector inicial
+        $relatedData = [
+            'values' => Value::where('is_active', true)->get(['id', 'name']),
+            'subcategories' => Subcategory::where('is_active', true)->get(['id', 'name']),
+            'homologations' => AvailableCertification::where('activo', true)->get(['id', 'nombre'])
+        ];
+        
+        return Inertia::render('SuperAdmin/Indicators/Index', [
+            'initialIndicators' => $indicators,
+            'initialRelatedData' => $relatedData
+        ]);
+    }
+
+    public function subcategories()
+    {
+        $subcategories = Subcategory::with('value')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        return Inertia::render('SuperAdmin/Subcategories/Index', [
+            'initialSubcategories' => $subcategories
+        ]);
+    }
+
+    public function getDashboardStats()
+    {
+        $stats = [
+            'companies' => Company::count(),
+            'users' => User::count(),
+            'certifications' => Certification::count()
+        ];
+
+        return response()->json($stats);
     }
 } 

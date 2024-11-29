@@ -14,6 +14,13 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\IndicadoresController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Middleware\EnsureUserIsSuperAdmin;
+use App\Http\Controllers\ValueController;
+use App\Http\Controllers\SubcategoryController;
+use App\Http\Controllers\AvailableCertificationController;
+use App\Http\Controllers\IndicatorController;
+use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\CompanyManagementController;
+use App\Http\Controllers\CertificationManagementController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -86,6 +93,76 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/super/users', [SuperAdminController::class, 'users'])->name('super.users');
     Route::get('/super/certifications', [SuperAdminController::class, 'certifications'])->name('super.certifications');
     Route::get('/super/settings', [SuperAdminController::class, 'settings'])->name('super.settings');
+    Route::get('/super/values', [SuperAdminController::class, 'values'])->name('super.values');
+    Route::get('/super/homologations', [SuperAdminController::class, 'homologations'])->name('super.homologations');
+    Route::get('/super/indicators', [SuperAdminController::class, 'indicators'])->name('super.indicators');
+    
+    Route::get('/api/subcategories', [SubcategoryController::class, 'index']);
+    Route::post('/api/subcategories', [SubcategoryController::class, 'store']);
+    Route::put('/api/subcategories/{subcategory}', [SubcategoryController::class, 'update']);
+    Route::delete('/api/subcategories/{subcategory}', [SubcategoryController::class, 'destroy']);
+    Route::post('/api/subcategories/bulk-delete', [SubcategoryController::class, 'bulkDelete']);
+    Route::get('/super/subcategories', [SuperAdminController::class, 'subcategories'])
+        ->name('super.subcategories');
+
+    // Rutas para homologaciones (AvailableCertification)
+    Route::get('/api/homologations', [AvailableCertificationController::class, 'index']);
+    Route::post('/api/homologations', [AvailableCertificationController::class, 'store']);
+    Route::put('/api/homologations/{certification}', [AvailableCertificationController::class, 'update']);
+    Route::delete('/api/homologations/{certification}', [AvailableCertificationController::class, 'destroy']);
+    Route::post('/api/homologations/bulk-delete', [AvailableCertificationController::class, 'bulkDelete']);
+
+    // Ruta para la vista
+    Route::get('/super/homologations', [SuperAdminController::class, 'homologations'])
+        ->name('super.homologations');
+
+    // Rutas para indicadores
+    Route::get('/api/indicators', [IndicatorController::class, 'index']);
+    Route::post('/api/indicators', [IndicatorController::class, 'store']);
+    Route::put('/api/indicators/{indicator}', [IndicatorController::class, 'update']);
+    Route::delete('/api/indicators/{indicator}', [IndicatorController::class, 'destroy']);
+    Route::post('/api/indicators/bulk-delete', [IndicatorController::class, 'bulkDelete']);
+    Route::get('/api/indicators/related-data', [IndicatorController::class, 'getRelatedData']);
+
+    // Ruta para la vista
+    Route::get('/super/indicators', [SuperAdminController::class, 'indicators'])
+        ->name('super.indicators');
+
+    // Rutas para gestión de usuarios
+    Route::get('/api/users', [UserManagementController::class, 'index']);
+    Route::post('/api/users', [UserManagementController::class, 'store']);
+    Route::get('/api/users/{user}', [UserManagementController::class, 'show']);
+    Route::put('/api/users/{user}', [UserManagementController::class, 'update']);
+    Route::delete('/api/users/{user}', [UserManagementController::class, 'destroy']);
+    Route::post('/api/users/bulk-delete', [UserManagementController::class, 'bulkDelete']);
+    Route::patch('/api/users/{user}/status', [UserManagementController::class, 'updateStatus']);
+    Route::patch('/api/users/{user}/role', [UserManagementController::class, 'updateRole']);
+    Route::get('/api/companies/active', [UserManagementController::class, 'getActiveCompanies']);
+    
+    // Ruta para la vista
+    Route::get('/super/users', [SuperAdminController::class, 'users'])->name('super.users');
+
+    // Rutas para gestión de empresas
+    Route::get('/api/companies', [CompanyManagementController::class, 'index']);
+    Route::post('/api/companies', [CompanyManagementController::class, 'store']);
+    Route::put('/api/companies/{company}', [CompanyManagementController::class, 'update']);
+    Route::delete('/api/companies/{company}', [CompanyManagementController::class, 'destroy']);
+    Route::post('/api/companies/bulk-delete', [CompanyManagementController::class, 'bulkDelete']);
+    
+    // Ruta para la vista
+    Route::get('/super/companies', [SuperAdminController::class, 'companies'])->name('super.companies');
+
+    // Rutas para gestión de certificaciones
+    Route::get('/api/certifications', [CertificationManagementController::class, 'index']);
+    Route::post('/api/certifications', [CertificationManagementController::class, 'store']);
+    Route::put('/api/certifications/{certification}', [CertificationManagementController::class, 'update']);
+    Route::delete('/api/certifications/{certification}', [CertificationManagementController::class, 'destroy']);
+    Route::post('/api/certifications/bulk-delete', [CertificationManagementController::class, 'bulkDelete']);
+    
+    // Ruta para la vista
+    Route::get('/super/certifications', [SuperAdminController::class, 'certifications'])->name('super.certifications');
+
+    Route::get('/api/super/dashboard-stats', [SuperAdminController::class, 'getDashboardStats']);
 });
 
 Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {
@@ -99,5 +176,16 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
     Route::get('/company/edit', [CompanyController::class, 'edit'])->name('company.edit');
     Route::patch('/company/update', [CompanyController::class, 'update'])->name('company.update');
 });
+
+Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
+    Route::get('/api/values', [ValueController::class, 'index']);
+    Route::post('/api/values', [ValueController::class, 'store']);
+    Route::put('/api/values/{value}', [ValueController::class, 'update']);
+    Route::delete('/api/values/{value}', [ValueController::class, 'destroy']);
+    Route::post('/api/values/bulk-delete', [ValueController::class, 'bulkDelete']);
+    Route::get('/api/values/active', [ValueController::class, 'getActiveValues']);
+});
+
+Route::get('/api/values/{value}/subcategories', [IndicatorController::class, 'getSubcategoriesByValue']);
 
 require __DIR__ . '/auth.php';

@@ -40,4 +40,16 @@ class AvailableCertification extends Model
     {
         return $this->hasMany(Certification::class, 'nombre', 'nombre');
     }
+
+    // Método helper para obtener el nombre legible del tipo
+    public function getTipoNombreAttribute()
+    {
+        return self::TIPOS[$this->tipo] ?? $this->tipo;
+    }
+
+    // Método helper para obtener el nombre legible de la categoría
+    public function getCategoriaNombreAttribute()
+    {
+        return self::CATEGORIAS[$this->categoria] ?? $this->categoria;
+    }
 }
