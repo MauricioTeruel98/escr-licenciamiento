@@ -28,6 +28,30 @@ export default function ValuesIndex() {
         { key: 'slug', label: 'Slug' },
         { key: 'minimum_score', label: 'Puntaje mínimo' },
         {
+            key: 'subcategories',
+            label: 'Subcategorías',
+            render: (item) => (
+                <div className="max-w-md">
+                    {item.subcategories && item.subcategories.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                            {item.subcategories.map((subcategory) => (
+                                <span
+                                    key={subcategory.id}
+                                    className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700"
+                                >
+                                    {subcategory.name}
+                                </span>
+                            ))}
+                        </div>
+                    ) : (
+                        <span className="text-sm text-gray-500 italic">
+                            Sin subcategorías
+                        </span>
+                    )}
+                </div>
+            )
+        },
+        {
             key: 'is_active',
             label: 'Estado',
             render: (item) => (

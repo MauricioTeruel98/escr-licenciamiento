@@ -10,7 +10,7 @@ class ValueController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Value::query();
+        $query = Value::with('subcategories');
 
         // Búsqueda
         if ($request->has('search')) {
