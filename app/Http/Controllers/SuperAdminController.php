@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Certification;
 use App\Models\Homologation;
 use App\Models\Indicator;
+use App\Models\Value;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -161,7 +162,11 @@ class SuperAdminController extends Controller
 
     public function values()
     {
-        return Inertia::render('SuperAdmin/Values/Index');
+        $values = Value::orderBy('created_at', 'desc')->paginate(10);
+        
+        return Inertia::render('SuperAdmin/Values/Index', [
+            'initialValues' => $values
+        ]);
     }
 
     public function homologations()

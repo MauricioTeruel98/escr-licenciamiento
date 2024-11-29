@@ -14,6 +14,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\IndicadoresController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Middleware\EnsureUserIsSuperAdmin;
+use App\Http\Controllers\ValueController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -101,6 +102,14 @@ Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {
 Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(function () {
     Route::get('/company/edit', [CompanyController::class, 'edit'])->name('company.edit');
     Route::patch('/company/update', [CompanyController::class, 'update'])->name('company.update');
+});
+
+Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
+    Route::get('/api/values', [ValueController::class, 'index']);
+    Route::post('/api/values', [ValueController::class, 'store']);
+    Route::put('/api/values/{value}', [ValueController::class, 'update']);
+    Route::delete('/api/values/{value}', [ValueController::class, 'destroy']);
+    Route::post('/api/values/bulk-delete', [ValueController::class, 'bulkDelete']);
 });
 
 require __DIR__ . '/auth.php';

@@ -1,52 +1,165 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import SuperAdminLayout from '@/Layouts/SuperAdminLayout';
 import TableList from '@/Components/TableList';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
+import ValueModal from '@/Components/Modals/ValueModal';
+import DeleteModal from '@/Components/Modals/DeleteModal';
+import axios from 'axios';
+import Toast from '@/Components/ToastAdmin';
 
 export default function ValuesIndex() {
     const [values, setValues] = useState([]);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [selectedValue, setSelectedValue] = useState(null);
+    const [valueToDelete, setValueToDelete] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [pagination, setPagination] = useState({
         currentPage: 1,
-        totalPages: 1,
+        lastPage: 1,
+        total: 0,
         perPage: 10
     });
+    const [notification, setNotification] = useState(null);
 
     const columns = [
         { key: 'name', label: 'Nombre' },
         { key: 'slug', label: 'Slug' },
-        { 
-            key: 'visibility', 
-            label: 'Visibilidad',
+        { key: 'minimum_score', label: 'Puntaje mínimo' },
+        {
+            key: 'is_active',
+            label: 'Estado',
             render: (item) => (
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    item.visibility ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    item.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                 }`}>
-                    {item.visibility ? 'Visible' : 'Oculto'}
+                    {item.is_active ? 'Activo' : 'Inactivo'}
                 </span>
             )
         },
-        { 
-            key: 'last_updated', 
-            label: 'Última actualización',
-            render: (item) => new Date(item.last_updated).toLocaleDateString()
+        {
+            key: 'actions',
+            label: 'Acciones',
+            render: (item) => (
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => handleEdit(item)}
+                        className="text-blue-600 hover:text-blue-800"
+                    >
+                        <Pencil className="h-5 w-5" />
+                    </button>
+                    <button
+                        onClick={() => handleDelete(item)}
+                        className="text-red-600 hover:text-red-800"
+                    >
+                        <Trash2 className="h-5 w-5" />
+                    </button>
+                </div>
+            )
         }
     ];
 
+    const loadValues = async (page = 1, perPage = 10, search = '') => {
+        try {
+            const response = await axios.get('/api/values', {
+                params: {
+                    page,
+                    per_page: perPage,
+                    search
+                }
+            });
+            setValues(response.data.data);
+            setPagination({
+                currentPage: response.data.current_page,
+                lastPage: response.data.last_page,
+                total: response.data.total,
+                perPage: response.data.per_page
+            });
+        } catch (error) {
+            console.error('Error al cargar valores:', error);
+        }
+    };
+
+    useEffect(() => {
+        loadValues(pagination.currentPage, pagination.perPage, searchTerm);
+    }, [pagination.currentPage, pagination.perPage, searchTerm]);
+
     const handleSearch = (term) => {
-        // Implementar búsqueda
+        setSearchTerm(term);
+        setPagination(prev => ({ ...prev, currentPage: 1 }));
     };
 
     const handleSort = (key) => {
-        // Implementar ordenamiento
+        // Implementar ordenamiento si es necesario
     };
 
     const handlePageChange = (page) => {
-        // Implementar cambio de página
+        setPagination(prev => ({ ...prev, currentPage: page }));
     };
 
     const handlePerPageChange = (perPage) => {
-        // Implementar cambio de items por página
+        setPagination(prev => ({ ...prev, perPage, currentPage: 1 }));
+    };
+
+    const handleCreate = () => {
+        setSelectedValue(null);
+        setModalOpen(true);
+    };
+
+    const handleEdit = (value) => {
+        setSelectedValue(value);
+        setModalOpen(true);
+    };
+
+    const handleDelete = (value) => {
+        setValueToDelete(value);
+        setDeleteModalOpen(true);
+    };
+
+    const showNotification = (type, message) => {
+        setNotification({ type, message });
+    };
+
+    const handleBulkDelete = async (ids) => {
+        try {
+            await axios.post('/api/values/bulk-delete', { ids });
+            loadValues(pagination.currentPage, pagination.perPage, searchTerm);
+            showNotification('success', `${ids.length} ${ids.length === 1 ? 'valor eliminado' : 'valores eliminados'} exitosamente`);
+        } catch (error) {
+            console.error('Error al eliminar valores:', error);
+            showNotification('error', 'Error al eliminar los valores');
+        }
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await axios.delete(`/api/values/${valueToDelete.id}`);
+            loadValues(pagination.currentPage, pagination.perPage, searchTerm);
+            setDeleteModalOpen(false);
+            setValueToDelete(null);
+            showNotification('success', 'Valor eliminado exitosamente');
+        } catch (error) {
+            console.error('Error al eliminar:', error);
+            showNotification('error', 'Error al eliminar el valor');
+        }
+    };
+
+    const handleSubmit = async (formData) => {
+        try {
+            if (selectedValue) {
+                await axios.put(`/api/values/${selectedValue.id}`, formData);
+                showNotification('success', 'Valor actualizado exitosamente');
+            } else {
+                await axios.post('/api/values', formData);
+                showNotification('success', 'Valor creado exitosamente');
+            }
+            loadValues(pagination.currentPage, pagination.perPage, searchTerm);
+            setModalOpen(false);
+        } catch (error) {
+            console.error('Error al guardar valor:', error);
+            showNotification('error', 'Error al guardar el valor');
+        }
     };
 
     return (
@@ -61,7 +174,10 @@ export default function ValuesIndex() {
                     </p>
                 </div>
                 <div className="mt-4 sm:mt-0">
-                    <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <button
+                        onClick={handleCreate}
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
                         <PlusCircle className="h-5 w-5 mr-2" />
                         Nuevo Valor
                     </button>
@@ -77,8 +193,35 @@ export default function ValuesIndex() {
                     pagination={pagination}
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}
+                    onBulkDelete={handleBulkDelete}
                 />
             </div>
+
+            <ValueModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onSubmit={handleSubmit}
+                value={selectedValue}
+            />
+
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                onClose={() => {
+                    setDeleteModalOpen(false);
+                    setValueToDelete(null);
+                }}
+                onConfirm={confirmDelete}
+                title={`¿Eliminar valor "${valueToDelete?.name}"?`}
+                description="¿Está seguro de que desea eliminar este valor? Esta acción no se puede deshacer y podría afectar a los registros relacionados."
+            />
+
+            {notification && (
+                <Toast
+                    type={notification.type}
+                    message={notification.message}
+                    onClose={() => setNotification(null)}
+                />
+            )}
         </SuperAdminLayout>
     );
 } 

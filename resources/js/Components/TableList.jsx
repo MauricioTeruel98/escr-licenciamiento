@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, Trash2 } from 'lucide-react';
+import DeleteModal from '@/Components/Modals/DeleteModal';
 
 export default function TableList({ 
     columns, 
@@ -8,16 +9,11 @@ export default function TableList({
     onSearch,
     pagination,
     onPageChange,
-    onPerPageChange 
+    onPerPageChange,
+    onBulkDelete 
 }) {
     const [selectedItems, setSelectedItems] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const handleSearch = (e) => {
-        const value = e.target.value;
-        setSearchTerm(value);
-        onSearch(value);
-    };
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
@@ -31,84 +27,108 @@ export default function TableList({
         setSelectedItems(prev => {
             if (prev.includes(id)) {
                 return prev.filter(item => item !== id);
+            } else {
+                return [...prev, id];
             }
-            return [...prev, id];
         });
     };
 
+    const clearSelection = () => {
+        setSelectedItems([]);
+    };
+
+    const handleBulkDelete = () => {
+        onBulkDelete(selectedItems);
+        clearSelection();
+        setShowDeleteModal(false);
+    };
+
     return (
-        <div className="bg-white rounded-lg shadow">
-            {/* Header con búsqueda */}
-            <div className="p-4 border-b border-gray-200">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+            {/* Barra de acciones masivas */}
+            {selectedItems.length > 0 && (
+                <div className="bg-gray-50/80 backdrop-blur-xl border-b border-gray-200 px-4 py-2 sm:px-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                            <span className="text-sm text-gray-700">
+                                {selectedItems.length} {selectedItems.length === 1 ? 'elemento seleccionado' : 'elementos seleccionados'}
+                            </span>
+                            <button 
+                                onClick={clearSelection}
+                                className="text-sm text-gray-500 hover:text-gray-700"
+                            >
+                                Deseleccionar
+                            </button>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <button
+                                onClick={() => setShowDeleteModal(true)}
+                                className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Eliminar seleccionados
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Barra de búsqueda */}
+            <div className="px-4 py-3 border-b border-gray-200">
+                <div className="relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Search className="h-4 w-4 text-gray-400" />
+                    </div>
                     <input
                         type="text"
+                        onChange={(e) => onSearch(e.target.value)}
+                        className="block w-full pl-10 sm:text-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
                         placeholder="Buscar..."
-                        value={searchTerm}
-                        onChange={handleSearch}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                 </div>
             </div>
 
             {/* Tabla */}
             <div className="overflow-x-auto">
-                <table className="w-full">
-                    <thead>
-                        <tr className="bg-gray-50">
-                            <th className="w-12 px-4 py-3">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-4">
                                 <input
                                     type="checkbox"
-                                    onChange={handleSelectAll}
-                                    checked={selectedItems.length === data.length}
                                     className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                    checked={selectedItems.length === data.length && data.length > 0}
+                                    onChange={handleSelectAll}
                                 />
                             </th>
                             {columns.map((column) => (
                                 <th
                                     key={column.key}
-                                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                                    onClick={() => onSort(column.key)}
+                                    scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                    onClick={() => onSort && onSort(column.key)}
                                 >
-                                    <div className="flex items-center space-x-1">
-                                        <span>{column.label}</span>
-                                        <div className="flex flex-col">
-                                            <ChevronUp className="h-3 w-3" />
-                                            <ChevronDown className="h-3 w-3 -mt-1" />
-                                        </div>
-                                    </div>
+                                    {column.label}
                                 </th>
                             ))}
-                            <th className="px-4 py-3"></th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {data.map((item) => (
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {data.map((item, index) => (
                             <tr key={item.id} className="hover:bg-gray-50">
-                                <td className="px-4 py-3">
+                                <td className="px-6 py-4 whitespace-nowrap w-4">
                                     <input
                                         type="checkbox"
+                                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
                                         checked={selectedItems.includes(item.id)}
                                         onChange={() => handleSelectItem(item.id)}
-                                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
                                     />
                                 </td>
                                 {columns.map((column) => (
-                                    <td key={column.key} className="px-4 py-3">
+                                    <td key={`${item.id}-${column.key}`} className="px-6 py-4 whitespace-nowrap">
                                         {column.render ? column.render(item) : item[column.key]}
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
-                                    <div className="flex justify-end space-x-2">
-                                        <button className="text-green-600 hover:text-green-700">
-                                            Editar
-                                        </button>
-                                        <button className="text-red-600 hover:text-red-700">
-                                            Eliminar
-                                        </button>
-                                    </div>
-                                </td>
                             </tr>
                         ))}
                     </tbody>
@@ -152,6 +172,17 @@ export default function TableList({
                     </div>
                 </div>
             </div>
+
+            {/* Modal de confirmación de eliminación masiva */}
+            <DeleteModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleBulkDelete}
+                title="¿Eliminar elementos seleccionados?"
+                description={`¿Está seguro de que desea eliminar ${selectedItems.length} ${
+                    selectedItems.length === 1 ? 'elemento' : 'elementos'
+                }? Esta acción no se puede deshacer.`}
+            />
         </div>
     );
 } 
