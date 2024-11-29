@@ -1,37 +1,6 @@
-import { useState } from 'react';
-import { usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 
-export default function SuperAdminSidebar({ isOpen, setIsOpen }) {
-    const { url } = usePage();
-    
-    const menuItems = [
-        { 
-            name: 'Dashboard', 
-            route: 'super.dashboard', 
-            active: url === '/super/dashboard' 
-        },
-        { 
-            name: 'Empresas', 
-            route: 'super.companies', 
-            active: url === '/super/companies'
-        },
-        { 
-            name: 'Usuarios', 
-            route: 'super.users', 
-            active: url === '/super/users'
-        },
-        { 
-            name: 'Certificaciones', 
-            route: 'super.certifications', 
-            active: url === '/super/certifications'
-        },
-        { 
-            name: 'Configuración', 
-            route: 'super.settings', 
-            active: url === '/super/settings'
-        }
-    ];
-
+export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }) {
     return (
         <>
             {/* Overlay para móvil */}
@@ -61,20 +30,27 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen }) {
                     <span className="text-lg font-semibold">Panel Super Admin</span>
                 </div>
 
-                <ul className="menu p-4">
-                    {menuItems.map((item, index) => (
-                        <li key={index} className="mb-1">
-                            <a
-                                href={route(item.route)}
-                                className={`block px-4 py-2 hover:bg-green-700 rounded-lg ${
-                                    item.active ? 'bg-green-700' : ''
-                                }`}
+                <nav className="mt-4">
+                    {navigation && navigation.map((item) => {
+                        const Icon = item.icon;
+                        return item && (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                className={`
+                                    flex items-center px-4 py-2 mx-2 text-sm font-medium rounded-lg
+                                    transition-colors duration-200
+                                    ${item.active 
+                                        ? 'bg-green-700 text-white' 
+                                        : 'text-green-100 hover:bg-green-700 hover:text-white'}
+                                `}
                             >
+                                {Icon && <Icon className="mr-3 h-5 w-5" />}
                                 {item.name}
-                            </a>
-                        </li>
-                    ))}
-                </ul>
+                            </Link>
+                        );
+                    })}
+                </nav>
             </div>
         </>
     );

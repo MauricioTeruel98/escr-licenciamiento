@@ -18,27 +18,8 @@ class SuperAdminController extends Controller
 {
     public function dashboard()
     {
-        // Obtener estadísticas generales
-        $stats = [
-            'companies' => Company::count(),
-            'users' => User::count(),
-            'certifications' => Certification::count(),
-            'pending_approvals' => User::where('status', 'pending')->count(),
-        ];
-
-        // Obtener datos para gráficos si los necesitas
-        $monthlyRegistrations = Company::select(
-            DB::raw('COUNT(*) as count'), 
-            DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month')
-        )
-            ->groupBy('month')
-            ->orderBy('month')
-            ->limit(6)
-            ->get();
-
         return Inertia::render('SuperAdmin/Dashboard', [
-            'stats' => $stats,
-            'monthlyData' => $monthlyRegistrations
+            'title' => 'Dashboard Super Admin'
         ]);
     }
 

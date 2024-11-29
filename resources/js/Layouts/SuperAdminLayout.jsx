@@ -2,13 +2,18 @@ import { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import Navbar from '@/Components/Navbar';
 import SuperAdminSidebar from '@/Components/SuperAdminSidebar';
-import { ListOrdered, Scale, Award, Target } from 'lucide-react';
+import { LayoutDashboard, Building2, Users, Award, Settings, Scale, ListOrdered, Target } from 'lucide-react';
 
 export default function SuperAdminLayout({ children, title = null }) {
     const [isOpen, setIsOpen] = useState(false);
 
     const navigation = [
-        // ... otros items del menú ...
+        {
+            name: 'Dashboard',
+            href: route('super.dashboard'),
+            icon: LayoutDashboard,
+            active: route().current('super.dashboard')
+        },
         {
             name: 'Valores',
             href: route('super.values'),
@@ -32,8 +37,7 @@ export default function SuperAdminLayout({ children, title = null }) {
             href: route('super.indicators'),
             icon: Target,
             active: route().current('super.indicators')
-        },
-        // ... otros items del menú ...
+        }
     ];
 
     return (
@@ -43,7 +47,11 @@ export default function SuperAdminLayout({ children, title = null }) {
             <Navbar onMenuClick={() => setIsOpen(true)} />
             
             <div className="flex">
-                <SuperAdminSidebar isOpen={isOpen} setIsOpen={setIsOpen} />
+                <SuperAdminSidebar 
+                    isOpen={isOpen} 
+                    setIsOpen={setIsOpen} 
+                    navigation={navigation}
+                />
                 
                 <main className="flex-1 p-8 mt-16">
                     <div className="max-w-7xl mx-auto">
