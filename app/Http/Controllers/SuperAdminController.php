@@ -9,6 +9,7 @@ use App\Models\Homologation;
 use App\Models\Indicator;
 use App\Models\Value;
 use App\Models\Subcategory;
+use App\Models\AvailableCertification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -172,12 +173,13 @@ class SuperAdminController extends Controller
 
     public function homologations()
     {
-        $homologations = Homologation::withCount('indicators')
-            ->orderBy('created_at', 'desc')
+        $homologations = AvailableCertification::orderBy('created_at', 'desc')
             ->paginate(10);
-
+        
         return Inertia::render('SuperAdmin/Homologations/Index', [
-            'homologations' => $homologations
+            'initialHomologations' => $homologations,
+            'tipos' => AvailableCertification::TIPOS,
+            'categorias' => AvailableCertification::CATEGORIAS
         ]);
     }
 

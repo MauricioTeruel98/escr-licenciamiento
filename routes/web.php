@@ -16,6 +16,7 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Middleware\EnsureUserIsSuperAdmin;
 use App\Http\Controllers\ValueController;
 use App\Http\Controllers\SubcategoryController;
+use App\Http\Controllers\AvailableCertificationController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -99,6 +100,17 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::post('/api/subcategories/bulk-delete', [SubcategoryController::class, 'bulkDelete']);
     Route::get('/super/subcategories', [SuperAdminController::class, 'subcategories'])
         ->name('super.subcategories');
+
+    // Rutas para homologaciones (AvailableCertification)
+    Route::get('/api/homologations', [AvailableCertificationController::class, 'index']);
+    Route::post('/api/homologations', [AvailableCertificationController::class, 'store']);
+    Route::put('/api/homologations/{certification}', [AvailableCertificationController::class, 'update']);
+    Route::delete('/api/homologations/{certification}', [AvailableCertificationController::class, 'destroy']);
+    Route::post('/api/homologations/bulk-delete', [AvailableCertificationController::class, 'bulkDelete']);
+
+    // Ruta para la vista
+    Route::get('/super/homologations', [SuperAdminController::class, 'homologations'])
+        ->name('super.homologations');
 });
 
 Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {

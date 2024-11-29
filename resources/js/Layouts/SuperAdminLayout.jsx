@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import Navbar from '@/Components/Navbar';
 import SuperAdminSidebar from '@/Components/SuperAdminSidebar';
-import { ListOrdered, Scale } from 'lucide-react';
+import { ListOrdered, Scale, Award } from 'lucide-react';
 
 export default function SuperAdminLayout({ children, title = null }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -20,6 +20,12 @@ export default function SuperAdminLayout({ children, title = null }) {
             href: route('super.subcategories'),
             icon: ListOrdered,
             active: route().current('super.subcategories')
+        },
+        {
+            name: 'Homologaciones',
+            href: route('super.homologations'),
+            icon: Award,
+            active: route().current('super.homologations')
         },
         // ... otros items del menú ...
     ];
