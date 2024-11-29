@@ -43,7 +43,7 @@ class SuperAdminController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return Inertia::render('SuperAdmin/Users', [
+        return Inertia::render('SuperAdmin/Users/Index', [
             'users' => $users
         ]);
     }

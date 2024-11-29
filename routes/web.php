@@ -18,6 +18,7 @@ use App\Http\Controllers\ValueController;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\AvailableCertificationController;
 use App\Http\Controllers\IndicatorController;
+use App\Http\Controllers\UserManagementController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -124,6 +125,20 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     // Ruta para la vista
     Route::get('/super/indicators', [SuperAdminController::class, 'indicators'])
         ->name('super.indicators');
+
+    // Rutas para gestión de usuarios
+    Route::get('/api/users', [UserManagementController::class, 'index']);
+    Route::post('/api/users', [UserManagementController::class, 'store']);
+    Route::get('/api/users/{user}', [UserManagementController::class, 'show']);
+    Route::put('/api/users/{user}', [UserManagementController::class, 'update']);
+    Route::delete('/api/users/{user}', [UserManagementController::class, 'destroy']);
+    Route::post('/api/users/bulk-delete', [UserManagementController::class, 'bulkDelete']);
+    Route::patch('/api/users/{user}/status', [UserManagementController::class, 'updateStatus']);
+    Route::patch('/api/users/{user}/role', [UserManagementController::class, 'updateRole']);
+    Route::get('/api/companies/active', [UserManagementController::class, 'getActiveCompanies']);
+    
+    // Ruta para la vista
+    Route::get('/super/users', [SuperAdminController::class, 'users'])->name('super.users');
 });
 
 Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {

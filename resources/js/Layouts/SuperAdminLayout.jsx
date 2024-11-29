@@ -37,6 +37,12 @@ export default function SuperAdminLayout({ children, title = null }) {
             href: route('super.indicators'),
             icon: Target,
             active: route().current('super.indicators')
+        },
+        {
+            name: 'Usuarios',
+            href: route('super.users'),
+            icon: Users,
+            active: route().current('super.users')
         }
     ];
 
