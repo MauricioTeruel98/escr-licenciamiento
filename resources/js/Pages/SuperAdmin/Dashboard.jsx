@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import SuperAdminLayout from '@/Layouts/SuperAdminLayout';
 
 export default function SuperAdminDashboard({ auth }) {
@@ -7,6 +7,7 @@ export default function SuperAdminDashboard({ auth }) {
 
     return (
         <SuperAdminLayout>
+            <Head title="Dashboard Super Admin" />
             <main className="flex-1 p-8 mt-16">
                 <div className="max-w-7xl mx-auto">
                     <div className="mb-8">

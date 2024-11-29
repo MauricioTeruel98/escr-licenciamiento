@@ -19,6 +19,7 @@ use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\AvailableCertificationController;
 use App\Http\Controllers\IndicatorController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\CompanyManagementController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -139,6 +140,16 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     
     // Ruta para la vista
     Route::get('/super/users', [SuperAdminController::class, 'users'])->name('super.users');
+
+    // Rutas para gestión de empresas
+    Route::get('/api/companies', [CompanyManagementController::class, 'index']);
+    Route::post('/api/companies', [CompanyManagementController::class, 'store']);
+    Route::put('/api/companies/{company}', [CompanyManagementController::class, 'update']);
+    Route::delete('/api/companies/{company}', [CompanyManagementController::class, 'destroy']);
+    Route::post('/api/companies/bulk-delete', [CompanyManagementController::class, 'bulkDelete']);
+    
+    // Ruta para la vista
+    Route::get('/super/companies', [SuperAdminController::class, 'companies'])->name('super.companies');
 });
 
 Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {

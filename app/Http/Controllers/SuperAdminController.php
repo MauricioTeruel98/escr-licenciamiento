@@ -32,7 +32,7 @@ class SuperAdminController extends Controller
             ->latest()
             ->paginate(10);
 
-        return Inertia::render('SuperAdmin/Companies', [
+        return Inertia::render('SuperAdmin/Companies/Index', [
             'companies' => $companies
         ]);
     }
