@@ -7,7 +7,7 @@ import IndicatorModal from '@/Components/Modals/IndicatorModal';
 import DeleteModal from '@/Components/Modals/DeleteModal';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
-import ViewQuestionsModal from '@/Components/Modals/ViewQuestionsModal';
+import ViewQuestionsModal from '@/Components/ViewQuestionsModal';
 
 export default function IndicatorsIndex() {
     const [indicators, setIndicators] = useState([]);
