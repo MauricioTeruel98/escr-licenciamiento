@@ -2,9 +2,27 @@ import { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import Navbar from '@/Components/Navbar';
 import SuperAdminSidebar from '@/Components/SuperAdminSidebar';
+import { ListOrdered, Scale } from 'lucide-react';
 
 export default function SuperAdminLayout({ children, title = null }) {
     const [isOpen, setIsOpen] = useState(false);
+
+    const navigation = [
+        // ... otros items del menú ...
+        {
+            name: 'Valores',
+            href: route('super.values'),
+            icon: Scale,
+            active: route().current('super.values')
+        },
+        {
+            name: 'Subcategorías',
+            href: route('super.subcategories'),
+            icon: ListOrdered,
+            active: route().current('super.subcategories')
+        },
+        // ... otros items del menú ...
+    ];
 
     return (
         <div className="min-h-screen bg-gray-100">

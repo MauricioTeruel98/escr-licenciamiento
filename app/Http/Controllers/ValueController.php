@@ -102,4 +102,13 @@ class ValueController extends Controller
             ], 500);
         }
     }
+
+    public function getActiveValues()
+    {
+        $values = Value::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return response()->json($values);
+    }
 } 

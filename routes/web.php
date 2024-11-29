@@ -15,6 +15,7 @@ use App\Http\Controllers\IndicadoresController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Middleware\EnsureUserIsSuperAdmin;
 use App\Http\Controllers\ValueController;
+use App\Http\Controllers\SubcategoryController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -90,6 +91,14 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/super/values', [SuperAdminController::class, 'values'])->name('super.values');
     Route::get('/super/homologations', [SuperAdminController::class, 'homologations'])->name('super.homologations');
     Route::get('/super/indicators', [SuperAdminController::class, 'indicators'])->name('super.indicators');
+    
+    Route::get('/api/subcategories', [SubcategoryController::class, 'index']);
+    Route::post('/api/subcategories', [SubcategoryController::class, 'store']);
+    Route::put('/api/subcategories/{subcategory}', [SubcategoryController::class, 'update']);
+    Route::delete('/api/subcategories/{subcategory}', [SubcategoryController::class, 'destroy']);
+    Route::post('/api/subcategories/bulk-delete', [SubcategoryController::class, 'bulkDelete']);
+    Route::get('/super/subcategories', [SuperAdminController::class, 'subcategories'])
+        ->name('super.subcategories');
 });
 
 Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {
@@ -110,6 +119,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::put('/api/values/{value}', [ValueController::class, 'update']);
     Route::delete('/api/values/{value}', [ValueController::class, 'destroy']);
     Route::post('/api/values/bulk-delete', [ValueController::class, 'bulkDelete']);
+    Route::get('/api/values/active', [ValueController::class, 'getActiveValues']);
 });
 
 require __DIR__ . '/auth.php';

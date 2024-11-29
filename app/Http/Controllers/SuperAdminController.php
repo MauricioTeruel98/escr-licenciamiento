@@ -8,6 +8,7 @@ use App\Models\Certification;
 use App\Models\Homologation;
 use App\Models\Indicator;
 use App\Models\Value;
+use App\Models\Subcategory;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -188,6 +189,17 @@ class SuperAdminController extends Controller
 
         return Inertia::render('SuperAdmin/Indicators/Index', [
             'indicators' => $indicators
+        ]);
+    }
+
+    public function subcategories()
+    {
+        $subcategories = Subcategory::with('value')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        return Inertia::render('SuperAdmin/Subcategories/Index', [
+            'initialSubcategories' => $subcategories
         ]);
     }
 } 

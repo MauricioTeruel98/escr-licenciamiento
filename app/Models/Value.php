@@ -20,4 +20,9 @@ class Value extends Model
         'is_active' => 'boolean',
         'minimum_score' => 'integer'
     ];
+
+    public function subcategories()
+    {
+        return $this->hasMany(Subcategory::class);
+    }
 } 
