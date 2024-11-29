@@ -1,9 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import SuperAdminLayout from '@/Layouts/SuperAdminLayout';
+import axios from 'axios';
 
 export default function SuperAdminDashboard({ auth }) {
-    const [isOpen, setIsOpen] = useState(false);
+    const [stats, setStats] = useState({
+        companies: 0,
+        users: 0,
+        certifications: 0
+    });
+
+    useEffect(() => {
+        fetchDashboardStats();
+    }, []);
+
+    const fetchDashboardStats = async () => {
+        try {
+            const response = await axios.get('/api/super/dashboard-stats');
+            setStats(response.data);
+        } catch (error) {
+            console.error('Error al cargar estadísticas:', error);
+        }
+    };
 
     return (
         <SuperAdminLayout>
@@ -55,35 +73,68 @@ export default function SuperAdminDashboard({ auth }) {
                                 <p className="mt-2 text-sm text-gray-600">Gestionar indicadores del sistema</p>
                             </div>
                         </Link>
+
+                        <Link href={route('super.users')} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col items-center text-center">
+                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-900">Gestión de Usuarios</h3>
+                                <p className="mt-2 text-sm text-gray-600">Administrar usuarios del sistema</p>
+                            </div>
+                        </Link>
+
+                        <Link href={route('super.companies')} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col items-center text-center">
+                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-900">Gestión de Empresas</h3>
+                                <p className="mt-2 text-sm text-gray-600">Administrar empresas registradas</p>
+                            </div>
+                        </Link>
+
+                        <Link href={route('super.certifications')} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col items-center text-center">
+                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-900">Gestión de Certificaciones</h3>
+                                <p className="mt-2 text-sm text-gray-600">Administrar certificaciones</p>
+                            </div>
+                        </Link>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {/* Tarjeta de Empresas */}
-                        <div className="bg-white rounded-lg shadow p-6">
+                        <Link href={route('super.companies')} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-xl font-semibold">Empresas</h2>
-                                <span className="text-2xl font-bold text-green-700">150</span>
+                                <span className="text-2xl font-bold text-green-700">{stats.companies}</span>
                             </div>
                             <p className="text-gray-600 mt-2">Total de empresas registradas</p>
-                        </div>
+                        </Link>
 
-                        {/* Tarjeta de Usuarios */}
-                        <div className="bg-white rounded-lg shadow p-6">
+                        <Link href={route('super.users')} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-xl font-semibold">Usuarios</h2>
-                                <span className="text-2xl font-bold text-green-700">432</span>
+                                <span className="text-2xl font-bold text-green-700">{stats.users}</span>
                             </div>
                             <p className="text-gray-600 mt-2">Total de usuarios en el sistema</p>
-                        </div>
+                        </Link>
 
-                        {/* Tarjeta de Certificaciones */}
-                        <div className="bg-white rounded-lg shadow p-6">
+                        <Link href={route('super.certifications')} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-xl font-semibold">Certificaciones</h2>
-                                <span className="text-2xl font-bold text-green-700">89</span>
+                                <span className="text-2xl font-bold text-green-700">{stats.certifications}</span>
                             </div>
                             <p className="text-gray-600 mt-2">Certificaciones activas</p>
-                        </div>
+                        </Link>
                     </div>
                 </div>
             </main>

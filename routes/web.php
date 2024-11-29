@@ -161,6 +161,8 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     
     // Ruta para la vista
     Route::get('/super/certifications', [SuperAdminController::class, 'certifications'])->name('super.certifications');
+
+    Route::get('/api/super/dashboard-stats', [SuperAdminController::class, 'getDashboardStats']);
 });
 
 Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {

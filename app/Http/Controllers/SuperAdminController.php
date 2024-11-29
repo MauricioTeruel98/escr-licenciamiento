@@ -193,4 +193,15 @@ class SuperAdminController extends Controller
             'initialSubcategories' => $subcategories
         ]);
     }
+
+    public function getDashboardStats()
+    {
+        $stats = [
+            'companies' => Company::count(),
+            'users' => User::count(),
+            'certifications' => Certification::count()
+        ];
+
+        return response()->json($stats);
+    }
 } 
