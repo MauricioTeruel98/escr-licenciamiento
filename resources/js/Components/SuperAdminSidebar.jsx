@@ -15,7 +15,7 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
             <div className={`
                 min-h-screen fixed lg:static inset-y-0 left-0 z-50 lg:z-30
                 transform lg:transform-none transition duration-200 ease-in-out
-                bg-green-800 w-72 text-white
+                bg-green-700 w-72 text-white
                 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}>
                 <div className="flex lg:hidden justify-end p-4">
@@ -30,7 +30,7 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                     <span className="text-lg font-semibold">Panel Super Admin</span>
                 </div>
 
-                <nav className="mt-4">
+                <nav className="menu p-4 lg:pt-12">
                     {navigation && navigation.map((item) => {
                         const Icon = item.icon;
                         return item && (
@@ -38,15 +38,17 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                                 key={item.name}
                                 href={item.href}
                                 className={`
-                                    flex items-center px-4 py-2 mx-2 text-sm font-medium rounded-lg
+                                    block px-4 py-2 mb-1 rounded-lg
                                     transition-colors duration-200
                                     ${item.active 
-                                        ? 'bg-green-700 text-white' 
-                                        : 'text-green-100 hover:bg-green-700 hover:text-white'}
+                                        ? 'bg-green-800' 
+                                        : 'hover:bg-green-800'}
                                 `}
                             >
-                                {Icon && <Icon className="mr-3 h-5 w-5" />}
-                                {item.name}
+                                <div className="flex items-center">
+                                    {Icon && <Icon className="mr-3 h-5 w-5" />}
+                                    {item.name}
+                                </div>
                             </Link>
                         );
                     })}
