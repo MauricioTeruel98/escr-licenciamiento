@@ -30,13 +30,11 @@ class CertificationManagementController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|string',
-            'description' => 'nullable|string',
-            'expiration_date' => 'required|date',
-            'company_id' => 'required|exists:companies,id',
-            'status' => 'required|in:active,expired,revoked',
-            'document_url' => 'nullable|string'
+            'nombre' => 'required|string|max:255',
+            'fecha_obtencion' => 'required|date',
+            'fecha_expiracion' => 'required|date|after:fecha_obtencion',
+            'indicadores' => 'required|integer|min:0',
+            'company_id' => 'required|exists:companies,id'
         ]);
 
         $certification = Certification::create($validated);
@@ -50,13 +48,11 @@ class CertificationManagementController extends Controller
     public function update(Request $request, Certification $certification)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|string',
-            'description' => 'nullable|string',
-            'expiration_date' => 'required|date',
-            'company_id' => 'required|exists:companies,id',
-            'status' => 'required|in:active,expired,revoked',
-            'document_url' => 'nullable|string'
+            'nombre' => 'required|string|max:255',
+            'fecha_obtencion' => 'required|date',
+            'fecha_expiracion' => 'required|date|after:fecha_obtencion',
+            'indicadores' => 'required|integer|min:0',
+            'company_id' => 'required|exists:companies,id'
         ]);
 
         $certification->update($validated);

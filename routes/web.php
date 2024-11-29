@@ -20,6 +20,7 @@ use App\Http\Controllers\AvailableCertificationController;
 use App\Http\Controllers\IndicatorController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\CompanyManagementController;
+use App\Http\Controllers\CertificationManagementController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -150,6 +151,16 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     
     // Ruta para la vista
     Route::get('/super/companies', [SuperAdminController::class, 'companies'])->name('super.companies');
+
+    // Rutas para gestión de certificaciones
+    Route::get('/api/certifications', [CertificationManagementController::class, 'index']);
+    Route::post('/api/certifications', [CertificationManagementController::class, 'store']);
+    Route::put('/api/certifications/{certification}', [CertificationManagementController::class, 'update']);
+    Route::delete('/api/certifications/{certification}', [CertificationManagementController::class, 'destroy']);
+    Route::post('/api/certifications/bulk-delete', [CertificationManagementController::class, 'bulkDelete']);
+    
+    // Ruta para la vista
+    Route::get('/super/certifications', [SuperAdminController::class, 'certifications'])->name('super.certifications');
 });
 
 Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {

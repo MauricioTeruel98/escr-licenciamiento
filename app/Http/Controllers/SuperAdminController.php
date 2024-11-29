@@ -50,11 +50,11 @@ class SuperAdminController extends Controller
 
     public function certifications()
     {
-        $certifications = Certification::withCount('companies')
+        $certifications = Certification::with('company')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return Inertia::render('SuperAdmin/Certifications', [
+        return Inertia::render('SuperAdmin/Certifications/Index', [
             'certifications' => $certifications
         ]);
     }

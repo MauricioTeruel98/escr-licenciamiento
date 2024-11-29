@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import Navbar from '@/Components/Navbar';
 import SuperAdminSidebar from '@/Components/SuperAdminSidebar';
-import { LayoutDashboard, Building2, Users, Award, Settings, Scale, ListOrdered, Target, Building2Icon } from 'lucide-react';
+import { LayoutDashboard, Building2, Users, Award, Settings, Scale, ListOrdered, Target, Building2Icon, File } from 'lucide-react';
 
 export default function SuperAdminLayout({ children, title = null }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -49,6 +49,12 @@ export default function SuperAdminLayout({ children, title = null }) {
             href: route('super.companies'),
             icon: Building2Icon,
             active: route().current('super.companies')
+        },
+        {
+            name: 'Certificaciones',
+            href: route('super.certifications'),
+            icon: File,
+            active: route().current('super.certifications')
         }
     ];
 
