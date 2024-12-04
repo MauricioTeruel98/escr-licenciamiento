@@ -12,41 +12,41 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, certName }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-sm relative">
-                <button
-                    onClick={onClose}
-                    className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-                >
-                    <X className="h-4 w-4" />
-                </button>
-
-                <div className="flex justify-center mb-4">
-                    <div className="rounded-full p-2 bg-red-50">
-                        <Trash2 className="h-6 w-6 text-red-600" />
+        <div className="fixed inset-0 z-50">
+            <div className="fixed inset-0 bg-gray-500/20 backdrop-blur-sm transition-opacity"></div>
+            <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                    <div className="relative transform overflow-hidden rounded-xl bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                        <div className="sm:flex sm:items-start">
+                            <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <Trash2 className="h-6 w-6 text-red-600" />
+                            </div>
+                            <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                                <h3 className="text-base font-semibold leading-6 text-gray-900">
+                                    Borrar {certName}
+                                </h3>
+                                <div className="mt-2">
+                                    <p className="text-sm text-gray-500">
+                                        ¿Está seguro que quiere borrar el certificado? Esta acción no se puede deshacer.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-2">
+                            <button
+                                onClick={onConfirm}
+                                className="inline-flex w-full justify-center rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:w-auto"
+                            >
+                                Eliminar
+                            </button>
+                            <button
+                                onClick={onClose}
+                                className="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
                     </div>
-                </div>
-
-                <h3 className="text-center text-lg font-semibold mb-2">
-                    Borrar {certName}
-                </h3>
-                <p className="text-center text-gray-600 text-sm mb-6">
-                    ¿Esta seguro que quiere borrar el certificado?
-                </p>
-
-                <div className="flex gap-3">
-                    <button
-                        onClick={onClose}
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={onConfirm}
-                        className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-                    >
-                        Confirmar
-                    </button>
                 </div>
             </div>
         </div>
