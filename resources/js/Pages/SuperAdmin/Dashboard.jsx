@@ -26,7 +26,7 @@ export default function SuperAdminDashboard({ auth }) {
     return (
         <SuperAdminLayout>
             <Head title="Dashboard Super Admin" />
-            <main className="flex-1 p-8 mt-16">
+            <main className="flex-1 p-8 mt-0">
                 <div className="max-w-7xl mx-auto">
                     <div className="mb-8">
                         <h1 className="text-3xl font-bold text-gray-900">

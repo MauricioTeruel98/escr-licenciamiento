@@ -21,6 +21,7 @@ use App\Http\Controllers\IndicatorController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\CompanyManagementController;
 use App\Http\Controllers\CertificationManagementController;
+use App\Http\Controllers\UserController;
 
 // Ruta principal
 Route::get('/', function () {

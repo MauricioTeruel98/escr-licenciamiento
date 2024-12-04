@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 29-11-2024 a las 18:06:20
+-- Tiempo de generación: 02-12-2024 a las 03:18:03
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -46,7 +46,6 @@ INSERT INTO `available_certifications` (`id`, `nombre`, `descripcion`, `created_
 (1, 'INTE B5:2020', NULL, '2024-11-18 22:42:07', '2024-11-28 19:04:27', 1, NULL, NULL),
 (2, 'INTE G12:2019', NULL, '2024-11-18 22:42:07', '2024-11-18 22:42:07', 1, NULL, NULL),
 (3, 'INTE G8:2013', NULL, '2024-11-18 22:42:07', '2024-11-18 22:42:07', 1, NULL, NULL),
-(4, 'INTE G38:2015', NULL, '2024-11-18 22:42:07', '2024-11-18 22:42:07', 1, NULL, NULL),
 (5, 'ISO:9001', 'ISO 9001', '2024-11-20 23:37:14', '2024-11-20 23:37:14', 1, NULL, NULL),
 (6, 'INTE G:2896', 'INTE G:2896', '2024-11-20 23:53:15', '2024-11-20 23:53:15', 1, 'INTE', 'PROGRESO_SOCIAL');
 
@@ -96,7 +95,7 @@ CREATE TABLE `certifications` (
 --
 
 INSERT INTO `certifications` (`id`, `company_id`, `nombre`, `fecha_obtencion`, `fecha_expiracion`, `indicadores`, `created_at`, `updated_at`) VALUES
-(10, 7, 'INTE G12:2019', '2024-10-30', '2024-12-01', 2, '2024-11-19 18:29:11', '2024-11-19 18:29:19'),
+(10, 7, 'INTE G12:2019', '2024-10-30', '2024-11-30', 2, '2024-11-19 18:29:11', '2024-11-29 23:39:54'),
 (11, 7, 'ISO:9001', '2024-10-30', '2024-12-01', 3, '2024-11-20 23:37:49', '2024-11-20 23:37:49');
 
 -- --------------------------------------------------------
@@ -117,16 +116,17 @@ CREATE TABLE `companies` (
   `mobile` varchar(255) NOT NULL,
   `is_exporter` tinyint(1) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'active'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `companies`
 --
 
-INSERT INTO `companies` (`id`, `legal_id`, `name`, `website`, `sector`, `city`, `commercial_activity`, `phone`, `mobile`, `is_exporter`, `created_at`, `updated_at`) VALUES
-(7, '123456789', 'Buzz', 'https://buzz.cr', 'tecnologia', 'san-jose', 'Servicios', '5415641', '641656', 1, '2024-11-15 01:01:15', '2024-11-15 01:01:15'),
-(9, '987654321', 'Teruel 2', 'https://localhost.com.ar', 'Manufactura', 'Heredia', 'Productora Agropecuaria', '9234875000000', '20385700000', 1, '2024-11-15 01:34:14', '2024-11-15 02:01:47');
+INSERT INTO `companies` (`id`, `legal_id`, `name`, `website`, `sector`, `city`, `commercial_activity`, `phone`, `mobile`, `is_exporter`, `created_at`, `updated_at`, `status`) VALUES
+(7, '123456789', 'Buzz', 'https://buzz.cr', 'tecnologia', 'san-jose', 'Servicios', '5415641', '641656', 1, '2024-11-15 01:01:15', '2024-11-15 01:01:15', 'active'),
+(9, '987654321', 'Teruel 2', 'https://localhost.com.ar', 'Manufactura', 'Heredia', 'Productora Agropecuaria', '9234875000000', '20385700000', 1, '2024-11-15 01:34:14', '2024-11-15 02:01:47', 'active');
 
 -- --------------------------------------------------------
 
@@ -153,7 +153,6 @@ CREATE TABLE `failed_jobs` (
 CREATE TABLE `indicators` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `name` varchar(255) NOT NULL,
-  `homologation_id` bigint(20) UNSIGNED NOT NULL,
   `binding` tinyint(1) NOT NULL,
   `self_evaluation_question` text DEFAULT NULL,
   `value_id` bigint(20) UNSIGNED NOT NULL,
@@ -164,6 +163,44 @@ CREATE TABLE `indicators` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `indicators`
+--
+
+INSERT INTO `indicators` (`id`, `name`, `binding`, `self_evaluation_question`, `value_id`, `subcategory_id`, `evaluation_questions`, `guide`, `is_active`, `created_at`, `updated_at`) VALUES
+(4, 'E3', 1, 'AAaaaaaaaa', 6, 2, '[\"BBBaaaaaaa\",\"CCCaaaaaaaaa\",\"hhhhhhhhhhhhh\"]', 'CCCCCCaaaaaaaaaa', 1, '2024-11-29 21:42:48', '2024-11-29 21:47:13'),
+(5, 'E1', 1, 'AAAA', 6, 1, '[\"BBB\",\"CCCC\"]', 'DDDD', 1, '2024-11-29 21:44:44', '2024-11-29 21:44:44'),
+(6, 'E2', 0, 'ABBB', 6, 2, '[\"BBB\",\"NBN\"]', 'BBBB', 1, '2024-11-29 21:45:46', '2024-11-29 21:45:46');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `indicator_homologation`
+--
+
+CREATE TABLE `indicator_homologation` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `indicator_id` bigint(20) UNSIGNED NOT NULL,
+  `homologation_id` bigint(20) UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `indicator_homologation`
+--
+
+INSERT INTO `indicator_homologation` (`id`, `indicator_id`, `homologation_id`, `created_at`, `updated_at`) VALUES
+(1, 4, 1, NULL, NULL),
+(2, 4, 2, NULL, NULL),
+(3, 5, 1, NULL, NULL),
+(4, 5, 2, NULL, NULL),
+(5, 5, 3, NULL, NULL),
+(6, 6, 1, NULL, NULL),
+(7, 4, 3, NULL, NULL),
+(8, 4, 5, NULL, NULL),
+(9, 4, 6, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -233,7 +270,11 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (14, '2024_11_20_204902_add_category_column_to_available_certifications_table', 11),
 (15, '2024_11_28_203650_create_values_table', 12),
 (16, '2024_11_28_211310_create_indicators_table', 13),
-(17, '2024_03_15_000000_modify_indicators_table', 14);
+(17, '2024_03_15_000000_modify_indicators_table', 14),
+(18, '2024_11_29_173910_create_subcategories_table', 15),
+(19, '2024_11_29_184010_remove_homologation_id_from_indicators', 16),
+(20, '2024_11_29_182721_create_indicator_homologation_table', 17),
+(21, '2024_11_29_195301_add_status_column_to_companies_table', 18);
 
 -- --------------------------------------------------------
 
@@ -286,7 +327,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('dH1i5uTDYewbAt3C8bvjMLBv0pv4YRirP9ftf3At', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiMmtFZTlqRDgzT0VrMEVWczNZenhZd0pObVBTSlp0Q0FQaVY3RXhxQiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kYXNoYm9hcmQiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozNzt9', 1732899927);
+('3DHy6lsBRdmWxFxUumaewa6gvKoG3WtaythhJvtl', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiSndJUWNGZExlS291UzBqNllHdlpEWmlOMTNhNDFlOFNxanJpQkJBOSI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czo0MToiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3N1cGVyL2hvbW9sb2dhdGlvbnMiO31zOjk6Il9wcmV2aW91cyI7YToxOntzOjM6InVybCI7czoyNzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2xvZ2luIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1732930042),
+('dH1i5uTDYewbAt3C8bvjMLBv0pv4YRirP9ftf3At', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiMmtFZTlqRDgzT0VrMEVWczNZenhZd0pObVBTSlp0Q0FQaVY3RXhxQiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NDE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zdXBlci9ob21vbG9nYXRpb25zIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzc7czoxNzoicGFzc3dvcmRfaGFzaF93ZWIiO3M6NjA6IiQyeSQxMiRnVDFyNGdUUGl1dmhmLmZsUGtOSGt1dDdOQ2hqd1RIbEwwWUVWUWhzbUx5d05EUmRmc01MRyI7fQ==', 1732914936);
 
 -- --------------------------------------------------------
 
@@ -298,6 +340,7 @@ CREATE TABLE `subcategories` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `name` varchar(255) NOT NULL,
   `description` text DEFAULT NULL,
+  `value_id` bigint(20) UNSIGNED NOT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -307,31 +350,9 @@ CREATE TABLE `subcategories` (
 -- Volcado de datos para la tabla `subcategories`
 --
 
-INSERT INTO `subcategories` (`id`, `name`, `description`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'EXCELENCIA', NULL, 1, '2024-11-29 01:05:48', '2024-11-29 01:05:48'),
-(2, 'Bla bla', NULL, 1, '2024-11-29 01:09:57', '2024-11-29 01:09:57');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `subcategory_value`
---
-
-CREATE TABLE `subcategory_value` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `subcategory_id` bigint(20) UNSIGNED NOT NULL,
-  `value_id` bigint(20) UNSIGNED NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `subcategory_value`
---
-
-INSERT INTO `subcategory_value` (`id`, `subcategory_id`, `value_id`, `created_at`, `updated_at`) VALUES
-(1, 1, 5, NULL, NULL),
-(2, 2, 5, NULL, NULL);
+INSERT INTO `subcategories` (`id`, `name`, `description`, `value_id`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 'Valor', NULL, 6, 1, '2024-11-29 20:43:48', '2024-11-29 20:43:48'),
+(2, 'rfghserthgb', NULL, 6, 1, '2024-11-29 20:44:10', '2024-11-29 20:44:10');
 
 -- --------------------------------------------------------
 
@@ -377,7 +398,7 @@ INSERT INTO `users` (`id`, `name`, `lastname`, `id_number`, `phone`, `email`, `e
 (34, 'Mauricio Teruel 1', NULL, NULL, NULL, 'mauricioteruel98@gmail.com', NULL, '$2y$12$E5UGpVLJ.CUv7ygv5QrxtOf90cLQFLvMkcwQkiXqSnK9v6LqB5fsS', NULL, '2024-11-19 20:16:28', '2024-11-19 20:32:02', 7, 'user', 'rejected'),
 (35, 'Mauricio Teruel', NULL, NULL, NULL, 'mauricioteruel1998@gmail.com', NULL, '$2y$12$we8XoQJjyVJe3OaTocDuBuaghnFTWjknoFBa.nddU6D.b.tPt4rWm', NULL, '2024-11-19 22:37:42', '2024-11-19 23:04:13', 7, 'user', 'approved'),
 (36, 'TITITITITIT', '', NULL, '20394590238', 'ti@ti.com', NULL, '$2y$12$OgWIyk12x41vJ/UNFfSJe.wWnj/rCGmaCLYd90BOaIonNtyGaLETW', NULL, '2024-11-19 22:38:46', '2024-11-19 22:38:46', 7, 'user', 'approved'),
-(37, 'Super Admin', NULL, NULL, NULL, 'admin@admin.com', NULL, '$2y$12$gT1r4gTPiuvhf.flPkNHkut7NChjwTHlL0YEVQhsmLywNDRdfsMLG', NULL, '2024-11-20 23:09:50', '2024-11-20 23:09:50', 7, 'super_admin', 'approved');
+(37, 'Super Admin', 'SA', NULL, NULL, 'admin@admin.com', NULL, '$2y$12$gT1r4gTPiuvhf.flPkNHkut7NChjwTHlL0YEVQhsmLywNDRdfsMLG', NULL, '2024-11-20 23:09:50', '2024-11-29 22:54:14', 7, 'super_admin', 'approved');
 
 -- --------------------------------------------------------
 
@@ -400,7 +421,11 @@ CREATE TABLE `values` (
 --
 
 INSERT INTO `values` (`id`, `name`, `slug`, `minimum_score`, `is_active`, `created_at`, `updated_at`) VALUES
-(5, 'Excelencia', 'excelencia', 85, 1, '2024-11-29 01:05:29', '2024-11-29 01:19:22');
+(5, 'Excelencia', 'excelencia', 85, 1, '2024-11-29 01:05:29', '2024-11-29 01:19:22'),
+(6, 'Valor', 'valor', 50, 1, '2024-11-29 20:14:41', '2024-11-29 20:14:41'),
+(7, 'Valor1', 'sefghu', 20, 1, '2024-11-29 20:19:01', '2024-11-29 20:19:01'),
+(8, 'cfghbdsftgh', 'rfh', 82, 1, '2024-11-29 20:19:06', '2024-11-29 20:19:06'),
+(9, '75828', '2787', 12, 1, '2024-11-29 20:19:10', '2024-11-29 20:19:10');
 
 -- --------------------------------------------------------
 
@@ -465,8 +490,15 @@ ALTER TABLE `failed_jobs`
 --
 ALTER TABLE `indicators`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `indicators_homologation_id_foreign` (`homologation_id`),
   ADD KEY `indicators_value_id_foreign` (`value_id`);
+
+--
+-- Indices de la tabla `indicator_homologation`
+--
+ALTER TABLE `indicator_homologation`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `indicator_homologation_indicator_id_foreign` (`indicator_id`),
+  ADD KEY `indicator_homologation_homologation_id_foreign` (`homologation_id`);
 
 --
 -- Indices de la tabla `jobs`
@@ -513,15 +545,8 @@ ALTER TABLE `sessions`
 -- Indices de la tabla `subcategories`
 --
 ALTER TABLE `subcategories`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indices de la tabla `subcategory_value`
---
-ALTER TABLE `subcategory_value`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `subcategory_value_subcategory_id_foreign` (`subcategory_id`),
-  ADD KEY `subcategory_value_value_id_foreign` (`value_id`);
+  ADD KEY `subcategories_value_id_foreign` (`value_id`);
 
 --
 -- Indices de la tabla `users`
@@ -554,7 +579,7 @@ ALTER TABLE `value_subcategory`
 -- AUTO_INCREMENT de la tabla `available_certifications`
 --
 ALTER TABLE `available_certifications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de la tabla `certifications`
@@ -578,7 +603,13 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT de la tabla `indicators`
 --
 ALTER TABLE `indicators`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT de la tabla `indicator_homologation`
+--
+ALTER TABLE `indicator_homologation`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de la tabla `jobs`
@@ -590,7 +621,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT de la tabla `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT de la tabla `personal_access_tokens`
@@ -602,13 +633,7 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT de la tabla `subcategories`
 --
 ALTER TABLE `subcategories`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `subcategory_value`
---
-ALTER TABLE `subcategory_value`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `users`
@@ -620,7 +645,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT de la tabla `values`
 --
 ALTER TABLE `values`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT de la tabla `value_subcategory`
@@ -642,15 +667,20 @@ ALTER TABLE `certifications`
 -- Filtros para la tabla `indicators`
 --
 ALTER TABLE `indicators`
-  ADD CONSTRAINT `indicators_homologation_id_foreign` FOREIGN KEY (`homologation_id`) REFERENCES `available_certifications` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `indicators_value_id_foreign` FOREIGN KEY (`value_id`) REFERENCES `values` (`id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `subcategory_value`
+-- Filtros para la tabla `indicator_homologation`
 --
-ALTER TABLE `subcategory_value`
-  ADD CONSTRAINT `subcategory_value_subcategory_id_foreign` FOREIGN KEY (`subcategory_id`) REFERENCES `subcategories` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `subcategory_value_value_id_foreign` FOREIGN KEY (`value_id`) REFERENCES `values` (`id`) ON DELETE CASCADE;
+ALTER TABLE `indicator_homologation`
+  ADD CONSTRAINT `indicator_homologation_homologation_id_foreign` FOREIGN KEY (`homologation_id`) REFERENCES `available_certifications` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `indicator_homologation_indicator_id_foreign` FOREIGN KEY (`indicator_id`) REFERENCES `indicators` (`id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `subcategories`
+--
+ALTER TABLE `subcategories`
+  ADD CONSTRAINT `subcategories_value_id_foreign` FOREIGN KEY (`value_id`) REFERENCES `values` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `users`

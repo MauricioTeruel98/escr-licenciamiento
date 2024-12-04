@@ -8,45 +8,41 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, userName }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-sm relative">
-                {/* Botón de cerrar (X) */}
-                <button
-                    onClick={onClose}
-                    className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-                >
-                    <X className="h-4 w-4" />
-                </button>
-
-                {/* Ícono de eliminar */}
-                <div className="flex justify-center mb-4">
-                    <div className="rounded-full p-2 bg-red-50">
-                        <Trash2 className="h-6 w-6 text-red-600" />
+        <div className="fixed inset-0 z-50">
+            <div className="fixed inset-0 bg-gray-500/20 backdrop-blur-sm transition-opacity"></div>
+            <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                    <div className="relative transform overflow-hidden rounded-xl bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                        <div className="sm:flex sm:items-start">
+                            <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <Trash2 className="h-6 w-6 text-red-600" />
+                            </div>
+                            <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                                <h3 className="text-base font-semibold leading-6 text-gray-900">
+                                    Eliminar usuario {userName}
+                                </h3>
+                                <div className="mt-2">
+                                    <p className="text-sm text-gray-500">
+                                        ¿Está seguro que quiere eliminar al usuario? Esta acción no se puede deshacer.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-2">
+                            <button
+                                onClick={onConfirm}
+                                className="inline-flex w-full justify-center rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:w-auto"
+                            >
+                                Eliminar
+                            </button>
+                            <button
+                                onClick={onClose}
+                                className="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
                     </div>
-                </div>
-
-                {/* Título y mensaje */}
-                <h3 className="text-center text-lg font-semibold mb-2">
-                    Eliminar usuario {userName}
-                </h3>
-                <p className="text-center text-gray-600 text-sm mb-6">
-                    ¿Está seguro que quiere eliminar al usuario?
-                </p>
-
-                {/* Botones */}
-                <div className="flex gap-3">
-                    <button
-                        onClick={onClose}
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={onConfirm}
-                        className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-                    >
-                        Confirmar
-                    </button>
                 </div>
             </div>
         </div>
@@ -82,7 +78,7 @@ export default function UsersManagement() {
     const cargarUsuarios = async (page = 1) => {
         try {
             console.log('Intentando cargar usuarios...');
-            const response = await axios.get(`/api/users?page=${page}`);
+            const response = await axios.get(`/api/users/company?page=${page}`);
             console.log('Respuesta:', response.data);
 
             const usuariosFormateados = response.data.data.map(user => ({
@@ -112,7 +108,7 @@ export default function UsersManagement() {
 
     const cargarSolicitudesPendientes = async () => {
         try {
-            const response = await axios.get('/api/pending-users');
+            const response = await axios.get('/api/pending-users/company');
             setSolicitudesPendientes(response.data);
         } catch (error) {
             console.error('Error al cargar solicitudes:', error);
@@ -139,7 +135,7 @@ export default function UsersManagement() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/api/users', nuevoUsuario);
+            await axios.post('/api/users/company', nuevoUsuario);
             setNuevoUsuario({
                 nombreCompleto: '',
                 correo: '',
@@ -155,7 +151,7 @@ export default function UsersManagement() {
     const handleSave = async (id) => {
         const usuario = usuarios.find(u => u.id === id);
         try {
-            await axios.put(`/api/users/${id}`, {
+            await axios.put(`/api/users/company/${id}`, {
                 nombreCompleto: usuario.nombreCompleto,
                 correo: usuario.correo,
                 puesto: usuario.puesto,
@@ -182,7 +178,7 @@ export default function UsersManagement() {
 
     const confirmDelete = async () => {
         try {
-            await axios.delete(`/api/users/${userToDelete.id}`);
+            await axios.delete(`/api/users/company/${userToDelete.id}`);
             setUsuarios(usuarios.filter(usuario => usuario.id !== userToDelete.id));
             setModalOpen(false);
             setUserToDelete(null);
@@ -295,261 +291,252 @@ export default function UsersManagement() {
     };
 
     return (
-        <>
-            <div className="p-6 mx-auto">
-                <h1 className="text-2xl font-bold mb-2">Administrar Usuarios</h1>
-                <p className="text-gray-600 mb-8">
+        <div className="p-6 mx-auto">
+            <div className="mb-8">
+                <h1 className="text-2xl font-bold text-gray-900">
+                    Administrar Usuarios
+                </h1>
+                <p className="mt-1 text-sm text-gray-500">
                     En este panel podrá administrar el acceso de otros usuarios de su empresa a la plataforma.
                 </p>
+            </div>
 
-                <div className="flex gap-8">
-                    {/* Formulario para nuevo usuario */}
-                    <div className="lg:w-1/4">
-                        <div className="bg-gray-50 p-6 rounded-lg">
-                            <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
-                                <div>
-                                    <label className="block text-sm mb-1">
-                                        Nombre Completo<span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="nombreCompleto"
-                                        value={nuevoUsuario.nombreCompleto}
-                                        onChange={handleInputChange}
-                                        className="w-full rounded-md border border-gray-300 p-2"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm mb-1">
-                                        Correo Electrónico<span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="email"
-                                        name="correo"
-                                        value={nuevoUsuario.correo}
-                                        onChange={handleInputChange}
-                                        className="w-full rounded-md border border-gray-300 p-2"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm mb-1">
-                                        Puesto<span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="puesto"
-                                        value={nuevoUsuario.puesto}
-                                        onChange={handleInputChange}
-                                        className="w-full rounded-md border border-gray-300 p-2"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm mb-1">
-                                        Teléfono<span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        name="telefono"
-                                        value={nuevoUsuario.telefono}
-                                        onChange={handleInputChange}
-                                        className="w-full rounded-md border border-gray-300 p-2"
-                                        required
-                                    />
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-800 transition-colors w-fit"
-                                >
-                                    Agregar Usuario
-                                </button>
-                            </form>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                {/* Formulario para nuevo usuario */}
+                <div className="lg:col-span-1">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div className="p-4 border-b border-gray-200">
+                            <h2 className="text-sm font-medium text-gray-900">
+                                Nuevo Usuario
+                            </h2>
                         </div>
+                        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+                            <div>
+                                <label className="block text-sm mb-1">
+                                    Nombre Completo<span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="nombreCompleto"
+                                    value={nuevoUsuario.nombreCompleto}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-md border border-gray-300 p-2"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm mb-1">
+                                    Correo Electrónico<span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    name="correo"
+                                    value={nuevoUsuario.correo}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-md border border-gray-300 p-2"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm mb-1">
+                                    Puesto<span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="puesto"
+                                    value={nuevoUsuario.puesto}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-md border border-gray-300 p-2"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm mb-1">
+                                    Teléfono<span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="tel"
+                                    name="telefono"
+                                    value={nuevoUsuario.telefono}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-md border border-gray-300 p-2"
+                                    required
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-800 transition-colors w-fit"
+                            >
+                                Agregar Usuario
+                            </button>
+                        </form>
                     </div>
+                </div>
+
+                {/* Lista de usuarios */}
+                <div className="lg:col-span-3 space-y-4">
+                    {/* Sección de Solicitudes Pendientes */}
+                    {solicitudesPendientes.length > 0 && (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 divide-y divide-gray-200">
+                            <div className="p-4">
+                                <h2 className="text-sm font-medium text-gray-900">
+                                    Solicitudes Pendientes
+                                </h2>
+                            </div>
+                            {solicitudesPendientes.map((solicitud) => (
+                                <div key={solicitud.id} className="p-4 flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900">
+                                            {solicitud.name}
+                                        </p>
+                                        <p className="text-sm text-gray-500">
+                                            {solicitud.email}
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleApprove(solicitud.id)}
+                                            className="text-green-600 hover:text-green-700"
+                                            title="Aprobar"
+                                        >
+                                            <CheckCircle className="h-5 w-5" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleReject(solicitud.id)}
+                                            className="text-red-600 hover:text-red-700"
+                                            title="Rechazar"
+                                        >
+                                            <XCircle className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Lista de usuarios */}
-                    <div className="lg:w-3/4 space-y-4">
-                        {/* Sección de Solicitudes Pendientes */}
-                        {solicitudesPendientes.length > 0 && (
-                            <div className="mb-8">
-                                <div className="space-y-4">
-                                    {solicitudesPendientes.map((solicitud) => (
-                                        <div key={solicitud.id}
-                                            className="bg-green-100/30 p-4 rounded-lg shadow-sm flex items-center justify-between">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-4">
-                                                    <div>
-                                                        <h2 className="text-lg text-green-800 font-semibold">Solicitud de colaboración</h2>
-                                                        <p className="text-sm text-green-800">{solicitud.name} {solicitud.email}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => handleApprove(solicitud.id)}
-                                                    className="p-2 text-green-600 hover:text-green-700"
-                                                    title="Aprobar"
-                                                >
-                                                    <CheckCircle className="h-6 w-6" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleReject(solicitud.id)}
-                                                    className="p-2 text-red-600 hover:text-red-700"
-                                                    title="Rechazar"
-                                                >
-                                                    <XCircle className="h-6 w-6" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+                        {usuarios.map((usuario) => (
+                            <div key={usuario.id} className="p-4 border-b border-gray-200 last:border-b-0">
+                                <div className="flex justify-between items-center mb-4">
+                                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                        usuario.status === 'approved' 
+                                            ? 'bg-green-100 text-green-800'
+                                            : usuario.status === 'rejected'
+                                                ? 'bg-red-100 text-red-800' 
+                                                : 'bg-yellow-100 text-yellow-800'
+                                    }`}>
+                                        {usuario.status === 'approved' 
+                                            ? 'Aprobado' 
+                                            : usuario.status === 'rejected'
+                                                ? 'Rechazado'
+                                                : 'Pendiente'
+                                        }
+                                    </span>
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-x-6 gap-y-4">
+                                    <div>
+                                        <label className="block text-sm mb-1">
+                                            Nombre Completo
+                                            {usuario.editando && <span className="text-red-500">*</span>}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={usuario.nombreCompleto}
+                                            onChange={(e) => handleChange(usuario.id, 'nombreCompleto', e.target.value)}
+                                            disabled={!usuario.editando}
+                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm mb-1">
+                                            Correo Electrónico
+                                            {usuario.editando && <span className="text-red-500">*</span>}
+                                        </label>
+                                        <input
+                                            type="email"
+                                            value={usuario.correo}
+                                            onChange={(e) => handleChange(usuario.id, 'correo', e.target.value)}
+                                            disabled={!usuario.editando}
+                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm mb-1">
+                                            Puesto
+                                            {usuario.editando && <span className="text-red-500">*</span>}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={usuario.puesto}
+                                            onChange={(e) => handleChange(usuario.id, 'puesto', e.target.value)}
+                                            disabled={!usuario.editando}
+                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm mb-1">
+                                            Teléfono
+                                            {usuario.editando && <span className="text-red-500">*</span>}
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            value={usuario.telefono}
+                                            onChange={(e) => handleChange(usuario.id, 'telefono', e.target.value)}
+                                            disabled={!usuario.editando}
+                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 flex gap-2">
+                                    {usuario.editando ? (
+                                        <>
+                                            <button
+                                                onClick={() => handleSave(usuario.id)}
+                                                className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-800 transition-colors"
+                                            >
+                                                Guardar Cambios
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(usuario.id)}
+                                                className="text-red-600 hover:text-red-700"
+                                            >
+                                                <Trash2 className="h-5 w-5" />
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleEdit(usuario.id)}
+                                            className="bg-white px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
+                                        >
+                                            Editar
+                                        </button>
+                                    )}
                                 </div>
                             </div>
-                        )}
-                        {usuarios.length > 0 ? (
-                            <>
-                                {usuarios.map((usuario) => (
-                                    <div key={usuario.id} className="bg-white p-6 rounded-lg shadow-sm">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <span className={`text-sm px-2 py-1 rounded ${
-                                                usuario.status === 'approved' 
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : usuario.status === 'rejected'
-                                                        ? 'bg-red-100 text-red-800' 
-                                                        : 'bg-yellow-100 text-yellow-800'
-                                            }`}>
-                                                {usuario.status === 'approved' 
-                                                    ? 'Aprobado' 
-                                                    : usuario.status === 'rejected'
-                                                        ? 'Rechazado'
-                                                        : 'Pendiente'
-                                                }
-                                            </span>
-                                        </div>
-                                        <div className="grid md:grid-cols-2 gap-x-6 gap-y-4">
-                                            <div>
-                                                <label className="block text-sm mb-1">
-                                                    Nombre Completo
-                                                    {usuario.editando && <span className="text-red-500">*</span>}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={usuario.nombreCompleto}
-                                                    onChange={(e) => handleChange(usuario.id, 'nombreCompleto', e.target.value)}
-                                                    disabled={!usuario.editando}
-                                                    className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm mb-1">
-                                                    Correo Electrónico
-                                                    {usuario.editando && <span className="text-red-500">*</span>}
-                                                </label>
-                                                <input
-                                                    type="email"
-                                                    value={usuario.correo}
-                                                    onChange={(e) => handleChange(usuario.id, 'correo', e.target.value)}
-                                                    disabled={!usuario.editando}
-                                                    className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm mb-1">
-                                                    Puesto
-                                                    {usuario.editando && <span className="text-red-500">*</span>}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={usuario.puesto}
-                                                    onChange={(e) => handleChange(usuario.id, 'puesto', e.target.value)}
-                                                    disabled={!usuario.editando}
-                                                    className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm mb-1">
-                                                    Teléfono
-                                                    {usuario.editando && <span className="text-red-500">*</span>}
-                                                </label>
-                                                <input
-                                                    type="tel"
-                                                    value={usuario.telefono}
-                                                    onChange={(e) => handleChange(usuario.id, 'telefono', e.target.value)}
-                                                    disabled={!usuario.editando}
-                                                    className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-4 flex gap-2">
-                                            {usuario.editando ? (
-                                                <>
-                                                    <button
-                                                        onClick={() => handleSave(usuario.id)}
-                                                        className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-800 transition-colors"
-                                                    >
-                                                        Guardar Cambios
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(usuario.id)}
-                                                        className="text-red-600 hover:text-red-700"
-                                                    >
-                                                        <Trash2 className="h-5 w-5" />
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleEdit(usuario.id)}
-                                                    className="bg-white px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
-                                                >
-                                                    Editar
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-
-                                <Pagination />
-                            </>
-                        ) : (
-                            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
-                                <div className="flex flex-col items-center text-center">
-                                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                    <h2 className="text-xl font-semibold mb-2">
-                                        Agregue usuarios de su empresa.
-                                    </h2>
-                                    <p className="text-gray-600">
-                                        Si su empresa requiere más de un colaborador en la plataforma, puede agregarlos como usuarios.
-                                    </p>
-                                </div>
-                            </div>
-                        )}
+                        ))}
                     </div>
+
+                    {/* Paginación */}
+                    <Pagination />
                 </div>
             </div>
 
             {/* Modal de confirmación */}
             <ConfirmModal
                 isOpen={modalOpen}
-                onClose={() => {
-                    setModalOpen(false);
-                    setUserToDelete(null);
-                }}
+                onClose={() => setModalOpen(false)}
                 onConfirm={confirmDelete}
                 userName={userToDelete?.nombreCompleto}
             />
-        </>
+        </div>
     );
 }
