@@ -12,6 +12,13 @@ class EnsureUserHasCompany
     {
         $user = $request->user();
 
+        // Si es super admin y tiene una empresa seleccionada en sesión
+        if ($user->role === 'super_admin' && session('admin_company_id')) {
+            // Temporalmente asignar la empresa seleccionada
+            $user->company_id = session('admin_company_id');
+            return $next($request);
+        }
+
         if (!$user->company_id) {
             return redirect()->route('legal.id');
         }

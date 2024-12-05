@@ -13,7 +13,7 @@ export default function Navbar({ userName, onMenuClick }) {
     };
 
     useEffect(() => {
-        if (auth.user.role === 'admin') {
+        if (auth.user.role === 'admin' || auth.user.role === 'super_admin') {
             cargarSolicitudesPendientes();
         }
     }, []);
@@ -76,7 +76,7 @@ export default function Navbar({ userName, onMenuClick }) {
                 </Link>
             </div>
             <div className="flex-none gap-2">
-                {auth.user.role === 'admin' && (
+                {(auth.user.role === 'admin' || auth.user.role === 'super_admin') && (
                     <div className="dropdown dropdown-end">
                         <div tabIndex={0} role="button" className="btn btn-ghost btn-circle relative">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -144,7 +144,7 @@ export default function Navbar({ userName, onMenuClick }) {
                             <div className="flex justify-between items-center">
                                 <p className="text-lg font-medium">{auth.user.name}</p>
                                 <span className="bg-white text-green-900 px-3 py-1 rounded-full text-sm">
-                                    {auth.user.role === 'admin' ? 'Admin' : 'Usuario'}
+                                    {auth.user.role === 'admin' ? 'Admin' : auth.user.role === 'super_admin' ? 'Super Admin' : 'Usuario'}
                                 </span>
                             </div>
                         </div>
@@ -155,7 +155,7 @@ export default function Navbar({ userName, onMenuClick }) {
                             >
                                 Perfil Usuario
                             </Link>
-                            {auth.user.role === 'admin' && (
+                            {(auth.user.role === 'admin' || auth.user.role === 'super_admin') && (
                                 <Link
                                     href={route('company.edit')}
                                     className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"

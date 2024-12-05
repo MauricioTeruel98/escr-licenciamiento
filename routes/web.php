@@ -21,6 +21,8 @@ use App\Http\Controllers\IndicatorController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\CompanyManagementController;
 use App\Http\Controllers\CertificationManagementController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\SuperAdminCompanyController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -187,5 +189,14 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
 });
 
 Route::get('/api/values/{value}/subcategories', [IndicatorController::class, 'getSubcategoriesByValue']);
+
+Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
+    Route::get('/api/companies/list', [SuperAdminCompanyController::class, 'getCompaniesList']);
+    Route::post('/api/super/switch-company', [SuperAdminCompanyController::class, 'switchCompany']);
+});
+
+Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
+    Route::get('/api/super/active-company', [SuperAdminCompanyController::class, 'getActiveCompany']);
+});
 
 require __DIR__ . '/auth.php';
