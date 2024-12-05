@@ -20,7 +20,7 @@ export default function Navbar({ userName, onMenuClick }) {
 
     const cargarSolicitudesPendientes = async () => {
         try {
-            const response = await axios.get('/api/pending-users');
+            const response = await axios.get('/api/pending-users/company');
             setSolicitudesPendientes(response.data);
         } catch (error) {
             console.error('Error al cargar solicitudes:', error);
@@ -144,7 +144,7 @@ export default function Navbar({ userName, onMenuClick }) {
                             <div className="flex justify-between items-center">
                                 <p className="text-lg font-medium">{auth.user.name}</p>
                                 <span className="bg-white text-green-900 px-3 py-1 rounded-full text-sm">
-                                    {auth.user.role === 'admin' ? 'Admin' : auth.user.role === 'super_admin' ? 'Super Admin' : 'Usuario'}
+                                    {auth.user.role === 'admin' ? 'Admin' : auth.user.role === 'super_admin' ? 'Admin' : 'Usuario'}
                                 </span>
                             </div>
                         </div>

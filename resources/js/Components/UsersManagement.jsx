@@ -381,19 +381,19 @@ export default function UsersManagement() {
                 <div className="lg:col-span-3 space-y-4">
                     {/* Sección de Solicitudes Pendientes */}
                     {solicitudesPendientes.length > 0 && (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 divide-y divide-gray-200">
+                        <div className="bg-green-50 rounded-xl shadow-sm border border-green-300 divide-y divide-green-300">
                             <div className="p-4">
-                                <h2 className="text-sm font-medium text-gray-900">
+                                <h2 className="text-sm font-medium text-green-900">
                                     Solicitudes Pendientes
                                 </h2>
                             </div>
                             {solicitudesPendientes.map((solicitud) => (
                                 <div key={solicitud.id} className="p-4 flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">
+                                        <p className="text-sm font-medium text-green-900">
                                             {solicitud.name}
                                         </p>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-sm text-green-800">
                                             {solicitud.email}
                                         </p>
                                     </div>
