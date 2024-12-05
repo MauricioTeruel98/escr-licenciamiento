@@ -31,6 +31,13 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                 </div>
 
                 <nav className="menu p-4 lg:pt-12">
+                    <Link
+                        href={route('dashboard')}
+                        className="block px-4 py-2 mb-1 rounded-lg hover:bg-green-800"
+                    >
+                        Dashboard Empresa
+                    </Link>
+                    <div className="divider"></div>
                     {navigation && navigation.map((item) => {
                         const Icon = item.icon;
                         return item && (

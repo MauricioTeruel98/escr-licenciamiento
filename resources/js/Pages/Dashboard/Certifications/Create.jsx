@@ -5,7 +5,6 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from 'date-fns/locale';
 import axios from 'axios';
-import { router } from '@inertiajs/react';
 
 // Componente Modal de confirmación
 const ConfirmModal = ({ isOpen, onClose, onConfirm, certName }) => {

@@ -51,7 +51,7 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                 <div className="mx-auto space-y-6 sm:px-6 lg:px-8">
                     <div>
                         <span className="text-md p-3 font-semibold text-green-800 mb-1 badge rounded-lg border border-green-200">
-                            {auth.user.role === 'admin' ? 'Admin' : 'Usuario'}
+                            {auth.user.role === 'admin' ? 'Admin' : auth.user.role === 'super_admin' ? 'Super Admin' : 'Usuario'}
                         </span>
                         <h1 className="text-2xl font-bold text-gray-900">
                             Perfil de Usuario
@@ -236,11 +236,9 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                 </div>
             </div>
             <div>
-                {
-                    auth.user.role === 'admin' && (
-                        <UsersManagement />
-                    )
-                }
+                {(auth.user.role === 'admin' || auth.user.role === 'super_admin') && (
+                    <UsersManagement />
+                )}
             </div>
         </DashboardLayout>
     );

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 02-12-2024 a las 03:18:03
+-- Tiempo de generación: 04-12-2024 a las 19:43:11
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -96,7 +96,7 @@ CREATE TABLE `certifications` (
 
 INSERT INTO `certifications` (`id`, `company_id`, `nombre`, `fecha_obtencion`, `fecha_expiracion`, `indicadores`, `created_at`, `updated_at`) VALUES
 (10, 7, 'INTE G12:2019', '2024-10-30', '2024-11-30', 2, '2024-11-19 18:29:11', '2024-11-29 23:39:54'),
-(11, 7, 'ISO:9001', '2024-10-30', '2024-12-01', 3, '2024-11-20 23:37:49', '2024-11-20 23:37:49');
+(11, 7, 'ISO:9001', '2024-10-30', '2024-12-13', 3, '2024-11-20 23:37:49', '2024-12-04 19:59:08');
 
 -- --------------------------------------------------------
 
@@ -327,8 +327,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('3DHy6lsBRdmWxFxUumaewa6gvKoG3WtaythhJvtl', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiSndJUWNGZExlS291UzBqNllHdlpEWmlOMTNhNDFlOFNxanJpQkJBOSI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czo0MToiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3N1cGVyL2hvbW9sb2dhdGlvbnMiO31zOjk6Il9wcmV2aW91cyI7YToxOntzOjM6InVybCI7czoyNzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2xvZ2luIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1732930042),
-('dH1i5uTDYewbAt3C8bvjMLBv0pv4YRirP9ftf3At', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiMmtFZTlqRDgzT0VrMEVWczNZenhZd0pObVBTSlp0Q0FQaVY3RXhxQiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NDE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zdXBlci9ob21vbG9nYXRpb25zIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzc7czoxNzoicGFzc3dvcmRfaGFzaF93ZWIiO3M6NjA6IiQyeSQxMiRnVDFyNGdUUGl1dmhmLmZsUGtOSGt1dDdOQ2hqd1RIbEwwWUVWUWhzbUx5d05EUmRmc01MRyI7fQ==', 1732914936);
+('BwY1Gt4E2xRRwKQEWzdMTHKrWOQWMbI4trNHgoSY', 18, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiYjFNbkRMMXR4SkttQjZJQzBHdzZGVGpXbXppdTVPQmJtdTM3STNCVSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTg7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kYXNoYm9hcmQiO319', 1733332984),
+('VHp9ne540aM9SoIS1LKv9ZudlgGZzxoEa11jzFVF', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiTmhOU1hLSHJLbkVHQ0F0V1g4ZG02ZVJYZTFjZmNVd1NvYW5KYlRrUyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzc7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zdXBlci9kYXNoYm9hcmQiO319', 1733337756);
 
 -- --------------------------------------------------------
 

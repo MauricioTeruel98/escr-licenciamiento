@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import SuperAdminLayout from '@/Layouts/SuperAdminLayout';
 import axios from 'axios';
+import { ChevronDown } from 'lucide-react';
 
 export default function SuperAdminDashboard({ auth }) {
     const [stats, setStats] = useState({
@@ -9,9 +10,14 @@ export default function SuperAdminDashboard({ auth }) {
         users: 0,
         certifications: 0
     });
+    const [companies, setCompanies] = useState([]);
+    const [selectedCompany, setSelectedCompany] = useState(null);
+    const [activeCompany, setActiveCompany] = useState(null);
 
     useEffect(() => {
         fetchDashboardStats();
+        fetchCompanies();
+        fetchActiveCompany();
     }, []);
 
     const fetchDashboardStats = async () => {
@@ -23,11 +29,46 @@ export default function SuperAdminDashboard({ auth }) {
         }
     };
 
+    const fetchCompanies = async () => {
+        try {
+            const response = await axios.get('/api/companies/list');
+            setCompanies(response.data);
+        } catch (error) {
+            console.error('Error al cargar empresas:', error);
+        }
+    };
+
+    const fetchActiveCompany = async () => {
+        try {
+            const response = await axios.get('/api/super/active-company');
+            setActiveCompany(response.data);
+        } catch (error) {
+            console.error('Error al cargar empresa activa:', error);
+        }
+    };
+
+    const handleCompanyChange = async (companyId) => {
+        try {
+            await axios.post('/api/super/switch-company', {
+                company_id: companyId
+            });
+            if (companyId) {
+                window.location.href = '/dashboard';
+            } else {
+                setActiveCompany(null);
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Error al cambiar de empresa:', error);
+        }
+    };
+
     return (
         <SuperAdminLayout>
             <Head title="Dashboard Super Admin" />
             <main className="flex-1 p-8 mt-0">
                 <div className="max-w-7xl mx-auto">
+
                     <div className="mb-8">
                         <h1 className="text-3xl font-bold text-gray-900">
                             Panel de Control Super Admin
@@ -35,6 +76,60 @@ export default function SuperAdminDashboard({ auth }) {
                         <p className="mt-2 text-gray-600">
                             Bienvenido al panel de administración principal
                         </p>
+                    </div>
+
+                    {activeCompany && (
+                        <div className="mb-8 bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-green-700">Administrando actualmente:</p>
+                                        <h2 className="text-lg font-semibold text-green-900">{activeCompany.name}</h2>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setSelectedCompany(null);
+                                        handleCompanyChange(null);
+                                    }}
+                                    className="text-green-700 hover:text-green-800 text-sm font-medium"
+                                >
+                                    Volver a Super Admin
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="mb-8">
+                        <div className="flex items-center gap-4">
+                            <span className="text-xl font-semibold">Acceder como</span>
+                            <div className="relative">
+                                <select
+                                    className="appearance-none bg-white border border-gray-300 text-gray-900 text-lg rounded-lg pl-4 pr-10 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-[200px] cursor-pointer"
+                                    onChange={(e) => setSelectedCompany(e.target.value)}
+                                    value={selectedCompany || ''}
+                                >
+                                    <option value="">Seleccione la empresa</option>
+                                    {companies.map((company) => (
+                                        <option key={company.id} value={company.id}>
+                                            {company.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                            </div>
+                            <button
+                                onClick={() => selectedCompany && handleCompanyChange(selectedCompany)}
+                                className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
+                            >
+                                ACCEDER
+                            </button>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

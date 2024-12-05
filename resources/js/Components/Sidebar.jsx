@@ -1,10 +1,11 @@
-import { usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Sidebar({ isOpen, setIsOpen }) {
     const { url } = usePage();
+    const { auth } = usePage().props;
     const [isEvaluationOpen, setIsEvaluationOpen] = useState(false);
-    
+
     const evaluationItems = [
         { name: 'Valores', route: 'values', active: url === '/values' },
         { name: 'Excelencia', route: 'excellence', active: url === '/excellence' },
@@ -18,9 +19,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         <>
             {/* Overlay para móvil */}
             <div
-                className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${
-                    isOpen ? 'block' : 'hidden'
-                }`}
+                className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${isOpen ? 'block' : 'hidden'
+                    }`}
                 onClick={() => setIsOpen(false)}
             />
 
@@ -41,14 +41,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
                 <ul className="menu p-4 lg:pt-12">
                     <li className="mb-1">
-                        <a
+                        <Link
                             href={route('dashboard')}
-                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${
-                                url === '/dashboard' ? 'bg-green-800' : ''
-                            }`}
+                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${url === '/dashboard' ? 'bg-green-800' : ''
+                                }`}
                         >
                             Inicio
-                        </a>
+                        </Link>
                     </li>
 
                     {/* Menú desplegable de Auto-evaluación */}
@@ -67,19 +66,18 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
-                        
+
                         {/* Submenú de Auto-evaluación */}
                         <ul className={`ml-4 mt-1 space-y-1 ${isEvaluationOpen ? 'block' : 'hidden'}`}>
                             {evaluationItems.map((item, index) => (
                                 <li key={index}>
-                                    <a
+                                    <Link
                                         //href={route(item.route)}
-                                        className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${
-                                            item.active ? 'bg-green-800' : ''
-                                        }`}
+                                        className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${item.active ? 'bg-green-800' : ''
+                                            }`}
                                     >
                                         {item.name}
-                                    </a>
+                                    </Link>
                                 </li>
                             ))}
                         </ul>
@@ -87,15 +85,25 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
                     {/* Certificaciones separado */}
                     <li className="mb-1">
-                        <a
+                        <Link
                             href={route('certifications.create')}
-                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${
-                                url.includes('certifications') ? 'bg-green-800' : ''
-                            }`}
+                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${url.includes('certifications') ? 'bg-green-800' : ''
+                                }`}
                         >
                             Certificaciones
-                        </a>
+                        </Link>
                     </li>
+
+                    {auth.user.role === 'super_admin' && (
+                        <>
+                            <div className="divider"></div>
+                            <li className="mb-1">
+                                <Link href={route('super.dashboard')} className="block px-4 py-2 hover:bg-green-800 rounded-lg">
+                                    Super Admin
+                                </Link>
+                            </li>
+                        </>
+                    )}
                 </ul>
             </div>
         </>
