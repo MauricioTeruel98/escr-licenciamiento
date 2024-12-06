@@ -84,7 +84,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'showEvaluation'])
         ->name('dashboard');
-    Route::get('/indicadores', [IndicadoresController::class, 'index'])
+    Route::get('/indicadores/{id}', [IndicadoresController::class, 'index'])
         ->name('indicadores');
     // Otras rutas protegidas...
 });

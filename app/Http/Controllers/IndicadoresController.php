@@ -8,8 +8,9 @@ use App\Models\User;
 
 class IndicadoresController extends Controller
 {
-    public function index()
+    public function index(Request $request, $id)
     {
-        return Inertia::render('Dashboard/Indicadores/Indicadores');
+        $valueId = $id;
+        return Inertia::render('Dashboard/Indicadores/Indicadores', compact('valueId'));
     }
 } 

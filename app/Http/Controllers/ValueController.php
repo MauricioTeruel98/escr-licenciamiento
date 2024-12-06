@@ -105,10 +105,16 @@ class ValueController extends Controller
 
     public function getActiveValues()
     {
-        $values = Value::where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        try {
+            $values = Value::where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name']);
 
-        return response()->json($values);
+            return response()->json($values);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al obtener los valores: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 
