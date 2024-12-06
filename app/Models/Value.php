@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Value extends Model
 {
@@ -21,7 +22,7 @@ class Value extends Model
         'minimum_score' => 'integer'
     ];
 
-    public function subcategories()
+    public function subcategories(): HasMany
     {
         return $this->hasMany(Subcategory::class);
     }
