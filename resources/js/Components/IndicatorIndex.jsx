@@ -1,12 +1,13 @@
 export default function IndicatorIndex({ code, question, onAnswer, value }) {
     const handleChange = (e) => {
         const selectedValue = e.target.value;
-        console.log('Seleccionado para indicador', code, ':', selectedValue); // Debug
+        console.log('Seleccionado para indicador', code, ':', selectedValue);
         onAnswer(selectedValue);
     };
 
-    // Debug para ver el valor actual
-    console.log('Valor actual para indicador', code, ':', value);
+    // Convertimos el value a string para la comparación
+    const stringValue = String(value);
+    console.log('Valor actual para indicador', code, ':', stringValue, typeof stringValue);
 
     return (
         <div className="bg-white rounded-lg space-y-4">
@@ -29,7 +30,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value }) {
                         type="radio"
                         name={`indicator-${code}`}
                         value="1"
-                        checked={value === "1"}
+                        checked={stringValue === "1"}
                         onChange={handleChange}
                         className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                     />
@@ -41,7 +42,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value }) {
                         type="radio"
                         name={`indicator-${code}`}
                         value="0"
-                        checked={value === "0"}
+                        checked={stringValue === "0"}
                         onChange={handleChange}
                         className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                     />

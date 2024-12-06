@@ -4,21 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Models\Value;
 use App\Models\Indicator;
+use App\Models\IndicatorAnswer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class IndicadoresController extends Controller
 {
-    public function index(Request $request, $valueId)
+    public function index($id)
     {
-        $value = Value::with(['subcategories.indicators' => function($query) {
-            $query->where('is_active', true);
-        }])->findOrFail($valueId);
+        $user = auth()->user();
+        $value = Value::with(['subcategories.indicators'])->findOrFail($id);
+        
+        // Obtener las respuestas guardadas del usuario
+        $savedAnswers = IndicatorAnswer::where('user_id', $user->id)
+            ->where('company_id', $user->company_id)
+            ->whereIn('indicator_id', $value->subcategories->flatMap->indicators->pluck('id'))
+            ->get();
 
         return Inertia::render('Dashboard/Indicadores/Indicadores', [
             'valueData' => $value,
-            'currentValue' => $value->name,
-            'minimumScore' => $value->minimum_score
+            'userName' => $user->name,
+            'savedAnswers' => $savedAnswers
         ]);
     }
 } 

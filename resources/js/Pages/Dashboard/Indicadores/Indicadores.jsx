@@ -5,18 +5,22 @@ import StepIndicator from '@/Components/StepIndicator';
 import IndicatorIndex from '@/Components/IndicatorIndex';
 import Toast from '@/Components/Toast';
 
-export default function Indicadores({ valueData, userName }) {
+export default function Indicadores({ valueData, userName, savedAnswers }) {
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [answers, setAnswers] = useState({});
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [notification, setNotification] = useState(null);
 
     useEffect(() => {
-        const savedAnswers = localStorage.getItem(`answers_${valueData.id}`);
         if (savedAnswers) {
-            setAnswers(JSON.parse(savedAnswers));
+            const formattedAnswers = {};
+            savedAnswers.forEach(answer => {
+                formattedAnswers[answer.indicator_id] = answer.answer;
+            });
+            setAnswers(formattedAnswers);
+            console.log('Respuestas cargadas de la BD:', formattedAnswers);
         }
-    }, [valueData.id]);
+    }, [savedAnswers]);
 
     useEffect(() => {
         if (Object.keys(answers).length > 0) {
@@ -38,12 +42,13 @@ export default function Indicadores({ valueData, userName }) {
             return;
         }
 
+        console.log('Guardando respuesta:', { indicatorId, answer, tipo: typeof answer });
         setAnswers(prevAnswers => {
             const newAnswers = {
                 ...prevAnswers,
                 [indicatorId]: answer
             };
-            console.log('Actualizando respuestas:', newAnswers);
+            console.log('Nuevo estado de respuestas:', newAnswers);
             return newAnswers;
         });
     };
@@ -159,22 +164,17 @@ export default function Indicadores({ valueData, userName }) {
                         </h2>
 
                         <div className="mt-10 space-y-6">
-                            {subcategories[currentSubcategoryIndex].indicators.map(indicator => {
-                                console.log('Respuesta guardada para indicador', indicator.id, ':', answers[indicator.id]); // Debug
-                                return (
-                                    <>
-                                        <IndicatorIndex
-                                            key={indicator.id}
-                                            code={indicator.name}
-                                            question={indicator.self_evaluation_question}
-                                            onAnswer={(answer) => handleAnswer(indicator.id, answer)}
-                                            value={answers[indicator.id] || ''} // Asegurarnos de que siempre hay un valor
-                                        />
-                                        <div className="divider"></div>
-                                    </>
-                                );
-                            })}
-
+                            {subcategories[currentSubcategoryIndex].indicators.map(indicator => (
+                                <div key={indicator.id}>
+                                    <IndicatorIndex
+                                        code={indicator.name}
+                                        question={indicator.self_evaluation_question}
+                                        onAnswer={(answer) => handleAnswer(indicator.id, answer)}
+                                        value={answers[indicator.id] || ''} // Aseguramos que value siempre tenga un valor
+                                    />
+                                    <div className="divider"></div>
+                                </div>
+                            ))}
                         </div>
 
                         <div className="mt-8 flex justify-between">
