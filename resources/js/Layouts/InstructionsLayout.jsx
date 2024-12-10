@@ -8,6 +8,14 @@ export default function InstructionsLayout({ children, title }) {
         <>
             <Head title={title} />
             <div className="min-h-screen flex">
+                {/* Logo - static in mobile, absolute in desktop */}
+                <div className="mb-8 md:mb-0 md:absolute md:top-8 md:left-8">
+                        <img
+                            src="/assets/img/logo_esc.png"
+                            alt="Costa Rica Logo"
+                            className="h-10"
+                        />
+                    </div>
                 <div className="w-full md:w-2/3 flex items-center justify-center p-8">
                     {children}
                 </div>
