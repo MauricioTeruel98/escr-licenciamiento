@@ -11,11 +11,13 @@ class IndicatorAnswer extends Model
         'user_id',
         'company_id',
         'indicator_id',
-        'answer'
+        'answer',
+        'is_binding'
     ];
 
     protected $casts = [
-        'answer' => 'string'
+        'answer' => 'string',
+        'is_binding' => 'boolean'
     ];
 
     public function user(): BelongsTo

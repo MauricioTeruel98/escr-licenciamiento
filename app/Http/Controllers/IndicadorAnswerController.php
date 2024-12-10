@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\IndicatorAnswer;
 use App\Models\AutoEvaluationResult;
 use App\Models\AutoEvaluationValorResult;
+use App\Models\Indicator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ class IndicadorAnswerController extends Controller
             DB::beginTransaction();
 
             $user = auth()->user();
-            
+
             if (!$user) {
                 return response()->json(['message' => 'Usuario no autenticado'], 401);
             }
@@ -25,6 +26,12 @@ class IndicadorAnswerController extends Controller
             if (!$request->has('answers') || !is_array($request->answers)) {
                 return response()->json(['message' => 'No se recibieron respuestas válidas'], 422);
             }
+
+            // Obtener los indicadores para verificar cuáles son vinculantes
+            $indicators = Indicator::whereIn('id', array_keys($request->answers))
+                ->select('id', 'binding')
+                ->get()
+                ->keyBy('id');
 
             // Guardar respuestas individuales
             foreach ($request->answers as $indicatorId => $answer) {
@@ -34,13 +41,16 @@ class IndicadorAnswerController extends Controller
                         'company_id' => $user->company_id,
                         'indicator_id' => $indicatorId,
                     ],
-                    ['answer' => $answer]
+                    [
+                        'answer' => $answer,
+                        'is_binding' => $indicators[$indicatorId]->binding ?? false // Guardamos si es vinculante
+                    ]
                 );
             }
 
             // Calcular notas por subcategoría
             $subcategoryScores = $this->calculateSubcategoryScores($request->value_id, $user->company_id);
-            
+
             // Guardar resultados por subcategoría
             foreach ($subcategoryScores as $subcategoryId => $score) {
                 AutoEvaluationValorResult::updateOrCreate(
@@ -58,7 +68,7 @@ class IndicadorAnswerController extends Controller
 
             // Calcular y guardar nota final del valor
             $finalScore = round(collect($subcategoryScores)->avg());
-            
+
             AutoEvaluationResult::updateOrCreate(
                 [
                     'company_id' => $user->company_id,
@@ -77,7 +87,6 @@ class IndicadorAnswerController extends Controller
                 'message' => '¡Respuestas guardadas exitosamente!',
                 'finalScore' => $finalScore
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al guardar respuestas:', [
@@ -119,7 +128,7 @@ class IndicadorAnswerController extends Controller
         }
 
         // Calcular porcentaje por subcategoría
-        return array_map(function($subcategoryStats) {
+        return array_map(function ($subcategoryStats) {
             if ($subcategoryStats['total'] === 0) return 0;
             return round(($subcategoryStats['positive'] / $subcategoryStats['total']) * 100);
         }, $scores);

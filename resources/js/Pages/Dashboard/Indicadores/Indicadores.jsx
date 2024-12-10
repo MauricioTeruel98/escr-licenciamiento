@@ -204,7 +204,7 @@ export default function Indicadores({ valueData, userName, savedAnswers, current
                                 <div className="w-1/2 rounded-e-xl bg-green-800 px-6 p-4">
                                     <h2 className="text-lg text-green-200 font-semibold mb-2">Nota mínima</h2>
                                     <p className="text-2xl text-green-200 font-bold">
-                                        {valueData.minimum_score}/100
+                                        {valueData.minimum_score}
                                     </p>
                                 </div>
                             </div>
