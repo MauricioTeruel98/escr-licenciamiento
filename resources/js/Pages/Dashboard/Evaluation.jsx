@@ -81,7 +81,17 @@ const FAQSection = () => {
     );
 };
 
-export default function Evaluation({ userName, pendingRequests, isAdmin, totalIndicadores, indicadoresRespondidos, progreso }) {
+export default function Evaluation({
+    userName,
+    pendingRequests,
+    isAdmin,
+    totalIndicadores,
+    indicadoresRespondidos,
+    progreso,
+    companyName,
+    status,
+    failedBindingIndicators
+}) {
     const { post } = useForm();
 
     // Componente para las solicitudes pendientes
@@ -126,25 +136,94 @@ export default function Evaluation({ userName, pendingRequests, isAdmin, totalIn
     };
 
     return (
-        <DashboardLayout userName={userName} title="Autoevaluación de Buzz">
+        <DashboardLayout userName={userName} title={`Autoevaluación de ${companyName}`}>
             <div className="space-y-8">
                 {/* Alerta de solicitudes pendientes */}
                 <PendingRequestsAlert />
 
-                <div className="">
-                    <p className="text-3xl font-bold">¡Bienvenido {userName}!</p>
-                </div>
 
-                {/* Status Banner */}
-                <div className="flex">
-                    <span className="bg-red-50 text-red-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-red-600/20 flex items-center gap-2">
-                        ESTATUS: NO APTO PARA LICENCIAMIENTO
-                    </span>
-                </div>
 
-                <h1 className="text-4xl font-bold">
-                    Autoevaluación de Buzz
-                </h1>
+                <div className="md:flex gap-8">
+                    <div className="space-y-4 md:w-2/3">
+                        <div className="">
+                            <p className="text-3xl font-bold">¡Bienvenido {userName}!</p>
+                        </div>
+
+                        {/* Status Banner */}
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <span className={`${status === 'apto'
+                                    ? 'bg-green-50 text-green-700 ring-green-600/20'
+                                    : 'bg-red-50 text-red-700 ring-red-600/20'
+                                    } px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset flex items-center gap-2`}
+                                >
+                                    ESTATUS: {status === 'apto' ? 'APTO' : 'NO APTO'} PARA LICENCIAMIENTO
+                                </span>
+
+
+                            </div>
+
+                            {/* Mensaje de indicadores vinculantes fallidos */}
+                            {status === 'no_apto' && failedBindingIndicators && failedBindingIndicators.length > 0 && (
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                    <div className="flex items-center">
+                                        <div className="flex-shrink-0">
+                                            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div className="ml-3">
+                                            <h3 className="text-sm font-medium text-red-800">
+                                                Indicadores vinculantes no cumplidos
+                                            </h3>
+                                            <div className="mt-2 text-sm text-red-700">
+                                                <ul className="list-disc pl-5 space-y-1">
+                                                    {failedBindingIndicators.map((indicator, index) => (
+                                                        <li key={index}>
+                                                            <span className="font-medium">{indicator.name}:</span> {indicator.question}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        <h1 className="text-4xl font-bold">
+                            Autoevaluación de {companyName}
+                        </h1>
+                    </div>
+
+                    <div className="md:w-1/3">
+                        {/* Mensaje de éxito cuando está apto */}
+                        {status === 'apto' && (
+                            <div className="space-y-4 bg-green-50/50 p-4 rounded-lg">
+                                <div className="flex items-center justify-center gap-2">
+                                    <div className="flex-shrink-0">
+                                        <svg
+                                            className="h-5 w-5 text-green-700"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <p className="text-sm text-green-700 font-medium">
+                                        Su empresa cuenta con indicadores aptos para iniciar el proceso de licenciamiento.
+                                    </p>
+                                </div>
+                                <button className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                    Enviar Solicitud De Aplicación
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
 
                 <div className="card bg-white shadow">
                     <div className="card-body">

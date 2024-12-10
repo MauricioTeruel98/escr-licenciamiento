@@ -33,6 +33,26 @@ class DashboardController extends Controller
         // Calcular el porcentaje de progreso
         $progreso = $totalIndicadores > 0 ? round(($indicadoresRespondidos / $totalIndicadores) * 100) : 0;
         
+        // Obtener indicadores vinculantes fallidos
+        $failedBindingIndicators = IndicatorAnswer::where('company_id', $user->company_id)
+            ->where('is_binding', true)
+            ->where('answer', 0)
+            ->with('indicator:id,name,self_evaluation_question')
+            ->get()
+            ->map(function($answer) {
+                return [
+                    'name' => $answer->indicator->name,
+                    'question' => $answer->indicator->self_evaluation_question
+                ];
+            });
+        
+        // Obtener el status de la autoevaluación
+        $status = 'no_apto';
+        $autoEvaluationResult = \App\Models\AutoEvaluationResult::where('company_id', $user->company_id)->first();
+        if ($autoEvaluationResult) {
+            $status = $autoEvaluationResult->status;
+        }
+
         $pendingRequests = [];
         if ($isAdmin) {
             $pendingRequests = User::where('company_id', $user->company_id)
@@ -47,7 +67,10 @@ class DashboardController extends Controller
             'pendingRequests' => $pendingRequests,
             'totalIndicadores' => $totalIndicadores,
             'indicadoresRespondidos' => $indicadoresRespondidos,
-            'progreso' => $progreso
+            'progreso' => $progreso,
+            'companyName' => $user->company->name,
+            'status' => $status,
+            'failedBindingIndicators' => $failedBindingIndicators
         ]);
     }
 } 

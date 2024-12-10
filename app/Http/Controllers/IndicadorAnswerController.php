@@ -44,7 +44,7 @@ class IndicadorAnswerController extends Controller
                     ],
                     [
                         'answer' => $answer,
-                        'is_binding' => $indicators[$indicatorId]->binding ?? false // Guardamos si es vinculante
+                        'is_binding' => $indicators[$indicatorId]->binding ?? false
                     ]
                 );
             }
@@ -81,24 +81,50 @@ class IndicadorAnswerController extends Controller
                 ]
             );
 
-            /*AutoEvaluationResult::updateOrCreate(
+            // Verificar estado de la autoevaluación
+            $totalIndicators = Indicator::count();
+            $answeredIndicators = IndicatorAnswer::where('company_id', $user->company_id)->count();
+            
+            // Verificar respuestas vinculantes
+            $hasFailedBindingQuestions = IndicatorAnswer::where('company_id', $user->company_id)
+                ->where('is_binding', true)
+                ->where('answer', 0) // Asumiendo que 0 es "no" y 1 es "sí"
+                ->exists();
+
+            // Determinar el estado
+            $status = 'en_proceso';
+            if ($answeredIndicators === $totalIndicators) {
+                $status = $hasFailedBindingQuestions ? 'no_apto' : 'apto';
+            }
+
+            // Actualizar resultado de autoevaluación
+            AutoEvaluationResult::updateOrCreate(
                 [
-                    'company_id' => $user->company_id,
+                    'company_id' => $user->company_id
                 ],
                 [
-                    'nota' => $finalScore,
-                    'status' => 'completed',
-                    'fecha_aprobacion' => now()
+                    'indicadores_respondidos' => $answeredIndicators,
+                    'total_indicadores' => $totalIndicators,
+                    'status' => $status,
+                    'fecha_actualizacion' => now(),
+                    'fecha_aprobacion' => $status === 'apto' ? now() : null
                 ]
-            );*/
+            );
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => '¡Respuestas guardadas exitosamente!',
-                'finalScore' => $finalScore
+                'finalScore' => $finalScore,
+                'progress' => [
+                    'answered' => $answeredIndicators,
+                    'total' => $totalIndicators,
+                    'status' => $status,
+                    'hasFailedBindingQuestions' => $hasFailedBindingQuestions
+                ]
             ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al guardar respuestas:', [
