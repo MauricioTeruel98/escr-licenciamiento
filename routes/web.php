@@ -23,6 +23,7 @@ use App\Http\Controllers\CompanyManagementController;
 use App\Http\Controllers\CertificationManagementController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SuperAdminCompanyController;
+use App\Http\Controllers\IndicadorAnswerController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -84,7 +85,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'showEvaluation'])
         ->name('dashboard');
-    Route::get('/indicadores', [IndicadoresController::class, 'index'])
+    Route::get('/indicadores/{id}', [IndicadoresController::class, 'index'])
         ->name('indicadores');
     // Otras rutas protegidas...
 });
@@ -198,5 +199,9 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/api/super/active-company', [SuperAdminCompanyController::class, 'getActiveCompany']);
 });
+
+Route::post('/indicadores/store-answers', [IndicadorAnswerController::class, 'store'])
+    ->name('indicadores.store-answers')
+    ->middleware(['auth']);
 
 require __DIR__ . '/auth.php';

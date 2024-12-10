@@ -1,19 +1,31 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export default function Sidebar({ isOpen, setIsOpen }) {
     const { url } = usePage();
     const { auth } = usePage().props;
     const [isEvaluationOpen, setIsEvaluationOpen] = useState(false);
+    const [evaluationItems, setEvaluationItems] = useState([]);
 
-    const evaluationItems = [
-        { name: 'Valores', route: 'values', active: url === '/values' },
-        { name: 'Excelencia', route: 'excellence', active: url === '/excellence' },
-        { name: 'Innovacion', route: 'innovation', active: url === '/innovation' },
-        { name: 'Progreso Social', route: 'social-progress', active: url === '/social-progress' },
-        { name: 'Sostenibilidad', route: 'sustainability', active: url === '/sustainability' },
-        { name: 'Vinculación', route: 'linking', active: url === '/linking' },
-    ];
+    useEffect(() => {
+        const fetchValues = async () => {
+            try {
+                const response = await axios.get('/api/active-values');
+                const values = Array.isArray(response.data) ? response.data.map(value => ({
+                    name: value.name || 'Sin nombre',
+                    route: `/indicadores/${value.id}`,
+                    active: url === `/indicadores/${value.id}`
+                })) : [];
+                setEvaluationItems(values);
+            } catch (error) {
+                console.error('Error al cargar valores:', error);
+                setEvaluationItems([]);
+            }
+        };
+
+        fetchValues();
+    }, [url]);
 
     return (
         <>
@@ -69,14 +81,15 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
                         {/* Submenú de Auto-evaluación */}
                         <ul className={`ml-4 mt-1 space-y-1 ${isEvaluationOpen ? 'block' : 'hidden'}`}>
-                            {evaluationItems.map((item, index) => (
+                            {Array.isArray(evaluationItems) && evaluationItems.map((item, index) => (
                                 <li key={index}>
                                     <Link
-                                        //href={route(item.route)}
-                                        className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${item.active ? 'bg-green-800' : ''
-                                            }`}
+                                        href={item.route}
+                                        className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${
+                                            item.active ? 'bg-green-800' : ''
+                                        }`}
                                     >
-                                        {item.name}
+                                        {item.name || 'Sin nombre'}
                                     </Link>
                                 </li>
                             ))}

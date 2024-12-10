@@ -1,4 +1,14 @@
-export default function IndicatorIndex({ code, question }) {
+export default function IndicatorIndex({ code, question, onAnswer, value }) {
+    const handleChange = (e) => {
+        const selectedValue = e.target.value;
+        console.log('Seleccionado para indicador', code, ':', selectedValue);
+        onAnswer(selectedValue);
+    };
+
+    // Convertimos el value a string para la comparación
+    const stringValue = String(value);
+    console.log('Valor actual para indicador', code, ':', stringValue, typeof stringValue);
+
     return (
         <div className="bg-white rounded-lg space-y-4">
             {/* Cabecera del indicador */}
@@ -19,7 +29,9 @@ export default function IndicatorIndex({ code, question }) {
                     <input
                         type="radio"
                         name={`indicator-${code}`}
-                        value="Si"
+                        value="1"
+                        checked={stringValue === "1"}
+                        onChange={handleChange}
                         className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                     />
                     <span className="text-gray-900">Sí</span>
@@ -29,7 +41,9 @@ export default function IndicatorIndex({ code, question }) {
                     <input
                         type="radio"
                         name={`indicator-${code}`}
-                        value="No"
+                        value="0"
+                        checked={stringValue === "0"}
+                        onChange={handleChange}
                         className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                     />
                     <span className="text-gray-900">No</span>
