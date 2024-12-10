@@ -49,7 +49,7 @@ class IndicadorAnswerController extends Controller
                 );
             }
 
-            // Calcular notas por subcategoría
+            // Calcular notas por subcategoría y valor
             $subcategoryScores = $this->calculateSubcategoryScores($request->value_id, $user->company_id);
 
             // Guardar resultados por subcategoría
@@ -82,19 +82,32 @@ class IndicadorAnswerController extends Controller
             );
 
             // Verificar estado de la autoevaluación
-            $totalIndicators = Indicator::count();
-            $answeredIndicators = IndicatorAnswer::where('company_id', $user->company_id)->count();
+            $totalIndicators = Indicator::where('is_active', true)->count();
+            $answeredIndicators = IndicatorAnswer::where('company_id', $user->company_id)
+                ->whereHas('indicator', function($query) {
+                    $query->where('is_active', true);
+                })
+                ->count();
             
             // Verificar respuestas vinculantes
             $hasFailedBindingQuestions = IndicatorAnswer::where('company_id', $user->company_id)
                 ->where('is_binding', true)
-                ->where('answer', 0) // Asumiendo que 0 es "no" y 1 es "sí"
+                ->where('answer', 0)
+                ->exists();
+
+            // Verificar notas mínimas por valor
+            $hasFailedValues = AutoEvaluationValorResult::where('company_id', $user->company_id)
+                ->where('nota', '<', 70)
                 ->exists();
 
             // Determinar el estado
             $status = 'en_proceso';
             if ($answeredIndicators === $totalIndicators) {
-                $status = $hasFailedBindingQuestions ? 'no_apto' : 'apto';
+                if (!$hasFailedBindingQuestions && !$hasFailedValues) {
+                    $status = 'apto';
+                } else {
+                    $status = 'no_apto';
+                }
             }
 
             // Actualizar resultado de autoevaluación
@@ -121,7 +134,8 @@ class IndicadorAnswerController extends Controller
                     'answered' => $answeredIndicators,
                     'total' => $totalIndicators,
                     'status' => $status,
-                    'hasFailedBindingQuestions' => $hasFailedBindingQuestions
+                    'hasFailedBindingQuestions' => $hasFailedBindingQuestions,
+                    'hasFailedValues' => $hasFailedValues
                 ]
             ]);
 

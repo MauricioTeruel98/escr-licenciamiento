@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\User;
 use App\Models\Indicator;
 use App\Models\IndicatorAnswer;
+use App\Models\AutoEvaluationValorResult;
 
 class DashboardController extends Controller
 {
@@ -45,12 +46,31 @@ class DashboardController extends Controller
                     'question' => $answer->indicator->self_evaluation_question
                 ];
             });
+
+        // Obtener valores con nota insuficiente (menor a 70)
+        $failedValues = AutoEvaluationValorResult::where('company_id', $user->company_id)
+            ->where('nota', '<', 70)
+            ->with('value:id,name')
+            ->get()
+            ->map(function($result) {
+                return [
+                    'name' => $result->value->name,
+                    'nota' => $result->nota
+                ];
+            });
         
-        // Obtener el status de la autoevaluación
-        $status = 'no_apto';
+        // Determinar el status
+        $status = 'en_proceso';
         $autoEvaluationResult = \App\Models\AutoEvaluationResult::where('company_id', $user->company_id)->first();
+        
         if ($autoEvaluationResult) {
-            $status = $autoEvaluationResult->status;
+            if ($indicadoresRespondidos === $totalIndicadores) {
+                if ($failedBindingIndicators->isEmpty() && $failedValues->isEmpty()) {
+                    $status = 'apto';
+                } else {
+                    $status = 'no_apto';
+                }
+            }
         }
 
         $pendingRequests = [];
@@ -70,7 +90,8 @@ class DashboardController extends Controller
             'progreso' => $progreso,
             'companyName' => $user->company->name,
             'status' => $status,
-            'failedBindingIndicators' => $failedBindingIndicators
+            'failedBindingIndicators' => $failedBindingIndicators,
+            'failedValues' => $failedValues
         ]);
     }
 } 
