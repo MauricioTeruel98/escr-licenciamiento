@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\IndicatorAnswer;
+use App\Models\AutoEvaluationResult;
+use App\Models\AutoEvaluationValorResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class IndicadorAnswerController extends Controller
 {
     public function store(Request $request)
     {
         try {
-            Log::info('Datos recibidos en el controlador:', $request->all());
+            DB::beginTransaction();
 
             $user = auth()->user();
             
@@ -23,10 +26,8 @@ class IndicadorAnswerController extends Controller
                 return response()->json(['message' => 'No se recibieron respuestas válidas'], 422);
             }
 
-            $successCount = 0;
-
+            // Guardar respuestas individuales
             foreach ($request->answers as $indicatorId => $answer) {
-                // Crear o actualizar la respuesta
                 IndicatorAnswer::updateOrCreate(
                     [
                         'user_id' => $user->id,
@@ -35,19 +36,83 @@ class IndicadorAnswerController extends Controller
                     ],
                     ['answer' => $answer]
                 );
-                
-                $successCount++;
             }
 
-            return back()->with('success', 'Se guardaron las respuestas exitosamente');
+            // Calcular notas por subcategoría
+            $subcategoryScores = $this->calculateSubcategoryScores($request->value_id, $user->company_id);
+            
+            // Guardar resultados por subcategoría
+            foreach ($subcategoryScores as $subcategoryId => $score) {
+                AutoEvaluationValorResult::updateOrCreate(
+                    [
+                        'company_id' => $user->company_id,
+                        'value_id' => $request->value_id,
+                        'subcategory_id' => $subcategoryId,
+                    ],
+                    [
+                        'nota' => $score,
+                        'fecha_evaluacion' => now()
+                    ]
+                );
+            }
+
+            // Calcular y guardar nota final del valor
+            $finalScore = round(collect($subcategoryScores)->avg());
+            
+            AutoEvaluationResult::updateOrCreate(
+                [
+                    'company_id' => $user->company_id,
+                ],
+                [
+                    'nota' => $finalScore,
+                    'status' => 'completed',
+                    'fecha_aprobacion' => now()
+                ]
+            );
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Respuestas guardadas exitosamente',
+                'finalScore' => $finalScore
+            ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Error al guardar respuestas:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return back()->with('error', 'Error al guardar las respuestas: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error al guardar las respuestas: ' . $e->getMessage()
+            ], 500);
         }
+    }
+
+    private function calculateSubcategoryScores($valueId, $companyId)
+    {
+        // Obtener todas las respuestas para los indicadores del valor
+        $answers = DB::table('indicator_answers as ia')
+            ->join('indicators as i', 'ia.indicator_id', '=', 'i.id')
+            ->join('subcategories as s', 'i.subcategory_id', '=', 's.id')
+            ->where('ia.company_id', $companyId)
+            ->where('s.value_id', $valueId)
+            ->select('s.id as subcategory_id', 'ia.answer')
+            ->get();
+
+        // Agrupar por subcategoría y calcular promedio
+        $scores = [];
+        foreach ($answers as $answer) {
+            if (!isset($scores[$answer->subcategory_id])) {
+                $scores[$answer->subcategory_id] = [];
+            }
+            $scores[$answer->subcategory_id][] = $answer->answer;
+        }
+
+        // Calcular promedio por subcategoría
+        return array_map(function($subcategoryAnswers) {
+            return round(array_sum($subcategoryAnswers) / count($subcategoryAnswers));
+        }, $scores);
     }
 }

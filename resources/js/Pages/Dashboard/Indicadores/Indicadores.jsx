@@ -10,6 +10,7 @@ export default function Indicadores({ valueData, userName, savedAnswers }) {
     const [answers, setAnswers] = useState({});
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [notification, setNotification] = useState(null);
+    const [currentScore, setCurrentScore] = useState(0);
 
     useEffect(() => {
         if (savedAnswers) {
@@ -95,6 +96,9 @@ export default function Indicadores({ valueData, userName, savedAnswers }) {
                     type: 'success',
                     message: '¡Respuestas guardadas exitosamente!'
                 });
+                if (response.finalScore !== undefined) {
+                    setCurrentScore(response.finalScore);
+                }
                 setShowConfirmModal(false);
             },
             onError: (errors) => {
@@ -115,7 +119,7 @@ export default function Indicadores({ valueData, userName, savedAnswers }) {
                     <div className="lg:w-1/2">
                         <div className="flex items-center mt-5">
                             <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-blue-600/20 flex items-center gap-2">
-                                {Object.keys(answers).length} Indicadores Homologados
+                                0 Indicadores Homologados
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-info-circle"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
                             </span>
                         </div>
@@ -129,7 +133,7 @@ export default function Indicadores({ valueData, userName, savedAnswers }) {
                             <div className="flex">
                                 <div className="w-1/2 rounded-l-xl bg-yellow-100/50 px-6 p-4">
                                     <h2 className="text-lg text-yellow-700 font-semibold mb-2">Nota</h2>
-                                    <p className="text-2xl text-yellow-500 font-bold">0/100</p>
+                                    <p className="text-2xl text-yellow-500 font-bold">{currentScore}/100</p>
                                 </div>
                                 <div className="w-1/2 rounded-e-xl bg-green-800 px-6 p-4">
                                     <h2 className="text-lg text-green-200 font-semibold mb-2">Nota minima</h2>

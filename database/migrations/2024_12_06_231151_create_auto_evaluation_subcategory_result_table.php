@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('auto_evaluation_valor_result', function (Blueprint $table) {
+        Schema::create('auto_evaluation_subcategory_result', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained()->onDelete('cascade');
             $table->foreignId('value_id')->constrained()->onDelete('cascade');
+            $table->foreignId('subcategory_id')->constrained()->onDelete('cascade');
             $table->integer('nota')->unsigned()->default(0);
             $table->timestamp('fecha_evaluacion')->nullable();
             $table->timestamps();
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('auto_evaluation_valor_result');
+        Schema::dropIfExists('auto_evaluation_subcategory_result');
     }
 };
