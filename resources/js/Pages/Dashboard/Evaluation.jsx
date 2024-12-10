@@ -1,4 +1,4 @@
-import { Link, useForm } from '@inertiajs/react';
+import { Link, useForm, usePage } from '@inertiajs/react';
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { CircleArrowDown, CircleArrowRight } from 'lucide-react';
 import { useState } from 'react';
@@ -94,10 +94,11 @@ export default function Evaluation({
     failedValues
 }) {
     const { post } = useForm();
+    const { auth } = usePage().props;
 
     // Componente para las solicitudes pendientes
     const PendingRequestsAlert = () => {
-        if (!isAdmin || !pendingRequests || pendingRequests.length === 0) return null;
+        if (!isAdmin  || !pendingRequests || pendingRequests.length === 0) return null;
 
         return (
             <div className="card bg-white shadow mb-8">

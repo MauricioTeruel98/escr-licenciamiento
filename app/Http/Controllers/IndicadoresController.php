@@ -16,8 +16,7 @@ class IndicadoresController extends Controller
         $value = Value::with(['subcategories.indicators'])->findOrFail($id);
 
         // Obtener las respuestas guardadas del usuario
-        $savedAnswers = IndicatorAnswer::where('user_id', $user->id)
-            ->where('company_id', $user->company_id)
+        $savedAnswers = IndicatorAnswer::where('company_id', $user->company_id)
             ->whereIn('indicator_id', $value->subcategories->flatMap->indicators->pluck('id'))
             ->get();
 

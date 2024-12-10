@@ -23,7 +23,7 @@ export default function CompaniesIndex() {
     });
 
     const columns = [
-        { key: 'legal_id', label: 'ID Legal' },
+        { key: 'legal_id', label: 'Cedula' },
         { key: 'name', label: 'Nombre' },
         { key: 'sector', label: 'Sector' },
         { key: 'city', label: 'Ciudad' },

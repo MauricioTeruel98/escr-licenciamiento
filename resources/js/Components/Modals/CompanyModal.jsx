@@ -75,7 +75,7 @@ export default function CompanyModal({ isOpen, onClose, onSubmit, company = null
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            ID Legal <span className="text-red-500">*</span>
+                                            Cedula <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
