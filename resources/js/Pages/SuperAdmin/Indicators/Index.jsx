@@ -8,6 +8,8 @@ import DeleteModal from '@/Components/Modals/DeleteModal';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
 import ViewQuestionsModal from '@/Components/ViewQuestionsModal';
+import EditIcon from '@/Components/Icons/EditIcon';
+import TrashIcon from '@/Components/Icons/TrashIcon';
 
 export default function IndicatorsIndex() {
     const [indicators, setIndicators] = useState([]);
@@ -90,27 +92,28 @@ export default function IndicatorsIndex() {
             key: 'actions',
             label: 'Acciones',
             render: (item) => (
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                     <button
                         onClick={() => handleViewQuestions(item)}
-                        className="text-indigo-600 hover:text-indigo-800"
+                        className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
                         title="Ver preguntas"
                     >
                         <Eye className="h-5 w-5" />
+                        Ver
                     </button>
                     <button
                         onClick={() => handleEdit(item)}
-                        className="text-blue-600 hover:text-blue-800"
-                        title="Editar indicador"
+                        className="text-green-700 hover:text-green-800 flex items-center gap-1"
                     >
-                        <Pencil className="h-5 w-5" />
+                        <EditIcon />
+                        Editar
                     </button>
                     <button
                         onClick={() => handleDelete(item)}
-                        className="text-red-600 hover:text-red-800"
-                        title="Eliminar indicador"
+                        className="p-1 text-red-600 hover:text-red-900 flex items-center gap-1"
                     >
-                        <Trash2 className="h-5 w-5" />
+                        <TrashIcon />
+                        Eliminar
                     </button>
                 </div>
             )

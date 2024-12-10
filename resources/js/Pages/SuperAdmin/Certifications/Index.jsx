@@ -7,6 +7,8 @@ import CertificationModal from '@/Components/Modals/CertificationModal';
 import DeleteModal from '@/Components/Modals/DeleteModal';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
+import EditIcon from '@/Components/Icons/EditIcon';
+import TrashIcon from '@/Components/Icons/TrashIcon';
 
 export default function CertificationsIndex() {
     const [certifications, setCertifications] = useState([]);
@@ -51,15 +53,17 @@ export default function CertificationsIndex() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => handleEdit(item)}
-                        className="p-1 text-gray-600 hover:text-gray-900"
+                        className="p-1 text-green-700 hover:text-green-800 flex items-center gap-1"
                     >
-                        <Pencil className="w-4 h-4" />
+                        <EditIcon />
+                        Editar
                     </button>
                     <button
                         onClick={() => handleDelete(item)}
-                        className="p-1 text-red-600 hover:text-red-900"
+                        className="p-1 text-red-600 hover:text-red-900 flex items-center gap-1"
                     >
-                        <Trash2 className="w-4 h-4" />
+                        <TrashIcon />
+                        Eliminar
                     </button>
                 </div>
             )
