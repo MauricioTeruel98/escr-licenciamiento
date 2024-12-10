@@ -22,8 +22,8 @@ class IndicadoresController extends Controller
             ->get();
 
         // Obtener la nota actual
-        $currentScore = \App\Models\AutoEvaluationResult::where('company_id', $user->company_id)
-            ->latest('fecha_aprobacion')
+        $currentScore = \App\Models\AutoEvaluationValorResult::where('company_id', $user->company_id)
+            ->latest('fecha_evaluacion')
             ->first()?->nota ?? 0;
 
         return Inertia::render('Dashboard/Indicadores/Indicadores', [

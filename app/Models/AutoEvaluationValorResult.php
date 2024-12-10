@@ -12,7 +12,6 @@ class AutoEvaluationValorResult extends Model
     protected $fillable = [
         'company_id',
         'value_id',
-        'subcategory_id',
         'nota',
         'fecha_evaluacion'
     ];

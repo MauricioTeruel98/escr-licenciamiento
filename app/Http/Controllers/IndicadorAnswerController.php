@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\IndicatorAnswer;
 use App\Models\AutoEvaluationResult;
+use App\Models\AutoEvaluationSubcategoryResult;
 use App\Models\AutoEvaluationValorResult;
 use App\Models\Indicator;
 use Illuminate\Http\Request;
@@ -53,7 +54,7 @@ class IndicadorAnswerController extends Controller
 
             // Guardar resultados por subcategoría
             foreach ($subcategoryScores as $subcategoryId => $score) {
-                AutoEvaluationValorResult::updateOrCreate(
+                AutoEvaluationSubcategoryResult::updateOrCreate(
                     [
                         'company_id' => $user->company_id,
                         'value_id' => $request->value_id,
@@ -69,7 +70,18 @@ class IndicadorAnswerController extends Controller
             // Calcular y guardar nota final del valor
             $finalScore = round(collect($subcategoryScores)->avg());
 
-            AutoEvaluationResult::updateOrCreate(
+            AutoEvaluationValorResult::updateOrCreate(
+                [
+                    'company_id' => $user->company_id,
+                    'value_id' => $request->value_id,
+                ],
+                [
+                    'nota' => $finalScore,
+                    'fecha_evaluacion' => now()
+                ]
+            );
+
+            /*AutoEvaluationResult::updateOrCreate(
                 [
                     'company_id' => $user->company_id,
                 ],
@@ -78,7 +90,7 @@ class IndicadorAnswerController extends Controller
                     'status' => 'completed',
                     'fecha_aprobacion' => now()
                 ]
-            );
+            );*/
 
             DB::commit();
 
