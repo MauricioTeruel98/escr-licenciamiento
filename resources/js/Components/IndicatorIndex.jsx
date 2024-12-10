@@ -1,4 +1,4 @@
-export default function IndicatorIndex({ code, question, onAnswer, value }) {
+export default function IndicatorIndex({ code, question, onAnswer, value, isBinding }) {
     const handleChange = (e) => {
         const selectedValue = e.target.value;
         console.log('Seleccionado para indicador', code, ':', selectedValue);
@@ -14,9 +14,16 @@ export default function IndicatorIndex({ code, question, onAnswer, value }) {
             {/* Cabecera del indicador */}
             <div className="space-y-2">
                 <div className="inline-block">
-                    <span className="bg-green-50 text-green-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-green-600/20 flex items-center gap-2">
-                        INDICADOR {code}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <span className="bg-green-50 text-green-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-green-600/20 flex items-center gap-2">
+                            INDICADOR {code}
+                        </span>
+                        {isBinding && (
+                            <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 ml-2">
+                                Vinculante
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <h3 className="text-gray-900 font-medium leading-6">
                     {question}

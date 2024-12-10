@@ -14,17 +14,23 @@ class IndicadoresController extends Controller
     {
         $user = auth()->user();
         $value = Value::with(['subcategories.indicators'])->findOrFail($id);
-        
+
         // Obtener las respuestas guardadas del usuario
         $savedAnswers = IndicatorAnswer::where('user_id', $user->id)
             ->where('company_id', $user->company_id)
             ->whereIn('indicator_id', $value->subcategories->flatMap->indicators->pluck('id'))
             ->get();
 
+        // Obtener la nota actual
+        $currentScore = \App\Models\AutoEvaluationResult::where('company_id', $user->company_id)
+            ->latest('fecha_aprobacion')
+            ->first()?->nota ?? 0;
+
         return Inertia::render('Dashboard/Indicadores/Indicadores', [
             'valueData' => $value,
             'userName' => $user->name,
-            'savedAnswers' => $savedAnswers
+            'savedAnswers' => $savedAnswers,
+            'currentScore' => $currentScore
         ]);
     }
-} 
+}

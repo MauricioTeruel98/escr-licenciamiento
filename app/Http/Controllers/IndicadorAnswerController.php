@@ -73,7 +73,8 @@ class IndicadorAnswerController extends Controller
             DB::commit();
 
             return response()->json([
-                'message' => 'Respuestas guardadas exitosamente',
+                'success' => true,
+                'message' => '¡Respuestas guardadas exitosamente!',
                 'finalScore' => $finalScore
             ]);
 
@@ -85,8 +86,9 @@ class IndicadorAnswerController extends Controller
             ]);
 
             return response()->json([
+                'success' => false,
                 'message' => 'Error al guardar las respuestas: ' . $e->getMessage()
-            ], 500);
+            ], 422);
         }
     }
 
@@ -101,18 +103,25 @@ class IndicadorAnswerController extends Controller
             ->select('s.id as subcategory_id', 'ia.answer')
             ->get();
 
-        // Agrupar por subcategoría y calcular promedio
+        // Agrupar por subcategoría y calcular porcentaje
         $scores = [];
         foreach ($answers as $answer) {
             if (!isset($scores[$answer->subcategory_id])) {
-                $scores[$answer->subcategory_id] = [];
+                $scores[$answer->subcategory_id] = [
+                    'total' => 0,
+                    'positive' => 0
+                ];
             }
-            $scores[$answer->subcategory_id][] = $answer->answer;
+            $scores[$answer->subcategory_id]['total']++;
+            if ($answer->answer == 1) { // Asumiendo que 1 representa "sí"
+                $scores[$answer->subcategory_id]['positive']++;
+            }
         }
 
-        // Calcular promedio por subcategoría
-        return array_map(function($subcategoryAnswers) {
-            return round(array_sum($subcategoryAnswers) / count($subcategoryAnswers));
+        // Calcular porcentaje por subcategoría
+        return array_map(function($subcategoryStats) {
+            if ($subcategoryStats['total'] === 0) return 0;
+            return round(($subcategoryStats['positive'] / $subcategoryStats['total']) * 100);
         }, $scores);
     }
 }
