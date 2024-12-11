@@ -12,7 +12,7 @@ class IndicatorController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Indicator::with(['homologations', 'value', 'subcategory']);
+        $query = Indicator::with(['homologations', 'value', 'subcategory', 'evaluationQuestions']);
 
         if ($request->has('search')) {
             $searchTerm = $request->search;
@@ -31,17 +31,17 @@ class IndicatorController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'homologation_ids' => 'required|array',
-            'homologation_ids.*' => 'exists:available_certifications,id',
-            'binding' => 'required|boolean',
-            'self_evaluation_question' => 'nullable|string',
             'value_id' => 'required|exists:values,id',
             'subcategory_id' => 'required|exists:subcategories,id',
-            'evaluation_questions' => 'required|array',
-            'evaluation_questions.*' => 'required|string',
-            'guide' => 'required|string',
+            'homologation_ids' => 'nullable|array',
+            'homologation_ids.*' => 'exists:available_certifications,id',
+            'binding' => 'required|boolean',
+            'self_evaluation_question' => 'required|string',
+            'evaluation_questions' => 'nullable|array',
+            'evaluation_questions.*' => 'string',
+            'guide' => 'nullable|string',
             'is_active' => 'boolean'
         ]);
 
@@ -58,6 +58,10 @@ class IndicatorController extends Controller
 
         $indicator->homologations()->attach($request->homologation_ids);
 
+        foreach ($request->input('evaluation_questions', []) as $question) {
+            $indicator->evaluationQuestions()->create(['question' => $question]);
+        }
+
         $indicator->load(['homologations', 'value', 'subcategory']);
 
         return response()->json([
@@ -68,17 +72,17 @@ class IndicatorController extends Controller
 
     public function update(Request $request, Indicator $indicator)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'homologation_ids' => 'required|array',
-            'homologation_ids.*' => 'exists:available_certifications,id',
-            'binding' => 'required|boolean',
-            'self_evaluation_question' => 'nullable|string',
             'value_id' => 'required|exists:values,id',
             'subcategory_id' => 'required|exists:subcategories,id',
-            'evaluation_questions' => 'required|array',
-            'evaluation_questions.*' => 'required|string',
-            'guide' => 'required|string',
+            'homologation_ids' => 'nullable|array',
+            'homologation_ids.*' => 'exists:available_certifications,id',
+            'binding' => 'required|boolean',
+            'self_evaluation_question' => 'required|string',
+            'evaluation_questions' => 'nullable|array',
+            'evaluation_questions.*' => 'string',
+            'guide' => 'nullable|string',
             'is_active' => 'boolean'
         ]);
 
@@ -94,6 +98,11 @@ class IndicatorController extends Controller
         ]);
 
         $indicator->homologations()->sync($request->homologation_ids);
+
+        $indicator->evaluationQuestions()->delete();
+        foreach ($request->input('evaluation_questions', []) as $question) {
+            $indicator->evaluationQuestions()->create(['question' => $question]);
+        }
 
         $indicator->load(['homologations', 'value', 'subcategory']);
 

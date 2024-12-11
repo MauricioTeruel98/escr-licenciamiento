@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Value;
 use App\Models\Subcategory;
 use App\Models\Indicator;
+use App\Models\EvaluationQuestion;
 use Illuminate\Database\Seeder;
 
 class ValuesAndIndicatorsSeeder extends Seeder
@@ -228,16 +229,22 @@ class ValuesAndIndicatorsSeeder extends Seeder
                 ]);
 
                 foreach ($subcategoryData['indicators'] as $indicatorData) {
-                    Indicator::create([
+                    $indicator = Indicator::create([
                         'name' => $indicatorData['name'],
                         'binding' => $indicatorData['binding'],
                         'self_evaluation_question' => $indicatorData['self_evaluation_question'],
                         'value_id' => $value->id,
                         'subcategory_id' => $subcategory->id,
-                        'evaluation_questions' => $indicatorData['evaluation_questions'],
                         'guide' => $indicatorData['guide'],
                         'is_active' => true
                     ]);
+
+                    foreach ($indicatorData['evaluation_questions'] as $question) {
+                        EvaluationQuestion::create([
+                            'indicator_id' => $indicator->id,
+                            'question' => $question
+                        ]);
+                    }
                 }
             }
         }

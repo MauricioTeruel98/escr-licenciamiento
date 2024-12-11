@@ -53,4 +53,9 @@ class Indicator extends Model
     {
         return $this->belongsToMany(AvailableCertification::class, 'indicator_homologation', 'indicator_id', 'homologation_id');
     }
+
+    public function evaluationQuestions()
+    {
+        return $this->hasMany(EvaluationQuestion::class);
+    }
 } 
