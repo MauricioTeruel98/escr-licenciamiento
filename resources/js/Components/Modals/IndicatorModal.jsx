@@ -32,14 +32,20 @@ export default function IndicatorModal({
     useEffect(() => {
         if (isOpen) {
             if (indicator) {
+                if (indicator.value_id) {
+                    loadSubcategories(indicator.value_id);
+                }
+                
                 setFormData({
                     ...indicator,
                     homologation_ids: indicator.homologations.map((homologation) => homologation.id),
                     evaluation_questions: indicator.evaluation_questions.map((question) => question.question),
+                    value_id: indicator.value_id,
                     subcategory_id: indicator.subcategory?.id || '',
                 });
             } else {
                 setFormData(initialFormData);
+                setAvailableSubcategories([]);
             }
         }
     }, [isOpen, indicator]);
@@ -55,6 +61,7 @@ export default function IndicatorModal({
             setAvailableSubcategories(response.data);
         } catch (error) {
             console.error('Error al cargar subcategorías:', error);
+            setAvailableSubcategories([]);
         }
     };
 
