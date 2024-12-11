@@ -36,20 +36,32 @@ class IndicadorAnswerController extends Controller
 
             // Guardar respuestas individuales
             foreach ($request->answers as $indicatorId => $answer) {
-                IndicatorAnswer::updateOrCreate(
-                    [
+                // Verificar si ya existe una respuesta para este indicador en esta empresa
+                $existingAnswer = IndicatorAnswer::where('company_id', $user->company_id)
+                    ->where('indicator_id', $indicatorId)
+                    ->first();
+
+                if ($existingAnswer) {
+                    // Actualizar la respuesta existente
+                    $existingAnswer->update([
+                        'answer' => $answer,
+                        'user_id' => $user->id, // Actualizar al último usuario que modificó
+                        'is_binding' => $indicators[$indicatorId]->binding ?? false,
+                        'updated_at' => now()
+                    ]);
+                } else {
+                    // Crear nueva respuesta
+                    IndicatorAnswer::create([
                         'user_id' => $user->id,
                         'company_id' => $user->company_id,
                         'indicator_id' => $indicatorId,
-                    ],
-                    [
                         'answer' => $answer,
                         'is_binding' => $indicators[$indicatorId]->binding ?? false
-                    ]
-                );
+                    ]);
+                }
             }
 
-            // Calcular notas por subcategoría y valor
+            // Recalcular todas las notas basadas en las respuestas actuales de la empresa
             $subcategoryScores = $this->calculateSubcategoryScores($request->value_id, $user->company_id);
 
             // Guardar resultados por subcategoría
@@ -155,13 +167,14 @@ class IndicadorAnswerController extends Controller
 
     private function calculateSubcategoryScores($valueId, $companyId)
     {
-        // Obtener todas las respuestas para los indicadores del valor
+        // Obtener todas las respuestas más recientes para los indicadores del valor
         $answers = DB::table('indicator_answers as ia')
             ->join('indicators as i', 'ia.indicator_id', '=', 'i.id')
             ->join('subcategories as s', 'i.subcategory_id', '=', 's.id')
             ->where('ia.company_id', $companyId)
             ->where('s.value_id', $valueId)
             ->select('s.id as subcategory_id', 'ia.answer')
+            ->orderBy('ia.updated_at', 'desc') // Asegurar que tomamos las respuestas más recientes
             ->get();
 
         // Agrupar por subcategoría y calcular porcentaje
@@ -174,7 +187,7 @@ class IndicadorAnswerController extends Controller
                 ];
             }
             $scores[$answer->subcategory_id]['total']++;
-            if ($answer->answer == 1) { // Asumiendo que 1 representa "sí"
+            if ($answer->answer == 1) {
                 $scores[$answer->subcategory_id]['positive']++;
             }
         }

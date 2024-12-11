@@ -313,28 +313,45 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
 
             {/* Modal de confirmación */}
             {showConfirmModal && (
-                <div className="fixed inset-0 z-50 overflow-y-auto">
-                    <div className="flex min-h-screen items-center justify-center p-4">
-                        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                <div className="fixed inset-0 z-50">
+                    <div className="fixed inset-0 bg-gray-500/20 backdrop-blur-sm transition-opacity"></div>
 
-                        <div className="relative w-full max-w-md transform rounded-lg bg-white shadow-xl transition-all">
-                            <div className="p-6">
-                                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                                    Confirmar envío
-                                </h3>
-                                <p className="text-sm text-gray-500">
-                                    ¿Estás seguro de que deseas finalizar y enviar tus respuestas?
-                                </p>
-                                <div className="mt-6 flex justify-end gap-3">
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                            <div className="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                                {/* Header */}
+                                <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+                                    <h3 className="text-lg font-medium text-gray-900">
+                                        Confirmar envío
+                                    </h3>
                                     <button
                                         onClick={() => setShowConfirmModal(false)}
-                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                                        className="text-gray-400 hover:text-gray-500"
+                                    >
+                                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {/* Contenido */}
+                                <div className="px-6 py-4">
+                                    <p className="text-sm text-gray-500">
+                                        ¿Estás seguro de que deseas finalizar y enviar tus respuestas?
+                                    </p>
+                                </div>
+
+                                {/* Footer */}
+                                <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-end gap-2">
+                                    <button
+                                        onClick={() => setShowConfirmModal(false)}
+                                        className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                                     >
                                         Cancelar
                                     </button>
                                     <button
                                         onClick={handleConfirmSubmit}
-                                        className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+                                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                                     >
                                         Confirmar
                                     </button>
