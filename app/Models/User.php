@@ -78,11 +78,22 @@ class User extends Authenticatable
     {
         $array = parent::toArray();
         $array['role'] = $this->role;
+        $array['auto_evaluation_status'] = $this->company?->autoEvaluationStatus() ?? 'en_proceso';
         return $array;
     }
 
     public function isSuperAdmin(): bool
     {
         return $this->role === 'super_admin';
+    }
+
+    public function aptoForEvaluation(): bool
+    {
+        if (!$this->company) {
+            return false;
+        }
+        
+        // Verificar que la empresa tenga una auto-evaluación completada y aprobada
+        return $this->company->autoEvaluationStatus === 'apto';
     }
 }

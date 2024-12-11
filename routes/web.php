@@ -89,7 +89,7 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
     Route::get('/indicadores/{id}', [IndicadoresController::class, 'index'])
         ->name('indicadores');
 
-    Route::get('/evaluacion', [EvaluationController::class, 'index'])
+    Route::get('/evaluacion/{value_id}', [EvaluationController::class, 'index'])
         ->name('evaluacion');
     // Otras rutas protegidas...
 });

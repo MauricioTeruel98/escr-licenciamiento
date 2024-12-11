@@ -6,7 +6,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     const { url } = usePage();
     const { auth } = usePage().props;
     const [isEvaluationOpen, setIsEvaluationOpen] = useState(false);
-    const [evaluationItems, setEvaluationItems] = useState([]);
+    const [isEvaluacionOpen, setIsEvaluacionOpen] = useState(false);
+    const [autoEvaluationItems, setAutoEvaluationItems] = useState([]);
 
     useEffect(() => {
         const fetchValues = async () => {
@@ -17,15 +18,17 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                     route: `/indicadores/${value.id}`,
                     active: url === `/indicadores/${value.id}`
                 })) : [];
-                setEvaluationItems(values);
+                setAutoEvaluationItems(values);
             } catch (error) {
                 console.error('Error al cargar valores:', error);
-                setEvaluationItems([]);
+                setAutoEvaluationItems([]);
             }
         };
 
         fetchValues();
     }, [url]);
+
+    console.log(auth.user.auto_evaluation_status);
 
     return (
         <>
@@ -81,13 +84,12 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
                         {/* Submenú de Auto-evaluación */}
                         <ul className={`ml-4 mt-1 space-y-1 ${isEvaluationOpen ? 'block' : 'hidden'}`}>
-                            {Array.isArray(evaluationItems) && evaluationItems.map((item, index) => (
+                            {Array.isArray(autoEvaluationItems) && autoEvaluationItems.map((item, index) => (
                                 <li key={index}>
                                     <Link
                                         href={item.route}
-                                        className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${
-                                            item.active ? 'bg-green-800' : ''
-                                        }`}
+                                        className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${item.active ? 'bg-green-800' : ''
+                                            }`}
                                     >
                                         {item.name || 'Sin nombre'}
                                     </Link>
@@ -95,6 +97,41 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                             ))}
                         </ul>
                     </li>
+
+                    {/* Menú desplegable de Evaluación */}
+                    {auth.user.auto_evaluation_status === 'apto' && (
+                        <li className="mb-1">
+                            <button
+                                onClick={() => setIsEvaluacionOpen(!isEvaluacionOpen)}
+                                className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg"
+                            >
+                                <span>Evaluación</span>
+                                <svg
+                                    className={`w-4 h-4 transition-transform ${isEvaluacionOpen ? 'rotate-180' : ''}`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            {/* Submenú de Evaluación */}
+                            <ul className={`ml-4 mt-1 space-y-1 ${isEvaluacionOpen ? 'block' : 'hidden'}`}>
+                                {Array.isArray(autoEvaluationItems) && autoEvaluationItems.map((item, index) => (
+                                    <li key={index}>
+                                        <Link
+                                            href={`/evaluacion/${item.route.split('/').pop()}`}
+                                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${url === `/evaluacion/${item.route.split('/').pop()}` ? 'bg-green-800' : ''
+                                                }`}
+                                        >
+                                            {item.name || 'Sin nombre'}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </li>
+                    )}
 
                     {/* Certificaciones separado */}
                     <li className="mb-1">

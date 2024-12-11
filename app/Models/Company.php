@@ -37,4 +37,24 @@ class Company extends Model
     {
         return $this->hasMany(Certification::class);
     }
+
+    public function autoEvaluationStatus(): string
+    {
+        // Obtener el resultado más reciente de auto-evaluación
+        $lastResult = $this->hasOne(AutoEvaluationResult::class)
+            ->latest()
+            ->first();
+
+        if (!$lastResult) {
+            return 'en_proceso';
+        }
+
+        return $lastResult->status ?? 'en_proceso';
+    }
+
+    // Agregar la relación con AutoEvaluationResult
+    public function autoEvaluationResults()
+    {
+        return $this->hasMany(AutoEvaluationResult::class);
+    }
 } 
