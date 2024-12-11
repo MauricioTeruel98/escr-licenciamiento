@@ -208,4 +208,8 @@ Route::post('/indicadores/store-answers', [IndicadorAnswerController::class, 'st
     ->name('indicadores.store-answers')
     ->middleware(['auth']);
 
+Route::get('/api/evaluation/indicators', [EvaluationController::class, 'getIndicators'])
+    ->middleware(['auth', 'verified'])
+    ->name('evaluation.indicators');
+
 require __DIR__ . '/auth.php';
