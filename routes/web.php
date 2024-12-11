@@ -21,6 +21,7 @@ use App\Http\Controllers\IndicatorController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\CompanyManagementController;
 use App\Http\Controllers\CertificationManagementController;
+use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SuperAdminCompanyController;
 use App\Http\Controllers\IndicadorAnswerController;
@@ -87,6 +88,9 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
         ->name('dashboard');
     Route::get('/indicadores/{id}', [IndicadoresController::class, 'index'])
         ->name('indicadores');
+
+    Route::get('/evaluacion', [EvaluationController::class, 'index'])
+        ->name('evaluacion');
     // Otras rutas protegidas...
 });
 
@@ -99,7 +103,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/super/values', [SuperAdminController::class, 'values'])->name('super.values');
     Route::get('/super/homologations', [SuperAdminController::class, 'homologations'])->name('super.homologations');
     Route::get('/super/indicators', [SuperAdminController::class, 'indicators'])->name('super.indicators');
-    
+
     Route::get('/api/subcategories', [SubcategoryController::class, 'index']);
     Route::post('/api/subcategories', [SubcategoryController::class, 'store']);
     Route::put('/api/subcategories/{subcategory}', [SubcategoryController::class, 'update']);
@@ -141,7 +145,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::patch('/api/users/{user}/status', [UserManagementController::class, 'updateStatus']);
     Route::patch('/api/users/{user}/role', [UserManagementController::class, 'updateRole']);
     Route::get('/api/companies/active', [UserManagementController::class, 'getActiveCompanies']);
-    
+
     // Ruta para la vista
     Route::get('/super/users', [SuperAdminController::class, 'users'])->name('super.users');
 
@@ -151,7 +155,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::put('/api/companies/{company}', [CompanyManagementController::class, 'update']);
     Route::delete('/api/companies/{company}', [CompanyManagementController::class, 'destroy']);
     Route::post('/api/companies/bulk-delete', [CompanyManagementController::class, 'bulkDelete']);
-    
+
     // Ruta para la vista
     Route::get('/super/companies', [SuperAdminController::class, 'companies'])->name('super.companies');
 
@@ -161,7 +165,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::put('/api/certifications/{certification}', [CertificationManagementController::class, 'update']);
     Route::delete('/api/certifications/{certification}', [CertificationManagementController::class, 'destroy']);
     Route::post('/api/certifications/bulk-delete', [CertificationManagementController::class, 'bulkDelete']);
-    
+
     // Ruta para la vista
     Route::get('/super/certifications', [SuperAdminController::class, 'certifications'])->name('super.certifications');
 
