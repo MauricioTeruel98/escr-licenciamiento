@@ -58,4 +58,9 @@ class Indicator extends Model
     {
         return $this->hasMany(EvaluationQuestion::class);
     }
+
+    public function indicatorAnswers()
+    {
+        return $this->hasMany(IndicatorAnswer::class);
+    }
 } 

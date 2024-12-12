@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 06-12-2024 a las 17:36:41
+-- Tiempo de generación: 12-12-2024 a las 21:12:37
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -20,6 +20,91 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `escr_licenciamiento`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `auto_evaluation_result`
+--
+
+CREATE TABLE `auto_evaluation_result` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `company_id` bigint(20) UNSIGNED NOT NULL,
+  `nota` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `status` varchar(255) NOT NULL DEFAULT 'pendiente',
+  `fecha_aprobacion` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `auto_evaluation_result`
+--
+
+INSERT INTO `auto_evaluation_result` (`id`, `company_id`, `nota`, `status`, `fecha_aprobacion`, `created_at`, `updated_at`) VALUES
+(15, 7, 0, 'apto', '2024-12-12 20:13:55', '2024-12-12 01:51:02', '2024-12-12 20:13:55');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `auto_evaluation_subcategory_result`
+--
+
+CREATE TABLE `auto_evaluation_subcategory_result` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `company_id` bigint(20) UNSIGNED NOT NULL,
+  `value_id` bigint(20) UNSIGNED NOT NULL,
+  `subcategory_id` bigint(20) UNSIGNED NOT NULL,
+  `nota` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `fecha_evaluacion` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `auto_evaluation_subcategory_result`
+--
+
+INSERT INTO `auto_evaluation_subcategory_result` (`id`, `company_id`, `value_id`, `subcategory_id`, `nota`, `fecha_evaluacion`, `created_at`, `updated_at`) VALUES
+(90, 7, 31, 25, 50, '2024-12-12 20:13:55', '2024-12-12 01:51:02', '2024-12-12 20:13:55'),
+(91, 7, 31, 26, 100, '2024-12-12 20:13:55', '2024-12-12 01:51:02', '2024-12-12 20:13:55'),
+(92, 7, 31, 27, 100, '2024-12-12 20:13:55', '2024-12-12 01:51:02', '2024-12-12 20:13:55'),
+(93, 7, 31, 28, 100, '2024-12-12 20:13:55', '2024-12-12 01:51:02', '2024-12-12 20:13:55'),
+(94, 7, 32, 29, 100, '2024-12-12 01:51:42', '2024-12-12 01:51:12', '2024-12-12 01:51:42'),
+(95, 7, 32, 30, 100, '2024-12-12 01:51:42', '2024-12-12 01:51:12', '2024-12-12 01:51:42'),
+(96, 7, 32, 31, 100, '2024-12-12 01:51:42', '2024-12-12 01:51:12', '2024-12-12 01:51:42'),
+(97, 7, 32, 32, 100, '2024-12-12 01:51:42', '2024-12-12 01:51:12', '2024-12-12 01:51:42'),
+(98, 7, 33, 33, 100, '2024-12-12 01:51:17', '2024-12-12 01:51:17', '2024-12-12 01:51:17'),
+(99, 7, 34, 34, 100, '2024-12-12 01:51:22', '2024-12-12 01:51:22', '2024-12-12 01:51:22'),
+(100, 7, 35, 35, 100, '2024-12-12 01:51:49', '2024-12-12 01:51:26', '2024-12-12 01:51:49');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `auto_evaluation_valor_result`
+--
+
+CREATE TABLE `auto_evaluation_valor_result` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `company_id` bigint(20) UNSIGNED NOT NULL,
+  `value_id` bigint(20) UNSIGNED NOT NULL,
+  `subcategory_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `nota` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `fecha_evaluacion` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `auto_evaluation_valor_result`
+--
+
+INSERT INTO `auto_evaluation_valor_result` (`id`, `company_id`, `value_id`, `subcategory_id`, `nota`, `fecha_evaluacion`, `created_at`, `updated_at`) VALUES
+(60, 7, 31, NULL, 88, '2024-12-12 20:13:55', '2024-12-12 01:51:02', '2024-12-12 20:13:55'),
+(61, 7, 32, NULL, 100, '2024-12-12 01:51:42', '2024-12-12 01:51:12', '2024-12-12 01:51:42'),
+(62, 7, 33, NULL, 100, '2024-12-12 01:51:17', '2024-12-12 01:51:17', '2024-12-12 01:51:17'),
+(63, 7, 34, NULL, 100, '2024-12-12 01:51:22', '2024-12-12 01:51:22', '2024-12-12 01:51:22'),
+(64, 7, 35, NULL, 100, '2024-12-12 01:51:49', '2024-12-12 01:51:26', '2024-12-12 01:51:49');
 
 -- --------------------------------------------------------
 
@@ -126,7 +211,55 @@ CREATE TABLE `companies` (
 
 INSERT INTO `companies` (`id`, `legal_id`, `name`, `website`, `sector`, `city`, `commercial_activity`, `phone`, `mobile`, `is_exporter`, `created_at`, `updated_at`, `status`) VALUES
 (7, '123456789', 'Buzz', 'https://buzz.cr', 'tecnologia', 'san-jose', 'Servicios', '5415641', '641656', 1, '2024-11-15 01:01:15', '2024-11-15 01:01:15', 'active'),
-(9, '987654321', 'Teruel 2', 'https://localhost.com.ar', 'Manufactura', 'Heredia', 'Productora Agropecuaria', '9234875000000', '20385700000', 1, '2024-11-15 01:34:14', '2024-11-15 02:01:47', 'active');
+(9, '987654321', 'Prueba', 'https://localhost.com.ar', 'Manufactura', 'Heredia', 'Productora Agropecuaria', '9234875000000', '20385700000', 1, '2024-11-15 01:34:14', '2024-11-15 02:01:47', 'active');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `evaluation_questions`
+--
+
+CREATE TABLE `evaluation_questions` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `indicator_id` bigint(20) UNSIGNED NOT NULL,
+  `question` text NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `evaluation_questions`
+--
+
+INSERT INTO `evaluation_questions` (`id`, `indicator_id`, `question`, `created_at`, `updated_at`) VALUES
+(12, 34, '¿El plan estratégico está alineado con la misión y visión?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(13, 34, '¿Se revisa periódicamente el cumplimiento del plan?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(14, 34, '¿Existe un proceso de seguimiento y medición de objetivos?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(15, 35, '¿Se identifican oportunidades y amenazas del mercado?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(16, 35, '¿Se evalúan las tendencias del sector?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(17, 36, '¿Se identifican necesidades de formación?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(18, 36, '¿Se evalúa la efectividad de las capacitaciones?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(19, 36, '¿Existe un presupuesto asignado para formación?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(20, 37, '¿Existen mecanismos de medición?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(21, 37, '¿Se analizan las quejas y reclamos?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(22, 37, '¿Se implementan mejoras basadas en la retroalimentación?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(23, 38, '¿Existen indicadores de proceso?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(24, 38, '¿Se realiza mejora continua?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(25, 38, '¿Se controlan los procesos críticos?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(26, 39, '¿Se destinan recursos para innovación?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(27, 39, '¿Se mide el impacto de las innovaciones?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(28, 40, '¿Existen programas de incentivos para la innovación?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(29, 40, '¿Se promueve la generación de ideas?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(30, 41, '¿Se desarrollan nuevos productos/servicios?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(31, 41, '¿Se mejoran los existentes?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(32, 42, '¿Se implementan nuevas tecnologías?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(33, 42, '¿Se optimizan los procesos existentes?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(34, 43, '¿Existen objetivos de impacto social?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(35, 43, '¿Se mide el impacto en la comunidad?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(36, 44, '¿Se tienen objetivos ambientales?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(37, 44, '¿Se mide la huella de carbono?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(38, 45, '¿Se tienen convenios con otras organizaciones?', '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(39, 45, '¿Se mide el impacto de las alianzas?', '2024-12-11 23:40:36', '2024-12-11 23:40:36');
 
 -- --------------------------------------------------------
 
@@ -157,8 +290,8 @@ CREATE TABLE `indicators` (
   `self_evaluation_question` text DEFAULT NULL,
   `value_id` bigint(20) UNSIGNED NOT NULL,
   `subcategory_id` bigint(20) UNSIGNED NOT NULL,
-  `evaluation_questions` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`evaluation_questions`)),
-  `guide` text NOT NULL,
+  `evaluation_questions` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `guide` text DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -169,9 +302,71 @@ CREATE TABLE `indicators` (
 --
 
 INSERT INTO `indicators` (`id`, `name`, `binding`, `self_evaluation_question`, `value_id`, `subcategory_id`, `evaluation_questions`, `guide`, `is_active`, `created_at`, `updated_at`) VALUES
-(4, 'E3', 1, 'AAaaaaaaaa', 6, 2, '[\"BBBaaaaaaa\",\"CCCaaaaaaaaa\",\"hhhhhhhhhhhhh\"]', 'CCCCCCaaaaaaaaaa', 1, '2024-11-29 21:42:48', '2024-11-29 21:47:13'),
-(5, 'E1', 1, 'AAAA', 6, 1, '[\"BBB\",\"CCCC\"]', 'DDDD', 1, '2024-11-29 21:44:44', '2024-11-29 21:44:44'),
-(6, 'E2', 0, 'ABBB', 6, 2, '[\"BBB\",\"NBN\"]', 'BBBB', 1, '2024-11-29 21:45:46', '2024-11-29 21:45:46');
+(34, 'E1.1', 1, '¿La empresa cuenta con un plan estratégico documentado?', 31, 25, NULL, 'Verificar la existencia y aplicación del plan estratégico', 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(35, 'E1.2', 0, '¿Se realiza análisis del entorno empresarial?', 31, 25, NULL, 'Revisar documentación de análisis FODA y estudios de mercado', 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(36, 'C1.1', 1, '¿Existe un plan de capacitación?', 31, 26, NULL, 'Verificar plan de capacitación y registros de formación', 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(37, 'EC1.1', 0, '¿Se mide la satisfacción del cliente?', 31, 27, NULL, 'Revisar sistema de medición de satisfacción', 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(38, 'P1.1', 1, '¿Se tienen procesos documentados y controlados?', 31, 28, NULL, 'Revisar documentación y control de procesos', 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(39, 'IE1.1', 1, '¿Existe una estrategia de innovación?', 32, 29, NULL, 'Verificar estrategia y recursos para innovación', 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(40, 'IC1.1', 1, '¿Se fomenta la cultura de innovación?', 32, 30, NULL, 'Revisar programas de fomento a la innovación', 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(41, 'IEC1.1', 1, '¿Se innova en productos y servicios?', 32, 31, NULL, 'Verificar desarrollo de nuevos productos/servicios', 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(42, 'IP1.1', 1, '¿Se innova en procesos?', 32, 32, NULL, 'Revisar mejoras e innovaciones en procesos', 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(43, 'PS1.1', 1, '¿Se incluye el impacto social en la estrategia?', 33, 33, NULL, 'Verificar estrategia de impacto social', 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(44, 'S1.1', 1, '¿Existe una estrategia de sostenibilidad?', 34, 34, NULL, 'Verificar estrategia ambiental', 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(45, 'V1.1', 1, '¿Existen alianzas estratégicas?', 35, 35, NULL, 'Verificar convenios y alianzas', 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `indicator_answers`
+--
+
+CREATE TABLE `indicator_answers` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `company_id` bigint(20) UNSIGNED NOT NULL,
+  `indicator_id` bigint(20) UNSIGNED NOT NULL,
+  `answer` varchar(255) NOT NULL,
+  `is_binding` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `indicator_answers`
+--
+
+INSERT INTO `indicator_answers` (`id`, `user_id`, `company_id`, `indicator_id`, `answer`, `is_binding`, `created_at`, `updated_at`) VALUES
+(211, 18, 7, 34, '1', 1, '2024-12-12 01:51:02', '2024-12-12 20:13:17'),
+(212, 18, 7, 35, '0', 0, '2024-12-12 01:51:02', '2024-12-12 20:13:17'),
+(213, 18, 7, 36, '1', 1, '2024-12-12 01:51:02', '2024-12-12 20:13:17'),
+(214, 18, 7, 37, '1', 0, '2024-12-12 01:51:02', '2024-12-12 20:13:55'),
+(215, 18, 7, 38, '1', 1, '2024-12-12 01:51:02', '2024-12-12 20:13:17'),
+(216, 37, 7, 39, '1', 1, '2024-12-12 01:51:12', '2024-12-12 01:51:12'),
+(217, 37, 7, 40, '1', 1, '2024-12-12 01:51:12', '2024-12-12 01:51:12'),
+(218, 37, 7, 41, '1', 1, '2024-12-12 01:51:12', '2024-12-12 01:51:12'),
+(219, 37, 7, 42, '1', 1, '2024-12-12 01:51:12', '2024-12-12 01:51:42'),
+(220, 37, 7, 43, '1', 1, '2024-12-12 01:51:17', '2024-12-12 01:51:17'),
+(221, 37, 7, 44, '1', 1, '2024-12-12 01:51:22', '2024-12-12 01:51:22'),
+(222, 37, 7, 45, '1', 1, '2024-12-12 01:51:26', '2024-12-12 01:51:49');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `indicator_answers_evaluation`
+--
+
+CREATE TABLE `indicator_answers_evaluation` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `company_id` bigint(20) UNSIGNED NOT NULL,
+  `indicator_id` bigint(20) UNSIGNED NOT NULL,
+  `answer` varchar(255) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -186,21 +381,6 @@ CREATE TABLE `indicator_homologation` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `indicator_homologation`
---
-
-INSERT INTO `indicator_homologation` (`id`, `indicator_id`, `homologation_id`, `created_at`, `updated_at`) VALUES
-(1, 4, 1, NULL, NULL),
-(2, 4, 2, NULL, NULL),
-(3, 5, 1, NULL, NULL),
-(4, 5, 2, NULL, NULL),
-(5, 5, 3, NULL, NULL),
-(6, 6, 1, NULL, NULL),
-(7, 4, 3, NULL, NULL),
-(8, 4, 5, NULL, NULL),
-(9, 4, 6, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -274,7 +454,14 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (18, '2024_11_29_173910_create_subcategories_table', 15),
 (19, '2024_11_29_184010_remove_homologation_id_from_indicators', 16),
 (20, '2024_11_29_182721_create_indicator_homologation_table', 17),
-(21, '2024_11_29_195301_add_status_column_to_companies_table', 18);
+(21, '2024_11_29_195301_add_status_column_to_companies_table', 18),
+(22, '2024_12_06_211557_create_indicator_answer_table', 19),
+(23, '2024_12_06_224732_create_auto_evaluation_valor_result_table', 20),
+(24, '2024_12_06_224952_create_auto_evaluation_result_table', 21),
+(25, '2024_12_06_231151_create_auto_evaluation_subcategory_result_table', 22),
+(26, '2024_12_10_164548_add_is_binding_column_to_indicator_answers_table', 23),
+(27, '2024_12_11_195124_create_evaluation_questions_table', 24),
+(28, '2024_12_12_171745_create_indicator_answer_evaluation_table', 25);
 
 -- --------------------------------------------------------
 
@@ -327,8 +514,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('rSFCPfkXvLeWuYaaPQ85bBH8eRdjEd4iT1HsCNti', 39, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoidE44NnNzam1zWXd5MUw4MWRmRWVDSFpScjJldmxjdXVVZFVoUThYVSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZWdpc3RlciI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM5O30=', 1733499502),
-('WIEQAkC2d8Xm72cOuKB13oHw9p53x1sy0CUQiuTS', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiR1hBUzFjcmdNREJicmt0bXUzdVhncDFmNkxzVG5kTE80ZnBiYmdacSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzc7fQ==', 1733499866);
+('vD0NvvFGoMRggzV48nO19LwJuC9RiYZjugfOghTh', 18, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoic2dSbEJ5UTBKdktjclQ4QXEwaWVDWnozd3BHV29xTUxIemhvaGJzZCI7czozOiJ1cmwiO2E6MDp7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE4O30=', 1734033067),
+('wQjATFzmhjc7y6eeOQ8vD97lmKFoh67xfUy1GkVi', 18, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiTnNCQ2JwcERBZ2hpT1hFbGFCcmp4Q0tadEhHTXd2Q0FORjB0bHcxeSI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9ldmFsdWFjaW9uLzMxIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTg7fQ==', 1734023800);
 
 -- --------------------------------------------------------
 
@@ -351,8 +538,17 @@ CREATE TABLE `subcategories` (
 --
 
 INSERT INTO `subcategories` (`id`, `name`, `description`, `value_id`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'Valor', NULL, 6, 1, '2024-11-29 20:43:48', '2024-11-29 20:43:48'),
-(2, 'rfghserthgb', NULL, 6, 1, '2024-11-29 20:44:10', '2024-11-29 20:44:10');
+(25, 'Estrategia Empresarial', NULL, 31, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(26, 'Cultura organizacional', NULL, 31, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(27, 'Experiencia del cliente y calidad', NULL, 31, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(28, 'Proceso y cadena de suministro', NULL, 31, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(29, 'Estrategia Empresarial', NULL, 32, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(30, 'Cultura organizacional', NULL, 32, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(31, 'Experiencia del cliente y calidad', NULL, 32, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(32, 'Proceso y cadena de suministro', NULL, 32, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(33, 'Estrategia Empresarial', NULL, 33, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(34, 'Estrategia Empresarial', NULL, 34, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(35, 'Estrategia Empresarial', NULL, 35, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36');
 
 -- --------------------------------------------------------
 
@@ -393,13 +589,11 @@ INSERT INTO `users` (`id`, `name`, `lastname`, `id_number`, `phone`, `email`, `e
 (29, 'Mauricio 7', NULL, NULL, NULL, 'mauricio7@buzz.cr', NULL, '$2y$12$9rdk7gUV9229oLOvMMAADOm80N6jcQJ5H9kphvdfW77Y8qT1mSal6', NULL, '2024-11-15 21:22:20', '2024-11-15 21:48:21', 7, 'user', 'rejected'),
 (30, 'Mauricio 8', NULL, NULL, NULL, 'mauricio8@buzz.cr', NULL, '$2y$12$B7OeNuSBZEHuol6oa.8M7.ZcoL4U.OlJhR1GwNogklRv0Irif.SDu', NULL, '2024-11-15 21:42:04', '2024-11-19 00:31:57', 7, 'user', 'rejected'),
 (31, 'Mauricio 10', NULL, NULL, NULL, 'mauricio10@buzz.cr', NULL, '$2y$12$OeyzCz5jMIryrwYep4.XceJFwBCLTX/0oziXSqmtiodVkEnup95Ti', NULL, '2024-11-19 01:06:59', '2024-11-19 01:59:38', 7, 'user', 'rejected'),
-(32, 'Mauricio 20', NULL, NULL, NULL, 'mauricio20@buzz.com', NULL, '$2y$12$j8.UrfZJeO.cTZqHxavO2u7ZNRDWa6.iZYU0BSj8iXb9WqJLCjsCe', NULL, '2024-11-19 01:21:04', '2024-11-19 01:21:04', NULL, 'user', 'pending'),
-(33, 'Mauricio 20', NULL, NULL, NULL, 'mauricio20@buzz.cr', NULL, '$2y$12$rE.WpFQ8V/t.msQZXlSl4uY5h24aboN.eMJnLdYDSmUqwdWOH0SO6', NULL, '2024-11-19 01:32:19', '2024-11-19 01:32:19', NULL, 'user', 'pending'),
 (34, 'Mauricio Teruel 1', NULL, NULL, NULL, 'mauricioteruel98@gmail.com', NULL, '$2y$12$E5UGpVLJ.CUv7ygv5QrxtOf90cLQFLvMkcwQkiXqSnK9v6LqB5fsS', NULL, '2024-11-19 20:16:28', '2024-11-19 20:32:02', 7, 'user', 'rejected'),
 (35, 'Mauricio Teruel', NULL, NULL, NULL, 'mauricioteruel1998@gmail.com', NULL, '$2y$12$we8XoQJjyVJe3OaTocDuBuaghnFTWjknoFBa.nddU6D.b.tPt4rWm', NULL, '2024-11-19 22:37:42', '2024-11-19 23:04:13', 7, 'user', 'approved'),
 (36, 'TITITITITIT', '', NULL, '20394590238', 'ti@ti.com', NULL, '$2y$12$OgWIyk12x41vJ/UNFfSJe.wWnj/rCGmaCLYd90BOaIonNtyGaLETW', NULL, '2024-11-19 22:38:46', '2024-11-19 22:38:46', 7, 'user', 'approved'),
-(37, 'Super Admin', 'SA', NULL, NULL, 'admin@admin.com', NULL, '$2y$12$gT1r4gTPiuvhf.flPkNHkut7NChjwTHlL0YEVQhsmLywNDRdfsMLG', NULL, '2024-11-20 23:09:50', '2024-11-29 22:54:14', 7, 'super_admin', 'approved'),
-(38, 'Mauricio Teruel', NULL, NULL, NULL, 'prueba400@buzz.cr', NULL, '$2y$12$FsYDUU6jJYe3BH.Drs.T6.5M0mM7y1hvcng7pov9Wfs2DSGzL4tOe', NULL, '2024-12-05 17:40:55', '2024-12-05 17:41:02', 7, 'user', 'pending'),
+(37, 'Super Admin', 'SA', NULL, NULL, 'admin@admin.com', NULL, '$2y$12$gT1r4gTPiuvhf.flPkNHkut7NChjwTHlL0YEVQhsmLywNDRdfsMLG', NULL, '2024-11-20 23:09:50', '2024-12-11 00:35:16', 7, 'super_admin', 'approved'),
+(38, 'Mauricio Teruel', NULL, NULL, NULL, 'prueba400@buzz.cr', NULL, '$2y$12$FsYDUU6jJYe3BH.Drs.T6.5M0mM7y1hvcng7pov9Wfs2DSGzL4tOe', NULL, '2024-12-05 17:40:55', '2024-12-10 20:45:24', 7, 'user', 'approved'),
 (39, 'Juan pere', NULL, NULL, NULL, 'juan@teruel.com', NULL, '$2y$12$2DUtGePN8wh77zxg.zT.leqbzj05z0PkK8uIJp0cQyrQ9ZzYGZhtG', NULL, '2024-12-06 18:37:43', '2024-12-06 18:38:21', 9, 'user', 'pending');
 
 -- --------------------------------------------------------
@@ -423,11 +617,11 @@ CREATE TABLE `values` (
 --
 
 INSERT INTO `values` (`id`, `name`, `slug`, `minimum_score`, `is_active`, `created_at`, `updated_at`) VALUES
-(5, 'Excelencia', 'excelencia', 85, 1, '2024-11-29 01:05:29', '2024-11-29 01:19:22'),
-(6, 'Valor', 'valor', 50, 1, '2024-11-29 20:14:41', '2024-11-29 20:14:41'),
-(7, 'Valor1', 'sefghu', 20, 1, '2024-11-29 20:19:01', '2024-11-29 20:19:01'),
-(8, 'cfghbdsftgh', 'rfh', 82, 1, '2024-11-29 20:19:06', '2024-11-29 20:19:06'),
-(9, '75828', '2787', 12, 1, '2024-11-29 20:19:10', '2024-11-29 20:19:10');
+(31, 'Excelencia', 'excelencia', 70, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(32, 'Innovación', 'innovacion', 70, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(33, 'Progreso social', 'progreso-social', 70, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(34, 'Sostenibilidad', 'sostenibilidad', 70, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36'),
+(35, 'Vinculación', 'vinculacion', 70, 1, '2024-12-11 23:40:36', '2024-12-11 23:40:36');
 
 -- --------------------------------------------------------
 
@@ -446,6 +640,30 @@ CREATE TABLE `value_subcategory` (
 --
 -- Índices para tablas volcadas
 --
+
+--
+-- Indices de la tabla `auto_evaluation_result`
+--
+ALTER TABLE `auto_evaluation_result`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `auto_evaluation_result_company_id_foreign` (`company_id`);
+
+--
+-- Indices de la tabla `auto_evaluation_subcategory_result`
+--
+ALTER TABLE `auto_evaluation_subcategory_result`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `auto_evaluation_subcategory_result_company_id_foreign` (`company_id`),
+  ADD KEY `auto_evaluation_subcategory_result_value_id_foreign` (`value_id`),
+  ADD KEY `auto_evaluation_subcategory_result_subcategory_id_foreign` (`subcategory_id`);
+
+--
+-- Indices de la tabla `auto_evaluation_valor_result`
+--
+ALTER TABLE `auto_evaluation_valor_result`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `auto_evaluation_valor_result_company_id_foreign` (`company_id`),
+  ADD KEY `auto_evaluation_valor_result_value_id_foreign` (`value_id`);
 
 --
 -- Indices de la tabla `available_certifications`
@@ -481,6 +699,13 @@ ALTER TABLE `companies`
   ADD UNIQUE KEY `companies_legal_id_unique` (`legal_id`);
 
 --
+-- Indices de la tabla `evaluation_questions`
+--
+ALTER TABLE `evaluation_questions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `evaluation_questions_indicator_id_foreign` (`indicator_id`);
+
+--
 -- Indices de la tabla `failed_jobs`
 --
 ALTER TABLE `failed_jobs`
@@ -493,6 +718,24 @@ ALTER TABLE `failed_jobs`
 ALTER TABLE `indicators`
   ADD PRIMARY KEY (`id`),
   ADD KEY `indicators_value_id_foreign` (`value_id`);
+
+--
+-- Indices de la tabla `indicator_answers`
+--
+ALTER TABLE `indicator_answers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `indicator_answers_user_id_foreign` (`user_id`),
+  ADD KEY `indicator_answers_company_id_foreign` (`company_id`),
+  ADD KEY `indicator_answers_indicator_id_foreign` (`indicator_id`);
+
+--
+-- Indices de la tabla `indicator_answers_evaluation`
+--
+ALTER TABLE `indicator_answers_evaluation`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `indicator_answers_evaluation_user_id_foreign` (`user_id`),
+  ADD KEY `indicator_answers_evaluation_company_id_foreign` (`company_id`),
+  ADD KEY `indicator_answers_evaluation_indicator_id_foreign` (`indicator_id`);
 
 --
 -- Indices de la tabla `indicator_homologation`
@@ -578,6 +821,24 @@ ALTER TABLE `value_subcategory`
 --
 
 --
+-- AUTO_INCREMENT de la tabla `auto_evaluation_result`
+--
+ALTER TABLE `auto_evaluation_result`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT de la tabla `auto_evaluation_subcategory_result`
+--
+ALTER TABLE `auto_evaluation_subcategory_result`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+
+--
+-- AUTO_INCREMENT de la tabla `auto_evaluation_valor_result`
+--
+ALTER TABLE `auto_evaluation_valor_result`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+
+--
 -- AUTO_INCREMENT de la tabla `available_certifications`
 --
 ALTER TABLE `available_certifications`
@@ -587,13 +848,19 @@ ALTER TABLE `available_certifications`
 -- AUTO_INCREMENT de la tabla `certifications`
 --
 ALTER TABLE `certifications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de la tabla `companies`
 --
 ALTER TABLE `companies`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- AUTO_INCREMENT de la tabla `evaluation_questions`
+--
+ALTER TABLE `evaluation_questions`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT de la tabla `failed_jobs`
@@ -605,13 +872,25 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT de la tabla `indicators`
 --
 ALTER TABLE `indicators`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+
+--
+-- AUTO_INCREMENT de la tabla `indicator_answers`
+--
+ALTER TABLE `indicator_answers`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=223;
+
+--
+-- AUTO_INCREMENT de la tabla `indicator_answers_evaluation`
+--
+ALTER TABLE `indicator_answers_evaluation`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `indicator_homologation`
 --
 ALTER TABLE `indicator_homologation`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de la tabla `jobs`
@@ -623,7 +902,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT de la tabla `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT de la tabla `personal_access_tokens`
@@ -635,7 +914,7 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT de la tabla `subcategories`
 --
 ALTER TABLE `subcategories`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT de la tabla `users`
@@ -647,7 +926,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT de la tabla `values`
 --
 ALTER TABLE `values`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT de la tabla `value_subcategory`
@@ -660,16 +939,58 @@ ALTER TABLE `value_subcategory`
 --
 
 --
+-- Filtros para la tabla `auto_evaluation_result`
+--
+ALTER TABLE `auto_evaluation_result`
+  ADD CONSTRAINT `auto_evaluation_result_company_id_foreign` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `auto_evaluation_subcategory_result`
+--
+ALTER TABLE `auto_evaluation_subcategory_result`
+  ADD CONSTRAINT `auto_evaluation_subcategory_result_company_id_foreign` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `auto_evaluation_subcategory_result_subcategory_id_foreign` FOREIGN KEY (`subcategory_id`) REFERENCES `subcategories` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `auto_evaluation_subcategory_result_value_id_foreign` FOREIGN KEY (`value_id`) REFERENCES `values` (`id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `auto_evaluation_valor_result`
+--
+ALTER TABLE `auto_evaluation_valor_result`
+  ADD CONSTRAINT `auto_evaluation_valor_result_company_id_foreign` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE;
+
+--
 -- Filtros para la tabla `certifications`
 --
 ALTER TABLE `certifications`
   ADD CONSTRAINT `certifications_company_id_foreign` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE;
 
 --
+-- Filtros para la tabla `evaluation_questions`
+--
+ALTER TABLE `evaluation_questions`
+  ADD CONSTRAINT `evaluation_questions_indicator_id_foreign` FOREIGN KEY (`indicator_id`) REFERENCES `indicators` (`id`) ON DELETE CASCADE;
+
+--
 -- Filtros para la tabla `indicators`
 --
 ALTER TABLE `indicators`
   ADD CONSTRAINT `indicators_value_id_foreign` FOREIGN KEY (`value_id`) REFERENCES `values` (`id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `indicator_answers`
+--
+ALTER TABLE `indicator_answers`
+  ADD CONSTRAINT `indicator_answers_company_id_foreign` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `indicator_answers_indicator_id_foreign` FOREIGN KEY (`indicator_id`) REFERENCES `indicators` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `indicator_answers_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `indicator_answers_evaluation`
+--
+ALTER TABLE `indicator_answers_evaluation`
+  ADD CONSTRAINT `indicator_answers_evaluation_company_id_foreign` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `indicator_answers_evaluation_indicator_id_foreign` FOREIGN KEY (`indicator_id`) REFERENCES `indicators` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `indicator_answers_evaluation_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `indicator_homologation`

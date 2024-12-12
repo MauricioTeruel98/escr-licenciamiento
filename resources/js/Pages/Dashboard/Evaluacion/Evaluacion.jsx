@@ -18,6 +18,8 @@ export default function Evaluacion({ valueData, userName }) {
         subtitle: subcategory.name.split(' ').slice(1).join(' ')
     }));
 
+    console.log(subcategories);
+
     const handleStepClick = (index) => {
         setCurrentSubcategoryIndex(index);
     };
