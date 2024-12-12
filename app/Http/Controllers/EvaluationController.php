@@ -27,21 +27,41 @@ class EvaluationController extends Controller
         }, 'subcategories.indicators.evaluationQuestions'])
         ->findOrFail($value_id);
 
-        // Para debug
-        \Log::info('Indicadores encontrados:', [
-            'indicator_ids' => $indicatorIds,
-            'value_id' => $value_id,
-            'subcategories' => $valueData->subcategories->map(function($sub) {
+        // Obtener todas las respuestas de evaluación existentes
+        $savedAnswers = \App\Models\IndicatorAnswerEvaluation::where('company_id', $company_id)
+            ->get()
+            ->map(function($answer) {
+                $files = [];
+                if ($answer->file_path) {
+                    $filePaths = json_decode($answer->file_path);
+                    if (is_array($filePaths)) {
+                        $files = array_map(function($path) {
+                            return [
+                                'name' => basename($path),
+                                'path' => $path,
+                                'size' => file_exists(storage_path('app/public/' . $path)) ? 
+                                    filesize(storage_path('app/public/' . $path)) : 0,
+                                'type' => mime_content_type(storage_path('app/public/' . $path)) ?? 'application/octet-stream'
+                            ];
+                        }, $filePaths);
+                    }
+                }
+
                 return [
-                    'id' => $sub->id,
-                    'indicators_count' => $sub->indicators->count()
+                    'evaluation_question_id' => $answer->evaluation_question_id,
+                    'indicator_id' => $answer->indicator_id,
+                    'value' => $answer->answer,
+                    'description' => $answer->description,
+                    'files' => $files
                 ];
             })
-        ]);
+            ->keyBy('evaluation_question_id')
+            ->toArray();
 
         return Inertia::render('Dashboard/Evaluacion/Evaluacion', [
             'valueData' => $valueData,
-            'userName' => $user->name
+            'userName' => $user->name,
+            'savedAnswers' => $savedAnswers
         ]);
     }
 

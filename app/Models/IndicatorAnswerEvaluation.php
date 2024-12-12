@@ -7,19 +7,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IndicatorAnswerEvaluation extends Model
 {
+
+    protected $table = 'indicator_answers_evaluation';
     protected $fillable = [
         'user_id',
         'company_id',
         'indicator_id',
+        'evaluation_question_id',
         'answer',
-        'is_binding',
         'description',
         'file_path'
     ];
 
     protected $casts = [
         'answer' => 'string',
-        'is_binding' => 'boolean',
         'description' => 'string',
         'file_path' => 'string'  
     ];
@@ -37,5 +38,10 @@ class IndicatorAnswerEvaluation extends Model
     public function indicator(): BelongsTo
     {
         return $this->belongsTo(Indicator::class);
+    }
+
+    public function evaluationQuestion(): BelongsTo
+    {
+        return $this->belongsTo(EvaluationQuestion::class);
     }
 } 

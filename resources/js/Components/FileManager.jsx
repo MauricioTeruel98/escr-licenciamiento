@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 
-export default function FileManager({ 
+export default function FileManager({
     onFileSelect,
     onFileRemove,
     files = [],
@@ -14,7 +14,10 @@ export default function FileManager({
         maxFiles: 'Número máximo de archivos excedido',
         maxSize: 'El archivo excede el tamaño máximo permitido',
         fileType: 'Tipo de archivo no permitido'
-    }
+    },
+    indicatorId,
+    onSuccess,
+    onError
 }) {
     const [isDragging, setIsDragging] = useState(false);
     const [error, setError] = useState('');
@@ -53,7 +56,7 @@ export default function FileManager({
 
     const processFiles = (fileList) => {
         setError('');
-        
+
         // Validar número máximo de archivos
         if (files.length + fileList.length > maxFiles) {
             setError(errorMessages.maxFiles);
@@ -72,7 +75,7 @@ export default function FileManager({
         e.preventDefault();
         e.stopPropagation();
         setIsDragging(false);
-        
+
         const { files: droppedFiles } = e.dataTransfer;
         processFiles(droppedFiles);
     };
@@ -90,6 +93,41 @@ export default function FileManager({
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
+    const basename = (path) => {
+        return path.split('/').pop();
+    };
+
+    const handleFileRemove = async (fileToRemove) => {
+        try {
+            // Si el archivo tiene una ruta en el servidor (archivo existente)
+            if (fileToRemove.path) {
+                const response = await axios.delete(route('evaluacion.delete-file'), {
+                    data: {
+                        indicator_id: indicatorId,
+                        file_path: fileToRemove.path
+                    }
+                });
+
+                if (response.data.success) {
+                    onFileRemove(fileToRemove);
+                    // Opcional: mostrar mensaje de éxito
+                    if (typeof onSuccess === 'function') {
+                        onSuccess('Archivo eliminado correctamente');
+                    }
+                }
+            } else {
+                // Para archivos que aún no se han subido
+                onFileRemove(fileToRemove);
+            }
+        } catch (error) {
+            console.error('Error al eliminar archivo:', error);
+            // Opcional: mostrar mensaje de error
+            if (typeof onError === 'function') {
+                onError(error.response?.data?.message || 'Error al eliminar el archivo');
+            }
+        }
     };
 
     return (
@@ -110,7 +148,7 @@ export default function FileManager({
                     accept={acceptedTypes}
                     onChange={handleFileInput}
                 />
-                
+
                 <div className="text-center py-4">
                     <p className="text-gray-600 text-sm">
                         {dragDropText}{' '}
@@ -131,30 +169,39 @@ export default function FileManager({
             {/* Lista de archivos */}
             <div className="space-y-2 mt-2">
                 {files.map((file, index) => (
-                    <div 
-                        key={`${file.name}-${index}`}
+                    <div
+                        key={`${file.name || file.path}-${index}`}
                         className="flex items-center justify-between bg-gray-600 rounded-lg px-4 py-2"
                     >
                         <div className="flex items-center gap-2">
-                            <span className="text-sm text-white">{file.name}</span>
+                            <span className="text-sm text-white">
+                                {file.name || basename(file.path)}
+                            </span>
                             <span className="text-xs text-gray-300">
                                 {formatFileSize(file.size)}
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <button 
-                                onClick={() => onFileRemove(file)}
+                            <button
+                                onClick={() => handleFileRemove(file)}
                                 className="p-1 hover:bg-gray-500 rounded"
                             >
                                 <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
-                            <button className="p-1 hover:bg-gray-500 rounded">
-                                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                            </button>
+                            {file.path && (
+                                <a
+                                    href={`/storage/${file.path}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-1 hover:bg-gray-500 rounded"
+                                >
+                                    <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                </a>
+                            )}
                         </div>
                     </div>
                 ))}

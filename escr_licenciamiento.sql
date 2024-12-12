@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 12-12-2024 a las 21:12:37
+-- Tiempo de generación: 12-12-2024 a las 22:14:10
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -363,10 +363,20 @@ CREATE TABLE `indicator_answers_evaluation` (
   `indicator_id` bigint(20) UNSIGNED NOT NULL,
   `answer` varchar(255) NOT NULL,
   `description` varchar(255) NOT NULL,
-  `file_path` varchar(255) NOT NULL,
+  `file_path` text NOT NULL DEFAULT '[]',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `indicator_answers_evaluation`
+--
+
+INSERT INTO `indicator_answers_evaluation` (`id`, `user_id`, `company_id`, `indicator_id`, `answer`, `description`, `file_path`, `created_at`, `updated_at`) VALUES
+(9, 18, 7, 38, '1', 'aaaaaaaaaaaa', '[\"evaluation-files\\/2zWChgH0u1XNDqnhoyiGksBhdD6h4AiiXRi23Iy6.pdf\"]', '2024-12-13 00:03:46', '2024-12-13 00:03:46'),
+(10, 18, 7, 39, '1', 'bbbbbbbbbbbbbbbbbb', '[\"evaluation-files\\/2Acga4A5thNEF0WWu90lR8t5YnEuYcwxp82Fq24w.pdf\"]', '2024-12-13 00:03:46', '2024-12-13 00:03:46'),
+(17, 18, 7, 36, '1', 'VVVVVVVVVVVVV', '[\"evaluation-files\\/company_7\\/1734037900_123-61473-0 CONTADO.pdf\",\"evaluation-files\\/company_7\\/1734037933_Desarrollo Actividades Unidad 5_2024-TERE.pdf\",\"evaluation-files\\/company_7\\/1734037951_Ejercicio 4 - C - tp5.pdf\",\"evaluation-files\\/company_7\\/1734037965_Ejercicio 4 - C - tp5.pdf\",\"evaluation-files\\/company_7\\/1734037965_Ejericio 4 y 5 - tp5.pdf\"]', '2024-12-13 00:11:40', '2024-12-13 00:12:45'),
+(18, 18, 7, 37, '1', 'BBBBBBBBBBBBBBBBBBBBB', '[\"evaluation-files\\/company_7\\/1734037900_2024-Unidad 5-SUCESIONES Y RECURRENCIA.pdf\",\"evaluation-files\\/company_7\\/1734037965_Gui\\u00f3n video ARCOM.pdf\"]', '2024-12-13 00:11:40', '2024-12-13 00:12:45');
 
 -- --------------------------------------------------------
 
@@ -461,7 +471,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (25, '2024_12_06_231151_create_auto_evaluation_subcategory_result_table', 22),
 (26, '2024_12_10_164548_add_is_binding_column_to_indicator_answers_table', 23),
 (27, '2024_12_11_195124_create_evaluation_questions_table', 24),
-(28, '2024_12_12_171745_create_indicator_answer_evaluation_table', 25);
+(28, '2024_12_12_171745_create_indicator_answer_evaluation_table', 25),
+(29, '2024_12_12_202803_modify_file_path_in_indicator_answers_evaluation', 26);
 
 -- --------------------------------------------------------
 
@@ -514,8 +525,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('vD0NvvFGoMRggzV48nO19LwJuC9RiYZjugfOghTh', 18, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoic2dSbEJ5UTBKdktjclQ4QXEwaWVDWnozd3BHV29xTUxIemhvaGJzZCI7czozOiJ1cmwiO2E6MDp7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE4O30=', 1734033067),
-('wQjATFzmhjc7y6eeOQ8vD97lmKFoh67xfUy1GkVi', 18, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiTnNCQ2JwcERBZ2hpT1hFbGFCcmp4Q0tadEhHTXd2Q0FORjB0bHcxeSI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9ldmFsdWFjaW9uLzMxIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTg7fQ==', 1734023800);
+('vD0NvvFGoMRggzV48nO19LwJuC9RiYZjugfOghTh', 18, '127.0.0.1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoic2dSbEJ5UTBKdktjclQ4QXEwaWVDWnozd3BHV29xTUxIemhvaGJzZCI7czozOiJ1cmwiO2E6MDp7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE4O3M6OToiX3ByZXZpb3VzIjthOjE6e3M6MzoidXJsIjtzOjM1OiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvZXZhbHVhY2lvbi8zNCI7fX0=', 1734037971);
 
 -- --------------------------------------------------------
 
@@ -884,7 +894,7 @@ ALTER TABLE `indicator_answers`
 -- AUTO_INCREMENT de la tabla `indicator_answers_evaluation`
 --
 ALTER TABLE `indicator_answers_evaluation`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de la tabla `indicator_homologation`
@@ -902,7 +912,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT de la tabla `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT de la tabla `personal_access_tokens`

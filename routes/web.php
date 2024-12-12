@@ -25,6 +25,7 @@ use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SuperAdminCompanyController;
 use App\Http\Controllers\IndicadorAnswerController;
+use App\Http\Controllers\EvaluationAnswerController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -211,5 +212,12 @@ Route::post('/indicadores/store-answers', [IndicadorAnswerController::class, 'st
 Route::get('/api/evaluation/indicators', [EvaluationController::class, 'getIndicators'])
     ->middleware(['auth', 'verified'])
     ->name('evaluation.indicators');
+
+Route::post('/evaluacion/store-answers', [EvaluationAnswerController::class, 'store'])
+    ->name('evaluacion.store-answers')
+    ->middleware(['auth']);
+
+Route::delete('/evaluacion/delete-file', [EvaluationAnswerController::class, 'deleteFile'])
+    ->name('evaluacion.delete-file');
 
 require __DIR__ . '/auth.php';

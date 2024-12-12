@@ -1,13 +1,28 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import StepIndicator from '@/Components/StepIndicator';
 import FileManager from '@/Components/FileManager';
+import Toast from '@/Components/Toast';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function Evaluacion({ valueData, userName }) {
+export default function Evaluacion({ valueData, userName, savedAnswers }) {
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
-    const [answers, setAnswers] = useState({});
-    const [loading, setLoading] = useState(true);
+    const [answers, setAnswers] = useState(() => {
+        const initialAnswers = {};
+        if (savedAnswers) {
+            Object.entries(savedAnswers).forEach(([questionId, answerData]) => {
+                initialAnswers[questionId] = {
+                    value: answerData.value,
+                    description: answerData.description || '',
+                    files: answerData.files || []
+                };
+            });
+        }
+        return initialAnswers;
+    });
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [notification, setNotification] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
@@ -17,8 +32,6 @@ export default function Evaluacion({ valueData, userName }) {
         title: subcategory.name.split(' ')[0],
         subtitle: subcategory.name.split(' ').slice(1).join(' ')
     }));
-
-    console.log(subcategories);
 
     const handleStepClick = (index) => {
         setCurrentSubcategoryIndex(index);
@@ -39,11 +52,65 @@ export default function Evaluacion({ valueData, userName }) {
     const handleAnswer = (questionId, value, description = '', files = []) => {
         setAnswers(prev => ({
             ...prev,
-            [questionId]: { value, description, files }
+            [questionId]: {
+                value: value || prev[questionId]?.value,
+                description: description || prev[questionId]?.description,
+                files: files || prev[questionId]?.files || []
+            }
         }));
     };
 
+    const handleFinish = () => {
+        setShowConfirmModal(true);
+    };
 
+    const handleConfirmSubmit = async () => {
+        try {
+            setLoading(true);
+            const formData = new FormData();
+            
+            Object.entries(answers).forEach(([questionId, answerData]) => {
+                formData.append(`answers[${questionId}][value]`, answerData.value);
+                formData.append(`answers[${questionId}][description]`, answerData.description || '');
+                
+                if (answerData.files && answerData.files.length > 0) {
+                    answerData.files.forEach(file => {
+                        if (file instanceof File) {
+                            formData.append(`answers[${questionId}][files][]`, file);
+                        } else {
+                            formData.append(`answers[${questionId}][existing_files][]`, JSON.stringify(file));
+                        }
+                    });
+                }
+            });
+
+            const response = await axios.post(route('evaluacion.store-answers'), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            if (response.data.success) {
+                setNotification({
+                    type: 'success',
+                    message: response.data.message
+                });
+                setShowConfirmModal(false);
+                
+                if (response.data.savedAnswers) {
+                    setAnswers(response.data.savedAnswers);
+                }
+            }
+        } catch (error) {
+            console.error('Error al guardar evaluación:', error);
+            setNotification({
+                type: 'error',
+                message: error.response?.data?.message || 'Error al guardar la evaluación'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <DashboardLayout userName={userName} title="Evaluación">
@@ -127,6 +194,7 @@ export default function Evaluacion({ valueData, userName }) {
                                                             type="radio"
                                                             name={`question-${question.id}`}
                                                             value="1"
+                                                            checked={answers[question.id]?.value === "1"}
                                                             onChange={(e) => handleAnswer(question.id, e.target.value)}
                                                             className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                         />
@@ -138,6 +206,7 @@ export default function Evaluacion({ valueData, userName }) {
                                                             type="radio"
                                                             name={`question-${question.id}`}
                                                             value="0"
+                                                            checked={answers[question.id]?.value === "0"}
                                                             onChange={(e) => handleAnswer(question.id, e.target.value)}
                                                             className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                         />
@@ -145,7 +214,7 @@ export default function Evaluacion({ valueData, userName }) {
                                                     </label>
                                                 </div>
 
-                                                {/* Descripción y Archivos */}
+                                                {/* Descripción */}
                                                 <div className='flex flex-col md:flex-row md:items-start gap-4'>
                                                     <div className="w-full md:w-1/2 space-y-2">
                                                         <label className="block text-sm font-medium text-gray-700">
@@ -153,6 +222,7 @@ export default function Evaluacion({ valueData, userName }) {
                                                         </label>
                                                         <textarea
                                                             rows={4}
+                                                            value={answers[question.id]?.description || ''}
                                                             onChange={(e) => handleAnswer(
                                                                 question.id,
                                                                 answers[question.id]?.value,
@@ -165,12 +235,14 @@ export default function Evaluacion({ valueData, userName }) {
                                                         />
                                                     </div>
 
+                                                    {/* FileManager con archivos existentes */}
                                                     <div className="w-full md:w-1/2 space-y-2">
                                                         <label className="block text-sm font-medium text-gray-700">
                                                             Documentos de evidencia <span className="text-red-500">*</span>
                                                         </label>
                                                         <FileManager
                                                             files={answers[question.id]?.files || []}
+                                                            indicatorId={question.id}
                                                             onFileSelect={(file) => {
                                                                 const currentFiles = answers[question.id]?.files || [];
                                                                 handleAnswer(
@@ -180,15 +252,21 @@ export default function Evaluacion({ valueData, userName }) {
                                                                     [...currentFiles, file]
                                                                 );
                                                             }}
-                                                            onFileRemove={(fileToRemove) => {
+                                                            onFileRemove={async (fileToRemove) => {
                                                                 const currentFiles = answers[question.id]?.files || [];
+                                                                const updatedFiles = currentFiles.filter(f =>
+                                                                    f.path ? f.path !== fileToRemove.path : f !== fileToRemove
+                                                                );
+
                                                                 handleAnswer(
                                                                     question.id,
                                                                     answers[question.id]?.value,
                                                                     answers[question.id]?.description,
-                                                                    currentFiles.filter(f => f !== fileToRemove)
+                                                                    updatedFiles
                                                                 );
                                                             }}
+                                                            onSuccess={(message) => setNotification({ type: 'success', message })}
+                                                            onError={(message) => setNotification({ type: 'error', message })}
                                                             maxFiles={5}
                                                             maxSize={5242880}
                                                             acceptedTypes=".pdf,.doc,.docx,.xls,.xlsx"
@@ -214,7 +292,7 @@ export default function Evaluacion({ valueData, userName }) {
                             )}
                             <div className="ml-auto">
                                 <button
-                                    //onClick={isLastSubcategory ? handleFinish : handleContinue}
+                                    onClick={isLastSubcategory ? handleFinish : handleContinue}
                                     className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
                                 >
                                     {isLastSubcategory ? 'Finalizar' : 'Continuar'}
@@ -224,6 +302,78 @@ export default function Evaluacion({ valueData, userName }) {
                     </div>
                 </div>
             </div>
+
+            {/* Modal de confirmación */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 z-50">
+                    <div className="fixed inset-0 bg-gray-500/20 backdrop-blur-sm transition-opacity"></div>
+
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                            <div className="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                                {/* Header */}
+                                <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+                                    <h3 className="text-lg font-medium text-gray-900">
+                                        Confirmar envío
+                                    </h3>
+                                    <button
+                                        onClick={() => setShowConfirmModal(false)}
+                                        className="text-gray-400 hover:text-gray-500"
+                                    >
+                                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {/* Contenido */}
+                                <div className="px-6 py-4">
+                                    <p className="text-sm text-gray-500">
+                                        ¿Estás seguro de que deseas finalizar y enviar tus respuestas?
+                                    </p>
+                                </div>
+
+                                {/* Footer */}
+                                <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-end gap-2">
+                                    <button
+                                        onClick={() => setShowConfirmModal(false)}
+                                        className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                        disabled={loading}
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={handleConfirmSubmit}
+                                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                        disabled={loading}
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Procesando...
+                                            </>
+                                        ) : (
+                                            'Confirmar'
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Toast notification */}
+            {notification && (
+                <Toast
+                    type={notification.type}
+                    message={notification.message}
+                    onClose={() => setNotification(null)}
+                />
+            )}
         </DashboardLayout>
     );
 }
