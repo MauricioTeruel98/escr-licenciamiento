@@ -144,7 +144,7 @@ export default function Navbar({ userName, onMenuClick }) {
                             <div className="flex justify-between items-center">
                                 <p className="text-lg font-medium">{auth.user.name}</p>
                                 <span className="bg-white text-green-900 px-3 py-1 rounded-full text-sm">
-                                    {auth.user.role === 'admin' ? 'Admin' : auth.user.role === 'super_admin' ? 'Admin' : 'Usuario'}
+                                    {auth.user.role === 'admin' ? 'Admin' : auth.user.role === 'super_admin' ? 'Admin' : auth.user.role === 'evaluador' ? 'Evaluador' : 'Usuario'}
                                 </span>
                             </div>
                         </div>

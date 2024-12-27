@@ -14,7 +14,8 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 initialAnswers[questionId] = {
                     value: answerData.value,
                     description: answerData.description || '',
-                    files: answerData.files || []
+                    files: answerData.files || [],
+                    evaluator_comment: answerData.evaluator_comment || ''
                 };
             });
         }
@@ -58,13 +59,14 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }
     };
 
-    const handleAnswer = (questionId, value, description = '', files = []) => {
+    const handleAnswer = (questionId, value, description = '', files = [], evaluator_comment = '') => {
         setAnswers(prev => ({
             ...prev,
             [questionId]: {
                 value: value || prev[questionId]?.value,
                 description: description || prev[questionId]?.description,
-                files: files || prev[questionId]?.files || []
+                files: files || prev[questionId]?.files || [],
+                evaluator_comment: evaluator_comment || prev[questionId]?.evaluator_comment || ''
             }
         }));
     };
@@ -101,6 +103,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
                 if (isEvaluador) {
                     formData.append(`answers[${questionId}][approved]`, approvals[questionId] ? '1' : '0');
+                    formData.append(`answers[${questionId}][evaluator_comment]`, answerData.evaluator_comment || '');
                 }
             });
 
@@ -299,11 +302,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
                                                 {/* Checkbox de aprobación para evaluadores */}
                                                 {isEvaluador && (
-                                                    <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                                                    <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200 space-y-4">
                                                         <label className="text-sm font-medium text-gray-900">
                                                             ¿Indicador aprobado?
                                                         </label>
-                                                        <div className="mt-2 flex gap-4">
+                                                        <div className="flex gap-4">
                                                             <label className="flex items-center gap-2">
                                                                 <input
                                                                     type="radio"
@@ -324,6 +327,25 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 />
                                                                 <span className="text-gray-900">No</span>
                                                             </label>
+                                                        </div>
+                                                        
+                                                        <div className="mt-4">
+                                                            <label className="block text-sm font-medium text-gray-700">
+                                                                Comentario del evaluador
+                                                            </label>
+                                                            <textarea
+                                                                rows={3}
+                                                                value={answers[question.id]?.evaluator_comment || ''}
+                                                                onChange={(e) => handleAnswer(
+                                                                    question.id,
+                                                                    answers[question.id]?.value,
+                                                                    answers[question.id]?.description,
+                                                                    answers[question.id]?.files,
+                                                                    e.target.value
+                                                                )}
+                                                                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 resize-none"
+                                                                placeholder="Agregue un comentario sobre su evaluación..."
+                                                            />
                                                         </div>
                                                     </div>
                                                 )}

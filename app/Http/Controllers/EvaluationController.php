@@ -53,7 +53,9 @@ class EvaluationController extends Controller
                     'indicator_id' => $answer->indicator_id,
                     'value' => $answer->answer,
                     'description' => $answer->description,
-                    'files' => $files
+                    'files' => $files,
+                    'approved' => $answer->approved,
+                    'evaluator_comment' => $answer->evaluator_comment
                 ];
             })
             ->keyBy('evaluation_question_id')
