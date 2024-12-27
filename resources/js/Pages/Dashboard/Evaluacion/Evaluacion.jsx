@@ -7,6 +7,15 @@ import axios from 'axios';
 
 export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false }) {
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
+    const [approvals, setApprovals] = useState(() => {
+        const initialApprovals = {};
+        if (savedAnswers) {
+            Object.entries(savedAnswers).forEach(([questionId, answerData]) => {
+                initialApprovals[questionId] = answerData.approved || false;
+            });
+        }
+        return initialApprovals;
+    });
     const [answers, setAnswers] = useState(() => {
         const initialAnswers = {};
         if (savedAnswers) {
@@ -24,15 +33,6 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [notification, setNotification] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [approvals, setApprovals] = useState(() => {
-        const initialApprovals = {};
-        if (savedAnswers) {
-            Object.entries(savedAnswers).forEach(([questionId, answerData]) => {
-                initialApprovals[questionId] = answerData.approved || false;
-            });
-        }
-        return initialApprovals;
-    });
 
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
@@ -347,6 +347,27 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 placeholder="Agregue un comentario sobre su evaluación..."
                                                             />
                                                         </div>
+
+                                                        {(approvals[question.id] !== undefined || answers[question.id]?.evaluator_comment) && (
+                                                            <div className="mt-4 p-3 bg-white rounded-lg border border-amber-100">
+                                                                <div className="text-sm text-gray-600">
+                                                                    <span className="font-medium">Estado del indicador: </span>
+                                                                    {approvals[question.id] ? (
+                                                                        <span className="text-green-600 font-medium">Aprobado</span>
+                                                                    ) : (
+                                                                        <span className="text-red-600 font-medium">No aprobado</span>
+                                                                    )}
+                                                                </div>
+                                                                {answers[question.id]?.evaluator_comment && (
+                                                                    <div className="mt-2">
+                                                                        <span className="text-sm font-medium text-gray-600">Comentario previo: </span>
+                                                                        <p className="mt-1 text-sm text-gray-600">
+                                                                            {answers[question.id].evaluator_comment}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>

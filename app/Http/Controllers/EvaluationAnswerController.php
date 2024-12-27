@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\IndicatorAnswerEvaluation;
 use App\Models\Indicator;
 use Illuminate\Support\Facades\Storage;
+use App\Models\EvaluatorAssessment;
 
 class EvaluationAnswerController extends Controller
 {
@@ -28,6 +29,28 @@ class EvaluationAnswerController extends Controller
             }
 
             foreach ($request->answers as $questionId => $answerData) {
+                // Si es evaluador, guardar la evaluación
+                if ($user->role === 'evaluador') {
+                    $evaluationQuestion = \App\Models\EvaluationQuestion::findOrFail($questionId);
+                    
+                    // Guardar o actualizar la evaluación
+                    EvaluatorAssessment::updateOrCreate(
+                        [
+                            'company_id' => $user->company_id,
+                            'evaluation_question_id' => $questionId,
+                        ],
+                        [
+                            'user_id' => $user->id,
+                            'indicator_id' => $evaluationQuestion->indicator_id,
+                            'approved' => $answerData['approved'] ?? false,
+                            'comment' => $answerData['evaluator_comment'] ?? null,
+                        ]
+                    );
+
+                    // No continuar con el proceso de guardar respuestas si es evaluador
+                    continue;
+                }
+
                 // Validar estructura de datos
                 if (!isset($answerData['value'])) {
                     continue;
@@ -107,20 +130,22 @@ class EvaluationAnswerController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => '¡Evaluación guardada exitosamente!',
+                'message' => $user->role === 'evaluador' ? 
+                    '¡Evaluación guardada exitosamente!' : 
+                    '¡Respuestas guardadas exitosamente!',
                 'savedAnswers' => $savedAnswers
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al guardar evaluación:', [
+            Log::error('Error al guardar:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error al guardar la evaluación: ' . $e->getMessage()
+                'message' => 'Error al guardar: ' . $e->getMessage()
             ], 422);
         }
     }
@@ -182,6 +207,32 @@ class EvaluationAnswerController extends Controller
                 'success' => false,
                 'message' => 'Error al eliminar el archivo: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    // Método para obtener las evaluaciones existentes
+    public function getEvaluations($companyId)
+    {
+        try {
+            $evaluations = EvaluatorAssessment::where('company_id', $companyId)
+                ->with(['indicator', 'evaluationQuestion'])
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'evaluations' => $evaluations
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al obtener evaluaciones:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener evaluaciones: ' . $e->getMessage()
+            ], 422);
         }
     }
 }

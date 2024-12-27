@@ -9,6 +9,7 @@ use App\Models\Indicator;
 use App\Models\IndicatorAnswer;
 use App\Models\AutoEvaluationValorResult;
 use App\Models\Value;
+use App\Models\EvaluatorAssessment;
 
 class EvaluationController extends Controller 
 {
@@ -48,18 +49,47 @@ class EvaluationController extends Controller
                     }
                 }
 
+                // Obtener la evaluación del evaluador para esta respuesta
+                $evaluatorAssessment = EvaluatorAssessment::where('company_id', $answer->company_id)
+                    ->where('evaluation_question_id', $answer->evaluation_question_id)
+                    ->first();
+
                 return [
                     'evaluation_question_id' => $answer->evaluation_question_id,
                     'indicator_id' => $answer->indicator_id,
                     'value' => $answer->answer,
                     'description' => $answer->description,
                     'files' => $files,
-                    'approved' => $answer->approved,
-                    'evaluator_comment' => $answer->evaluator_comment
+                    'approved' => $evaluatorAssessment ? $evaluatorAssessment->approved : null,
+                    'evaluator_comment' => $evaluatorAssessment ? $evaluatorAssessment->comment : null
                 ];
             })
             ->keyBy('evaluation_question_id')
             ->toArray();
+
+        // Si es evaluador, asegurarse de que todas las evaluaciones existentes estén incluidas
+        if ($isEvaluador) {
+            $evaluatorAssessments = EvaluatorAssessment::where('company_id', $company_id)
+                ->get();
+
+            foreach ($evaluatorAssessments as $assessment) {
+                $questionId = $assessment->evaluation_question_id;
+                if (!isset($savedAnswers[$questionId])) {
+                    $savedAnswers[$questionId] = [
+                        'evaluation_question_id' => $questionId,
+                        'indicator_id' => $assessment->indicator_id,
+                        'value' => null,
+                        'description' => null,
+                        'files' => [],
+                        'approved' => $assessment->approved,
+                        'evaluator_comment' => $assessment->comment
+                    ];
+                } else {
+                    $savedAnswers[$questionId]['approved'] = $assessment->approved;
+                    $savedAnswers[$questionId]['evaluator_comment'] = $assessment->comment;
+                }
+            }
+        }
 
         return Inertia::render('Dashboard/Evaluacion/Evaluacion', [
             'valueData' => $valueData,
