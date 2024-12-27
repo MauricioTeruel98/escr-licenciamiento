@@ -112,7 +112,6 @@ export default function FileManager({
 
                 if (response.data.success) {
                     onFileRemove(fileToRemove);
-                    // Opcional: mostrar mensaje de éxito
                     if (typeof onSuccess === 'function') {
                         onSuccess('Archivo eliminado correctamente');
                     }
@@ -123,7 +122,6 @@ export default function FileManager({
             }
         } catch (error) {
             console.error('Error al eliminar archivo:', error);
-            // Opcional: mostrar mensaje de error
             if (typeof onError === 'function') {
                 onError(error.response?.data?.message || 'Error al eliminar el archivo');
             }

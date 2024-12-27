@@ -5,7 +5,7 @@ import Toast from '@/Components/Toast';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function Evaluacion({ valueData, userName, savedAnswers }) {
+export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false }) {
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [answers, setAnswers] = useState(() => {
         const initialAnswers = {};
@@ -23,6 +23,15 @@ export default function Evaluacion({ valueData, userName, savedAnswers }) {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [notification, setNotification] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [approvals, setApprovals] = useState(() => {
+        const initialApprovals = {};
+        if (savedAnswers) {
+            Object.entries(savedAnswers).forEach(([questionId, answerData]) => {
+                initialApprovals[questionId] = answerData.approved || false;
+            });
+        }
+        return initialApprovals;
+    });
 
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
@@ -64,6 +73,13 @@ export default function Evaluacion({ valueData, userName, savedAnswers }) {
         setShowConfirmModal(true);
     };
 
+    const handleApproval = (questionId, value) => {
+        setApprovals(prev => ({
+            ...prev,
+            [questionId]: value
+        }));
+    };
+
     const handleConfirmSubmit = async () => {
         try {
             setLoading(true);
@@ -81,6 +97,10 @@ export default function Evaluacion({ valueData, userName, savedAnswers }) {
                             formData.append(`answers[${questionId}][existing_files][]`, JSON.stringify(file));
                         }
                     });
+                }
+
+                if (isEvaluador) {
+                    formData.append(`answers[${questionId}][approved]`, approvals[questionId] ? '1' : '0');
                 }
             });
 
@@ -196,6 +216,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers }) {
                                                             value="1"
                                                             checked={answers[question.id]?.value === "1"}
                                                             onChange={(e) => handleAnswer(question.id, e.target.value)}
+                                                            disabled={isEvaluador}
                                                             className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                         />
                                                         <span className="text-gray-900">Sí</span>
@@ -208,6 +229,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers }) {
                                                             value="0"
                                                             checked={answers[question.id]?.value === "0"}
                                                             onChange={(e) => handleAnswer(question.id, e.target.value)}
+                                                            disabled={isEvaluador}
                                                             className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                         />
                                                         <span className="text-gray-900">No</span>
@@ -229,8 +251,9 @@ export default function Evaluacion({ valueData, userName, savedAnswers }) {
                                                                 e.target.value,
                                                                 answers[question.id]?.files
                                                             )}
+                                                            disabled={isEvaluador}
                                                             maxLength={100}
-                                                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none"
+                                                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none disabled:bg-gray-100 disabled:text-gray-500"
                                                             placeholder="Escriba aquí..."
                                                         />
                                                     </div>
@@ -242,37 +265,68 @@ export default function Evaluacion({ valueData, userName, savedAnswers }) {
                                                         </label>
                                                         <FileManager
                                                             files={answers[question.id]?.files || []}
-                                                            indicatorId={question.id}
+                                                            questionId={question.id}
                                                             onFileSelect={(file) => {
-                                                                const currentFiles = answers[question.id]?.files || [];
-                                                                handleAnswer(
-                                                                    question.id,
-                                                                    answers[question.id]?.value,
-                                                                    answers[question.id]?.description,
-                                                                    [...currentFiles, file]
-                                                                );
+                                                                if (!isEvaluador) {
+                                                                    const currentFiles = answers[question.id]?.files || [];
+                                                                    handleAnswer(
+                                                                        question.id,
+                                                                        answers[question.id]?.value,
+                                                                        answers[question.id]?.description,
+                                                                        [...currentFiles, file]
+                                                                    );
+                                                                }
                                                             }}
                                                             onFileRemove={async (fileToRemove) => {
-                                                                const currentFiles = answers[question.id]?.files || [];
-                                                                const updatedFiles = currentFiles.filter(f =>
-                                                                    f.path ? f.path !== fileToRemove.path : f !== fileToRemove
-                                                                );
+                                                                if (!isEvaluador) {
+                                                                    const currentFiles = answers[question.id]?.files || [];
+                                                                    const updatedFiles = currentFiles.filter(f =>
+                                                                        f.path ? f.path !== fileToRemove.path : f !== fileToRemove
+                                                                    );
 
-                                                                handleAnswer(
-                                                                    question.id,
-                                                                    answers[question.id]?.value,
-                                                                    answers[question.id]?.description,
-                                                                    updatedFiles
-                                                                );
+                                                                    handleAnswer(
+                                                                        question.id,
+                                                                        answers[question.id]?.value,
+                                                                        answers[question.id]?.description,
+                                                                        updatedFiles
+                                                                    );
+                                                                }
                                                             }}
-                                                            onSuccess={(message) => setNotification({ type: 'success', message })}
-                                                            onError={(message) => setNotification({ type: 'error', message })}
-                                                            maxFiles={5}
-                                                            maxSize={5242880}
-                                                            acceptedTypes=".pdf,.doc,.docx,.xls,.xlsx"
+                                                            readOnly={isEvaluador}
                                                         />
                                                     </div>
                                                 </div>
+
+                                                {/* Checkbox de aprobación para evaluadores */}
+                                                {isEvaluador && (
+                                                    <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                                                        <label className="text-sm font-medium text-gray-900">
+                                                            ¿Indicador aprobado?
+                                                        </label>
+                                                        <div className="mt-2 flex gap-4">
+                                                            <label className="flex items-center gap-2">
+                                                                <input
+                                                                    type="radio"
+                                                                    name={`approval-${question.id}`}
+                                                                    checked={approvals[question.id] === true}
+                                                                    onChange={() => handleApproval(question.id, true)}
+                                                                    className="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500"
+                                                                />
+                                                                <span className="text-gray-900">Sí</span>
+                                                            </label>
+                                                            <label className="flex items-center gap-2">
+                                                                <input
+                                                                    type="radio"
+                                                                    name={`approval-${question.id}`}
+                                                                    checked={approvals[question.id] === false}
+                                                                    onChange={() => handleApproval(question.id, false)}
+                                                                    className="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500"
+                                                                />
+                                                                <span className="text-gray-900">No</span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>

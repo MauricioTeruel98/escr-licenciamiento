@@ -36,8 +36,20 @@ class EvaluationAnswerController extends Controller
                 // Obtener la pregunta de evaluación y su indicador asociado
                 $evaluationQuestion = \App\Models\EvaluationQuestion::findOrFail($questionId);
 
-                // Procesar archivos si existen
+                // Inicializar array de rutas de archivo
                 $filePaths = [];
+
+                // Mantener archivos existentes
+                if (isset($answerData['existing_files']) && is_array($answerData['existing_files'])) {
+                    foreach ($answerData['existing_files'] as $existingFile) {
+                        $fileData = json_decode($existingFile, true);
+                        if (isset($fileData['path'])) {
+                            $filePaths[] = $fileData['path'];
+                        }
+                    }
+                }
+
+                // Agregar nuevos archivos
                 if (isset($answerData['files']) && is_array($answerData['files'])) {
                     foreach ($answerData['files'] as $file) {
                         if ($file instanceof \Illuminate\Http\UploadedFile) {
@@ -64,7 +76,8 @@ class EvaluationAnswerController extends Controller
                     'evaluation_question_id' => $questionId,
                     'answer' => $answerData['value'],
                     'description' => $answerData['description'] ?? null,
-                    'file_path' => !empty($filePaths) ? json_encode($filePaths) : json_encode([])
+                    'file_path' => json_encode($filePaths), // Guardamos todos los paths
+                    'approved' => $user->role === 'evaluador' ? $answerData['approved'] : null
                 ];
 
                 if ($existingAnswer) {
@@ -121,12 +134,12 @@ class EvaluationAnswerController extends Controller
                 return response()->json(['message' => 'Usuario no autenticado'], 401);
             }
 
-            $indicatorId = $request->indicator_id;
+            $questionId = $request->indicator_id;
             $filePath = $request->file_path;
 
-            // Buscar la respuesta
+            // Buscar la respuesta usando evaluation_question_id
             $answer = IndicatorAnswerEvaluation::where('company_id', $user->company_id)
-                ->where('indicator_id', $indicatorId)
+                ->where('evaluation_question_id', $questionId)
                 ->first();
 
             if (!$answer) {

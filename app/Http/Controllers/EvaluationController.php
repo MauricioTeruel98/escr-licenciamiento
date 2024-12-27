@@ -16,6 +16,7 @@ class EvaluationController extends Controller
     {
         $user = auth()->user();
         $company_id = $user->company_id;
+        $isEvaluador = $user->role === 'evaluador';
 
         // Primero obtenemos los IDs de los indicadores con respuesta "Sí"
         $indicatorIds = IndicatorAnswer::where('company_id', $company_id)
@@ -61,7 +62,8 @@ class EvaluationController extends Controller
         return Inertia::render('Dashboard/Evaluacion/Evaluacion', [
             'valueData' => $valueData,
             'userName' => $user->name,
-            'savedAnswers' => $savedAnswers
+            'savedAnswers' => $savedAnswers,
+            'isEvaluador' => $isEvaluador
         ]);
     }
 
