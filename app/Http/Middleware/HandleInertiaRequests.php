@@ -33,6 +33,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'dashboard_route' => $this->getDashboardRoute($request->user()),
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
@@ -41,5 +42,17 @@ class HandleInertiaRequests extends Middleware
                 'info' => fn () => $request->session()->get('info'),
             ],
         ];
+    }
+
+    private function getDashboardRoute($user)
+    {
+        if (!$user) return null;
+
+        return match ($user->role) {
+            'super_admin' => 'super.dashboard',
+            'admin' => 'admin.dashboard',
+            'evaluador' => 'evaluador.dashboard',
+            default => 'dashboard',
+        };
     }
 }

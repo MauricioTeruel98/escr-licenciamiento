@@ -14,6 +14,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\IndicadoresController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Middleware\EnsureUserIsSuperAdmin;
+use App\Http\Middleware\EnsureUserIsEvaluador;
 use App\Http\Controllers\ValueController;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\AvailableCertificationController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\SuperAdminCompanyController;
 use App\Http\Controllers\IndicadorAnswerController;
 use App\Http\Controllers\EvaluationAnswerController;
+use App\Http\Controllers\EvaluadorController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -219,5 +221,12 @@ Route::post('/evaluacion/store-answers', [EvaluationAnswerController::class, 'st
 
 Route::delete('/evaluacion/delete-file', [EvaluationAnswerController::class, 'deleteFile'])
     ->name('evaluacion.delete-file');
+
+Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
+    Route::get('/evaluador/dashboard', [EvaluadorController::class, 'dashboard'])->name('evaluador.dashboard');
+    Route::get('/evaluador/companies', [EvaluadorController::class, 'companies'])->name('evaluador.companies');
+    Route::get('/evaluador/evaluations', [EvaluadorController::class, 'evaluations'])->name('evaluador.evaluations');
+    Route::get('/evaluador/profile', [ProfileController::class, 'edit'])->name('evaluador.profile.edit');
+});
 
 require __DIR__ . '/auth.php';
