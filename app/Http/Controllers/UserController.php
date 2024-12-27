@@ -12,23 +12,21 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        if (!auth()->check()) {
-            Log::error('Usuario no autenticado intentando acceder a UserController@index');
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+        $query = User::query();
+
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
         }
 
-        try {
-            $users = User::where('company_id', auth()->user()->company_id)
-                        ->where('role', 'user')
-                        ->paginate(3);
-
-            Log::info('Users retrieved:', ['count' => $users->count()]);
-            
-            return response()->json($users);
-        } catch (\Exception $e) {
-            Log::error('Error in UserController@index: ' . $e->getMessage());
-            return response()->json(['error' => 'Error al obtener usuarios'], 500);
+        if ($request->has('role') && $request->input('role') !== 'todos') {
+            $query->where('role', $request->input('role'));
         }
+
+        return $query->paginate($request->input('per_page', 10));
     }
 
     public function store(Request $request)
@@ -38,6 +36,7 @@ class UserController extends Controller
             'correo' => 'required|email|unique:users,email',
             'puesto' => 'required|string',
             'telefono' => 'required|string',
+            'role' => 'required|string|in:user,admin,evaluador',
         ]);
 
         // Separar nombre y apellido
@@ -56,7 +55,7 @@ class UserController extends Controller
                 'phone' => $request->telefono,
                 'position' => $request->puesto,
                 'password' => Hash::make($password),
-                'role' => 'user',
+                'role' => $request->role,
                 'status' => 'approved',
                 'company_id' => auth()->user()->company_id,
             ]);

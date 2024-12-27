@@ -41,7 +41,7 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'role' => 'required|in:super_admin,admin,user',
+            'role' => 'required|in:super_admin,admin,user,evaluador',
             'company_id' => 'required|exists:companies,id',
             'status' => 'required|in:pending,approved,rejected',
             'password' => ['required', 'confirmed', Password::defaults()],

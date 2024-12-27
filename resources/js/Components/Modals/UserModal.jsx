@@ -18,6 +18,12 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
     const [companies, setCompanies] = useState([]);
     const [errors, setErrors] = useState({});
 
+    const roles = [
+        { id: 'user', name: 'Usuario' },
+        { id: 'admin', name: 'Administrador' },
+        { id: 'evaluador', name: 'Evaluador' }
+    ];
+
     useEffect(() => {
         if (isOpen) {
             if (user) {
@@ -164,17 +170,22 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
 
                                 {/* Rol */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label htmlFor="role" className="block text-sm font-medium text-gray-700">
                                         Rol
                                     </label>
                                     <select
+                                        id="role"
+                                        name="role"
                                         value={formData.role}
                                         onChange={(e) => setFormData({...formData, role: e.target.value})}
-                                        className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
+                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md"
                                     >
-                                        <option value="user">Usuario</option>
-                                        <option value="admin">Administrador</option>
-                                        <option value="super_admin">Super Admin</option>
+                                        <option value="">Seleccionar rol</option>
+                                        {roles.map((role) => (
+                                            <option key={role.id} value={role.id}>
+                                                {role.name}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
 

@@ -24,6 +24,7 @@ export default function UsersIndex() {
         total: 0,
         perPage: 10
     });
+    const [activeFilter, setActiveFilter] = useState('todos');
 
     const columns = [
         { key: 'name', label: 'Nombre' },
@@ -35,9 +36,22 @@ export default function UsersIndex() {
                 const roles = {
                     'super_admin': 'Super Admin',
                     'admin': 'Administrador',
-                    'user': 'Usuario'
+                    'user': 'Usuario',
+                    'evaluador': 'Evaluador'
                 };
-                return roles[item.role] || item.role;
+                
+                const roleColors = {
+                    'super_admin': 'bg-purple-100 text-purple-800',
+                    'admin': 'bg-blue-100 text-blue-800',
+                    'user': 'bg-gray-100 text-gray-800',
+                    'evaluador': 'bg-amber-100 text-amber-800'
+                };
+                
+                return (
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleColors[item.role] || 'bg-gray-100 text-gray-800'}`}>
+                        {roles[item.role] || item.role}
+                    </span>
+                );
             }
         },
         { 
@@ -88,7 +102,7 @@ export default function UsersIndex() {
 
     useEffect(() => {
         fetchUsers();
-    }, [pagination.currentPage, pagination.perPage, searchTerm]);
+    }, [pagination.currentPage, pagination.perPage, searchTerm, activeFilter]);
 
     const fetchUsers = async () => {
         try {
@@ -96,7 +110,8 @@ export default function UsersIndex() {
                 params: {
                     page: pagination.currentPage,
                     per_page: pagination.perPage,
-                    search: searchTerm
+                    search: searchTerm,
+                    role: activeFilter === 'todos' ? null : activeFilter
                 }
             });
             setUsers(response.data.data);
@@ -207,6 +222,11 @@ export default function UsersIndex() {
         }
     };
 
+    const handleFilterChange = (filter) => {
+        setActiveFilter(filter);
+        setPagination({ ...pagination, currentPage: 1 });
+    };
+
     return (
         <SuperAdminLayout>
             <Head title="Usuarios" />
@@ -227,6 +247,31 @@ export default function UsersIndex() {
                         Nuevo Usuario
                     </button>
                 </div>
+            </div>
+
+            <div className="border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                    {[
+                        { id: 'todos', name: 'Todos' },
+                        { id: 'user', name: 'Usuarios' },
+                        { id: 'admin', name: 'Empresas' },
+                        { id: 'evaluador', name: 'Evaluadores' },
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => handleFilterChange(tab.id)}
+                            className={`
+                                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                                ${activeFilter === tab.id
+                                    ? 'border-green-500 text-green-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }
+                            `}
+                        >
+                            {tab.name}
+                        </button>
+                    ))}
+                </nav>
             </div>
 
             <div className="mt-8">
