@@ -75,10 +75,10 @@ export default function Indicadores({ valueData, userName, savedAnswers, current
                 formattedAnswers[answer.indicator_id] = answer.answer;
             });
             setAnswers(formattedAnswers);
-            
+
             const initialCalculatedScore = calculateCurrentScore(formattedAnswers);
             setCurrentScore(initialCalculatedScore);
-            
+
             checkBindingAnswers(formattedAnswers);
         }
     }, [savedAnswers]);
@@ -175,29 +175,26 @@ export default function Indicadores({ valueData, userName, savedAnswers, current
                     <div className="lg:w-1/2 mt-5 lg:mt-0">
                         <div>
                             <div className="flex">
-                                <div className={`w-1/2 rounded-l-xl px-6 p-4 ${
-                                    bindingWarning 
+                                <div className={`w-1/2 rounded-l-xl px-6 p-4 ${bindingWarning
                                         ? 'bg-red-100/50 text-red-700'
-                                        : currentScore >= valueData.minimum_score 
+                                        : currentScore >= valueData.minimum_score
                                             ? 'bg-green-100/50 text-green-700'
                                             : 'bg-yellow-100/50 text-yellow-700'
-                                }`}>
-                                    <h2 className={`text-lg font-semibold mb-2 ${
-                                        bindingWarning 
+                                    }`}>
+                                    <h2 className={`text-lg font-semibold mb-2 ${bindingWarning
                                             ? 'text-red-700'
-                                            : currentScore >= valueData.minimum_score 
+                                            : currentScore >= valueData.minimum_score
                                                 ? 'text-green-700'
                                                 : 'text-yellow-700'
-                                    }`}>
+                                        }`}>
                                         Nota actual
                                     </h2>
-                                    <p className={`text-2xl font-bold ${
-                                        bindingWarning 
+                                    <p className={`text-2xl font-bold ${bindingWarning
                                             ? 'text-red-500'
-                                            : currentScore >= valueData.minimum_score 
+                                            : currentScore >= valueData.minimum_score
                                                 ? 'text-green-500'
                                                 : 'text-yellow-500'
-                                    }`}>
+                                        }`}>
                                         {currentScore}/100
                                     </p>
                                 </div>
@@ -220,7 +217,7 @@ export default function Indicadores({ valueData, userName, savedAnswers, current
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                             </svg>
                                         )}
-                                        {bindingWarning 
+                                        {bindingWarning
                                             ? "Indicadores E1, E2 son descalificatorios"
                                             : `! Necesitas ${valueData.minimum_score - currentScore} puntos más para aprobar`
                                         }
@@ -269,13 +266,32 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                         <div className="mt-10 space-y-6">
                             {subcategories[currentSubcategoryIndex].indicators.map(indicator => (
                                 <div key={indicator.id}>
-                                    <IndicatorIndex
-                                        code={indicator.name}
-                                        question={indicator.self_evaluation_question}
-                                        onAnswer={(answer) => handleAnswer(indicator.id, answer, indicator.binding)}
-                                        value={answers[indicator.id] || ''}
-                                        isBinding={indicator.binding}
-                                    />
+                                    <div className="flex items-start gap-2">
+                                        <IndicatorIndex
+                                            code={indicator.name}
+                                            question={indicator.self_evaluation_question}
+                                            onAnswer={(answer) => handleAnswer(indicator.id, answer, indicator.binding)}
+                                            value={answers[indicator.id] || ''}
+                                            isBinding={indicator.binding}
+                                        />
+                                        {indicator.guide && (
+                                            <button
+                                                type="button"
+                                                className="group relative inline-block text-gray-500 hover:text-gray-700"
+                                                data-tooltip-target={`tooltip-${indicator.id}`}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-info-circle"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
+                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-64 z-50">
+                                                    <div className="bg-gray-900 text-white text-sm rounded-lg py-2 px-3 shadow-lg">
+                                                        {indicator.guide}
+                                                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-2">
+                                                            <div className="border-8 border-transparent border-t-gray-900"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        )}
+                                    </div>
                                     {indicator.binding && (
                                         <div className="mt-2 text-sm text-red-600 flex items-center gap-2">
                                             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
