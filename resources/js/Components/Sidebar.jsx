@@ -154,6 +154,17 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                             </li>
                         </>
                     )}
+
+                    {auth.user.role === 'evaluador' && (
+                        <>
+                            <div className="divider"></div>
+                            <li className="mb-1">
+                                <Link href={route('evaluador.dashboard')} className="block px-4 py-2 hover:bg-green-800 rounded-lg">
+                                    Evaluador
+                                </Link>
+                            </li>
+                        </>
+                    )}
                 </ul>
             </div>
         </>

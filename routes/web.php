@@ -227,6 +227,10 @@ Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
     Route::get('/evaluador/companies', [EvaluadorController::class, 'companies'])->name('evaluador.companies');
     Route::get('/evaluador/evaluations', [EvaluadorController::class, 'evaluations'])->name('evaluador.evaluations');
     Route::get('/evaluador/profile', [ProfileController::class, 'edit'])->name('evaluador.profile.edit');
+
+    Route::get('/api/evaluador/companies', [EvaluadorController::class, 'getCompaniesList']);
+    Route::get('/api/evaluador/active-company', [EvaluadorController::class, 'getActiveCompany']);
+    Route::post('/api/evaluador/switch-company', [EvaluadorController::class, 'switchCompany']);
 });
 
 require __DIR__ . '/auth.php';
