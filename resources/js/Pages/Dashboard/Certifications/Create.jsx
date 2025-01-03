@@ -65,6 +65,7 @@ export default function Certifications({ certifications: initialCertifications, 
     const [nombreCertificacion, setNombreCertificacion] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [selectedCertification, setSelectedCertification] = useState(null);
     const [nuevaCertificacion, setNuevaCertificacion] = useState({
         fechaObtencion: null,
         fechaExpiracion: null
@@ -80,19 +81,19 @@ export default function Certifications({ certifications: initialCertifications, 
 
     // Filtrar sugerencias basadas en el término de búsqueda
     const filteredSuggestions = availableCertifications.filter(cert =>
-        cert.toLowerCase().includes(searchTerm.toLowerCase())
+        cert.nombre.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const handleSearchChange = (e) => {
         const value = e.target.value;
         setSearchTerm(value);
-        setNombreCertificacion(value);
         setIsDropdownOpen(true);
     };
 
     const handleClear = () => {
         setSearchTerm("");
         setNombreCertificacion("");
+        setSelectedCertification(null);
         setIsDropdownOpen(false);
     };
 
@@ -156,13 +157,20 @@ export default function Certifications({ certifications: initialCertifications, 
     // Actualizar el handleSubmit para incluir la validación
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!nombreCertificacion || !nuevaCertificacion.fechaObtencion || !nuevaCertificacion.fechaExpiracion) return;
+        if (!selectedCertification || !nuevaCertificacion.fechaObtencion || !nuevaCertificacion.fechaExpiracion) return;
+
+        // Validar que la certificación seleccionada existe
+        if (!availableCertifications.some(cert => cert.id === selectedCertification.id)) {
+            showNotification('error', 'Por favor seleccione una certificación válida de la lista');
+            return;
+        }
 
         if (!validarFechaExpiracion(nuevaCertificacion.fechaExpiracion)) return;
 
         try {
             const response = await axios.post('/certifications', {
-                nombre: nombreCertificacion,
+                nombre: selectedCertification.nombre,
+                homologation_id: selectedCertification.id, // Agregar el ID
                 fecha_obtencion: nuevaCertificacion.fechaObtencion.toISOString().split('T')[0],
                 fecha_expiracion: nuevaCertificacion.fechaExpiracion.toISOString().split('T')[0]
             });
@@ -176,6 +184,7 @@ export default function Certifications({ certifications: initialCertifications, 
             setCertificaciones([newCertification, ...certificaciones]);
             setNombreCertificacion("");
             setSearchTerm("");
+            setSelectedCertification(null);
             setNuevaCertificacion({
                 fechaObtencion: null,
                 fechaExpiracion: null
@@ -287,11 +296,15 @@ export default function Certifications({ certifications: initialCertifications, 
                                     </div>
                                     <input
                                         type="text"
-                                        placeholder="Buscar o escribir certificación"
+                                        placeholder="Seleccione una certificación"
                                         value={searchTerm}
                                         onChange={handleSearchChange}
                                         onFocus={() => setIsDropdownOpen(true)}
-                                        className="pl-10 pr-8 py-2 w-full border-none rounded-md shadow-sm focus:border-green-500 focus:ring-green-500"
+                                        className={`pl-10 pr-8 py-2 w-full border-none rounded-md shadow-sm focus:border-green-500 focus:ring-green-500 ${
+                                            nombreCertificacion && !availableCertifications.includes(nombreCertificacion) 
+                                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                                            : ''
+                                        }`}
                                         required
                                     />
                                     {searchTerm && (
@@ -300,29 +313,37 @@ export default function Certifications({ certifications: initialCertifications, 
                                             onClick={handleClear}
                                             className="absolute right-2 p-1"
                                         >
-                                            <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                                            </svg>
+                                            <X className="h-5 w-5 text-gray-400" />
                                         </button>
                                     )}
                                 </div>
                                 {isDropdownOpen && filteredSuggestions.length > 0 && (
-                                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
-                                        {filteredSuggestions.map((cert, index) => (
+                                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        {filteredSuggestions.map((cert) => (
                                             <div
-                                                key={index}
+                                                key={cert.id}
                                                 className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                                                 onClick={() => {
-                                                    setNombreCertificacion(cert);
-                                                    setSearchTerm(cert);
+                                                    setNombreCertificacion(cert.nombre);
+                                                    setSearchTerm(cert.nombre);
+                                                    setSelectedCertification(cert);
                                                     setIsDropdownOpen(false);
+                                                    console.log('Certificación seleccionada:', cert);
                                                 }}
                                             >
-                                                {cert}
+                                                {cert.nombre}
                                             </div>
                                         ))}
                                     </div>
                                 )}
+                                {isDropdownOpen && filteredSuggestions.length === 0 && searchTerm && (
+                                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg p-4 text-center text-gray-500">
+                                        No hay certificaciones disponibles que coincidan con su búsqueda
+                                    </div>
+                                )}
+                                <p className="mt-1 text-sm text-gray-500">
+                                    Seleccione una certificación de la lista disponible
+                                </p>
                             </div>
 
                             <div className="form-control">
@@ -415,6 +436,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                                             <div className="flex items-center mt-5">
                                                                 <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-blue-600/20">
                                                                     {cert.indicadores} Indicadores homologados.
+                                                                    {console.log(cert)}
                                                                 </span>
                                                             </div>
                                                         </div>

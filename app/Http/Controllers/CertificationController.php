@@ -18,7 +18,14 @@ class CertificationController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
             
-        $availableCertifications = AvailableCertification::pluck('nombre');
+        $availableCertifications = AvailableCertification::select('id', 'nombre')
+            ->get()
+            ->map(function($cert) {
+                return [
+                    'id' => $cert->id,
+                    'nombre' => $cert->nombre
+                ];
+            });
 
         return Inertia::render('Dashboard/Certifications/Create', [
             'certifications' => $certifications,
@@ -30,6 +37,7 @@ class CertificationController extends Controller
     {
         $validated = $request->validate([
             'nombre' => 'required|string',
+            'homologation_id' => 'required|exists:available_certifications,id',
             'fecha_obtencion' => 'required|date_format:Y-m-d',
             'fecha_expiracion' => 'required|date_format:Y-m-d|after:fecha_obtencion',
         ]);

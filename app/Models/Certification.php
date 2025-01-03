@@ -14,13 +14,15 @@ class Certification extends Model
         'nombre',
         'fecha_obtencion',
         'fecha_expiracion',
-        'indicadores'
+        'indicadores',
+        'homologation_id'
     ];
 
     protected $casts = [
         'fecha_obtencion' => 'date',
         'fecha_expiracion' => 'date',
-        'indicadores' => 'integer'
+        'indicadores' => 'integer',
+        'homologation_id' => 'integer'
     ];
 
     /**
