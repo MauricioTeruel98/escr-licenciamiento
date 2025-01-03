@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class IndicatorHomologation extends Model
 {
+
+    protected $table = 'indicator_homologation';
+    
     protected $fillable = [
         'indicator_id',
         'homologation_id'

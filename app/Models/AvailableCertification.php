@@ -41,6 +41,16 @@ class AvailableCertification extends Model
         return $this->hasMany(Certification::class, 'nombre', 'nombre');
     }
 
+    public function indicatorHomologations()
+    {
+        return $this->hasMany(IndicatorHomologation::class, 'homologation_id');
+    }
+
+    public function indicators()
+    {
+        return $this->belongsToMany(Indicator::class, 'indicator_homologation', 'homologation_id', 'indicator_id');
+    }
+
     // Método helper para obtener el nombre legible del tipo
     public function getTipoNombreAttribute()
     {

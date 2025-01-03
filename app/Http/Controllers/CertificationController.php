@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Certification;
 use App\Models\AvailableCertification;
+use App\Models\IndicatorHomologation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -43,9 +44,21 @@ class CertificationController extends Controller
         ]);
 
         try {
+            // Agregar logs para depuración
+            \Log::info('Datos validados:', $validated);
+            
+            // Obtener el número de indicadores homologados para esta certificación
+            $indicadoresCount = IndicatorHomologation::where('homologation_id', $validated['homologation_id'])
+                ->count();
+            
+            \Log::info('Número de indicadores encontrados:', ['count' => $indicadoresCount]);
+
             $certification = auth()->user()->company->certifications()->create([
-                ...$validated,
-                'indicadores' => rand(1, 5) // Temporal, ajustar según lógica real
+                'nombre' => $validated['nombre'],
+                'homologation_id' => $validated['homologation_id'],
+                'fecha_obtencion' => $validated['fecha_obtencion'],
+                'fecha_expiracion' => $validated['fecha_expiracion'],
+                'indicadores' => $indicadoresCount
             ]);
 
             $certification->refresh();
@@ -55,8 +68,14 @@ class CertificationController extends Controller
                 'message' => 'Certificación creada exitosamente'
             ]);
         } catch (\Exception $e) {
+            // Agregar log del error específico
+            \Log::error('Error al crear certificación:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
-                'error' => 'Error al crear la certificación'
+                'error' => 'Error al crear la certificación: ' . $e->getMessage()
             ], 500);
         }
     }
