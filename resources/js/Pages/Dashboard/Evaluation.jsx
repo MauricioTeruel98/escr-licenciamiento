@@ -2,6 +2,7 @@ import { Link, useForm, usePage } from '@inertiajs/react';
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { CircleArrowDown, CircleArrowRight } from 'lucide-react';
 import { useState } from 'react';
+import ApplicationModal from '@/Components/Modals/ApplicationModal';
 
 // Componente FAQ actualizado
 const FAQSection = () => {
@@ -95,6 +96,12 @@ export default function Evaluation({
 }) {
     const { post } = useForm();
     const { auth } = usePage().props;
+
+    const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
+
+    const handleApplicationSubmit = () => {
+        setIsApplicationModalOpen(true);
+    };
 
     // Componente para las solicitudes pendientes
     const PendingRequestsAlert = () => {
@@ -247,7 +254,10 @@ export default function Evaluation({
                                         Su empresa cuenta con indicadores aptos para iniciar el proceso de licenciamiento.
                                     </p>
                                 </div>
-                                <button className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <button 
+                                    onClick={handleApplicationSubmit}
+                                    className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                >
                                     Enviar Solicitud De Aplicación
                                 </button>
                             </div>
@@ -391,6 +401,10 @@ export default function Evaluation({
                     </div>
                 </div>
             </div>
+            <ApplicationModal 
+                isOpen={isApplicationModalOpen}
+                onClose={() => setIsApplicationModalOpen(false)}
+            />
         </DashboardLayout>
     );
 } 
