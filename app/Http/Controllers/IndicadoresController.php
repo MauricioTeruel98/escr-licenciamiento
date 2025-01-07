@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Value;
 use App\Models\Indicator;
 use App\Models\IndicatorAnswer;
+use App\Models\IndicatorHomologation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -15,12 +16,30 @@ class IndicadoresController extends Controller
         $user = auth()->user()->load('company');
         $value = Value::with(['subcategories.indicators'])->findOrFail($id);
 
-        //Obtener las certificaciones de la empresa
+        // Obtener las certificaciones de la empresa
         $certifications = $user->company->certifications;
 
-        //Validar las homologaciones que tiene la empresa en base a las certificaciones
-        $homologations = $certifications->flatMap->homologations;
-        
+        // Obtener los IDs de las certificaciones disponibles asociadas
+        $homologationIds = $certifications->pluck('homologation_id')->filter();
+
+        // Obtener los indicadores homologados
+        $homologatedIndicators = IndicatorHomologation::whereIn('homologation_id', $homologationIds)
+            ->with(['indicator', 'availableCertification'])
+            ->get()
+            ->groupBy('homologation_id')
+            ->map(function ($group) {
+                return [
+                    'certification_name' => $group->first()->availableCertification->nombre,
+                    'indicators' => $group->map(function ($homologation) {
+                        return [
+                            'id' => $homologation->indicator->id,
+                            'name' => $homologation->indicator->name,
+                            // Agrega aquí cualquier otra información del indicador que necesites
+                        ];
+                    })
+                ];
+            });
+
         // Obtener las respuestas guardadas del usuario
         $savedAnswers = IndicatorAnswer::where('company_id', $user->company_id)
             ->whereIn('indicator_id', $value->subcategories->flatMap->indicators->pluck('id'))
@@ -38,7 +57,7 @@ class IndicadoresController extends Controller
             'savedAnswers' => $savedAnswers,
             'currentScore' => $currentScore,
             'certifications' => $certifications,
-            'homologations' => $homologations
+            'homologatedIndicators' => $homologatedIndicators
         ]);
     }
 }

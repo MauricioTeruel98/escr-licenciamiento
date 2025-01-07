@@ -6,7 +6,7 @@ import IndicatorIndex from '@/Components/IndicatorIndex';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
 
-export default function Indicadores({ valueData, userName, user, savedAnswers, currentScore: initialScore, certifications, homologations }) {
+export default function Indicadores({ valueData, userName, user, savedAnswers, currentScore: initialScore, certifications, homologatedIndicators }) {
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [answers, setAnswers] = useState({});
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -16,7 +16,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
 
     console.log(user);
     console.log(certifications);
-    console.log(homologations);
+    console.log(homologatedIndicators);
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
 
@@ -142,6 +142,18 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
             });
     };
 
+    // Calcular el total de indicadores homologados SOLO para este valor
+    const totalHomologatedIndicators = Object.values(homologatedIndicators)
+        .reduce((total, cert) => {
+            // Filtrar solo los indicadores que pertenecen a este valor
+            const indicatorsInThisValue = cert.indicators.filter(indicator => 
+                valueData.subcategories.some(subcategory =>
+                    subcategory.indicators.some(i => i.id === indicator.id)
+                )
+            );
+            return total + indicatorsInThisValue.length;
+        }, 0);
+
     return (
         <DashboardLayout userName={userName} title="Indicadores">
             <div className="space-y-8">
@@ -166,8 +178,13 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
                     <div className="lg:w-1/2">
                         <div className="flex items-center mt-5">
                             <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-blue-600/20 flex items-center gap-2">
-                                0 Indicadores Homologados
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-info-circle"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
+                                {totalHomologatedIndicators} Indicadores Homologados en {valueData.name}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-info-circle">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                                    <path d="M12 9h.01" />
+                                    <path d="M11 12h1v4h1" />
+                                </svg>
                             </span>
                         </div>
                         <h1 className="text-4xl font-bold mt-3">{valueData.name}</h1>
@@ -267,45 +284,52 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                         </h2>
 
                         <div className="mt-10 space-y-6">
-                            {subcategories[currentSubcategoryIndex].indicators.map(indicator => (
-                                <div key={indicator.id}>
-                                    <div className="flex items-start gap-2">
-                                        <IndicatorIndex
-                                            code={indicator.name}
-                                            question={indicator.self_evaluation_question}
-                                            onAnswer={(answer) => handleAnswer(indicator.id, answer, indicator.binding)}
-                                            value={answers[indicator.id] || ''}
-                                            isBinding={indicator.binding}
-                                        />
-                                        {indicator.guide && (
-                                            <button
-                                                type="button"
-                                                className="group relative inline-block text-gray-500 hover:text-gray-700"
-                                                data-tooltip-target={`tooltip-${indicator.id}`}
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-info-circle"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
-                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-64 z-50">
-                                                    <div className="bg-gray-900 text-white text-sm rounded-lg py-2 px-3 shadow-lg">
-                                                        {indicator.guide}
-                                                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-2">
-                                                            <div className="border-8 border-transparent border-t-gray-900"></div>
+                            {subcategories[currentSubcategoryIndex].indicators.map(indicator => {
+                                const homologation = Object.values(homologatedIndicators).find(cert => 
+                                    cert.indicators.some(i => i.id === indicator.id)
+                                );
+
+                                return (
+                                    <div key={indicator.id}>
+                                        <div className="flex items-start gap-2">
+                                            <IndicatorIndex
+                                                code={indicator.name}
+                                                question={indicator.self_evaluation_question}
+                                                onAnswer={(answer) => handleAnswer(indicator.id, answer, indicator.binding)}
+                                                value={answers[indicator.id] || ''}
+                                                isBinding={indicator.binding}
+                                                homologation={homologation ? homologation.certification_name : null}
+                                            />
+                                            {indicator.guide && (
+                                                <button
+                                                    type="button"
+                                                    className="group relative inline-block text-gray-500 hover:text-gray-700"
+                                                    data-tooltip-target={`tooltip-${indicator.id}`}
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-info-circle"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-64 z-50">
+                                                        <div className="bg-gray-900 text-white text-sm rounded-lg py-2 px-3 shadow-lg">
+                                                            {indicator.guide}
+                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-2">
+                                                                <div className="border-8 border-transparent border-t-gray-900"></div>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </button>
-                                        )}
-                                    </div>
-                                    {indicator.binding && (
-                                        <div className="mt-2 text-sm text-red-600 flex items-center gap-2">
-                                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                            </svg>
-                                            Pregunta vinculante
+                                                </button>
+                                            )}
                                         </div>
-                                    )}
-                                    <div className="divider"></div>
-                                </div>
-                            ))}
+                                        {indicator.binding && (
+                                            <div className="mt-2 text-sm text-red-600 flex items-center gap-2">
+                                                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                </svg>
+                                                Pregunta vinculante
+                                            </div>
+                                        )}
+                                        <div className="divider"></div>
+                                    </div>
+                                );
+                            })}
                         </div>
 
                         <div className="mt-8 flex justify-between">

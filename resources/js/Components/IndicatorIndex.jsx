@@ -1,4 +1,4 @@
-export default function IndicatorIndex({ code, question, onAnswer, value, isBinding }) {
+export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation }) {
     const handleChange = (e) => {
         const selectedValue = e.target.value;
         console.log('Seleccionado para indicador', code, ':', selectedValue);
@@ -21,6 +21,21 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                         {isBinding && (
                             <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 ml-2">
                                 Vinculante
+                            </span>
+                        )}
+                        {homologation && (
+                            <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/10 ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" 
+                                     className="h-4 w-4 mr-1" 
+                                     viewBox="0 0 24 24" 
+                                     fill="none" 
+                                     stroke="currentColor" 
+                                     strokeWidth="2" 
+                                     strokeLinecap="round" 
+                                     strokeLinejoin="round">
+                                    <path d="M13.5 3H12H8C6.34315 3 5 4.34315 5 6V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8.625M13.5 3L19 8.625M13.5 3V7.625C13.5 8.17728 13.9477 8.625 14.5 8.625H19" />
+                                </svg>
+                                Homologado por {homologation}
                             </span>
                         )}
                     </div>
