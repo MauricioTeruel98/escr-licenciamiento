@@ -7,10 +7,12 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
 
     // Convertimos el value a string para la comparación
     const stringValue = String(value);
-    console.log('Valor actual para indicador', code, ':', stringValue, typeof stringValue);
+    
+    // Si está homologado, deshabilitar los inputs y mostrar como respondido
+    const isHomologated = !!homologation;
 
     return (
-        <div className="bg-white rounded-lg space-y-4">
+        <div className={`bg-white rounded-lg space-y-4 ${isHomologated ? 'bg-blue-50/50 ring-1 ring-blue-100 p-3' : ''}`}>
             {/* Cabecera del indicador */}
             <div className="space-y-2">
                 <div className="inline-block">
@@ -47,29 +49,41 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
 
             {/* Opciones de respuesta */}
             <div className="flex gap-4 mt-4">
-                <label className="flex items-center gap-2">
+                <label className={`flex items-center gap-2 ${isHomologated ? 'cursor-not-allowed' : ''}`}>
                     <input
                         type="radio"
                         name={`indicator-${code}`}
                         value="1"
-                        checked={stringValue === "1"}
+                        checked={isHomologated ? true : stringValue === "1"}
                         onChange={handleChange}
-                        className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                        disabled={isHomologated}
+                        className={`w-4 h-4 ${isHomologated 
+                            ? 'text-blue-600 border-blue-300 cursor-not-allowed' 
+                            : 'text-green-600 border-gray-300'} focus:ring-green-500`}
                     />
-                    <span className="text-gray-900">Sí</span>
+                    <span className={`${isHomologated ? 'text-blue-900' : 'text-gray-900'}`}>Sí</span>
                 </label>
 
-                <label className="flex items-center gap-2">
+                <label className={`flex items-center gap-2 ${isHomologated ? 'cursor-not-allowed' : ''}`}>
                     <input
                         type="radio"
                         name={`indicator-${code}`}
                         value="0"
-                        checked={stringValue === "0"}
+                        checked={!isHomologated && stringValue === "0"}
                         onChange={handleChange}
-                        className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                        disabled={isHomologated}
+                        className={`w-4 h-4 ${isHomologated 
+                            ? 'text-gray-400 border-gray-300 cursor-not-allowed' 
+                            : 'text-green-600 border-gray-300'} focus:ring-green-500`}
                     />
-                    <span className="text-gray-900">No</span>
+                    <span className={`${isHomologated ? 'text-gray-400' : 'text-gray-900'}`}>No</span>
                 </label>
+                
+                {isHomologated && (
+                    <span className="text-sm text-blue-600 italic ml-2">
+                        Respuesta automática por homologación
+                    </span>
+                )}
             </div>
         </div>
     );

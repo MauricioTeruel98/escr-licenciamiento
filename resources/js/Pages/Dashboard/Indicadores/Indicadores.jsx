@@ -72,11 +72,23 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     };
 
     useEffect(() => {
-        if (savedAnswers) {
+        if (savedAnswers || homologatedIndicators) {
             const formattedAnswers = {};
-            savedAnswers.forEach(answer => {
-                formattedAnswers[answer.indicator_id] = answer.answer;
+            
+            // Procesar respuestas guardadas
+            if (savedAnswers) {
+                savedAnswers.forEach(answer => {
+                    formattedAnswers[answer.indicator_id] = answer.answer;
+                });
+            }
+
+            // Marcar indicadores homologados como "Sí"
+            Object.values(homologatedIndicators).forEach(cert => {
+                cert.indicators.forEach(indicator => {
+                    formattedAnswers[indicator.id] = "1";
+                });
             });
+
             setAnswers(formattedAnswers);
 
             const initialCalculatedScore = calculateCurrentScore(formattedAnswers);
@@ -84,7 +96,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
 
             checkBindingAnswers(formattedAnswers);
         }
-    }, [savedAnswers]);
+    }, [savedAnswers, homologatedIndicators]);
 
     const handleStepClick = (index) => {
         setCurrentSubcategoryIndex(index);
