@@ -6,7 +6,7 @@ import IndicatorIndex from '@/Components/IndicatorIndex';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
 
-export default function Indicadores({ valueData, userName, savedAnswers, currentScore: initialScore }) {
+export default function Indicadores({ valueData, userName, user, savedAnswers, currentScore: initialScore, certifications, homologations }) {
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [answers, setAnswers] = useState({});
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -14,6 +14,9 @@ export default function Indicadores({ valueData, userName, savedAnswers, current
     const [bindingWarning, setBindingWarning] = useState(false);
     const [currentScore, setCurrentScore] = useState(initialScore);
 
+    console.log(user);
+    console.log(certifications);
+    console.log(homologations);
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
 

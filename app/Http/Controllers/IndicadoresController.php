@@ -12,9 +12,15 @@ class IndicadoresController extends Controller
 {
     public function index($id)
     {
-        $user = auth()->user();
+        $user = auth()->user()->load('company');
         $value = Value::with(['subcategories.indicators'])->findOrFail($id);
 
+        //Obtener las certificaciones de la empresa
+        $certifications = $user->company->certifications;
+
+        //Validar las homologaciones que tiene la empresa en base a las certificaciones
+        $homologations = $certifications->flatMap->homologations;
+        
         // Obtener las respuestas guardadas del usuario
         $savedAnswers = IndicatorAnswer::where('company_id', $user->company_id)
             ->whereIn('indicator_id', $value->subcategories->flatMap->indicators->pluck('id'))
@@ -28,8 +34,11 @@ class IndicadoresController extends Controller
         return Inertia::render('Dashboard/Indicadores/Indicadores', [
             'valueData' => $value,
             'userName' => $user->name,
+            'user' => $user,
             'savedAnswers' => $savedAnswers,
-            'currentScore' => $currentScore
+            'currentScore' => $currentScore,
+            'certifications' => $certifications,
+            'homologations' => $homologations
         ]);
     }
 }
