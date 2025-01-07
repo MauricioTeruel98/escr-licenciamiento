@@ -17,12 +17,6 @@ export default function CompanyRegister() {
 
     const submit = (e) => {
         e.preventDefault();
-        
-        if (!data.is_exporter) {
-            // Mostrar mensaje de error
-            return;
-        }
-        
         post(route('company.store'));
     };
 
@@ -169,42 +163,42 @@ export default function CompanyRegister() {
                     </div>
 
                     {/* ¿Es una empresa exportadora? */}
-                    <div className="mt-4">
-                        <p className="text-sm mb-2">
-                            ¿Es una empresa exportadora?
-                            <span className="text-red-500">*</span>
-                        </p>
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                            ¿Es una empresa exportadora?<span className="text-red-500">*</span>
+                        </label>
                         <div className="flex gap-4">
-                            <label className="flex items-center">
+                            <label className="inline-flex items-center">
                                 <input
                                     type="radio"
                                     name="is_exporter"
-                                    checked={data.is_exporter === true}
+                                    checked={data.is_exporter}
                                     onChange={() => setData('is_exporter', true)}
-                                    className="mr-2"
+                                    className="form-radio text-green-600"
                                 />
-                                <span className="text-sm">Sí</span>
+                                <span className="ml-2">Sí</span>
                             </label>
-                            <label className="flex items-center">
+                            <label className="inline-flex items-center">
                                 <input
                                     type="radio"
                                     name="is_exporter"
-                                    checked={data.is_exporter === false}
+                                    checked={!data.is_exporter}
                                     onChange={() => setData('is_exporter', false)}
-                                    className="mr-2"
+                                    className="form-radio text-green-600"
                                 />
-                                <span className="text-sm">No</span>
+                                <span className="ml-2">No</span>
                             </label>
                         </div>
-                        
                         {!data.is_exporter && (
-                            <div className="mt-2">
-                                <p className="text-red-500 text-sm">Ser empresa exportadora es un requisito obligatorio.</p>
+                            <div>
+                                <p className="text-red-500 text-sm">
+                                    Ser empresa exportadora es un requisito obligatorio.
+                                </p>
                                 <p className="text-gray-600 text-sm">
                                     Para excepciones{' '}
                                     <a 
                                         href="mailto:licenciasmarcapais@procomer.com" 
-                                        className="text-green-700 hover:underline"
+                                        className="text-green-600 hover:underline"
                                     >
                                         licenciasmarcapais@procomer.com
                                     </a>
@@ -215,8 +209,12 @@ export default function CompanyRegister() {
 
                     <button
                         type="submit"
-                        disabled={processing}
-                        className="w-full bg-green-700 text-white py-2 px-4 rounded-md hover:bg-green-800 transition-colors"
+                        disabled={processing || !data.is_exporter}
+                        className={`w-full py-2 px-4 rounded-md transition-colors ${
+                            !data.is_exporter 
+                                ? 'bg-gray-400 cursor-not-allowed' 
+                                : 'bg-green-700 hover:bg-green-800 text-white'
+                        }`}
                     >
                         Registrar Empresa
                     </button>
