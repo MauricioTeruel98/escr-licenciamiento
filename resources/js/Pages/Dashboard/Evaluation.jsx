@@ -1,4 +1,4 @@
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, useForm, usePage, router } from '@inertiajs/react';
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { CircleArrowDown, CircleArrowRight } from 'lucide-react';
 import { useState } from 'react';
@@ -108,6 +108,7 @@ export default function Evaluation({
             const response = await axios.post(route('evaluation.send-application'));
             if (response.data.message) {
                 setIsApplicationModalOpen(true);
+                router.reload({ only: ['autoEvaluationResult'] });
             }
         } catch (error) {
             setNotification({
