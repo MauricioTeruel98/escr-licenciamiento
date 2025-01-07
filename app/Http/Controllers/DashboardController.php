@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AutoEvaluationResult;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\User;
@@ -23,6 +24,9 @@ class DashboardController extends Controller
         
         // Obtener el total de indicadores activos
         $totalIndicadores = Indicator::where('is_active', true)->count();
+
+        //Resultados de la autoevaluación
+        $autoEvaluationResult = AutoEvaluationResult::where('company_id', $user->company_id)->first();
         
         // Obtener el número de respuestas de la empresa
         $indicadoresRespondidos = IndicatorAnswer::whereHas('indicator', function($query) {
@@ -91,7 +95,8 @@ class DashboardController extends Controller
             'companyName' => $user->company->name,
             'status' => $status,
             'failedBindingIndicators' => $failedBindingIndicators,
-            'failedValues' => $failedValues
+            'failedValues' => $failedValues,
+            'autoEvaluationResult' => $autoEvaluationResult
         ]);
     }
 } 

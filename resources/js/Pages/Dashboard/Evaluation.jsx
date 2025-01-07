@@ -3,6 +3,7 @@ import DashboardLayout from "@/Layouts/DashboardLayout";
 import { CircleArrowDown, CircleArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import ApplicationModal from '@/Components/Modals/ApplicationModal';
+import axios from 'axios';
 
 // Componente FAQ actualizado
 const FAQSection = () => {
@@ -92,20 +93,35 @@ export default function Evaluation({
     companyName,
     status,
     failedBindingIndicators,
-    failedValues
+    failedValues,
+    autoEvaluationResult
 }) {
     const { post } = useForm();
     const { auth } = usePage().props;
 
     const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleApplicationSubmit = () => {
-        setIsApplicationModalOpen(true);
+    const handleApplicationSubmit = async () => {
+        try {
+            setIsSubmitting(true);
+            const response = await axios.post(route('evaluation.send-application'));
+            if (response.data.message) {
+                setIsApplicationModalOpen(true);
+            }
+        } catch (error) {
+            setNotification({
+                type: 'error',
+                message: error.response?.data?.message || 'Error al enviar la solicitud'
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     // Componente para las solicitudes pendientes
     const PendingRequestsAlert = () => {
-        if (!isAdmin  || !pendingRequests || pendingRequests.length === 0) return null;
+        if (!isAdmin || !pendingRequests || pendingRequests.length === 0) return null;
 
         return (
             <div className="card bg-white shadow mb-8">
@@ -144,6 +160,8 @@ export default function Evaluation({
         );
     };
 
+    console.log(autoEvaluationResult);
+
     return (
         <DashboardLayout userName={userName} title={`Autoevaluación de ${companyName}`}>
             <div className="space-y-8">
@@ -151,183 +169,234 @@ export default function Evaluation({
                 <PendingRequestsAlert />
 
                 <div className="md:flex gap-8">
-                    <div className="space-y-4 md:w-2/3">
-                        <div className="">
-                            <p className="text-3xl font-bold">¡Bienvenido {userName}!</p>
-                        </div>
-
-                        {/* Status Banner */}
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <span className={`${status === 'apto'
-                                    ? 'bg-green-50 text-green-700 ring-green-600/20'
-                                    : 'bg-red-50 text-red-700 ring-red-600/20'
-                                    } px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset flex items-center gap-2`}
-                                >
-                                    ESTATUS: {status === 'apto' ? 'APTO' : 'NO APTO'} PARA LICENCIAMIENTO
-                                </span>
-                            </div>
-
-                            {/* Mensajes de error cuando no es apto */}
-                            {status === 'no_apto' && (
-                                <div className="space-y-4">
-                                    {/* Mensaje de indicadores vinculantes fallidos */}
-                                    {failedBindingIndicators && failedBindingIndicators.length > 0 && (
-                                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                                            <div className="flex">
-                                                <div className="flex-shrink-0">
-                                                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                                    </svg>
-                                                </div>
-                                                <div className="ml-3">
-                                                    <h3 className="text-sm font-medium text-red-800">
-                                                        Indicadores vinculantes no cumplidos
-                                                    </h3>
-                                                    <div className="mt-2 text-sm text-red-700">
-                                                        <ul className="list-disc pl-5 space-y-1">
-                                                            {failedBindingIndicators.map((indicator, index) => (
-                                                                <li key={index}>
-                                                                    <span className="font-medium">{indicator.name}:</span> {indicator.question}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Mensaje de valores con nota insuficiente */}
-                                    {failedValues && failedValues.length > 0 && (
-                                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                                            <div className="flex">
-                                                <div className="flex-shrink-0">
-                                                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                                    </svg>
-                                                </div>
-                                                <div className="ml-3">
-                                                    <h3 className="text-sm font-medium text-red-800">
-                                                        Valores que no alcanzan la nota mínima requerida (70%)
-                                                    </h3>
-                                                    <div className="mt-2 text-sm text-red-700">
-                                                        <ul className="list-disc pl-5 space-y-1">
-                                                            {failedValues.map((value, index) => (
-                                                                <li key={index}>
-                                                                    <span className="font-medium">{value.name}:</span> Nota actual: {value.nota}%
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                        <h1 className="text-4xl font-bold">
-                            Autoevaluación de {companyName}
-                        </h1>
-                    </div>
-
-                    <div className="md:w-1/3">
-                        {/* Mensaje de éxito cuando está apto */}
-                        {status === 'apto' && (
+                    {
+                        autoEvaluationResult && autoEvaluationResult.application_sended == 1 && (
                             <div className="space-y-4 bg-green-50/50 p-4 rounded-lg">
+                                <div className="">
+                                    <p className="text-3xl font-bold">¡Bienvenido {userName}!</p>
+                                </div>
+                                <h1 className="text-4xl font-bold">
+                                    Evaluación de {companyName}
+                                </h1>
                                 <div className="flex items-center justify-center gap-2">
                                     <div className="flex-shrink-0">
-                                        <svg
-                                            className="h-5 w-5 text-green-700"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
-                                        >
-                                            <path
-                                                fillRule="evenodd"
-                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                clipRule="evenodd"
-                                            />
-                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-info-circle text-green-700"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
                                     </div>
                                     <p className="text-sm text-green-700 font-medium">
                                         Su empresa cuenta con indicadores aptos para iniciar el proceso de licenciamiento.
                                     </p>
                                 </div>
-                                <button 
+                                <button
                                     onClick={handleApplicationSubmit}
-                                    className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                    disabled={isSubmitting}
+                                    className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75"
                                 >
-                                    Enviar Solicitud De Aplicación
+                                    Completar Formulario de Empresa
                                 </button>
                             </div>
-                        )}
-                    </div>
+                        )
+                    }
+
+                    {
+                        autoEvaluationResult && autoEvaluationResult.application_sended == 0 && (
+                            <>
+                                <div className="space-y-4 md:w-2/3">
+                                    <div className="">
+                                        <p className="text-3xl font-bold">¡Bienvenido {userName}!</p>
+                                    </div>
+
+                                    {/* Status Banner */}
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <span className={`${status === 'apto'
+                                                ? 'bg-green-50 text-green-700 ring-green-600/20'
+                                                : 'bg-red-50 text-red-700 ring-red-600/20'
+                                                } px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset flex items-center gap-2`}
+                                            >
+                                                ESTATUS: {status === 'apto' ? 'APTO' : 'NO APTO'} PARA LICENCIAMIENTO
+                                            </span>
+                                        </div>
+
+                                        {/* Mensajes de error cuando no es apto */}
+                                        {status === 'no_apto' && (
+                                            <div className="space-y-4">
+                                                {/* Mensaje de indicadores vinculantes fallidos */}
+                                                {failedBindingIndicators && failedBindingIndicators.length > 0 && (
+                                                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                                        <div className="flex">
+                                                            <div className="flex-shrink-0">
+                                                                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                                                </svg>
+                                                            </div>
+                                                            <div className="ml-3">
+                                                                <h3 className="text-sm font-medium text-red-800">
+                                                                    Indicadores vinculantes no cumplidos
+                                                                </h3>
+                                                                <div className="mt-2 text-sm text-red-700">
+                                                                    <ul className="list-disc pl-5 space-y-1">
+                                                                        {failedBindingIndicators.map((indicator, index) => (
+                                                                            <li key={index}>
+                                                                                <span className="font-medium">{indicator.name}:</span> {indicator.question}
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Mensaje de valores con nota insuficiente */}
+                                                {failedValues && failedValues.length > 0 && (
+                                                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                                        <div className="flex">
+                                                            <div className="flex-shrink-0">
+                                                                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                                                </svg>
+                                                            </div>
+                                                            <div className="ml-3">
+                                                                <h3 className="text-sm font-medium text-red-800">
+                                                                    Valores que no alcanzan la nota mínima requerida (70%)
+                                                                </h3>
+                                                                <div className="mt-2 text-sm text-red-700">
+                                                                    <ul className="list-disc pl-5 space-y-1">
+                                                                        {failedValues.map((value, index) => (
+                                                                            <li key={index}>
+                                                                                <span className="font-medium">{value.name}:</span> Nota actual: {value.nota}%
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <h1 className="text-4xl font-bold">
+                                        Autoevaluación de {companyName}
+                                    </h1>
+                                </div>
+
+                                <div className="md:w-1/3">
+                                    {/* Mensaje de éxito cuando está apto */}
+                                    {status === 'apto' && (
+                                        <div className="space-y-4 bg-green-50/50 p-4 rounded-lg">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <div className="flex-shrink-0">
+                                                    <svg
+                                                        className="h-5 w-5 text-green-700"
+                                                        viewBox="0 0 20 20"
+                                                        fill="currentColor"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <p className="text-sm text-green-700 font-medium">
+                                                    Su empresa cuenta con indicadores aptos para iniciar el proceso de licenciamiento.
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={handleApplicationSubmit}
+                                                disabled={isSubmitting}
+                                                className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75"
+                                            >
+                                                {isSubmitting ? (
+                                                    <>
+                                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Enviando...
+                                                    </>
+                                                ) : (
+                                                    'Enviar Solicitud De Aplicación'
+                                                )}
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </>
+                        )
+                    }
+
+
                 </div>
 
-                <div className="card bg-white shadow">
-                    <div className="card-body">
-                        <h2 className="card-title">Estos son los pasos para licenciarse</h2>
-                    </div>
-                    <div className="card-body">
-                        <div className='flex flex-col md:flex-row items-center justify-between w-full px-8 gap-4'>
-                            <div className='flex flex-col items-center gap-2 text-green-700'>
-                                <img src="/assets/img/icons-home/check.png" alt="Check" />
-                                <h2 className='w-[80%] text-center'>Evaluación</h2>
+                {
+                    autoEvaluationResult && autoEvaluationResult.application_sended == 0 && (
+                        <div className="card bg-white shadow">
+                            <div className="card-body">
+                                <h2 className="card-title">Estos son los pasos para licenciarse</h2>
                             </div>
-                            <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                <CircleArrowDown />
-                            </div>
-                            <div className='hidden md:block' style={{ color: '#157f3d' }}>
-                                <CircleArrowRight />
-                            </div>
-                            <div className='flex flex-col items-center gap-2 text-green-700'>
-                                <img src="/assets/img/icons-home/list.png" alt="List" />
-                                <h2 className='w-[80%] text-center'>Autoevaluación rápida</h2>
-                            </div>
-                            <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                <CircleArrowDown />
-                            </div>
-                            <div className='hidden md:block' style={{ color: '#157f3d' }}>
-                                <CircleArrowRight />
-                            </div>
-                            <div className='flex flex-col items-center gap-2 text-green-700'>
-                                <img src="/assets/img/icons-home/archive.png" alt="Archive" />
-                                <h2 className='w-[80%] text-center'>Consultar los requisitos</h2>
-                            </div>
-                            <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                <CircleArrowDown />
-                            </div>
-                            <div className='hidden md:block' style={{ color: '#157f3d' }}>
-                                <CircleArrowRight />
-                            </div>
-                            <div className='flex flex-col items-center gap-2 text-green-700'>
-                                <img src="/assets/img/icons-home/calendar.png" alt="Calendar" />
-                                <h2 className='w-[80%] text-center'>Pedir una cita de certificación</h2>
-                            </div>
-                            <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                <CircleArrowDown />
-                            </div>
-                            <div className='hidden md:block' style={{ color: '#157f3d' }}>
-                                <CircleArrowRight />
-                            </div>
-                            <div className='flex flex-col items-center gap-2 text-green-700'>
-                                <img src="/assets/img/icons-home/doc.png" alt="Doc" />
-                                <h2 className='w-[80%] text-center'>Enviar los documentos</h2>
-                            </div>
-                            <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                <CircleArrowDown />
-                            </div>
-                            <div className='hidden md:block' style={{ color: '#157f3d' }}>
-                                <CircleArrowRight />
-                            </div>
-                            <div className='flex flex-col items-center gap-2 text-green-700'>
-                                <img src="/assets/img/icons-home/timber.png" alt="Timber" />
-                                <h2 className='w-[80%] text-center'>Notificación de aceptación</h2>
+                            <div className="card-body">
+                                <div className='flex flex-col md:flex-row items-center justify-between w-full px-8 gap-4'>
+                                    <div className='flex flex-col items-center gap-2 text-green-700'>
+                                        <img src="/assets/img/icons-home/check.png" alt="Check" />
+                                        <h2 className='w-[80%] text-center'>Evaluación</h2>
+                                    </div>
+                                    <div className='md:hidden' style={{ color: '#157f3d' }}>
+                                        <CircleArrowDown />
+                                    </div>
+                                    <div className='hidden md:block' style={{ color: '#157f3d' }}>
+                                        <CircleArrowRight />
+                                    </div>
+                                    <div className='flex flex-col items-center gap-2 text-green-700'>
+                                        <img src="/assets/img/icons-home/list.png" alt="List" />
+                                        <h2 className='w-[80%] text-center'>Autoevaluación rápida</h2>
+                                    </div>
+                                    <div className='md:hidden' style={{ color: '#157f3d' }}>
+                                        <CircleArrowDown />
+                                    </div>
+                                    <div className='hidden md:block' style={{ color: '#157f3d' }}>
+                                        <CircleArrowRight />
+                                    </div>
+                                    <div className='flex flex-col items-center gap-2 text-green-700'>
+                                        <img src="/assets/img/icons-home/archive.png" alt="Archive" />
+                                        <h2 className='w-[80%] text-center'>Consultar los requisitos</h2>
+                                    </div>
+                                    <div className='md:hidden' style={{ color: '#157f3d' }}>
+                                        <CircleArrowDown />
+                                    </div>
+                                    <div className='hidden md:block' style={{ color: '#157f3d' }}>
+                                        <CircleArrowRight />
+                                    </div>
+                                    <div className='flex flex-col items-center gap-2 text-green-700'>
+                                        <img src="/assets/img/icons-home/calendar.png" alt="Calendar" />
+                                        <h2 className='w-[80%] text-center'>Pedir una cita de certificación</h2>
+                                    </div>
+                                    <div className='md:hidden' style={{ color: '#157f3d' }}>
+                                        <CircleArrowDown />
+                                    </div>
+                                    <div className='hidden md:block' style={{ color: '#157f3d' }}>
+                                        <CircleArrowRight />
+                                    </div>
+                                    <div className='flex flex-col items-center gap-2 text-green-700'>
+                                        <img src="/assets/img/icons-home/doc.png" alt="Doc" />
+                                        <h2 className='w-[80%] text-center'>Enviar los documentos</h2>
+                                    </div>
+                                    <div className='md:hidden' style={{ color: '#157f3d' }}>
+                                        <CircleArrowDown />
+                                    </div>
+                                    <div className='hidden md:block' style={{ color: '#157f3d' }}>
+                                        <CircleArrowRight />
+                                    </div>
+                                    <div className='flex flex-col items-center gap-2 text-green-700'>
+                                        <img src="/assets/img/icons-home/timber.png" alt="Timber" />
+                                        <h2 className='w-[80%] text-center'>Notificación de aceptación</h2>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    )
+                }
 
                 <div className="grid md:grid-cols-2 gap-8">
                     {/* Left Column */}
@@ -401,7 +470,7 @@ export default function Evaluation({
                     </div>
                 </div>
             </div>
-            <ApplicationModal 
+            <ApplicationModal
                 isOpen={isApplicationModalOpen}
                 onClose={() => setIsApplicationModalOpen(false)}
             />

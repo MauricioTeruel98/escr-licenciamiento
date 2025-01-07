@@ -10,8 +10,9 @@ use App\Models\IndicatorAnswer;
 use App\Models\AutoEvaluationValorResult;
 use App\Models\Value;
 use App\Models\EvaluatorAssessment;
+use Illuminate\Support\Facades\DB;
 
-class EvaluationController extends Controller 
+class EvaluationController extends Controller
 {
     public function index($value_id)
     {
@@ -27,21 +28,21 @@ class EvaluationController extends Controller
         $valueData = Value::with(['subcategories.indicators' => function ($query) use ($indicatorIds) {
             $query->whereIn('indicators.id', $indicatorIds);
         }, 'subcategories.indicators.evaluationQuestions'])
-        ->findOrFail($value_id);
+            ->findOrFail($value_id);
 
         // Obtener todas las respuestas de evaluación existentes
         $savedAnswers = \App\Models\IndicatorAnswerEvaluation::where('company_id', $company_id)
             ->get()
-            ->map(function($answer) {
+            ->map(function ($answer) {
                 $files = [];
                 if ($answer->file_path) {
                     $filePaths = json_decode($answer->file_path);
                     if (is_array($filePaths)) {
-                        $files = array_map(function($path) {
+                        $files = array_map(function ($path) {
                             return [
                                 'name' => basename($path),
                                 'path' => $path,
-                                'size' => file_exists(storage_path('app/public/' . $path)) ? 
+                                'size' => file_exists(storage_path('app/public/' . $path)) ?
                                     filesize(storage_path('app/public/' . $path)) : 0,
                                 'type' => mime_content_type(storage_path('app/public/' . $path)) ?? 'application/octet-stream'
                             ];
@@ -120,6 +121,17 @@ class EvaluationController extends Controller
 
         return response()->json($indicators);
     }
-}
 
-?>
+    public function sendApplication()
+    {
+        //Cambiar user_id por company_id
+        $user = auth()->user();
+        $companyId = $user->company_id;
+
+        DB::table('auto_evaluation_result')
+            ->where('company_id', $companyId)
+            ->update(['application_sended' => 1]);
+
+        return response()->json(['message' => 'Solicitud enviada correctamente']);
+    }
+}
