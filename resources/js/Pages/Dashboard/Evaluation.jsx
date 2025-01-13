@@ -187,13 +187,11 @@ export default function Evaluation({
                                         Su empresa cuenta con indicadores aptos para iniciar el proceso de licenciamiento.
                                     </p>
                                 </div>
-                                <button
-                                    onClick={handleApplicationSubmit}
-                                    disabled={isSubmitting}
+                                <Link href={route('form.empresa')}
                                     className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75"
                                 >
                                     Completar Formulario de Empresa
-                                </button>
+                                </Link>
                             </div>
                         )
                     }

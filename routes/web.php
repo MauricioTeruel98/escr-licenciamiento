@@ -97,7 +97,10 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
     // Otras rutas protegidas...
 
     Route::post('/evaluation/send-application', [EvaluationController::class, 'sendApplication'])->name('evaluation.send-application');
-    
+
+    Route::get('/form-empresa', [DashboardController::class, 'showFormEmpresa'])
+        ->name('form.empresa');
+
 });
 
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {

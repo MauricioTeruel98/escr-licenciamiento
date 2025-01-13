@@ -99,4 +99,9 @@ class DashboardController extends Controller
             'autoEvaluationResult' => $autoEvaluationResult
         ]);
     }
+
+    public function showFormEmpresa()
+    {
+        return Inertia::render('Dashboard/FormEmpresa');
+    }
 } 
