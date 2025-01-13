@@ -106,6 +106,7 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
 
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/super/dashboard', [SuperAdminController::class, 'dashboard'])->name('super.dashboard');
+    Route::get('/super/components', [DashboardController::class, 'showComponents'])->name('super.components');
     Route::get('/super/companies', [SuperAdminController::class, 'companies'])->name('super.companies');
     Route::get('/super/users', [SuperAdminController::class, 'users'])->name('super.users');
     Route::get('/super/certifications', [SuperAdminController::class, 'certifications'])->name('super.certifications');

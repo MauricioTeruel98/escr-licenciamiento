@@ -104,4 +104,9 @@ class DashboardController extends Controller
     {
         return Inertia::render('Dashboard/FormEmpresa');
     }
+
+    public function showComponents()
+    {
+        return Inertia::render('SuperAdmin/Components');
+    }
 } 

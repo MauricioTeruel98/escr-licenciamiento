@@ -63,6 +63,11 @@ class AuthenticatedSessionController extends Controller
                 ->with('error', 'No tiene acceso a la plataforma.');
         }
 
+        // Redirección específica para super_admin
+        if ($user->role === 'super_admin') {
+            return redirect()->route('super.dashboard');
+        }
+
         return redirect()->intended(route('dashboard'));
     }
 
