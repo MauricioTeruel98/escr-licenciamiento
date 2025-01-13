@@ -57,4 +57,9 @@ class Company extends Model
     {
         return $this->hasMany(AutoEvaluationResult::class);
     }
+
+    public function infoAdicional()
+    {
+        return $this->hasOne(InfoAdicionalEmpresa::class);
+    }
 } 

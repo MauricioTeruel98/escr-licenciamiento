@@ -28,6 +28,7 @@ use App\Http\Controllers\SuperAdminCompanyController;
 use App\Http\Controllers\IndicadorAnswerController;
 use App\Http\Controllers\EvaluationAnswerController;
 use App\Http\Controllers\EvaluadorController;
+use App\Http\Controllers\CompanyProfileController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -238,5 +239,7 @@ Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
     Route::get('/api/evaluador/active-company', [EvaluadorController::class, 'getActiveCompany']);
     Route::post('/api/evaluador/switch-company', [EvaluadorController::class, 'switchCompany']);
 });
+
+Route::post('/company/profile', [CompanyProfileController::class, 'store'])->name('company.profile.store');
 
 require __DIR__ . '/auth.php';
