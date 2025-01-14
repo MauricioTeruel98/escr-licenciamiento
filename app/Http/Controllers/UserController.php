@@ -29,6 +29,26 @@ class UserController extends Controller
         return $query->paginate($request->input('per_page', 10));
     }
 
+    public function indexCompany(Request $request)
+    {
+        $query = User::query()
+            ->where('company_id', auth()->user()->company_id);
+
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->has('role') && $request->input('role') !== 'todos') {
+            $query->where('role', $request->input('role'));
+        }
+
+        return $query->paginate($request->input('per_page', 10));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -36,7 +56,7 @@ class UserController extends Controller
             'correo' => 'required|email|unique:users,email',
             'puesto' => 'required|string',
             'telefono' => 'required|string',
-            'role' => 'required|string|in:user,admin,evaluador',
+            
         ]);
 
         // Separar nombre y apellido
@@ -55,7 +75,7 @@ class UserController extends Controller
                 'phone' => $request->telefono,
                 'position' => $request->puesto,
                 'password' => Hash::make($password),
-                'role' => $request->role,
+                'role' => 'user',
                 'status' => 'approved',
                 'company_id' => auth()->user()->company_id,
             ]);

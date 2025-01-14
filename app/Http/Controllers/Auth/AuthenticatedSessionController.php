@@ -68,6 +68,11 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('super.dashboard');
         }
 
+        // Redirección específica para evaluador
+        if ($user->role === 'evaluador') {
+            return redirect()->route('evaluador.dashboard');
+        }
+
         return redirect()->intended(route('dashboard'));
     }
 

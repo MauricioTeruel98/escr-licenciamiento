@@ -10,7 +10,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::middleware(['auth:sanctum', 'web'])->group(function () {
-    Route::get('/users/company', [UserController::class, 'index']);
+    Route::get('/users/company', [UserController::class, 'indexCompany']);
     Route::get('/pending-users/company', [UserController::class, 'getPendingUsers']);
     Route::post('/users/company', [UserController::class, 'store']);
     Route::put('/users/company/{user}', [UserController::class, 'update']);

@@ -29,8 +29,8 @@ export default function UsersIndex() {
     const columns = [
         { key: 'name', label: 'Nombre' },
         { key: 'email', label: 'Email' },
-        { 
-            key: 'role', 
+        {
+            key: 'role',
             label: 'Rol',
             render: (item) => {
                 const roles = {
@@ -39,14 +39,14 @@ export default function UsersIndex() {
                     'user': 'Usuario',
                     'evaluador': 'Evaluador'
                 };
-                
+
                 const roleColors = {
                     'super_admin': 'bg-purple-100 text-purple-800',
                     'admin': 'bg-blue-100 text-blue-800',
                     'user': 'bg-gray-100 text-gray-800',
                     'evaluador': 'bg-amber-100 text-amber-800'
                 };
-                
+
                 return (
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleColors[item.role] || 'bg-gray-100 text-gray-800'}`}>
                         {roles[item.role] || item.role}
@@ -54,8 +54,8 @@ export default function UsersIndex() {
                 );
             }
         },
-        { 
-            key: 'company', 
+        {
+            key: 'company',
             label: 'Empresa',
             render: (item) => item.company?.name || 'N/A'
         },
@@ -63,15 +63,14 @@ export default function UsersIndex() {
             key: 'status',
             label: 'Estado',
             render: (item) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    item.status === 'approved' ? 'bg-green-100 text-green-800' :
-                    item.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                }`}>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        item.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                    }`}>
                     {
                         item.status === 'approved' ? 'Aprobado' :
-                        item.status === 'pending' ? 'Pendiente' :
-                        'Rechazado'
+                            item.status === 'pending' ? 'Pendiente' :
+                                'Rechazado'
                     }
                 </span>
             )
@@ -249,8 +248,8 @@ export default function UsersIndex() {
                 </div>
             </div>
 
-            <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+            <div className='flex justify-center items-center mb-6'>
+                <div className="bg-gray-50 p-1 rounded-xl inline-flex">
                     {[
                         { id: 'todos', name: 'Todos' },
                         { id: 'user', name: 'Usuarios' },
@@ -261,17 +260,17 @@ export default function UsersIndex() {
                             key={tab.id}
                             onClick={() => handleFilterChange(tab.id)}
                             className={`
-                                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
-                                ${activeFilter === tab.id
-                                    ? 'border-green-500 text-green-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            px-6 py-2 text-sm font-medium rounded-xl transition-colors
+                            ${activeFilter === tab.id
+                                    ? 'bg-white text-green-700 shadow'
+                                    : 'text-gray-500 hover:text-gray-700'
                                 }
-                            `}
+                        `}
                         >
                             {tab.name}
                         </button>
                     ))}
-                </nav>
+                </div>
             </div>
 
             <div className="mt-8">
@@ -279,7 +278,7 @@ export default function UsersIndex() {
                     columns={columns}
                     data={users}
                     onSearch={handleSearch}
-                    onSort={() => {}}
+                    onSort={() => { }}
                     pagination={pagination}
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}

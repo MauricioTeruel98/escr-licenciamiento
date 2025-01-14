@@ -76,15 +76,7 @@ export default function EvaluadorDashboard({ auth }) {
                                         <h2 className="text-lg font-semibold text-amber-900">{activeCompany.name}</h2>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        setSelectedCompany(null);
-                                        handleCompanyChange(null);
-                                    }}
-                                    className="text-amber-700 hover:text-amber-800 text-sm font-medium"
-                                >
-                                    Volver a Evaluador
-                                </button>
+                                
                             </div>
                         </div>
                     )}
