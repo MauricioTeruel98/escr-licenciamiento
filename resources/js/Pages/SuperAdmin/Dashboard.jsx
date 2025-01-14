@@ -92,15 +92,6 @@ export default function SuperAdminDashboard({ auth }) {
                                         <h2 className="text-lg font-semibold text-green-900">{activeCompany.name}</h2>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        setSelectedCompany(null);
-                                        handleCompanyChange(null);
-                                    }}
-                                    className="text-green-700 hover:text-green-800 text-sm font-medium"
-                                >
-                                    Volver a Super Admin
-                                </button>
                             </div>
                         </div>
                     )}

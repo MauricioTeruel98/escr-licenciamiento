@@ -86,6 +86,11 @@ return new class extends Migration
             // Arrays JSON
             $table->json('productos')->nullable();
             
+            // Agregar campos para imágenes
+            $table->string('logo_path')->nullable();
+            $table->json('fotografias_paths')->nullable();
+            $table->json('certificaciones_paths')->nullable();
+            
             $table->timestamps();
         });
     }

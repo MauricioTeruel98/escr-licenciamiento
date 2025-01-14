@@ -2,85 +2,158 @@ import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import InputError from '@/Components/InputError';
+import axios from 'axios';
 
-export default function CompanyProfile({ userName }) {
+export default function CompanyProfile({ userName, infoAdicional }) {
     const { data, setData, post, processing, errors } = useForm({
-        // Información de Empresa
-        nombre_comercial: '',
-        nombre_legal: '',
-        descripcion_es: '',
-        descripcion_en: '',
-        sitio_web: '',
-        facebook: '',
-        linkedin: '',
-        instagram: '',
-        sector: '',
-        tamano_empresa: '',
-        cantidad_hombres: '',
-        cantidad_mujeres: '',
-        cantidad_otros: '',
-        telefono_1: '',
-        telefono_2: '',
-        es_exportadora: false,
-        paises_exportacion: '',
-
-        // Contactos
-        contactos: [
-            {
-                nombre_completo: '',
-                puesto: '',
-                telefono: '',
-                correo: '',
-                celular: ''
-            }
-        ],
-
-        // Productos
-        productos: [{}, {}, {}],
-
-        cedula_juridica: '',
-        actividad_comercial: '',
-        producto_servicio: '',
-        rango_exportaciones: '',
-        planes_expansion: '',
-
-        razon_licenciamiento_es: '',
-        razon_licenciamiento_en: '',
-        proceso_licenciamiento: '',
-        recomienda_marca_pais: '',
-        observaciones: '',
-
-        mercadeo_nombre: '',
-        mercadeo_email: '',
-        mercadeo_puesto: '',
-        mercadeo_telefono: '',
-        mercadeo_celular: '',
+        nombre_comercial: infoAdicional?.nombre_comercial || '',
+        nombre_legal: infoAdicional?.nombre_legal || '',
+        descripcion_es: infoAdicional?.descripcion_es || '',
+        descripcion_en: infoAdicional?.descripcion_en || '',
+        sitio_web: infoAdicional?.sitio_web || '',
+        facebook: infoAdicional?.facebook || '',
+        linkedin: infoAdicional?.linkedin || '',
+        instagram: infoAdicional?.instagram || '',
+        sector: infoAdicional?.sector || '',
+        tamano_empresa: infoAdicional?.tamano_empresa || '',
+        cantidad_hombres: infoAdicional?.cantidad_hombres || '',
+        cantidad_mujeres: infoAdicional?.cantidad_mujeres || '',
+        cantidad_otros: infoAdicional?.cantidad_otros || '',
+        telefono_1: infoAdicional?.telefono_1 || '',
+        telefono_2: infoAdicional?.telefono_2 || '',
+        es_exportadora: infoAdicional?.es_exportadora || false,
+        paises_exportacion: infoAdicional?.paises_exportacion || '',
         
-        micrositio_nombre: '',
-        micrositio_email: '',
-        micrositio_puesto: '',
-        micrositio_telefono: '',
-        micrositio_celular: '',
+        provincia: infoAdicional?.provincia || '',
+        canton: infoAdicional?.canton || '',
+        distrito: infoAdicional?.distrito || '',
         
-        vocero_nombre: '',
-        vocero_email: '',
-        vocero_puesto: '',
-        vocero_telefono: '',
-        vocero_celular: '',
+        cedula_juridica: infoAdicional?.cedula_juridica || '',
+        actividad_comercial: infoAdicional?.actividad_comercial || '',
+        producto_servicio: infoAdicional?.producto_servicio || '',
+        rango_exportaciones: infoAdicional?.rango_exportaciones || '',
+        planes_expansion: infoAdicional?.planes_expansion || '',
         
-        representante_nombre: '',
-        representante_email: '',
-        representante_puesto: '',
-        representante_telefono: '',
-        representante_celular: '',
+        razon_licenciamiento_es: infoAdicional?.razon_licenciamiento_es || '',
+        razon_licenciamiento_en: infoAdicional?.razon_licenciamiento_en || '',
+        proceso_licenciamiento: infoAdicional?.proceso_licenciamiento || '',
+        recomienda_marca_pais: infoAdicional?.recomienda_marca_pais || false,
+        observaciones: infoAdicional?.observaciones || '',
+        
+        mercadeo_nombre: infoAdicional?.mercadeo_nombre || '',
+        mercadeo_email: infoAdicional?.mercadeo_email || '',
+        mercadeo_puesto: infoAdicional?.mercadeo_puesto || '',
+        mercadeo_telefono: infoAdicional?.mercadeo_telefono || '',
+        mercadeo_celular: infoAdicional?.mercadeo_celular || '',
+        
+        micrositio_nombre: infoAdicional?.micrositio_nombre || '',
+        micrositio_email: infoAdicional?.micrositio_email || '',
+        micrositio_puesto: infoAdicional?.micrositio_puesto || '',
+        micrositio_telefono: infoAdicional?.micrositio_telefono || '',
+        micrositio_celular: infoAdicional?.micrositio_celular || '',
+        
+        vocero_nombre: infoAdicional?.vocero_nombre || '',
+        vocero_email: infoAdicional?.vocero_email || '',
+        vocero_puesto: infoAdicional?.vocero_puesto || '',
+        vocero_telefono: infoAdicional?.vocero_telefono || '',
+        vocero_celular: infoAdicional?.vocero_celular || '',
+        
+        representante_nombre: infoAdicional?.representante_nombre || '',
+        representante_email: infoAdicional?.representante_email || '',
+        representante_puesto: infoAdicional?.representante_puesto || '',
+        representante_telefono: infoAdicional?.representante_telefono || '',
+        representante_celular: infoAdicional?.representante_celular || '',
+        
+        productos: infoAdicional?.productos || [{}, {}, {}],
     });
 
+    // Estado inicial para las imágenes existentes
     const [imagenes, setImagenes] = useState({
         fotografias: [],
         logo: null,
         certificaciones: [],
-        productos: [[], [], []],
+        productos: [], // Inicializar array vacío para imágenes de productos
+        // URLs de imágenes existentes
+        existingLogo: infoAdicional?.logo_path ? `/storage/${infoAdicional.logo_path}` : null,
+        existingFotografias: infoAdicional?.fotografias_paths?.map(path => `/storage/${path}`) || [],
+        existingCertificaciones: infoAdicional?.certificaciones_paths?.map(path => `/storage/${path}`) || [],
+        existingProductos: infoAdicional?.productos?.map(producto => 
+            producto.imagen_path ? `/storage/${producto.imagen_path}` : null
+        ) || []
     });
+
+    // Función para eliminar archivo existente
+    const removeExistingImage = async (tipo, path, productoIndex = null) => {
+        try {
+            const response = await axios.post(route('company.profile.delete-file'), {
+                tipo: tipo,
+                path: path.replace('/storage/', ''),
+                productoIndex: productoIndex
+            });
+
+            if (response.data.success) {
+                setImagenes(prev => {
+                    switch (tipo) {
+                        case 'logo':
+                            return { ...prev, existingLogo: null };
+                        case 'fotografias':
+                            return {
+                                ...prev,
+                                existingFotografias: prev.existingFotografias.filter(p => p !== path)
+                            };
+                        case 'certificaciones':
+                            return {
+                                ...prev,
+                                existingCertificaciones: prev.existingCertificaciones.filter(p => p !== path)
+                            };
+                        case 'producto':
+                            const newExistingProductos = [...prev.existingProductos];
+                            newExistingProductos[productoIndex] = null;
+                            return {
+                                ...prev,
+                                existingProductos: newExistingProductos
+                            };
+                        default:
+                            return prev;
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error al eliminar archivo:', error);
+        }
+    };
+
+    // Renderizar imágenes existentes
+    const renderExistingImages = (tipo) => {
+        const images = tipo === 'logo' ? 
+            [imagenes.existingLogo] : 
+            (tipo === 'fotografias' ? imagenes.existingFotografias : imagenes.existingCertificaciones);
+
+        return images.filter(Boolean).map((url, index) => (
+            <div key={index} className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                <div className="flex items-center">
+                    <button
+                        type="button"
+                        onClick={() => removeExistingImage(tipo, url)}
+                        className="mr-2"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <span className="text-sm">Imagen existente</span>
+                </div>
+                <div className="flex items-center">
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-200">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        ));
+    };
 
     // Estado para manejar el arrastre de archivos
     const [isDragging, setIsDragging] = useState(false);
@@ -135,18 +208,33 @@ export default function CompanyProfile({ userName }) {
         }));
     };
 
-    const handleImagenChange = (e, tipo) => {
+    const handleImagenChange = (e, tipo, productoIndex = null) => {
         const files = Array.from(e.target.files);
         if (tipo === 'logo') {
             setImagenes(prev => ({ ...prev, logo: files[0] }));
+        } else if (tipo === 'producto') {
+            setImagenes(prev => {
+                const newProductos = [...(prev.productos || [])];
+                if (!newProductos[productoIndex]) {
+                    newProductos[productoIndex] = [];
+                }
+                newProductos[productoIndex] = files[0];
+                return { ...prev, productos: newProductos };
+            });
         } else {
-            setImagenes(prev => ({ ...prev, [tipo]: [...prev[tipo], ...files] }));
+            setImagenes(prev => ({ ...prev, [tipo]: [...(prev[tipo] || []), ...files] }));
         }
     };
 
-    const removeImagen = (tipo, index = null) => {
+    const removeImagen = (tipo, index = null, productoIndex = null) => {
         if (tipo === 'logo') {
             setImagenes(prev => ({ ...prev, logo: null }));
+        } else if (tipo === 'producto') {
+            setImagenes(prev => {
+                const newProductos = [...prev.productos];
+                newProductos[productoIndex] = null;
+                return { ...prev, productos: newProductos };
+            });
         } else {
             setImagenes(prev => ({
                 ...prev,
@@ -964,7 +1052,7 @@ export default function CompanyProfile({ userName }) {
                                             {/* Fotografía del producto */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">
-                                                    Fotografía producto<span className="text-red-500">*</span>
+                                                    Fotografía producto
                                                 </label>
                                                 <div className="mt-1">
                                                     <div className="border border-gray-300 rounded-md p-4">
@@ -974,55 +1062,60 @@ export default function CompanyProfile({ userName }) {
                                                                 type="file"
                                                                 className="hidden"
                                                                 accept=".png,.jpg,.jpeg"
-                                                                onChange={e => {
-                                                                    const file = e.target.files?.[0];
-                                                                    if (file) {
-                                                                        const newImagenes = [...imagenes.productos];
-                                                                        if (!newImagenes[index]) newImagenes[index] = [];
-                                                                        newImagenes[index].push(file);
-                                                                        setImagenes(prev => ({
-                                                                            ...prev,
-                                                                            productos: newImagenes
-                                                                        }));
-                                                                    }
-                                                                }}
+                                                                onChange={e => handleImagenChange(e, 'producto', index)}
                                                             />
                                                         </div>
                                                     </div>
-                                                    {/* Archivos cargados */}
-                                                    <div className="mt-2 space-y-2">
-                                                        {imagenes.productos[index]?.map((file, fileIndex) => (
-                                                            <div key={fileIndex} className="bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
-                                                                <div className="flex items-center">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => {
-                                                                            const newImagenes = [...imagenes.productos];
-                                                                            newImagenes[index] = newImagenes[index].filter((_, i) => i !== fileIndex);
-                                                                            setImagenes(prev => ({
-                                                                                ...prev,
-                                                                                productos: newImagenes
-                                                                            }));
-                                                                        }}
-                                                                        className="mr-2"
-                                                                    >
-                                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                                        </svg>
-                                                                    </button>
-                                                                    <span className="text-sm">{file.name}</span>
-                                                                </div>
-                                                                <div className="flex items-center">
-                                                                    <span className="text-sm mr-2">{Math.round(file.size / 1024)} KB</span>
-                                                                    <button type="button" className="download-button">
-                                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                                        </svg>
-                                                                    </button>
-                                                                </div>
+                                                    
+                                                    {/* Mostrar imagen existente si hay */}
+                                                    {imagenes.existingProductos[index] && (
+                                                        <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                            <div className="flex items-center">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeExistingImage('producto', imagenes.existingProductos[index], index)}
+                                                                    className="mr-2"
+                                                                >
+                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                </button>
+                                                                <span className="text-sm">Imagen existente</span>
                                                             </div>
-                                                        ))}
-                                                    </div>
+                                                            <div className="flex items-center">
+                                                                <a 
+                                                                    href={imagenes.existingProductos[index]} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer" 
+                                                                    className="text-white hover:text-gray-200"
+                                                                >
+                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                    </svg>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Mostrar nueva imagen si se ha seleccionado */}
+                                                    {imagenes.productos[index] && (
+                                                        <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                            <div className="flex items-center">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeImagen('producto', null, index)}
+                                                                    className="mr-2"
+                                                                >
+                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                </button>
+                                                                <span className="text-sm">{imagenes.productos[index].name}</span>
+                                                            </div>
+                                                            <span className="text-sm">{Math.round(imagenes.productos[index].size / 1024)} KB</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -1072,25 +1165,25 @@ export default function CompanyProfile({ userName }) {
                                     <div className="mt-2">
                                         <label className="border border-gray-300 rounded-md p-4 block cursor-pointer">
                                             <div className="text-center text-gray-600">
-                                                Arrastre png, jpg o <span className="text-green-600">Cargar</span>
+                                                Arrastre png, jpg o <span className="text-green-600 cursor-pointer">Cargar</span>
+                                                <input
+                                                    type="file"
+                                                    className="hidden"
+                                                    accept=".png,.jpg,.jpeg"
+                                                    multiple
+                                                    onChange={(e) => {
+                                                        const files = Array.from(e.target.files || []);
+                                                        if (files.length + (imagenes.fotografias?.length || 0) > 3) {
+                                                            alert('Solo se permiten máximo 3 fotografías');
+                                                            return;
+                                                        }
+                                                        setImagenes(prev => ({
+                                                            ...prev,
+                                                            fotografias: [...(prev.fotografias || []), ...files]
+                                                        }));
+                                                    }}
+                                                />
                                             </div>
-                                            <input
-                                                type="file"
-                                                className="hidden"
-                                                accept=".png,.jpg,.jpeg"
-                                                multiple
-                                                onChange={(e) => {
-                                                    const files = Array.from(e.target.files || []);
-                                                    if (files.length + (imagenes.fotografias?.length || 0) > 3) {
-                                                        alert('Solo se permiten máximo 3 fotografías');
-                                                        return;
-                                                    }
-                                                    setImagenes(prev => ({
-                                                        ...prev,
-                                                        fotografias: [...(prev.fotografias || []), ...files]
-                                                    }));
-                                                }}
-                                            />
                                         </label>
                                         {/* Archivos cargados */}
                                         {imagenes.fotografias?.map((foto, index) => (
@@ -1314,16 +1407,16 @@ export default function CompanyProfile({ userName }) {
                                     <div className="space-y-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">
-                                                ¿Recomendaría a otras empresas obtener la Marca País?<span className="text-red-500">*</span>
+                                                ¿Recomendaría a otras empresas obtener la Marca País?
                                             </label>
-                                            <div className="mt-2 space-x-4">
+                                            <div className="mt-2 flex gap-4">
                                                 <label className="inline-flex items-center">
                                                     <input
                                                         type="radio"
                                                         name="recomienda_marca_pais"
-                                                        value="si"
-                                                        checked={data.recomienda_marca_pais === 'si'}
-                                                        onChange={e => setData('recomienda_marca_pais', e.target.value)}
+                                                        value="1"
+                                                        checked={data.recomienda_marca_pais === true}
+                                                        onChange={e => setData('recomienda_marca_pais', true)}
                                                         className="form-radio text-green-600 focus:ring-green-500"
                                                     />
                                                     <span className="ml-2">Sí</span>
@@ -1332,9 +1425,9 @@ export default function CompanyProfile({ userName }) {
                                                     <input
                                                         type="radio"
                                                         name="recomienda_marca_pais"
-                                                        value="no"
-                                                        checked={data.recomienda_marca_pais === 'no'}
-                                                        onChange={e => setData('recomienda_marca_pais', e.target.value)}
+                                                        value="0"
+                                                        checked={data.recomienda_marca_pais === false}
+                                                        onChange={e => setData('recomienda_marca_pais', false)}
                                                         className="form-radio text-green-600 focus:ring-green-500"
                                                     />
                                                     <span className="ml-2">No</span>

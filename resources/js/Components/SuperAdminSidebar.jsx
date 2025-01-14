@@ -1,6 +1,19 @@
 import { Link } from '@inertiajs/react';
+import { useState } from 'react';
 
 export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }) {
+    const [isEvaluacionOpen, setIsEvaluacionOpen] = useState(false);
+    const [isUsuariosOpen, setIsUsuariosOpen] = useState(false);
+
+    // Agrupar los items de navegación
+    const evaluacionItems = navigation.filter(item => 
+        ['Valores', 'Subcategorías', 'Homologaciones', 'Certificaciones', 'Indicadores'].includes(item.name)
+    );
+    
+    const usuariosItems = navigation.filter(item => 
+        ['Usuarios', 'Empresas'].includes(item.name)
+    );
+
     return (
         <>
             {/* Overlay para móvil */}
@@ -26,40 +39,128 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                     </button>
                 </div>
 
-                <div className="p-4 border-b border-green-700">
+                <div className="p-4 border-b border-green-800">
                     <span className="text-lg font-semibold">Panel Super Admin</span>
                 </div>
 
-                <nav className="menu p-4 lg:pt-12">
-                    <Link
-                        href={route('dashboard')}
-                        className="block px-4 py-2 mb-1 rounded-lg hover:bg-green-800"
-                    >
-                        Dashboard Empresa
-                    </Link>
+                <ul className="menu p-4 lg:pt-12">
+                    <li className="mb-1">
+                        <Link
+                            href={route('dashboard')}
+                            className="block px-4 py-2 hover:bg-green-800 rounded-lg"
+                        >
+                            Dashboard Empresa
+                        </Link>
+                    </li>
+
                     <div className="divider"></div>
-                    {navigation && navigation.map((item) => {
-                        const Icon = item.icon;
-                        return item && (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className={`
-                                    block px-4 py-2 mb-1 rounded-lg
-                                    transition-colors duration-200
-                                    ${item.active 
-                                        ? 'bg-green-800' 
-                                        : 'hover:bg-green-800'}
-                                `}
+
+                    {/* Dashboard */}
+                    <li className="mb-1">
+                        <Link
+                            href={route('super.dashboard')}
+                            className={`
+                                block px-4 py-2 rounded-lg
+                                transition-colors duration-200
+                                ${route().current('super.dashboard') 
+                                    ? 'bg-green-800' 
+                                    : 'hover:bg-green-800'}
+                            `}
+                        >
+                            <div className="flex items-center">
+                                Dashboard
+                            </div>
+                        </Link>
+                    </li>
+
+                    {/* Menú Administrar Evaluación */}
+                    <li className="mb-1">
+                        <button
+                            onClick={() => setIsEvaluacionOpen(!isEvaluacionOpen)}
+                            className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg"
+                        >
+                            <span>Administrar Evaluación</span>
+                            <svg
+                                className={`w-4 h-4 transition-transform ${isEvaluacionOpen ? 'rotate-180' : ''}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
                             >
-                                <div className="flex items-center">
-                                    {Icon && <Icon className="mr-3 h-5 w-5" />}
-                                    {item.name}
-                                </div>
-                            </Link>
-                        );
-                    })}
-                </nav>
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        {/* Submenú de Evaluación */}
+                        <ul className={`ml-4 mt-1 space-y-1 ${isEvaluacionOpen ? 'block' : 'hidden'}`}>
+                            {evaluacionItems.map((item) => {
+                                const Icon = item.icon;
+                                return (
+                                    <li key={item.name}>
+                                        <Link
+                                            href={item.href}
+                                            className={`
+                                                block px-4 py-2 rounded-lg
+                                                transition-colors duration-200
+                                                ${item.active 
+                                                    ? 'bg-green-800' 
+                                                    : 'hover:bg-green-800'}
+                                            `}
+                                        >
+                                            <div className="flex items-center">
+                                                {Icon && <Icon className="mr-3 h-5 w-5" />}
+                                                {item.name}
+                                            </div>
+                                        </Link>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </li>
+
+                    {/* Menú Administrar Usuarios */}
+                    <li className="mb-1">
+                        <button
+                            onClick={() => setIsUsuariosOpen(!isUsuariosOpen)}
+                            className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg"
+                        >
+                            <span>Administrar Usuarios</span>
+                            <svg
+                                className={`w-4 h-4 transition-transform ${isUsuariosOpen ? 'rotate-180' : ''}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        {/* Submenú de Usuarios */}
+                        <ul className={`ml-4 mt-1 space-y-1 ${isUsuariosOpen ? 'block' : 'hidden'}`}>
+                            {usuariosItems.map((item) => {
+                                const Icon = item.icon;
+                                return (
+                                    <li key={item.name}>
+                                        <Link
+                                            href={item.href}
+                                            className={`
+                                                block px-4 py-2 rounded-lg
+                                                transition-colors duration-200
+                                                ${item.active 
+                                                    ? 'bg-green-800' 
+                                                    : 'hover:bg-green-800'}
+                                            `}
+                                        >
+                                            <div className="flex items-center">
+                                                {Icon && <Icon className="mr-3 h-5 w-5" />}
+                                                {item.name}
+                                            </div>
+                                        </Link>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </li>
+                </ul>
             </div>
         </>
     );

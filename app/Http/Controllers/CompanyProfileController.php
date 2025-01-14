@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\InfoAdicionalEmpresa;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 
 class CompanyProfileController extends Controller
 {
@@ -13,95 +14,58 @@ class CompanyProfileController extends Controller
         $request->validate([
             'nombre_comercial' => 'required|string|max:255',
             'nombre_legal' => 'required|string|max:255',
-            // Agrega aquí las demás validaciones necesarias
+            'logo' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
+            'fotografias.*' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
+            'certificaciones.*' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $company = auth()->user()->company;
+        $infoAdicional = InfoAdicionalEmpresa::firstOrNew(['company_id' => $company->id]);
 
-        // Procesar las imágenes si existen
+        // Procesar el logo
         if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('logos', 'public');
+            // Eliminar logo anterior si existe
+            if ($infoAdicional->logo_path && Storage::disk('public')->exists($infoAdicional->logo_path)) {
+                Storage::disk('public')->delete($infoAdicional->logo_path);
+            }
+            $infoAdicional->logo_path = $request->file('logo')->store('company-files/logos', 'public');
         }
 
-        // Guardar o actualizar la información adicional
-        InfoAdicionalEmpresa::updateOrCreate(
-            ['company_id' => $company->id],
-            [
-                // Información básica
-                'nombre_comercial' => $request->nombre_comercial,
-                'nombre_legal' => $request->nombre_legal,
-                'descripcion_es' => $request->descripcion_es,
-                'descripcion_en' => $request->descripcion_en,
-                'anio_fundacion' => $request->anio_fundacion,
-                'sitio_web' => $request->sitio_web,
-                
-                // Redes sociales
-                'facebook' => $request->facebook,
-                'linkedin' => $request->linkedin,
-                'instagram' => $request->instagram,
-                
-                // Información de la empresa
-                'sector' => $request->sector,
-                'tamano_empresa' => $request->tamano_empresa,
-                'cantidad_hombres' => $request->cantidad_hombres,
-                'cantidad_mujeres' => $request->cantidad_mujeres,
-                'cantidad_otros' => $request->cantidad_otros,
-                'telefono_1' => $request->telefono_1,
-                'telefono_2' => $request->telefono_2,
-                'es_exportadora' => $request->es_exportadora,
-                'paises_exportacion' => $request->paises_exportacion,
-                
-                // Dirección
-                'provincia' => $request->provincia,
-                'canton' => $request->canton,
-                'distrito' => $request->distrito,
-                
-                // Información legal y comercial
-                'cedula_juridica' => $request->cedula_juridica,
-                'actividad_comercial' => $request->actividad_comercial,
-                'producto_servicio' => $request->producto_servicio,
-                'rango_exportaciones' => $request->rango_exportaciones,
-                'planes_expansion' => $request->planes_expansion,
-                
-                // Licenciamiento
-                'razon_licenciamiento_es' => $request->razon_licenciamiento_es,
-                'razon_licenciamiento_en' => $request->razon_licenciamiento_en,
-                'proceso_licenciamiento' => $request->proceso_licenciamiento,
-                'recomienda_marca_pais' => $request->recomienda_marca_pais,
-                'observaciones' => $request->observaciones,
-                
-                // Contacto de Mercadeo
-                'mercadeo_nombre' => $request->mercadeo_nombre,
-                'mercadeo_email' => $request->mercadeo_email,
-                'mercadeo_puesto' => $request->mercadeo_puesto,
-                'mercadeo_telefono' => $request->mercadeo_telefono,
-                'mercadeo_celular' => $request->mercadeo_celular,
-                
-                // Contacto de Micrositio
-                'micrositio_nombre' => $request->micrositio_nombre,
-                'micrositio_email' => $request->micrositio_email,
-                'micrositio_puesto' => $request->micrositio_puesto,
-                'micrositio_telefono' => $request->micrositio_telefono,
-                'micrositio_celular' => $request->micrositio_celular,
-                
-                // Contacto del Vocero
-                'vocero_nombre' => $request->vocero_nombre,
-                'vocero_email' => $request->vocero_email,
-                'vocero_puesto' => $request->vocero_puesto,
-                'vocero_telefono' => $request->vocero_telefono,
-                'vocero_celular' => $request->vocero_celular,
-                
-                // Contacto del Representante Legal
-                'representante_nombre' => $request->representante_nombre,
-                'representante_email' => $request->representante_email,
-                'representante_puesto' => $request->representante_puesto,
-                'representante_telefono' => $request->representante_telefono,
-                'representante_celular' => $request->representante_celular,
-                
-                // Arrays JSON
-                'productos' => $request->productos,
-            ]
-        );
+        // Procesar fotografías
+        if ($request->hasFile('fotografias')) {
+            $fotografiasPaths = [];
+            // Mantener fotos existentes
+            if ($infoAdicional->fotografias_paths) {
+                $fotografiasPaths = array_filter($infoAdicional->fotografias_paths, function($path) {
+                    return Storage::disk('public')->exists($path);
+                });
+            }
+            // Agregar nuevas fotos
+            foreach ($request->file('fotografias') as $foto) {
+                $fotografiasPaths[] = $foto->store('company-files/fotografias', 'public');
+            }
+            $infoAdicional->fotografias_paths = $fotografiasPaths;
+        }
+
+        // Procesar certificaciones
+        if ($request->hasFile('certificaciones')) {
+            $certificacionesPaths = [];
+            // Mantener certificaciones existentes
+            if ($infoAdicional->certificaciones_paths) {
+                $certificacionesPaths = array_filter($infoAdicional->certificaciones_paths, function($path) {
+                    return Storage::disk('public')->exists($path);
+                });
+            }
+            // Agregar nuevas certificaciones
+            foreach ($request->file('certificaciones') as $cert) {
+                $certificacionesPaths[] = $cert->store('company-files/certificaciones', 'public');
+            }
+            $infoAdicional->certificaciones_paths = $certificacionesPaths;
+        }
+
+        // Guardar resto de datos
+        $infoAdicional->fill($request->except(['logo', 'fotografias', 'certificaciones']));
+        $infoAdicional->save();
 
         return redirect()->back()->with('message', 'Información guardada exitosamente');
     }
@@ -111,9 +75,85 @@ class CompanyProfileController extends Controller
         $company = auth()->user()->company;
         $infoAdicional = $company->infoAdicional;
 
+        // Transformar las rutas de imágenes a URLs completas si existen
+        if ($infoAdicional) {
+            if ($infoAdicional->logo_path) {
+                $infoAdicional->logo_url = asset('storage/' . $infoAdicional->logo_path);
+            }
+            
+            if ($infoAdicional->fotografias_paths) {
+                $infoAdicional->fotografias_urls = collect($infoAdicional->fotografias_paths)
+                    ->map(fn($path) => asset('storage/' . $path))
+                    ->toArray();
+            }
+            
+            if ($infoAdicional->certificaciones_paths) {
+                $infoAdicional->certificaciones_urls = collect($infoAdicional->certificaciones_paths)
+                    ->map(fn($path) => asset('storage/' . $path))
+                    ->toArray();
+            }
+        }
+
         return Inertia::render('Dashboard/FormEmpresa', [
             'userName' => auth()->user()->name,
             'infoAdicional' => $infoAdicional
         ]);
+    }
+
+    // Agregar método para eliminar archivos
+    public function deleteFile(Request $request)
+    {
+        try {
+            $company = auth()->user()->company;
+            $infoAdicional = $company->infoAdicional;
+            $tipo = $request->tipo;
+            $path = $request->path;
+
+            if (!$infoAdicional) {
+                return response()->json(['message' => 'Información no encontrada'], 404);
+            }
+
+            switch ($tipo) {
+                case 'logo':
+                    if ($infoAdicional->logo_path === $path) {
+                        Storage::disk('public')->delete($path);
+                        $infoAdicional->logo_path = null;
+                    }
+                    break;
+
+                case 'fotografias':
+                    if ($infoAdicional->fotografias_paths) {
+                        $fotografias = array_filter($infoAdicional->fotografias_paths, function($p) use ($path) {
+                            return $p !== $path;
+                        });
+                        Storage::disk('public')->delete($path);
+                        $infoAdicional->fotografias_paths = array_values($fotografias);
+                    }
+                    break;
+
+                case 'certificaciones':
+                    if ($infoAdicional->certificaciones_paths) {
+                        $certificaciones = array_filter($infoAdicional->certificaciones_paths, function($p) use ($path) {
+                            return $p !== $path;
+                        });
+                        Storage::disk('public')->delete($path);
+                        $infoAdicional->certificaciones_paths = array_values($certificaciones);
+                    }
+                    break;
+            }
+
+            $infoAdicional->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Archivo eliminado correctamente'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el archivo: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

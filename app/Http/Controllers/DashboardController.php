@@ -102,7 +102,33 @@ class DashboardController extends Controller
 
     public function showFormEmpresa()
     {
-        return Inertia::render('Dashboard/FormEmpresa');
+        $user = auth()->user();
+        $company = $user->company;
+        $infoAdicional = $company->infoAdicional;
+
+        // Transformar las rutas de imágenes a URLs completas si existen
+        if ($infoAdicional) {
+            if ($infoAdicional->logo_path) {
+                $infoAdicional->logo_url = asset('storage/' . $infoAdicional->logo_path);
+            }
+            
+            if ($infoAdicional->fotografias_paths) {
+                $infoAdicional->fotografias_urls = collect($infoAdicional->fotografias_paths)
+                    ->map(fn($path) => asset('storage/' . $path))
+                    ->toArray();
+            }
+            
+            if ($infoAdicional->certificaciones_paths) {
+                $infoAdicional->certificaciones_urls = collect($infoAdicional->certificaciones_paths)
+                    ->map(fn($path) => asset('storage/' . $path))
+                    ->toArray();
+            }
+        }
+
+        return Inertia::render('Dashboard/FormEmpresa', [
+            'userName' => $user->name,
+            'infoAdicional' => $infoAdicional
+        ]);
     }
 
     public function showComponents()
