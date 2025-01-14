@@ -172,32 +172,34 @@ export default function Evaluation({
                 <div className="md:flex gap-8">
                     {
                         autoEvaluationResult && autoEvaluationResult.application_sended == 1 && (
-                            <div className="space-y-4 bg-green-50/50 p-4 rounded-lg">
+                            <div className="space-y-4">
                                 <div className="">
                                     <p className="text-3xl font-bold">¡Bienvenido {userName}!</p>
                                 </div>
                                 <h1 className="text-4xl font-bold">
                                     Evaluación de {companyName}
                                 </h1>
-                                <div className="flex items-center justify-center gap-2">
-                                    <div className="flex-shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-info-circle text-green-700"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
+                                <div className='bg-green-50/50 p-2 rounded-lg'>
+                                    <div className="flex items-center justify-center gap-2 mb-5">
+                                        <div className="flex-shrink-0">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-info-circle text-green-700"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
+                                        </div>
+                                        <p className="text-sm text-green-700 font-medium">
+                                            Su empresa cuenta con indicadores aptos para iniciar el proceso de licenciamiento.
+                                        </p>
                                     </div>
-                                    <p className="text-sm text-green-700 font-medium">
-                                        Su empresa cuenta con indicadores aptos para iniciar el proceso de licenciamiento.
-                                    </p>
+                                    <Link href={route('form.empresa')}
+                                        className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75"
+                                    >
+                                        Completar Formulario de Empresa
+                                    </Link>
                                 </div>
-                                <Link href={route('form.empresa')}
-                                    className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75"
-                                >
-                                    Completar Formulario de Empresa
-                                </Link>
                             </div>
                         )
                     }
 
                     {
-                        autoEvaluationResult && autoEvaluationResult.application_sended == 0 && (
+                        autoEvaluationResult == null && (
                             <>
                                 <div className="space-y-4 md:w-2/3">
                                     <div className="">
