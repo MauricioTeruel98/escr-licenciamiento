@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 16-01-2025 a las 20:06:07
+-- Tiempo de generación: 16-01-2025 a las 23:55:40
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -35,15 +35,16 @@ CREATE TABLE `auto_evaluation_result` (
   `fecha_aprobacion` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `application_sended` tinyint(1) NOT NULL DEFAULT 0
+  `application_sended` tinyint(1) NOT NULL DEFAULT 0,
+  `form_sended` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `auto_evaluation_result`
 --
 
-INSERT INTO `auto_evaluation_result` (`id`, `company_id`, `nota`, `status`, `fecha_aprobacion`, `created_at`, `updated_at`, `application_sended`) VALUES
-(17, 7, 0, 'apto', '2025-01-07 23:31:49', '2025-01-07 23:10:01', '2025-01-07 23:31:49', 1);
+INSERT INTO `auto_evaluation_result` (`id`, `company_id`, `nota`, `status`, `fecha_aprobacion`, `created_at`, `updated_at`, `application_sended`, `form_sended`) VALUES
+(17, 7, 0, 'apto', '2025-01-07 23:31:49', '2025-01-07 23:10:01', '2025-01-16 23:00:20', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -226,7 +227,8 @@ CREATE TABLE `companies` (
 
 INSERT INTO `companies` (`id`, `legal_id`, `name`, `website`, `sector`, `city`, `commercial_activity`, `phone`, `mobile`, `is_exporter`, `created_at`, `updated_at`, `status`) VALUES
 (7, '123456789', 'Buzz', 'https://buzz.cr', 'tecnologia', 'san-jose', 'Servicios', '5415641', '641656', 1, '2024-11-15 01:01:15', '2024-11-15 01:01:15', 'active'),
-(9, '987654321', 'Prueba', 'https://localhost.com.ar', 'Manufactura', 'Heredia', 'Productora Agropecuaria', '9234875000000', '20385700000', 1, '2024-11-15 01:34:14', '2024-11-15 02:01:47', 'active');
+(9, '987654321', 'Prueba', 'https://localhost.com.ar', 'Manufactura', 'Heredia', 'Productora Agropecuaria', '9234875000000', '20385700000', 1, '2024-11-15 01:34:14', '2024-11-15 02:01:47', 'active'),
+(10, '34534534', '5sdfgsdg', 'https://localhost', 'Ag', 'sda', 'dasdas', '12341234', '234234', 1, '2025-01-17 01:18:10', '2025-01-17 01:18:10', 'active');
 
 -- --------------------------------------------------------
 
@@ -538,7 +540,7 @@ CREATE TABLE `info_adicional_empresas` (
 --
 
 INSERT INTO `info_adicional_empresas` (`id`, `company_id`, `nombre_comercial`, `nombre_legal`, `descripcion_es`, `descripcion_en`, `anio_fundacion`, `sitio_web`, `facebook`, `linkedin`, `instagram`, `sector`, `tamano_empresa`, `cantidad_hombres`, `cantidad_mujeres`, `cantidad_otros`, `telefono_1`, `telefono_2`, `es_exportadora`, `paises_exportacion`, `provincia`, `canton`, `distrito`, `cedula_juridica`, `actividad_comercial`, `producto_servicio`, `rango_exportaciones`, `planes_expansion`, `razon_licenciamiento_es`, `razon_licenciamiento_en`, `proceso_licenciamiento`, `recomienda_marca_pais`, `observaciones`, `mercadeo_nombre`, `mercadeo_email`, `mercadeo_puesto`, `mercadeo_telefono`, `mercadeo_celular`, `micrositio_nombre`, `micrositio_email`, `micrositio_puesto`, `micrositio_telefono`, `micrositio_celular`, `vocero_nombre`, `vocero_email`, `vocero_puesto`, `vocero_telefono`, `vocero_celular`, `representante_nombre`, `representante_email`, `representante_puesto`, `representante_telefono`, `representante_celular`, `productos`, `logo_path`, `fotografias_paths`, `certificaciones_paths`, `created_at`, `updated_at`) VALUES
-(1, 7, 'ewtgwsrtger', 'rgerg', 'erg', 'ergerger', NULL, 'https://localhots', 'https://localhotshttps://localhots', 'https://localhots', 'https://localhots', 'https://localhots', '51-200', 2134, 23423, 4234, '34234', '234234', 0, NULL, NULL, NULL, NULL, '2342342', '342342', NULL, NULL, NULL, '23423423', '42342', '34234234', 1, '42342342', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '[[],[],[]]', NULL, '[]', '[]', '2025-01-14 23:35:38', '2025-01-14 23:41:15');
+(1, 7, 'ewtgwsrtger', 'rgerg', 'erg', 'ergerger', NULL, 'https://localhots', 'https://localhotshttps://localhots', 'https://localhots', 'https://localhots', 'https://localhots', '51-200', 2134, 23423, 4234, '34234', '234234', 0, NULL, NULL, NULL, NULL, '2342342', '342342', NULL, NULL, NULL, '23423423aaaa', '42342', '34234234', 1, '42342342', 'aaaa', 'aaa@aaa.com', 'aaa', '111', '111', 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '[[],[],[]]', NULL, '[]', '[]', '2025-01-14 23:35:38', '2025-01-16 22:47:14');
 
 -- --------------------------------------------------------
 
@@ -626,7 +628,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (32, '2024_12_27_253457_create_evaluator_assessments_table', 29),
 (33, '2025_01_03_131523_add_homologation_id_to_certifications_table', 30),
 (34, '2025_01_07_204259_add_column_application_sended_to_auto_evaluation_result_table', 31),
-(36, '2025_01_13_192336_create_info_adicional_empresas_table', 32);
+(36, '2025_01_13_192336_create_info_adicional_empresas_table', 32),
+(37, '2025_01_16_191445_add_form_sended_column_to_auto_evaluation_result_table', 33);
 
 -- --------------------------------------------------------
 
@@ -687,7 +690,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('VQamppQd49ueD3bRxHq20aThU6me2UJEg46L4uoD', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiT2Y4UXpPUnZLZGk0UHg3emthU1pwdFlZbTU1S0I4U1ZQT3dDdlFCUSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzc7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9ldmFsdWFjaW9uLzMxIjt9fQ==', 1737054341);
+('1j55NkL8PSXrjQPpD71v1mW6O829dQOrVLudFyGq', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiUUVoeGp3cFFTOGdZaDRSYXUyb2hPZ0ZITnp3WWM1V1l3Z1hjektkWCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzc7fQ==', 1737068044),
+('mpx2oifJRCK6Vg5BqpumbmiZiI5vfe0lnlPpWb5j', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiNmpsOFdoRk14Y2tEY1FKR1EwWTQySTBXZEZkaXlVejU4WEdKdkdsNyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1737067823);
 
 -- --------------------------------------------------------
 
@@ -773,7 +777,8 @@ INSERT INTO `users` (`id`, `name`, `lastname`, `id_number`, `phone`, `email`, `e
 (42, 'Evaluador', '1', NULL, NULL, 'evaluador1@email.com', NULL, '$2y$12$xa/5zaCopTEfYf4svsEibOQ6IHQopiBNxOJsdC8GYDuxEMF3.GNCW', NULL, '2024-12-27 20:13:16', '2025-01-02 18:53:52', 7, 'evaluador', 'approved'),
 (43, 'Prueba', NULL, NULL, NULL, 'prueba@email.com', NULL, '$2y$12$7j4O1M09ZWs7h3/LK2KaiuABABy25BjemaYIsjznBbwlYPmlFpxGS', NULL, '2025-01-07 19:50:36', '2025-01-07 19:50:36', NULL, 'user', 'pending'),
 (44, 'Maricio', '', NULL, '32845792837', 'mauricio500@gmail.com', NULL, '$2y$12$g50x20BTIYZLwxidmbSIfeWxwDFbXtozJXhkg9LoIj.gZ.JeY8UUu', NULL, '2025-01-14 18:57:26', '2025-01-14 18:57:26', 7, 'user', 'approved'),
-(45, 'Maricio', '', NULL, '32845792837', 'mauricio50000@gmail.com', NULL, '$2y$12$JjCQG/fMUMEJVXLeOEI5Z.rX89hwMzIazoph7rKXq0H8TmmQ.yCwS', NULL, '2025-01-15 17:27:41', '2025-01-15 17:27:41', 9, 'user', 'approved');
+(45, 'Maricio', '', NULL, '32845792837', 'mauricio50000@gmail.com', NULL, '$2y$12$JjCQG/fMUMEJVXLeOEI5Z.rX89hwMzIazoph7rKXq0H8TmmQ.yCwS', NULL, '2025-01-15 17:27:41', '2025-01-15 17:27:41', 9, 'user', 'approved'),
+(46, 'aaaa', NULL, NULL, NULL, 'aaa@email.com', NULL, '$2y$12$5w2Upn/89BTHlNWvXUpuv.6S9ZI8o78zQk3wuo85S6DU.wjDhU6EG', NULL, '2025-01-17 01:45:40', '2025-01-17 01:45:40', NULL, 'user', 'pending');
 
 -- --------------------------------------------------------
 
@@ -1058,7 +1063,7 @@ ALTER TABLE `certifications`
 -- AUTO_INCREMENT de la tabla `companies`
 --
 ALTER TABLE `companies`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `company_evaluator`
@@ -1124,7 +1129,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT de la tabla `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT de la tabla `personal_access_tokens`
@@ -1142,7 +1147,7 @@ ALTER TABLE `subcategories`
 -- AUTO_INCREMENT de la tabla `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT de la tabla `values`

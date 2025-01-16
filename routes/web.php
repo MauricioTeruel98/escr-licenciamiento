@@ -30,6 +30,7 @@ use App\Http\Controllers\EvaluationAnswerController;
 use App\Http\Controllers\EvaluadorController;
 use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ProgresosController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -106,6 +107,7 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
 });
 
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
+    Route::get('/super/progresos', [DashboardController::class, 'showProgresos'])->name('super.progresos');
     Route::get('/super/reportes', [DashboardController::class, 'showReportes'])->name('super.reportes');
     Route::get('/super/dashboard', [SuperAdminController::class, 'dashboard'])->name('super.dashboard');
     Route::get('/super/components', [DashboardController::class, 'showComponents'])->name('super.components');
@@ -248,6 +250,11 @@ Route::post('/company/profile', [CompanyProfileController::class, 'store'])->nam
 // Rutas para reportes
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/api/empresas-reportes', [ReportController::class, 'getCompanies']);
+});
+
+// Rutas para progresos
+Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
+    Route::get('/api/empresas-progresos', [ProgresosController::class, 'getCompanies']);
 });
 
 require __DIR__ . '/auth.php';

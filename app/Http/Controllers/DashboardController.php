@@ -146,4 +146,9 @@ class DashboardController extends Controller
     {
         return Inertia::render('SuperAdmin/Reportes');
     }
+
+    public function showProgresos()
+    {
+        return Inertia::render('SuperAdmin/Progresos');
+    }
 } 

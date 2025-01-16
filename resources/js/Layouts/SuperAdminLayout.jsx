@@ -61,22 +61,28 @@ export default function SuperAdminLayout({ children, title = null }) {
             href: route('super.reportes'),
             icon: FileText,
             active: route().current('super.reportes')
+        },
+        {
+            name: 'Progresos',
+            href: route('super.progresos'),
+            icon: FileText,
+            active: route().current('super.progresos')
         }
     ];
 
     return (
         <div className="min-h-screen bg-gray-100">
             <Head title={title} />
-            
+
             <Navbar onMenuClick={() => setIsOpen(true)} />
-            
+
             <div className="flex">
-                <SuperAdminSidebar 
-                    isOpen={isOpen} 
-                    setIsOpen={setIsOpen} 
+                <SuperAdminSidebar
+                    isOpen={isOpen}
+                    setIsOpen={setIsOpen}
                     navigation={navigation}
                 />
-                
+
                 <main className="flex-1 p-8 mt-16">
                     <div className="max-w-8xl mx-auto">
                         {children}
