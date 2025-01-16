@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import Navbar from '@/Components/Navbar';
 import SuperAdminSidebar from '@/Components/SuperAdminSidebar';
 import { LayoutDashboard, Building2, ClipboardList, UserCircle } from 'lucide-react';
+import EvaluadorSidebar from '@/Components/EvaluadorSidebar';
 
 export default function EvaluadorLayout({ children, title = null }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -40,8 +41,8 @@ export default function EvaluadorLayout({ children, title = null }) {
             
             <Navbar onMenuClick={() => setIsOpen(true)} />
             
-            <div className="flex">
-                <SuperAdminSidebar 
+            <div className="flex pt-16">
+                <EvaluadorSidebar 
                     isOpen={isOpen} 
                     setIsOpen={setIsOpen} 
                     navigation={navigation}
