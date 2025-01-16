@@ -29,6 +29,7 @@ use App\Http\Controllers\IndicadorAnswerController;
 use App\Http\Controllers\EvaluationAnswerController;
 use App\Http\Controllers\EvaluadorController;
 use App\Http\Controllers\CompanyProfileController;
+use App\Http\Controllers\ReportController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -105,6 +106,7 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
 });
 
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
+    Route::get('/super/reportes', [DashboardController::class, 'showReportes'])->name('super.reportes');
     Route::get('/super/dashboard', [SuperAdminController::class, 'dashboard'])->name('super.dashboard');
     Route::get('/super/components', [DashboardController::class, 'showComponents'])->name('super.components');
     Route::get('/super/companies', [SuperAdminController::class, 'companies'])->name('super.companies');
@@ -242,5 +244,10 @@ Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
 });
 
 Route::post('/company/profile', [CompanyProfileController::class, 'store'])->name('company.profile.store');
+
+// Rutas para reportes
+Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
+    Route::get('/api/empresas-reportes', [ReportController::class, 'getCompanies']);
+});
 
 require __DIR__ . '/auth.php';

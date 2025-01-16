@@ -62,4 +62,9 @@ class Company extends Model
     {
         return $this->hasOne(InfoAdicionalEmpresa::class);
     }
+
+    public function autoEvaluationResult()
+    {
+        return $this->hasOne(AutoEvaluationResult::class);
+    }
 } 

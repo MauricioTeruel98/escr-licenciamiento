@@ -44,14 +44,14 @@ export default function IndicatorsIndex() {
                         item.homologations.map((homologation) => (
                             <span
                                 key={homologation.id}
-                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                className="text-md p-3 font-semibold mb-1 badge rounded-lg border text-blue-800 border-blue-200 bg-blue-50"
                                 title={homologation.descripcion || homologation.nombre}
                             >
                                 {homologation.nombre}
                             </span>
                         ))
                     ) : (
-                        <span className="text-gray-500 text-sm">Sin homologaciones</span>
+                        <span className="text-sm text-gray-500">Sin homologaciones</span>
                     )}
                 </div>
             )
@@ -60,8 +60,10 @@ export default function IndicatorsIndex() {
             key: 'binding',
             label: 'Vinculante',
             render: (item) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    item.binding ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+                <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${
+                    item.binding 
+                        ? 'text-purple-800 border-purple-200 bg-purple-50' 
+                        : 'text-gray-800 border-gray-200 bg-gray-50'
                 }`}>
                     {item.binding ? 'Sí' : 'No'}
                 </span>
@@ -81,8 +83,10 @@ export default function IndicatorsIndex() {
             key: 'is_active',
             label: 'Estado',
             render: (item) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    item.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${
+                    item.is_active 
+                        ? 'text-green-800 border-green-200 bg-green-50' 
+                        : 'text-red-800 border-red-200 bg-red-50'
                 }`}>
                     {item.is_active ? 'Activo' : 'Inactivo'}
                 </span>
@@ -95,7 +99,7 @@ export default function IndicatorsIndex() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => handleViewQuestions(item)}
-                        className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+                        className="text-gray-600 hover:text-gray-800 flex items-center gap-1"
                         title="Ver preguntas"
                     >
                         <Eye className="h-5 w-5" />

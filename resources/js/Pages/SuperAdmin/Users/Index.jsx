@@ -41,14 +41,14 @@ export default function UsersIndex() {
                 };
 
                 const roleColors = {
-                    'super_admin': 'bg-purple-100 text-purple-800',
-                    'admin': 'bg-blue-100 text-blue-800',
-                    'user': 'bg-gray-100 text-gray-800',
-                    'evaluador': 'bg-amber-100 text-amber-800'
+                    'super_admin': 'text-purple-800 border-purple-200 bg-purple-50',
+                    'admin': 'text-blue-800 border-blue-200 bg-blue-50',
+                    'user': 'text-gray-800 border-gray-200 bg-gray-50',
+                    'evaluador': 'text-amber-800 border-amber-200 bg-amber-50'
                 };
 
                 return (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleColors[item.role] || 'bg-gray-100 text-gray-800'}`}>
+                    <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${roleColors[item.role] || 'text-gray-800 border-gray-200 bg-gray-50'}`}>
                         {roles[item.role] || item.role}
                     </span>
                 );
@@ -62,18 +62,27 @@ export default function UsersIndex() {
         {
             key: 'status',
             label: 'Estado',
-            render: (item) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === 'approved' ? 'bg-green-100 text-green-800' :
-                        item.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
+            render: (item) => {
+                const statusStyles = {
+                    'approved': 'text-green-800 border-green-200 bg-green-50',
+                    'pending': 'text-yellow-800 border-yellow-200 bg-yellow-50',
+                    'rejected': 'text-red-800 border-red-200 bg-red-50'
+                };
+
+                const statusLabels = {
+                    'approved': 'Aprobado',
+                    'pending': 'Pendiente',
+                    'rejected': 'Rechazado'
+                };
+
+                return (
+                    <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${
+                        statusStyles[item.status] || 'text-gray-800 border-gray-200 bg-gray-50'
                     }`}>
-                    {
-                        item.status === 'approved' ? 'Aprobado' :
-                            item.status === 'pending' ? 'Pendiente' :
-                                'Rechazado'
-                    }
-                </span>
-            )
+                        {statusLabels[item.status] || item.status}
+                    </span>
+                );
+            }
         },
         {
             key: 'actions',

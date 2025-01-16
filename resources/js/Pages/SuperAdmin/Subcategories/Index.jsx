@@ -42,8 +42,10 @@ export default function SubcategoriesIndex() {
             key: 'is_active',
             label: 'Estado',
             render: (item) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    item.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${
+                    item.is_active 
+                        ? 'text-green-800 border-green-200 bg-green-50' 
+                        : 'text-red-800 border-red-200 bg-red-50'
                 }`}>
                     {item.is_active ? 'Activo' : 'Inactivo'}
                 </span>

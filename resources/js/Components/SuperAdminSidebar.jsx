@@ -160,6 +160,24 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                             })}
                         </ul>
                     </li>
+
+                    {/* Reportes */}
+                    <li className="mb-1">
+                        <Link
+                            href={route('super.reportes')}
+                            className={`
+                                block px-4 py-2 rounded-lg
+                                transition-colors duration-200
+                                ${route().current('super.reportes')
+                                    ? 'bg-green-800'
+                                    : 'hover:bg-green-800'}
+                            `}
+                        >
+                            <div className="flex items-center">
+                                Reportes
+                            </div>
+                        </Link>
+                    </li>
                 </ul>
             </div>
         </>

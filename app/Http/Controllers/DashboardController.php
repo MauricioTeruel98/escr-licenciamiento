@@ -141,4 +141,9 @@ class DashboardController extends Controller
     {
         return Inertia::render('SuperAdmin/Components');
     }
+
+    public function showReportes()
+    {
+        return Inertia::render('SuperAdmin/Reportes');
+    }
 } 

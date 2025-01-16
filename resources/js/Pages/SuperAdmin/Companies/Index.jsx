@@ -33,8 +33,10 @@ export default function CompaniesIndex() {
             key: 'is_exporter', 
             label: 'Exportador',
             render: (item) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    item.is_exporter ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${
+                    item.is_exporter 
+                        ? 'text-green-800 border-green-200 bg-green-50' 
+                        : 'text-gray-800 border-gray-200 bg-gray-50'
                 }`}>
                     {item.is_exporter ? 'Sí' : 'No'}
                 </span>
