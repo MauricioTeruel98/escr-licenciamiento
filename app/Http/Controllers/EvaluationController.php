@@ -10,6 +10,7 @@ use App\Models\IndicatorAnswer;
 use App\Models\AutoEvaluationValorResult;
 use App\Models\Value;
 use App\Models\EvaluatorAssessment;
+use App\Models\IndicatorAnswerEvaluation;
 use Illuminate\Support\Facades\DB;
 
 class EvaluationController extends Controller
@@ -20,15 +21,32 @@ class EvaluationController extends Controller
         $company_id = $user->company_id;
         $isEvaluador = $user->role === 'evaluador';
 
-        // Primero obtenemos los IDs de los indicadores con respuesta "Sí"
-        $indicatorIds = IndicatorAnswer::where('company_id', $company_id)
-            ->where('answer', '1')
-            ->pluck('indicator_id');
-
-        $valueData = Value::with(['subcategories.indicators' => function ($query) use ($indicatorIds) {
-            $query->whereIn('indicators.id', $indicatorIds);
-        }, 'subcategories.indicators.evaluationQuestions'])
+        // Obtener el total de preguntas de evaluación por subcategoría
+        $valueData = Value::with(['subcategories.indicators.evaluationQuestions'])
             ->findOrFail($value_id);
+
+        // Calcular el progreso
+        $totalQuestions = 0;
+        $answeredQuestions = 0;
+        
+        foreach ($valueData->subcategories as $subcategory) {
+            foreach ($subcategory->indicators as $indicator) {
+                foreach ($indicator->evaluationQuestions as $question) {
+                    $totalQuestions++;
+                    
+                    // Verificar si existe una respuesta para esta pregunta
+                    $hasAnswer = IndicatorAnswerEvaluation::where('company_id', $company_id)
+                        ->where('evaluation_question_id', $question->id)
+                        ->exists();
+                        
+                    if ($hasAnswer) {
+                        $answeredQuestions++;
+                    }
+                }
+            }
+        }
+
+        $progress = $totalQuestions > 0 ? round(($answeredQuestions / $totalQuestions) * 100) : 0;
 
         // Obtener todas las respuestas de evaluación existentes
         $savedAnswers = \App\Models\IndicatorAnswerEvaluation::where('company_id', $company_id)
@@ -96,7 +114,9 @@ class EvaluationController extends Controller
             'valueData' => $valueData,
             'userName' => $user->name,
             'savedAnswers' => $savedAnswers,
-            'isEvaluador' => $isEvaluador
+            'isEvaluador' => $isEvaluador,
+            'progress' => $progress,
+            'totalSteps' => $valueData->subcategories->count()
         ]);
     }
 

@@ -5,7 +5,7 @@ import Toast from '@/Components/Toast';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false }) {
+export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, progress, totalSteps }) {
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [approvals, setApprovals] = useState(() => {
         const initialApprovals = {};
@@ -161,15 +161,22 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                         Progreso actual
                                     </h2>
                                     <p className="text-2xl font-bold text-blue-500">
-                                        33%
+                                        {progress}%
                                     </p>
                                 </div>
                                 <div className="w-1/2 rounded-e-xl bg-blue-800 px-6 p-4">
                                     <h2 className="text-lg text-blue-200 font-semibold mb-2">Total pasos</h2>
                                     <p className="text-2xl text-blue-200 font-bold">
-                                        3
+                                        {totalSteps}
                                     </p>
                                 </div>
+                            </div>
+                            {/* Barra de progreso */}
+                            <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
+                                <div 
+                                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-500" 
+                                    style={{ width: `${progress}%` }}
+                                ></div>
                             </div>
                         </div>
                     </div>

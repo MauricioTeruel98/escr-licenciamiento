@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 03-01-2025 a las 14:41:42
+-- Tiempo de generación: 16-01-2025 a las 20:06:07
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -34,16 +34,16 @@ CREATE TABLE `auto_evaluation_result` (
   `status` varchar(255) NOT NULL DEFAULT 'pendiente',
   `fecha_aprobacion` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `application_sended` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `auto_evaluation_result`
 --
 
-INSERT INTO `auto_evaluation_result` (`id`, `company_id`, `nota`, `status`, `fecha_aprobacion`, `created_at`, `updated_at`) VALUES
-(15, 7, 0, 'apto', '2024-12-13 00:23:05', '2024-12-12 01:51:02', '2024-12-13 00:23:05'),
-(16, 9, 0, 'apto', '2024-12-27 21:25:32', '2024-12-27 21:24:39', '2024-12-27 21:25:32');
+INSERT INTO `auto_evaluation_result` (`id`, `company_id`, `nota`, `status`, `fecha_aprobacion`, `created_at`, `updated_at`, `application_sended`) VALUES
+(17, 7, 0, 'apto', '2025-01-07 23:31:49', '2025-01-07 23:10:01', '2025-01-07 23:31:49', 1);
 
 -- --------------------------------------------------------
 
@@ -67,30 +67,18 @@ CREATE TABLE `auto_evaluation_subcategory_result` (
 --
 
 INSERT INTO `auto_evaluation_subcategory_result` (`id`, `company_id`, `value_id`, `subcategory_id`, `nota`, `fecha_evaluacion`, `created_at`, `updated_at`) VALUES
-(90, 7, 31, 25, 50, '2024-12-12 20:13:55', '2024-12-12 01:51:02', '2024-12-12 20:13:55'),
-(91, 7, 31, 26, 100, '2024-12-12 20:13:55', '2024-12-12 01:51:02', '2024-12-12 20:13:55'),
-(92, 7, 31, 27, 100, '2024-12-12 20:13:55', '2024-12-12 01:51:02', '2024-12-12 20:13:55'),
-(93, 7, 31, 28, 100, '2024-12-12 20:13:55', '2024-12-12 01:51:02', '2024-12-12 20:13:55'),
-(94, 7, 32, 29, 100, '2024-12-12 01:51:42', '2024-12-12 01:51:12', '2024-12-12 01:51:42'),
-(95, 7, 32, 30, 100, '2024-12-12 01:51:42', '2024-12-12 01:51:12', '2024-12-12 01:51:42'),
-(96, 7, 32, 31, 100, '2024-12-12 01:51:42', '2024-12-12 01:51:12', '2024-12-12 01:51:42'),
-(97, 7, 32, 32, 100, '2024-12-12 01:51:42', '2024-12-12 01:51:12', '2024-12-12 01:51:42'),
-(98, 7, 33, 33, 100, '2024-12-12 01:51:17', '2024-12-12 01:51:17', '2024-12-12 01:51:17'),
-(99, 7, 34, 34, 100, '2024-12-13 00:23:05', '2024-12-12 01:51:22', '2024-12-13 00:23:05'),
-(100, 7, 35, 35, 100, '2024-12-12 01:51:49', '2024-12-12 01:51:26', '2024-12-12 01:51:49'),
-(101, 7, 34, 36, 100, '2024-12-13 00:23:05', '2024-12-13 00:23:05', '2024-12-13 00:23:05'),
-(102, 9, 31, 25, 100, '2024-12-27 21:24:39', '2024-12-27 21:24:39', '2024-12-27 21:24:39'),
-(103, 9, 31, 26, 100, '2024-12-27 21:24:39', '2024-12-27 21:24:39', '2024-12-27 21:24:39'),
-(104, 9, 31, 27, 100, '2024-12-27 21:24:39', '2024-12-27 21:24:39', '2024-12-27 21:24:39'),
-(105, 9, 31, 28, 100, '2024-12-27 21:24:39', '2024-12-27 21:24:39', '2024-12-27 21:24:39'),
-(106, 9, 32, 29, 100, '2024-12-27 21:24:50', '2024-12-27 21:24:50', '2024-12-27 21:24:50'),
-(107, 9, 32, 30, 100, '2024-12-27 21:24:50', '2024-12-27 21:24:50', '2024-12-27 21:24:50'),
-(108, 9, 32, 31, 100, '2024-12-27 21:24:50', '2024-12-27 21:24:50', '2024-12-27 21:24:50'),
-(109, 9, 32, 32, 100, '2024-12-27 21:24:50', '2024-12-27 21:24:50', '2024-12-27 21:24:50'),
-(110, 9, 33, 33, 100, '2024-12-27 21:25:08', '2024-12-27 21:25:08', '2024-12-27 21:25:08'),
-(111, 9, 34, 34, 100, '2024-12-27 21:25:15', '2024-12-27 21:25:15', '2024-12-27 21:25:15'),
-(112, 9, 34, 36, 100, '2024-12-27 21:25:15', '2024-12-27 21:25:15', '2024-12-27 21:25:15'),
-(113, 9, 35, 35, 100, '2024-12-27 21:25:32', '2024-12-27 21:25:32', '2024-12-27 21:25:32');
+(114, 7, 31, 25, 100, '2025-01-07 23:10:01', '2025-01-07 23:10:01', '2025-01-07 23:10:01'),
+(115, 7, 31, 26, 100, '2025-01-07 23:10:01', '2025-01-07 23:10:01', '2025-01-07 23:10:01'),
+(116, 7, 31, 27, 100, '2025-01-07 23:10:01', '2025-01-07 23:10:01', '2025-01-07 23:10:01'),
+(117, 7, 31, 28, 100, '2025-01-07 23:10:01', '2025-01-07 23:10:01', '2025-01-07 23:10:01'),
+(118, 7, 32, 29, 100, '2025-01-07 23:31:31', '2025-01-07 23:31:31', '2025-01-07 23:31:31'),
+(119, 7, 32, 30, 100, '2025-01-07 23:31:31', '2025-01-07 23:31:31', '2025-01-07 23:31:31'),
+(120, 7, 32, 31, 100, '2025-01-07 23:31:31', '2025-01-07 23:31:31', '2025-01-07 23:31:31'),
+(121, 7, 32, 32, 100, '2025-01-07 23:31:31', '2025-01-07 23:31:31', '2025-01-07 23:31:31'),
+(122, 7, 33, 33, 100, '2025-01-07 23:31:37', '2025-01-07 23:31:37', '2025-01-07 23:31:37'),
+(123, 7, 34, 34, 100, '2025-01-07 23:31:44', '2025-01-07 23:31:44', '2025-01-07 23:31:44'),
+(124, 7, 34, 36, 100, '2025-01-07 23:31:44', '2025-01-07 23:31:44', '2025-01-07 23:31:44'),
+(125, 7, 35, 35, 100, '2025-01-07 23:31:49', '2025-01-07 23:31:49', '2025-01-07 23:31:49');
 
 -- --------------------------------------------------------
 
@@ -114,16 +102,11 @@ CREATE TABLE `auto_evaluation_valor_result` (
 --
 
 INSERT INTO `auto_evaluation_valor_result` (`id`, `company_id`, `value_id`, `subcategory_id`, `nota`, `fecha_evaluacion`, `created_at`, `updated_at`) VALUES
-(60, 7, 31, NULL, 88, '2024-12-12 20:13:55', '2024-12-12 01:51:02', '2024-12-12 20:13:55'),
-(61, 7, 32, NULL, 100, '2024-12-12 01:51:42', '2024-12-12 01:51:12', '2024-12-12 01:51:42'),
-(62, 7, 33, NULL, 100, '2024-12-12 01:51:17', '2024-12-12 01:51:17', '2024-12-12 01:51:17'),
-(63, 7, 34, NULL, 100, '2024-12-13 00:23:05', '2024-12-12 01:51:22', '2024-12-13 00:23:05'),
-(64, 7, 35, NULL, 100, '2024-12-12 01:51:49', '2024-12-12 01:51:26', '2024-12-12 01:51:49'),
-(65, 9, 31, NULL, 100, '2024-12-27 21:24:39', '2024-12-27 21:24:39', '2024-12-27 21:24:39'),
-(66, 9, 32, NULL, 100, '2024-12-27 21:24:50', '2024-12-27 21:24:50', '2024-12-27 21:24:50'),
-(67, 9, 33, NULL, 100, '2024-12-27 21:25:08', '2024-12-27 21:25:08', '2024-12-27 21:25:08'),
-(68, 9, 34, NULL, 100, '2024-12-27 21:25:15', '2024-12-27 21:25:15', '2024-12-27 21:25:15'),
-(69, 9, 35, NULL, 100, '2024-12-27 21:25:32', '2024-12-27 21:25:32', '2024-12-27 21:25:32');
+(70, 7, 31, NULL, 100, '2025-01-07 23:10:01', '2025-01-07 23:10:01', '2025-01-07 23:10:01'),
+(71, 7, 32, NULL, 100, '2025-01-07 23:31:31', '2025-01-07 23:31:31', '2025-01-07 23:31:31'),
+(72, 7, 33, NULL, 100, '2025-01-07 23:31:37', '2025-01-07 23:31:37', '2025-01-07 23:31:37'),
+(73, 7, 34, NULL, 100, '2025-01-07 23:31:44', '2025-01-07 23:31:44', '2025-01-07 23:31:44'),
+(74, 7, 35, NULL, 100, '2025-01-07 23:31:49', '2025-01-07 23:31:49', '2025-01-07 23:31:49');
 
 -- --------------------------------------------------------
 
@@ -165,6 +148,14 @@ CREATE TABLE `cache` (
   `expiration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `cache`
+--
+
+INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
+('prueba@email.com|127.0.0.1', 'i:1;', 1736268672),
+('prueba@email.com|127.0.0.1:timer', 'i:1736268672;', 1736268672);
+
 -- --------------------------------------------------------
 
 --
@@ -200,8 +191,12 @@ CREATE TABLE `certifications` (
 --
 
 INSERT INTO `certifications` (`id`, `company_id`, `nombre`, `fecha_obtencion`, `fecha_expiracion`, `indicadores`, `created_at`, `updated_at`, `homologation_id`) VALUES
-(20, 7, 'INTE B5:2020', '2025-01-01', '2025-02-02', 2, '2025-01-03 16:39:01', '2025-01-03 16:39:01', 1),
-(21, 7, 'ISO:9001', '2025-01-01', '2025-02-02', 3, '2025-01-03 16:39:17', '2025-01-03 16:39:17', 5);
+(23, 7, 'ISO:9001', '2025-01-01', '2025-02-02', 2, '2025-01-03 17:14:10', '2025-01-03 17:14:10', 5),
+(24, 7, 'ISO:9001', '2025-01-01', '2025-02-02', 2, '2025-01-03 17:14:25', '2025-01-03 17:14:25', 5),
+(25, 7, 'INTE G:2896', '2025-01-01', '2025-02-02', 1, '2025-01-03 17:14:32', '2025-01-03 17:14:32', 6),
+(26, 7, 'INTE G12:2019', '2025-01-01', '2025-02-02', 1, '2025-01-03 17:14:45', '2025-01-03 17:14:45', 2),
+(27, 7, 'INTE G8:2013', '2025-01-01', '2025-02-02', 0, '2025-01-03 17:15:11', '2025-01-03 17:15:11', 3),
+(28, 7, 'INTE G8:2013', '2025-01-01', '2025-01-31', 0, '2025-01-03 17:16:13', '2025-01-03 17:16:13', 3);
 
 -- --------------------------------------------------------
 
@@ -391,7 +386,20 @@ CREATE TABLE `indicator_answers` (
 --
 
 INSERT INTO `indicator_answers` (`id`, `user_id`, `company_id`, `indicator_id`, `answer`, `is_binding`, `created_at`, `updated_at`) VALUES
-(236, 26, 9, 45, '1', 1, '2024-12-27 21:25:32', '2024-12-27 21:25:32');
+(236, 26, 9, 45, '1', 1, '2024-12-27 21:25:32', '2024-12-27 21:25:32'),
+(237, 37, 7, 34, '1', 1, '2025-01-07 23:10:01', '2025-01-07 23:10:01'),
+(238, 37, 7, 35, '1', 0, '2025-01-07 23:10:01', '2025-01-07 23:10:01'),
+(239, 37, 7, 36, '1', 1, '2025-01-07 23:10:01', '2025-01-07 23:10:01'),
+(240, 37, 7, 37, '1', 0, '2025-01-07 23:10:01', '2025-01-07 23:10:01'),
+(241, 37, 7, 38, '1', 1, '2025-01-07 23:10:01', '2025-01-07 23:10:01'),
+(242, 37, 7, 46, '1', 0, '2025-01-07 23:10:01', '2025-01-07 23:10:01'),
+(243, 37, 7, 39, '1', 1, '2025-01-07 23:31:31', '2025-01-07 23:31:31'),
+(244, 37, 7, 40, '1', 1, '2025-01-07 23:31:31', '2025-01-07 23:31:31'),
+(245, 37, 7, 41, '1', 1, '2025-01-07 23:31:31', '2025-01-07 23:31:31'),
+(246, 37, 7, 42, '1', 1, '2025-01-07 23:31:31', '2025-01-07 23:31:31'),
+(247, 37, 7, 43, '1', 1, '2025-01-07 23:31:37', '2025-01-07 23:31:37'),
+(248, 37, 7, 44, '1', 1, '2025-01-07 23:31:44', '2025-01-07 23:31:44'),
+(249, 37, 7, 45, '1', 1, '2025-01-07 23:31:49', '2025-01-07 23:31:49');
 
 -- --------------------------------------------------------
 
@@ -411,6 +419,26 @@ CREATE TABLE `indicator_answers_evaluation` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `evaluation_question_id` bigint(20) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `indicator_answers_evaluation`
+--
+
+INSERT INTO `indicator_answers_evaluation` (`id`, `user_id`, `company_id`, `indicator_id`, `answer`, `description`, `file_path`, `created_at`, `updated_at`, `evaluation_question_id`) VALUES
+(105, 37, 7, 35, '1', 'aaaaaaaaaaaaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_escr_licenciamiento_bk (5).sql\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 15),
+(106, 37, 7, 35, '1', 'aaaaaaaaaaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_formulario.png\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 16),
+(107, 37, 7, 37, '1', 'aaaaaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_escr_licenciamiento_bk (5).sql\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 20),
+(108, 37, 7, 37, '1', 'aaaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_formulario.png\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 21),
+(109, 37, 7, 37, '1', 'aaaaaaaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_Captura de pantalla 2025-01-07 a la(s) 10.15.13.png\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 22),
+(110, 37, 7, 38, '1', 'aaaaaaaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_Captura de pantalla 2025-01-07 a la(s) 10.15.13.png\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 23),
+(111, 37, 7, 38, '1', 'aaaaaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_bodega-archer-g-13-mt3.jpg\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 24),
+(112, 37, 7, 38, '1', 'aaaaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_logo.png\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 25),
+(113, 37, 7, 34, '1', 'aaaaaaaaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_Resumen de tarjeta de cr\\u00e9dito VISA-02-12-2024.pdf\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 41),
+(114, 37, 7, 34, '1', 'aaaaaaaaaaaaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_WhatsApp Image 2025-01-09 at 13.52.59.jpeg\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 42),
+(115, 37, 7, 34, '1', 'aaaaaaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_escr_licenciamiento_bk (5).sql\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 43),
+(116, 37, 7, 36, '1', 'aaaaaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_Captura de pantalla 2025-01-07 a la(s) 10.15.13.png\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 44),
+(117, 37, 7, 36, '1', 'aaaaaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_Captura de pantalla 2025-01-07 a la(s) 10.15.13.png\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 45),
+(118, 37, 7, 36, '1', 'aaaaaaaa', '[\"evaluation-files\\/company_7\\/1737054091_WhatsApp Image 2025-01-09 at 13.52.59.jpeg\"]', '2025-01-16 22:01:31', '2025-01-16 22:01:31', 46);
 
 -- --------------------------------------------------------
 
@@ -436,6 +464,81 @@ INSERT INTO `indicator_homologation` (`id`, `indicator_id`, `homologation_id`, `
 (17, 36, 5, NULL, NULL),
 (18, 46, 5, NULL, NULL),
 (19, 46, 6, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `info_adicional_empresas`
+--
+
+CREATE TABLE `info_adicional_empresas` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `company_id` bigint(20) UNSIGNED NOT NULL,
+  `nombre_comercial` varchar(255) DEFAULT NULL,
+  `nombre_legal` varchar(255) DEFAULT NULL,
+  `descripcion_es` text DEFAULT NULL,
+  `descripcion_en` text DEFAULT NULL,
+  `anio_fundacion` int(11) DEFAULT NULL,
+  `sitio_web` varchar(255) DEFAULT NULL,
+  `facebook` varchar(255) DEFAULT NULL,
+  `linkedin` varchar(255) DEFAULT NULL,
+  `instagram` varchar(255) DEFAULT NULL,
+  `sector` varchar(255) DEFAULT NULL,
+  `tamano_empresa` varchar(255) DEFAULT NULL,
+  `cantidad_hombres` int(11) DEFAULT NULL,
+  `cantidad_mujeres` int(11) DEFAULT NULL,
+  `cantidad_otros` int(11) DEFAULT NULL,
+  `telefono_1` varchar(255) DEFAULT NULL,
+  `telefono_2` varchar(255) DEFAULT NULL,
+  `es_exportadora` tinyint(1) NOT NULL DEFAULT 0,
+  `paises_exportacion` text DEFAULT NULL,
+  `provincia` varchar(255) DEFAULT NULL,
+  `canton` varchar(255) DEFAULT NULL,
+  `distrito` varchar(255) DEFAULT NULL,
+  `cedula_juridica` varchar(255) DEFAULT NULL,
+  `actividad_comercial` varchar(255) DEFAULT NULL,
+  `producto_servicio` varchar(255) DEFAULT NULL,
+  `rango_exportaciones` varchar(255) DEFAULT NULL,
+  `planes_expansion` text DEFAULT NULL,
+  `razon_licenciamiento_es` text DEFAULT NULL,
+  `razon_licenciamiento_en` text DEFAULT NULL,
+  `proceso_licenciamiento` text DEFAULT NULL,
+  `recomienda_marca_pais` tinyint(1) DEFAULT NULL,
+  `observaciones` text DEFAULT NULL,
+  `mercadeo_nombre` varchar(255) DEFAULT NULL,
+  `mercadeo_email` varchar(255) DEFAULT NULL,
+  `mercadeo_puesto` varchar(255) DEFAULT NULL,
+  `mercadeo_telefono` varchar(255) DEFAULT NULL,
+  `mercadeo_celular` varchar(255) DEFAULT NULL,
+  `micrositio_nombre` varchar(255) DEFAULT NULL,
+  `micrositio_email` varchar(255) DEFAULT NULL,
+  `micrositio_puesto` varchar(255) DEFAULT NULL,
+  `micrositio_telefono` varchar(255) DEFAULT NULL,
+  `micrositio_celular` varchar(255) DEFAULT NULL,
+  `vocero_nombre` varchar(255) DEFAULT NULL,
+  `vocero_email` varchar(255) DEFAULT NULL,
+  `vocero_puesto` varchar(255) DEFAULT NULL,
+  `vocero_telefono` varchar(255) DEFAULT NULL,
+  `vocero_celular` varchar(255) DEFAULT NULL,
+  `representante_nombre` varchar(255) DEFAULT NULL,
+  `representante_email` varchar(255) DEFAULT NULL,
+  `representante_puesto` varchar(255) DEFAULT NULL,
+  `representante_telefono` varchar(255) DEFAULT NULL,
+  `representante_celular` varchar(255) DEFAULT NULL,
+  `productos` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`productos`)),
+  `logo_path` varchar(255) DEFAULT NULL,
+  `fotografias_paths` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`fotografias_paths`)),
+  `certificaciones_paths` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`certificaciones_paths`)),
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `info_adicional_empresas`
+--
+
+INSERT INTO `info_adicional_empresas` (`id`, `company_id`, `nombre_comercial`, `nombre_legal`, `descripcion_es`, `descripcion_en`, `anio_fundacion`, `sitio_web`, `facebook`, `linkedin`, `instagram`, `sector`, `tamano_empresa`, `cantidad_hombres`, `cantidad_mujeres`, `cantidad_otros`, `telefono_1`, `telefono_2`, `es_exportadora`, `paises_exportacion`, `provincia`, `canton`, `distrito`, `cedula_juridica`, `actividad_comercial`, `producto_servicio`, `rango_exportaciones`, `planes_expansion`, `razon_licenciamiento_es`, `razon_licenciamiento_en`, `proceso_licenciamiento`, `recomienda_marca_pais`, `observaciones`, `mercadeo_nombre`, `mercadeo_email`, `mercadeo_puesto`, `mercadeo_telefono`, `mercadeo_celular`, `micrositio_nombre`, `micrositio_email`, `micrositio_puesto`, `micrositio_telefono`, `micrositio_celular`, `vocero_nombre`, `vocero_email`, `vocero_puesto`, `vocero_telefono`, `vocero_celular`, `representante_nombre`, `representante_email`, `representante_puesto`, `representante_telefono`, `representante_celular`, `productos`, `logo_path`, `fotografias_paths`, `certificaciones_paths`, `created_at`, `updated_at`) VALUES
+(1, 7, 'ewtgwsrtger', 'rgerg', 'erg', 'ergerger', NULL, 'https://localhots', 'https://localhotshttps://localhots', 'https://localhots', 'https://localhots', 'https://localhots', '51-200', 2134, 23423, 4234, '34234', '234234', 0, NULL, NULL, NULL, NULL, '2342342', '342342', NULL, NULL, NULL, '23423423', '42342', '34234234', 1, '42342342', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '[[],[],[]]', NULL, '[]', '[]', '2025-01-14 23:35:38', '2025-01-14 23:41:15');
 
 -- --------------------------------------------------------
 
@@ -521,7 +624,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (30, '2024_12_12_create_add_indicator_id_to_indicator_answers_evaluation', 27),
 (31, '2024_12_27_175243_create_company_evaluator_table', 28),
 (32, '2024_12_27_253457_create_evaluator_assessments_table', 29),
-(33, '2025_01_03_131523_add_homologation_id_to_certifications_table', 30);
+(33, '2025_01_03_131523_add_homologation_id_to_certifications_table', 30),
+(34, '2025_01_07_204259_add_column_application_sended_to_auto_evaluation_result_table', 31),
+(36, '2025_01_13_192336_create_info_adicional_empresas_table', 32);
 
 -- --------------------------------------------------------
 
@@ -534,6 +639,14 @@ CREATE TABLE `password_reset_tokens` (
   `token` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `password_reset_tokens`
+--
+
+INSERT INTO `password_reset_tokens` (`email`, `token`, `created_at`) VALUES
+('admin@buzz.com', '$2y$12$GAmLZ0MNWy6BFwSXyhJ1ZunxADhRAf/baCbWMDngRxgnVN65lr4AG', '2025-01-07 19:11:45'),
+('mauricio@buzz.cr', '$2y$12$tFU5FUL1eXAgyMek8nN9V.VGpTXLCD7YLtHi3gZq0r90TkUSuPaNG', '2025-01-07 19:45:21');
 
 -- --------------------------------------------------------
 
@@ -574,9 +687,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('4VRGObkdrZwD0769P22bJVbPL2YCJ6unCLJPdqXf', 18, '127.0.0.1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiR2RXb2MycWNrd1loa25OdGZGRThkNG5YdU56ZVRPVXdIT1AzeEVxUSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTg7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NDM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9jZXJ0aWZpY2F0aW9ucy9jcmVhdGUiO319', 1735851152),
-('l1ChJzT8AeVlVikHUqnszFtDZWIoIDsnzyXfZeoR', 37, '127.0.0.1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiNnl5M3JMZGpPNDdpM29NZ01qVkVEYlMwenQ4ZXRWNTJ5cEFGZlhGQyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NDM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9jZXJ0aWZpY2F0aW9ucy9jcmVhdGUiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozNzt9', 1735911670),
-('XlnG5hig5GkHfQytRA2WJ5gsdt8m5QkjYBDFy5RW', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiNEduNHIzZEw1c0thbm5TckV3ckVCYzZZQmNKWmQ4YU83TDV4djEwQSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzc7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zdXBlci9pbmRpY2F0b3JzIjt9fQ==', 1735849825);
+('VQamppQd49ueD3bRxHq20aThU6me2UJEg46L4uoD', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiT2Y4UXpPUnZLZGk0UHg3emthU1pwdFlZbTU1S0I4U1ZQT3dDdlFCUSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzc7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9ldmFsdWFjaW9uLzMxIjt9fQ==', 1737054341);
 
 -- --------------------------------------------------------
 
@@ -654,12 +765,15 @@ INSERT INTO `users` (`id`, `name`, `lastname`, `id_number`, `phone`, `email`, `e
 (34, 'Mauricio Teruel 1', NULL, NULL, NULL, 'mauricioteruel98@gmail.com', NULL, '$2y$12$E5UGpVLJ.CUv7ygv5QrxtOf90cLQFLvMkcwQkiXqSnK9v6LqB5fsS', NULL, '2024-11-19 20:16:28', '2024-11-19 20:32:02', 7, 'user', 'rejected'),
 (35, 'Mauricio Teruel', NULL, NULL, NULL, 'mauricioteruel1998@gmail.com', NULL, '$2y$12$we8XoQJjyVJe3OaTocDuBuaghnFTWjknoFBa.nddU6D.b.tPt4rWm', NULL, '2024-11-19 22:37:42', '2024-11-19 23:04:13', 7, 'user', 'approved'),
 (36, 'TITITITITIT', '', NULL, '20394590238', 'ti@ti.com', NULL, '$2y$12$OgWIyk12x41vJ/UNFfSJe.wWnj/rCGmaCLYd90BOaIonNtyGaLETW', NULL, '2024-11-19 22:38:46', '2024-11-19 22:38:46', 7, 'user', 'approved'),
-(37, 'Super Admin', 'SA', NULL, NULL, 'admin@admin.com', NULL, '$2y$12$gT1r4gTPiuvhf.flPkNHkut7NChjwTHlL0YEVQhsmLywNDRdfsMLG', NULL, '2024-11-20 23:09:50', '2025-01-02 18:43:47', 7, 'super_admin', 'approved'),
+(37, 'Super', 'Admin SA', NULL, '4563674563456', 'admin@admin.com', NULL, '$2y$12$gT1r4gTPiuvhf.flPkNHkut7NChjwTHlL0YEVQhsmLywNDRdfsMLG', NULL, '2024-11-20 23:09:50', '2025-01-16 00:16:36', 7, 'super_admin', 'approved'),
 (38, 'Mauricio Teruel', NULL, NULL, NULL, 'prueba400@buzz.cr', NULL, '$2y$12$FsYDUU6jJYe3BH.Drs.T6.5M0mM7y1hvcng7pov9Wfs2DSGzL4tOe', NULL, '2024-12-05 17:40:55', '2024-12-10 20:45:24', 7, 'user', 'approved'),
 (39, 'Juan pere', NULL, NULL, NULL, 'juan@teruel.com', NULL, '$2y$12$2DUtGePN8wh77zxg.zT.leqbzj05z0PkK8uIJp0cQyrQ9ZzYGZhtG', NULL, '2024-12-06 18:37:43', '2024-12-06 18:38:21', 9, 'user', 'pending'),
 (40, 'Mauricio', NULL, NULL, NULL, 'mauricio50@buzz.cr', NULL, '$2y$12$ta72rpxw3n.lrnHmBfaNT.PkAq8Dl.j7d1fHQKYszYlqn/VtpYLJG', NULL, '2024-12-18 23:02:43', '2025-01-02 23:25:37', 7, 'user', 'rejected'),
 (41, 'Evaluador', '1', NULL, NULL, 'evaluador@admin.com', NULL, '$2y$12$cxu3plTBpg.ujstsmd6XPOAr6A4HTId8N98ssBqwvRxLQYGS0Jd66', NULL, '2024-12-27 20:10:40', '2024-12-27 20:10:40', 7, 'user', 'approved'),
-(42, 'Evaluador', '1', NULL, NULL, 'evaluador1@email.com', NULL, '$2y$12$xa/5zaCopTEfYf4svsEibOQ6IHQopiBNxOJsdC8GYDuxEMF3.GNCW', NULL, '2024-12-27 20:13:16', '2025-01-02 18:53:52', 7, 'evaluador', 'approved');
+(42, 'Evaluador', '1', NULL, NULL, 'evaluador1@email.com', NULL, '$2y$12$xa/5zaCopTEfYf4svsEibOQ6IHQopiBNxOJsdC8GYDuxEMF3.GNCW', NULL, '2024-12-27 20:13:16', '2025-01-02 18:53:52', 7, 'evaluador', 'approved'),
+(43, 'Prueba', NULL, NULL, NULL, 'prueba@email.com', NULL, '$2y$12$7j4O1M09ZWs7h3/LK2KaiuABABy25BjemaYIsjznBbwlYPmlFpxGS', NULL, '2025-01-07 19:50:36', '2025-01-07 19:50:36', NULL, 'user', 'pending'),
+(44, 'Maricio', '', NULL, '32845792837', 'mauricio500@gmail.com', NULL, '$2y$12$g50x20BTIYZLwxidmbSIfeWxwDFbXtozJXhkg9LoIj.gZ.JeY8UUu', NULL, '2025-01-14 18:57:26', '2025-01-14 18:57:26', 7, 'user', 'approved'),
+(45, 'Maricio', '', NULL, '32845792837', 'mauricio50000@gmail.com', NULL, '$2y$12$JjCQG/fMUMEJVXLeOEI5Z.rX89hwMzIazoph7rKXq0H8TmmQ.yCwS', NULL, '2025-01-15 17:27:41', '2025-01-15 17:27:41', 9, 'user', 'approved');
 
 -- --------------------------------------------------------
 
@@ -829,6 +943,13 @@ ALTER TABLE `indicator_homologation`
   ADD KEY `indicator_homologation_homologation_id_foreign` (`homologation_id`);
 
 --
+-- Indices de la tabla `info_adicional_empresas`
+--
+ALTER TABLE `info_adicional_empresas`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `info_adicional_empresas_company_id_foreign` (`company_id`);
+
+--
 -- Indices de la tabla `jobs`
 --
 ALTER TABLE `jobs`
@@ -907,19 +1028,19 @@ ALTER TABLE `value_subcategory`
 -- AUTO_INCREMENT de la tabla `auto_evaluation_result`
 --
 ALTER TABLE `auto_evaluation_result`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de la tabla `auto_evaluation_subcategory_result`
 --
 ALTER TABLE `auto_evaluation_subcategory_result`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=114;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=126;
 
 --
 -- AUTO_INCREMENT de la tabla `auto_evaluation_valor_result`
 --
 ALTER TABLE `auto_evaluation_valor_result`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
 
 --
 -- AUTO_INCREMENT de la tabla `available_certifications`
@@ -931,7 +1052,7 @@ ALTER TABLE `available_certifications`
 -- AUTO_INCREMENT de la tabla `certifications`
 --
 ALTER TABLE `certifications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT de la tabla `companies`
@@ -973,19 +1094,25 @@ ALTER TABLE `indicators`
 -- AUTO_INCREMENT de la tabla `indicator_answers`
 --
 ALTER TABLE `indicator_answers`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=237;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=250;
 
 --
 -- AUTO_INCREMENT de la tabla `indicator_answers_evaluation`
 --
 ALTER TABLE `indicator_answers_evaluation`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=105;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
 
 --
 -- AUTO_INCREMENT de la tabla `indicator_homologation`
 --
 ALTER TABLE `indicator_homologation`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+
+--
+-- AUTO_INCREMENT de la tabla `info_adicional_empresas`
+--
+ALTER TABLE `info_adicional_empresas`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `jobs`
@@ -997,7 +1124,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT de la tabla `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT de la tabla `personal_access_tokens`
@@ -1015,7 +1142,7 @@ ALTER TABLE `subcategories`
 -- AUTO_INCREMENT de la tabla `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT de la tabla `values`
@@ -1109,6 +1236,12 @@ ALTER TABLE `indicator_answers_evaluation`
 ALTER TABLE `indicator_homologation`
   ADD CONSTRAINT `indicator_homologation_homologation_id_foreign` FOREIGN KEY (`homologation_id`) REFERENCES `available_certifications` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `indicator_homologation_indicator_id_foreign` FOREIGN KEY (`indicator_id`) REFERENCES `indicators` (`id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `info_adicional_empresas`
+--
+ALTER TABLE `info_adicional_empresas`
+  ADD CONSTRAINT `info_adicional_empresas_company_id_foreign` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `subcategories`
