@@ -67,6 +67,10 @@ class CompanyProfileController extends Controller
         $infoAdicional->fill($request->except(['logo', 'fotografias', 'certificaciones']));
         $infoAdicional->save();
 
+        // Actualizar form_sended en auto_evaluation_result
+        \App\Models\AutoEvaluationResult::where('company_id', $company->id)
+            ->update(['form_sended' => true]);
+
         return redirect()->back()->with('message', 'Información guardada exitosamente');
     }
 

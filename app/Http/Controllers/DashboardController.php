@@ -100,11 +100,17 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function showFormEmpresa()
+    public function showFormEmpresa(Request $request)
     {
         $user = auth()->user();
         $company = $user->company;
         $infoAdicional = $company->infoAdicional;
+
+        // Actualizar form_sended en auto_evaluation_result
+        if ($request->has('form_sended')) {
+            AutoEvaluationResult::where('company_id', $user->company_id)
+                ->update(['form_sended' => true]);
+        }
 
         // Transformar las rutas de imágenes a URLs completas si existen
         if ($infoAdicional) {

@@ -29,11 +29,17 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        if ($user) {
+            $autoEvaluationResult = \App\Models\AutoEvaluationResult::where('company_id', $user->company_id)->first();
+            $user->form_sended = $autoEvaluationResult ? $autoEvaluationResult->form_sended : false;
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
-                'dashboard_route' => $this->getDashboardRoute($request->user()),
+                'user' => $user,
+                'dashboard_route' => $this->getDashboardRoute($user),
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

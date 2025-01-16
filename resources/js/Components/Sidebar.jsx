@@ -28,8 +28,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         fetchValues();
     }, [url]);
 
-    console.log(auth.user.auto_evaluation_status);
-
     return (
         <>
             {/* Overlay para móvil */}
@@ -99,7 +97,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                     </li>
 
                     {/* Menú desplegable de Evaluación */}
-                    {auth.user.auto_evaluation_status === 'apto' && (
+                    {auth.user.auto_evaluation_status === 'apto' && Boolean(auth.user.form_sended) && (
                         <li className="mb-1">
                             <button
                                 onClick={() => setIsEvaluacionOpen(!isEvaluacionOpen)}
@@ -122,8 +120,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                                     <li key={index}>
                                         <Link
                                             href={`/evaluacion/${item.route.split('/').pop()}`}
-                                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${url === `/evaluacion/${item.route.split('/').pop()}` ? 'bg-green-800' : ''
-                                                }`}
+                                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${url === `/evaluacion/${item.route.split('/').pop()}` ? 'bg-green-800' : ''}`}
                                         >
                                             {item.name || 'Sin nombre'}
                                         </Link>

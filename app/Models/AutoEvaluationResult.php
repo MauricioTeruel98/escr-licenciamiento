@@ -13,7 +13,8 @@ class AutoEvaluationResult extends Model
         'company_id',
         'nota',
         'status',
-        'fecha_aprobacion'
+        'fecha_aprobacion',
+        'form_sended'
     ];
 
     protected $casts = [

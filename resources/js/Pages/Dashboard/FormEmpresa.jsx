@@ -266,6 +266,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             }
         });
 
+        // Indicar que el formulario ha sido enviado
+        formData.append('form_sended', true);
+
         post(route('company.profile.store'), formData);
     };
 
