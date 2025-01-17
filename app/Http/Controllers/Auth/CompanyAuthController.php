@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Notification;
 use App\Notifications\NewAccessRequest;
 use App\Notifications\AccessRequestApproved;
 use App\Notifications\AccessRequestRejected;
+use App\Notifications\AccessRequestPendingNotification;
+use App\Notifications\NewAccessRequestNotification;
 
 class CompanyAuthController extends Controller
 {
@@ -83,21 +85,33 @@ class CompanyAuthController extends Controller
             if (!$companyId) {
                 throw new \Exception('No hay una empresa pendiente de asignación');
             }
-    
+
             $user = Auth::user();
+            $company = \App\Models\Company::findOrFail($companyId);
+            
             $user->company_id = $companyId;
             $user->role = 'user';
             $user->status = 'pending';
             $user->save();
-    
+
+            // Enviar notificación al usuario solicitante
+            $user->notify(new AccessRequestPendingNotification($company));
+
+            // Enviar notificación al administrador de la empresa
+            $adminUser = \App\Models\User::where('company_id', $companyId)
+                ->where('role', 'admin')
+                ->first();
+
+            if ($adminUser) {
+                $adminUser->notify(new NewAccessRequestNotification($user));
+            }
+
             session()->forget('pending_company_id');
-    
+
             DB::commit();
             
-            // Redirigir inmediatamente a la página de espera
             return redirect()->route('approval.pending')
                 ->with('success', 'Solicitud de acceso enviada. Espere la aprobación del administrador.');
-    
 
         } catch (\Exception $e) {
             DB::rollBack();
