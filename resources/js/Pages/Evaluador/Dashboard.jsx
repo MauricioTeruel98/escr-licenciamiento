@@ -53,7 +53,7 @@ export default function EvaluadorDashboard({ auth }) {
         <EvaluadorLayout>
             <Head title="Dashboard Evaluador" />
 
-            <div className="py-12">
+            <div className="py-4">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6">
                         <h1 className="text-2xl font-semibold text-gray-900">
@@ -65,18 +65,18 @@ export default function EvaluadorDashboard({ auth }) {
                     </div>
 
                     {activeCompany && (
-                        <div className="mb-8 bg-amber-50 border border-amber-200 rounded-lg p-4">
+                        <div className="mb-8 bg-green-50 border border-green-200 rounded-lg p-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                                        <Building2 className="h-5 w-5 text-amber-700" />
+                                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                        <Building2 className="h-5 w-5 text-green-700" />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-amber-700">Administrando actualmente:</p>
-                                        <h2 className="text-lg font-semibold text-amber-900">{activeCompany.name}</h2>
+                                        <p className="text-sm text-green-700">Administrando actualmente:</p>
+                                        <h2 className="text-lg font-semibold text-green-900">{activeCompany.name}</h2>
                                     </div>
                                 </div>
-                                
+
                             </div>
                         </div>
                     )}
@@ -86,7 +86,7 @@ export default function EvaluadorDashboard({ auth }) {
                             <span className="text-xl font-semibold">Acceder como</span>
                             <div className="relative">
                                 <select
-                                    className="appearance-none bg-white border border-gray-300 text-gray-900 text-lg rounded-lg pl-4 pr-10 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 block w-[200px] cursor-pointer"
+                                    className="appearance-none bg-white border border-gray-300 text-gray-900 text-lg rounded-lg pl-4 pr-10 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-[200px] cursor-pointer"
                                     onChange={(e) => setSelectedCompany(e.target.value)}
                                     value={selectedCompany || ''}
                                 >
@@ -101,18 +101,45 @@ export default function EvaluadorDashboard({ auth }) {
                             </div>
                             <button
                                 onClick={() => selectedCompany && handleCompanyChange(selectedCompany)}
-                                className="bg-amber-700 text-white px-4 py-2 rounded-lg hover:bg-amber-800 transition-colors"
+                                className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
                             >
                                 ACCEDER
                             </button>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+                    <div className="flex items-center gap-4">
+
+                        <div className="w-1/2">
+                            <div className="bg-white rounded-lg shadow p-6">
+                                <h3 className="text-xl font-bold mb-2">Descargar documentación</h3>
+                                <div className="mt-6">
+                                    <Link href={''} className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors">
+                                        Ver Perfil
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="w-1/2">
+                            <div className="bg-white rounded-lg shadow p-6">
+                                <h3 className="text-xl font-bold mb-2">Perfil de empresa</h3>
+                                <div className="mt-6">
+                                    <Link href={route('company.edit')} className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors">
+                                        Ver Perfil
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <Link href={route('evaluador.companies')} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
                             <div className="flex flex-col items-center text-center">
-                                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4">
-                                    <Building2 className="h-6 w-6 text-amber-700" />
+                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                    <Building2 className="h-6 w-6 text-green-700" />
                                 </div>
                                 <h3 className="text-lg font-semibold text-gray-900">Empresas</h3>
                                 <p className="mt-2 text-sm text-gray-600">Ver y evaluar empresas</p>
@@ -121,8 +148,8 @@ export default function EvaluadorDashboard({ auth }) {
 
                         <Link href={route('evaluador.evaluations')} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
                             <div className="flex flex-col items-center text-center">
-                                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4">
-                                    <ClipboardList className="h-6 w-6 text-amber-700" />
+                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                    <ClipboardList className="h-6 w-6 text-green-700" />
                                 </div>
                                 <h3 className="text-lg font-semibold text-gray-900">Evaluaciones</h3>
                                 <p className="mt-2 text-sm text-gray-600">Gestionar evaluaciones pendientes</p>
@@ -131,14 +158,14 @@ export default function EvaluadorDashboard({ auth }) {
 
                         <Link href={route('evaluador.profile.edit')} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
                             <div className="flex flex-col items-center text-center">
-                                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4">
-                                    <Users className="h-6 w-6 text-amber-700" />
+                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                    <Users className="h-6 w-6 text-green-700" />
                                 </div>
                                 <h3 className="text-lg font-semibold text-gray-900">Mi Perfil</h3>
                                 <p className="mt-2 text-sm text-gray-600">Gestionar información personal</p>
                             </div>
                         </Link>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </EvaluadorLayout>

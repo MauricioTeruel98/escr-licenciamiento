@@ -10,6 +10,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     const [autoEvaluationItems, setAutoEvaluationItems] = useState([]);
 
     useEffect(() => {
+        if (url.startsWith('/indicadores/')) {
+            setIsEvaluationOpen(true);
+        }
+        if (url.startsWith('/evaluacion/')) {
+            setIsEvaluacionOpen(true);
+        }
+
         const fetchValues = async () => {
             try {
                 const response = await axios.get('/api/active-values');

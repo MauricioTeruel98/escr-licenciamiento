@@ -15,7 +15,7 @@ class ProgresosController extends Controller
         $query = Company::query()
             ->select('id', 'name')
             ->with(['autoEvaluationResult' => function($query) {
-                $query->select('id', 'company_id', 'status', 'form_sended');
+                $query->select('id', 'company_id', 'status', 'form_sended', 'created_at', 'fecha_aprobacion');
             }])
             ->withCount(['indicatorAnswers', 'indicatorAnswersEvaluation']);
 
@@ -50,7 +50,11 @@ class ProgresosController extends Controller
                 'id' => $company->id,
                 'nombre' => $company->name,
                 'estado' => $status,
-                'progreso' => round($progress)
+                'progreso' => round($progress),
+                'fecha_inicio' => $company->autoEvaluationResult ? $company->autoEvaluationResult->created_at->format('d/m/Y') : null,
+                'fecha_fin' => $company->autoEvaluationResult && $company->autoEvaluationResult->fecha_aprobacion 
+                    ? $company->autoEvaluationResult->fecha_aprobacion->format('d/m/Y') 
+                    : null,
             ];
         }));
     }

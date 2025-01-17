@@ -309,7 +309,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
                                                 {/* Checkbox de aprobación para evaluadores */}
                                                 {isEvaluador && (
-                                                    <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200 space-y-4">
+                                                    <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200 space-y-4">
                                                         <label className="text-sm font-medium text-gray-900">
                                                             ¿Indicador aprobado?
                                                         </label>
@@ -320,7 +320,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     name={`approval-${question.id}`}
                                                                     checked={approvals[question.id] === true}
                                                                     onChange={() => handleApproval(question.id, true)}
-                                                                    className="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500"
+                                                                    className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                                 />
                                                                 <span className="text-gray-900">Sí</span>
                                                             </label>
@@ -330,7 +330,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     name={`approval-${question.id}`}
                                                                     checked={approvals[question.id] === false}
                                                                     onChange={() => handleApproval(question.id, false)}
-                                                                    className="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500"
+                                                                    className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                                 />
                                                                 <span className="text-gray-900">No</span>
                                                             </label>
@@ -350,13 +350,13 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     answers[question.id]?.files,
                                                                     e.target.value
                                                                 )}
-                                                                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 resize-none"
+                                                                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none"
                                                                 placeholder="Agregue un comentario sobre su evaluación..."
                                                             />
                                                         </div>
 
                                                         {(approvals[question.id] !== undefined || answers[question.id]?.evaluator_comment) && (
-                                                            <div className="mt-4 p-3 bg-white rounded-lg border border-amber-100">
+                                                            <div className="mt-4 p-3 bg-white rounded-lg border border-green-100">
                                                                 <div className="text-sm text-gray-600">
                                                                     <span className="font-medium">Estado del indicador: </span>
                                                                     {approvals[question.id] ? (

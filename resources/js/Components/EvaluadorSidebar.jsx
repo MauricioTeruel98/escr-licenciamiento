@@ -131,11 +131,11 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
                     {/* Reportes */}
                     <li className="mb-1">
                         <Link
-                            //href={route('evaluador.reports')}
+                            href={route('evaluador.reportes')}
                             className={`
                                 block px-4 py-2 rounded-lg
                                 transition-colors duration-200
-                                ${route().current('evaluador.reports') 
+                                ${route().current('evaluador.reportes') 
                                     ? 'bg-green-800' 
                                     : 'hover:bg-green-800'}
                             `}

@@ -30,6 +30,22 @@ export default function UsersIndex() {
         { key: 'name', label: 'Nombre' },
         { key: 'email', label: 'Email' },
         {
+            key: 'created_at',
+            label: 'Fecha de Registro',
+            render: (item) => {
+                const date = new Date(item.created_at);
+                return (
+                    <div className="text-sm text-gray-700">
+                        {date.toLocaleDateString('es-ES', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                        })}
+                    </div>
+                );
+            }
+        },
+        {
             key: 'role',
             label: 'Rol',
             render: (item) => {

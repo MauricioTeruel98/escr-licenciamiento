@@ -58,4 +58,9 @@ class EvaluadorController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function reportes()
+    {
+        return Inertia::render('Evaluador/ReportesEvaluador');
+    }
 } 

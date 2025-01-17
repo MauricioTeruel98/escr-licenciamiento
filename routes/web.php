@@ -103,7 +103,10 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
 
     Route::get('/form-empresa', [DashboardController::class, 'showFormEmpresa'])
         ->name('form.empresa');
+});
 
+Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
+    Route::get('/evaluador/reportes', [EvaluadorController::class, 'reportes'])->name('evaluador.reportes');
 });
 
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
@@ -250,6 +253,10 @@ Route::post('/company/profile', [CompanyProfileController::class, 'store'])->nam
 // Rutas para reportes
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/api/empresas-reportes', [ReportController::class, 'getCompanies']);
+});
+
+Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
+    Route::get('/api/empresas-reportes-evaluador', [ReportController::class, 'getCompanies']);
 });
 
 // Rutas para progresos
