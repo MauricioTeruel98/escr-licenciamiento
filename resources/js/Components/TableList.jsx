@@ -160,11 +160,11 @@ export default function TableList({
                             <ChevronLeft className="h-5 w-5" />
                         </button>
                         <span className="text-sm text-gray-700">
-                            Página {pagination.currentPage} de {pagination.totalPages}
+                            Página {pagination.currentPage} de {pagination.lastPage}
                         </span>
                         <button
                             onClick={() => onPageChange(pagination.currentPage + 1)}
-                            disabled={pagination.currentPage === pagination.totalPages}
+                            disabled={pagination.currentPage === pagination.lastPage}
                             className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50"
                         >
                             <ChevronRight className="h-5 w-5" />

@@ -1,4 +1,4 @@
-export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation }) {
+export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide }) {
     const handleChange = (e) => {
         const selectedValue = e.target.value;
         console.log('Seleccionado para indicador', code, ':', selectedValue);
@@ -45,6 +45,11 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                 <h3 className="text-gray-900 font-medium leading-6">
                     {question}
                 </h3>
+                {guide && (
+                    <p className="text-sm text-gray-500 mt-1">
+                        {guide}
+                    </p>
+                )}
             </div>
 
             {/* Opciones de respuesta */}
