@@ -10,6 +10,7 @@ export default function Register() {
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
+        lastname: '',
         email: '',
         password: '',
         password_confirmation: '',
@@ -43,6 +44,23 @@ export default function Register() {
                             required
                         />
                         <InputError message={errors.name} className="mt-2" />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label htmlFor="lastname" className="block text-sm">
+                            Apellido
+                            <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            id="lastname"
+                            type="text"
+                            value={data.lastname}
+                            onChange={(e) => setData('lastname', e.target.value)}
+                            className="w-full rounded-md border border-gray-300 p-2"
+                            placeholder="Pérez"
+                            required
+                        />
+                        <InputError message={errors.lastname} className="mt-2" />
                     </div>
 
                     <div className="space-y-2">

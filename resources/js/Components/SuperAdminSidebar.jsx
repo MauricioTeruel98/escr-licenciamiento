@@ -123,7 +123,7 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                             onClick={() => setIsUsuariosOpen(!isUsuariosOpen)}
                             className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg"
                         >
-                            <span>Administrar Usuarios</span>
+                            <span>Administrar Perfiles</span>
                             <svg
                                 className={`w-4 h-4 transition-transform ${isUsuariosOpen ? 'rotate-180' : ''}`}
                                 fill="none"
