@@ -1058,17 +1058,24 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     Fotografía producto
                                                 </label>
                                                 <div className="mt-1">
-                                                    <div className="border border-gray-300 rounded-md p-4">
+                                                    <label 
+                                                        htmlFor={`producto-input-${index}`}
+                                                        className="border border-gray-300 rounded-md p-4 block cursor-pointer"
+                                                        onDragOver={handleDragOver}
+                                                        onDragLeave={handleDragLeave}
+                                                        onDrop={(e) => handleDrop(e, 'producto', index)}
+                                                    >
                                                         <div className="text-center text-gray-600">
                                                             Arrastre png, jpg o <span className="text-green-600">Cargar</span>
-                                                            <input
-                                                                type="file"
-                                                                className="hidden"
-                                                                accept=".png,.jpg,.jpeg"
-                                                                onChange={e => handleImagenChange(e, 'producto', index)}
-                                                            />
                                                         </div>
-                                                    </div>
+                                                        <input
+                                                            id={`producto-input-${index}`}
+                                                            type="file"
+                                                            className="hidden"
+                                                            accept=".png,.jpg,.jpeg"
+                                                            onChange={(e) => handleImagenChange(e, 'producto', index)}
+                                                        />
+                                                    </label>
                                                     
                                                     {/* Mostrar imagen existente si hay */}
                                                     {imagenes.existingProductos[index] && (
@@ -1166,27 +1173,24 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         Fotografías de la empresa (máximo 3)<span className="text-red-500">*</span>
                                     </label>
                                     <div className="mt-2">
-                                        <label className="border border-gray-300 rounded-md p-4 block cursor-pointer">
+                                        <label 
+                                            htmlFor="fotografias-input" 
+                                            className="border border-gray-300 rounded-md p-4 block cursor-pointer"
+                                            onDragOver={handleDragOver}
+                                            onDragLeave={handleDragLeave}
+                                            onDrop={(e) => handleDrop(e, 'fotografias')}
+                                        >
                                             <div className="text-center text-gray-600">
-                                                Arrastre png, jpg o <span className="text-green-600 cursor-pointer">Cargar</span>
-                                                <input
-                                                    type="file"
-                                                    className="hidden"
-                                                    accept=".png,.jpg,.jpeg"
-                                                    multiple
-                                                    onChange={(e) => {
-                                                        const files = Array.from(e.target.files || []);
-                                                        if (files.length + (imagenes.fotografias?.length || 0) > 3) {
-                                                            alert('Solo se permiten máximo 3 fotografías');
-                                                            return;
-                                                        }
-                                                        setImagenes(prev => ({
-                                                            ...prev,
-                                                            fotografias: [...(prev.fotografias || []), ...files]
-                                                        }));
-                                                    }}
-                                                />
+                                                Arrastre png, jpg o <span className="text-green-600">Cargar</span>
                                             </div>
+                                            <input
+                                                id="fotografias-input"
+                                                type="file"
+                                                className="hidden"
+                                                accept=".png,.jpg,.jpeg"
+                                                multiple
+                                                onChange={(e) => handleImagenChange(e, 'fotografias')}
+                                            />
                                         </label>
                                         {/* Archivos cargados */}
                                         {imagenes.fotografias?.map((foto, index) => (
@@ -1227,23 +1231,22 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         Logo de la empresa<span className="text-red-500">*</span>
                                     </label>
                                     <div className="mt-2">
-                                        <label className="border border-gray-300 rounded-md p-4 block cursor-pointer">
+                                        <label 
+                                            htmlFor="logo-input" 
+                                            className="border border-gray-300 rounded-md p-4 block cursor-pointer"
+                                            onDragOver={handleDragOver}
+                                            onDragLeave={handleDragLeave}
+                                            onDrop={(e) => handleDrop(e, 'logo')}
+                                        >
                                             <div className="text-center text-gray-600">
                                                 Arrastre png, jpg o <span className="text-green-600">Cargar</span>
                                             </div>
                                             <input
+                                                id="logo-input"
                                                 type="file"
                                                 className="hidden"
                                                 accept=".png,.jpg,.jpeg"
-                                                onChange={(e) => {
-                                                    const file = e.target.files?.[0];
-                                                    if (file) {
-                                                        setImagenes(prev => ({
-                                                            ...prev,
-                                                            logo: file
-                                                        }));
-                                                    }
-                                                }}
+                                                onChange={(e) => handleImagenChange(e, 'logo')}
                                             />
                                         </label>
                                         {/* Archivo cargado */}
@@ -1285,18 +1288,25 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         Logos de certificaciones
                                     </label>
                                     <div className="mt-2">
-                                        <div className="border border-gray-300 rounded-md p-4">
+                                        <label 
+                                            htmlFor="certificaciones-input"
+                                            className="border border-gray-300 rounded-md p-4 block cursor-pointer"
+                                            onDragOver={handleDragOver}
+                                            onDragLeave={handleDragLeave}
+                                            onDrop={(e) => handleDrop(e, 'certificaciones')}
+                                        >
                                             <div className="text-center text-gray-600">
-                                                Arrastre png, jpg o <span className="text-green-600 cursor-pointer">Cargar</span>
-                                                <input
-                                                    type="file"
-                                                    className="hidden"
-                                                    accept="image/*"
-                                                    multiple
-                                                    onChange={(e) => handleImagenChange(e, 'certificaciones')}
-                                                />
+                                                Arrastre png, jpg o <span className="text-green-600">Cargar</span>
                                             </div>
-                                        </div>
+                                            <input
+                                                id="certificaciones-input"
+                                                type="file"
+                                                className="hidden"
+                                                accept=".png,.jpg,.jpeg"
+                                                multiple
+                                                onChange={(e) => handleImagenChange(e, 'certificaciones')}
+                                            />
+                                        </label>
                                         {/* Archivos cargados */}
                                         {imagenes.certificaciones?.map((cert, index) => (
                                             <div key={index} className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">

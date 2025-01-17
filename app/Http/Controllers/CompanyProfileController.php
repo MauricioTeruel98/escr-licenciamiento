@@ -17,6 +17,9 @@ class CompanyProfileController extends Controller
             'logo' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
             'fotografias.*' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
             'certificaciones.*' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
+            'producto_imagen_0' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
+            'producto_imagen_1' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
+            'producto_imagen_2' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $company = auth()->user()->company;
@@ -62,6 +65,19 @@ class CompanyProfileController extends Controller
             }
             $infoAdicional->certificaciones_paths = $certificacionesPaths;
         }
+
+        // Procesar imágenes de productos
+        $productos = json_decode($request->productos, true);
+        for ($i = 0; $i < 3; $i++) {
+            if ($request->hasFile("producto_imagen_$i")) {
+                // Eliminar imagen anterior si existe
+                if (isset($productos[$i]['imagen_path']) && Storage::disk('public')->exists($productos[$i]['imagen_path'])) {
+                    Storage::disk('public')->delete($productos[$i]['imagen_path']);
+                }
+                $productos[$i]['imagen_path'] = $request->file("producto_imagen_$i")->store('company-files/productos', 'public');
+            }
+        }
+        $infoAdicional->productos = $productos;
 
         // Guardar resto de datos
         $infoAdicional->fill($request->except(['logo', 'fotografias', 'certificaciones']));

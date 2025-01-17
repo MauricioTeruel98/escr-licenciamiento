@@ -21,7 +21,7 @@ export default function SuperAdminLayout({ children, title = null }) {
             active: route().current('super.values')
         },
         {
-            name: 'Subcategorías',
+            name: 'Componentes',
             href: route('super.subcategories'),
             icon: ListOrdered,
             active: route().current('super.subcategories')

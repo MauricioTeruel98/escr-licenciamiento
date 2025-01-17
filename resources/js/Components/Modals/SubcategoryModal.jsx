@@ -48,7 +48,7 @@ export default function SubcategoryModal({ isOpen, onClose, onSubmit, subcategor
                         {/* Header */}
                         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
                             <h3 className="text-lg font-medium text-gray-900">
-                                {subcategory ? 'Editar subcategoría' : 'Crear nueva subcategoría'}
+                                {subcategory ? 'Editar componente' : 'Crear nuevo componente'}
                             </h3>
                             <button
                                 onClick={handleClose}

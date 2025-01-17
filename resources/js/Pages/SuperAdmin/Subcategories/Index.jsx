@@ -151,7 +151,7 @@ export default function SubcategoriesIndex() {
         try {
             await axios.post('/api/subcategories/bulk-delete', { ids });
             loadSubcategories(pagination.currentPage, pagination.perPage, searchTerm);
-            showNotification('success', `${ids.length} ${ids.length === 1 ? 'subcategoría eliminada' : 'subcategorías eliminadas'} exitosamente`);
+            showNotification('success', `${ids.length} ${ids.length === 1 ? 'componente eliminado' : 'componentes eliminados'} exitosamente`);
         } catch (error) {
             console.error('Error al eliminar subcategorías:', error);
             showNotification('error', 'Error al eliminar las subcategorías');
@@ -190,13 +190,13 @@ export default function SubcategoriesIndex() {
 
     return (
         <SuperAdminLayout>
-            <Head title="Listado de Subcategorías" />
+            <Head title="Listado de Componentes" />
 
             <div className="sm:flex sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-semibold text-gray-900">Subcategorías</h1>
+                    <h1 className="text-2xl font-semibold text-gray-900">Componentes</h1>
                     <p className="mt-2 text-sm text-gray-700">
-                        Gestiona las subcategorías del sistema
+                        Gestiona los componentes del sistema
                     </p>
                 </div>
                 <div className="mt-4 sm:mt-0">
@@ -205,7 +205,7 @@ export default function SubcategoriesIndex() {
                         className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                     >
                         <PlusCircle className="h-5 w-5 mr-2" />
-                        Nueva Subcategoría
+                        Nuevo componente
                     </button>
                 </div>
             </div>
@@ -238,8 +238,8 @@ export default function SubcategoriesIndex() {
                     setSubcategoryToDelete(null);
                 }}
                 onConfirm={confirmDelete}
-                title={`¿Eliminar subcategoría "${subcategoryToDelete?.name}"?`}
-                description="¿Está seguro de que desea eliminar esta subcategoría? Esta acción no se puede deshacer."
+                title={`¿Eliminar componente "${subcategoryToDelete?.name}"?`}
+                description="¿Está seguro de que desea eliminar este componente? Esta acción no se puede deshacer."
             />
 
             {notification && (

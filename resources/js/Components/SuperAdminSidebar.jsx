@@ -7,7 +7,7 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
 
     // Agrupar los items de navegación
     const evaluacionItems = navigation.filter(item => 
-        ['Valores', 'Subcategorías', 'Homologaciones', 'Certificaciones', 'Indicadores'].includes(item.name)
+        ['Valores', 'Componentes', 'Homologaciones', 'Certificaciones', 'Indicadores'].includes(item.name)
     );
     
     const usuariosItems = navigation.filter(item => 
