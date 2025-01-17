@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Trash2, X, ChevronLeft, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
 import axios from 'axios';
 import { router } from '@inertiajs/react';
+import Toast from './Toast';
 
 // Primero, creamos el componente Modal
 const ConfirmModal = ({ isOpen, onClose, onConfirm, userName }) => {
@@ -70,6 +71,9 @@ export default function UsersManagement() {
         perPage: 10
     });
 
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+
     useEffect(() => {
         cargarUsuarios();
         cargarSolicitudesPendientes();
@@ -135,7 +139,7 @@ export default function UsersManagement() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/api/users/company', nuevoUsuario);
+            const response = await axios.post('/api/users/company', nuevoUsuario);
             setNuevoUsuario({
                 nombreCompleto: '',
                 correo: '',
@@ -143,8 +147,27 @@ export default function UsersManagement() {
                 telefono: ''
             });
             cargarUsuarios();
+            setToastMessage(response.data.message || 'Usuario creado exitosamente');
+            setShowToast(true);
         } catch (error) {
             console.error('Error al crear usuario:', error);
+            
+            // Manejo específico de errores
+            let errorMessage = 'Error al crear usuario';
+            
+            if (error.response) {
+                // El servidor respondió con un estado de error
+                if (error.response.data.messages) {
+                    // Error de validación
+                    errorMessage = Object.values(error.response.data.messages)[0][0];
+                } else if (error.response.data.message) {
+                    // Error general del servidor con mensaje
+                    errorMessage = error.response.data.message;
+                }
+            }
+            
+            setToastMessage(errorMessage);
+            setShowToast(true);
         }
     };
 
@@ -292,6 +315,13 @@ export default function UsersManagement() {
 
     return (
         <div className="p-6 mx-auto">
+            {showToast && (
+                <Toast 
+                    message={toastMessage} 
+                    onClose={() => setShowToast(false)} 
+                />
+            )}
+            
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900">
                     Administrar Usuarios

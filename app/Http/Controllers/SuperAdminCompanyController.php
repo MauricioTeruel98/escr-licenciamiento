@@ -23,6 +23,7 @@ class SuperAdminCompanyController extends Controller
         $user->company_id = $validated['company_id'];
         $user->save();
 
+
         // También guardamos en sesión para mantener consistencia
         session(['admin_company_id' => $validated['company_id']]);
 

@@ -51,23 +51,22 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'nombreCompleto' => 'required|string',
-            'correo' => 'required|email|unique:users,email',
-            'puesto' => 'required|string',
-            'telefono' => 'required|string',
-            
-        ]);
-
-        // Separar nombre y apellido
-        $nombreCompleto = explode(' ', $request->nombreCompleto);
-        $name = $nombreCompleto[0];
-        $lastname = count($nombreCompleto) > 1 ? implode(' ', array_slice($nombreCompleto, 1)) : '';
-
-        // Generar contraseña aleatoria
-        $password = Str::random(10);
-
         try {
+            $request->validate([
+                'nombreCompleto' => 'required|string',
+                'correo' => 'required|email|unique:users,email',
+                'puesto' => 'required|string',
+                'telefono' => 'required|string',
+            ]);
+
+            // Separar nombre y apellido
+            $nombreCompleto = explode(' ', $request->nombreCompleto);
+            $name = $nombreCompleto[0];
+            $lastname = count($nombreCompleto) > 1 ? implode(' ', array_slice($nombreCompleto, 1)) : '';
+
+            // Generar contraseña aleatoria
+            $password = Str::random(10);
+
             $user = User::create([
                 'name' => $name,
                 'lastname' => $lastname,
@@ -78,15 +77,28 @@ class UserController extends Controller
                 'role' => 'user',
                 'status' => 'approved',
                 'company_id' => auth()->user()->company_id,
+                'form_sended' => false,
             ]);
 
             return response()->json([
                 'message' => 'Usuario creado exitosamente',
                 'user' => $user
-            ]);
+            ], 201); // Agregamos código de estado 201 para Created
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Error de validación
+            return response()->json([
+                'error' => 'Error de validación',
+                'messages' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
+            // Log del error para debugging
             Log::error('Error creating user: ' . $e->getMessage());
-            return response()->json(['error' => 'Error al crear usuario'], 500);
+            
+            return response()->json([
+                'error' => 'Error al crear usuario',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
