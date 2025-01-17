@@ -49,7 +49,7 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                             href={route('dashboard')}
                             className="block px-4 py-2 hover:bg-green-800 rounded-lg"
                         >
-                            Dashboard Empresa
+                            Ir al Panel de Empresa
                         </Link>
                     </li>
 
@@ -68,7 +68,7 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                             `}
                         >
                             <div className="flex items-center">
-                                Dashboard
+                                Inicio
                             </div>
                         </Link>
                     </li>

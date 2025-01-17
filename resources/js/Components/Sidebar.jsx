@@ -153,7 +153,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                             <div className="divider"></div>
                             <li className="mb-1">
                                 <Link href={route('super.dashboard')} className="block px-4 py-2 hover:bg-green-800 rounded-lg">
-                                    Super Admin
+                                    Ir al Panel de Super Admin
                                 </Link>
                             </li>
                         </>
