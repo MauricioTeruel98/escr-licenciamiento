@@ -166,6 +166,22 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
             return total + indicatorsInThisValue.length;
         }, 0);
 
+    const areAllQuestionsAnswered = () => {
+        let totalQuestions = 0;
+        let answeredQuestions = 0;
+
+        valueData.subcategories.forEach(subcategory => {
+            subcategory.indicators.forEach(indicator => {
+                totalQuestions++;
+                if (answers[indicator.id] !== undefined) {
+                    answeredQuestions++;
+                }
+            });
+        });
+
+        return totalQuestions === answeredQuestions;
+    };
+
     return (
         <DashboardLayout userName={userName} title="Indicadores">
             <div className="space-y-8">
@@ -340,12 +356,23 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                             <div className="ml-auto">
                                 <button
                                     onClick={isLastSubcategory ? handleFinish : handleContinue}
-                                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                                    disabled={isLastSubcategory && !areAllQuestionsAnswered()}
+                                    className={`px-4 py-2 rounded-md ${
+                                        isLastSubcategory && !areAllQuestionsAnswered()
+                                            ? 'bg-gray-400 cursor-not-allowed'
+                                            : 'bg-green-600 hover:bg-green-700'
+                                    } text-white`}
                                 >
                                     {isLastSubcategory ? 'Finalizar' : 'Continuar'}
                                 </button>
                             </div>
                         </div>
+
+                        {isLastSubcategory && !areAllQuestionsAnswered() && (
+                            <p className="text-sm text-red-600 mt-2">
+                                Debes contestar todas las preguntas antes de finalizar
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

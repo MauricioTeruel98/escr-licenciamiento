@@ -199,7 +199,7 @@ export default function Evaluation({
                     }
 
                     {
-                        autoEvaluationResult == null && (
+                        autoEvaluationResult.form_sended == 0 && (
                             <>
                                 <div className="space-y-4 md:w-2/3">
                                     <div className="">
@@ -332,7 +332,7 @@ export default function Evaluation({
                 </div>
 
                 {
-                    autoEvaluationResult == null &&  (
+                    autoEvaluationResult.form_sended == 0 &&  (
                         <div className="card bg-white shadow">
                             <div className="card-body">
                                 <h2 className="card-title">Estos son los pasos para licenciarse</h2>
