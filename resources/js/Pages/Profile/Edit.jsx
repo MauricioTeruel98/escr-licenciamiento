@@ -189,6 +189,17 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                                             onChange={e => setData('password', e.target.value)}
                                             className="w-full rounded-md border border-gray-300 p-2 pr-10"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="h-4 w-4" />
+                                            ) : (
+                                                <Eye className="h-4 w-4" />
+                                            )}
+                                        </button>
                                         <InputError message={errors.password} className="mt-2" />
                                     </div>
                                 </div>

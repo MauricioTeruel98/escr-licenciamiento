@@ -332,7 +332,7 @@ export default function Evaluation({
                 </div>
 
                 {
-                    autoEvaluationResult && autoEvaluationResult.application_sended == 0 && (
+                    autoEvaluationResult == null &&  (
                         <div className="card bg-white shadow">
                             <div className="card-body">
                                 <h2 className="card-title">Estos son los pasos para licenciarse</h2>

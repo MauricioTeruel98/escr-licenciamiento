@@ -43,19 +43,32 @@ class ProfileController extends Controller
     {
         $validated = $request->validated();
         
+        \Log::info('Datos validados:', $validated);  // Log para depuración
+
         // Remover email si no ha cambiado
         if ($request->user()->email === $validated['email']) {
             unset($validated['email']);
         }
 
-        // Remover campos de contraseña si no se está actualizando
-        if (empty($validated['password'])) {
+        // Verificar la contraseña actual antes de permitir el cambio
+        if (isset($validated['password']) && !empty($validated['password'])) {
+            if (!isset($validated['current_password']) || 
+                !\Hash::check($validated['current_password'], $request->user()->password)) {
+                return back()
+                    ->withErrors(['current_password' => 'La contraseña actual no es correcta.'])
+                    ->withInput();
+            }
+            
+            $validated['password'] = \Hash::make($validated['password']);
+        } else {
             unset($validated['password']);
-            unset($validated['password_confirmation']);
         }
-        
-        // Siempre remover current_password ya que no es un campo del modelo
+
+        // Remover campos que no pertenecen al modelo
         unset($validated['current_password']);
+        unset($validated['password_confirmation']);
+
+        \Log::info('Datos a guardar:', $validated);  // Log para depuración
 
         $request->user()->fill($validated);
 
@@ -65,13 +78,10 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        $message = 'Perfil actualizado exitosamente.';
-        if (!empty($validated['password'])) {
-            $message = 'Perfil y contraseña actualizados exitosamente.';
-        }
-
         return Redirect::route('profile.edit')
-            ->with('success', $message);
+            ->with('success', isset($validated['password']) 
+                ? 'Perfil y contraseña actualizados exitosamente.' 
+                : 'Perfil actualizado exitosamente.');
     }
 
     /**
