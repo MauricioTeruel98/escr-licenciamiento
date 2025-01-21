@@ -52,7 +52,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}>
                 <div className="flex lg:hidden justify-end p-4">
-                    <button onClick={() => setIsOpen(false)} className="text-white">
+                    <button onClick={() => setIsOpen(false)} className="text-white focus:text-white focus:bg-green-800 active:text-white active:bg-green-800">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -63,7 +63,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                     <li className="mb-1">
                         <Link
                             href={route('dashboard')}
-                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${url === '/dashboard' ? 'bg-green-800' : ''
+                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800 ${url === '/dashboard' ? 'bg-green-800' : ''
                                 }`}
                         >
                             Inicio
@@ -74,7 +74,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                     <li className="mb-1">
                         <button
                             onClick={() => setIsEvaluationOpen(!isEvaluationOpen)}
-                            className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg"
+                            className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800"
                         >
                             <span>Auto-evaluacion</span>
                             <svg
@@ -93,7 +93,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                                 <li key={index}>
                                     <Link
                                         href={item.route}
-                                        className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${item.active ? 'bg-green-800' : ''
+                                        className={`block px-4 py-2 hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800 ${item.active ? 'bg-green-800' : ''
                                             }`}
                                     >
                                         {item.name || 'Sin nombre'}
@@ -108,7 +108,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                         <li className="mb-1">
                             <button
                                 onClick={() => setIsEvaluacionOpen(!isEvaluacionOpen)}
-                                className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg"
+                                className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800"
                             >
                                 <span>Evaluación</span>
                                 <svg
@@ -127,7 +127,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                                     <li key={index}>
                                         <Link
                                             href={`/evaluacion/${item.route.split('/').pop()}`}
-                                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${url === `/evaluacion/${item.route.split('/').pop()}` ? 'bg-green-800' : ''}`}
+                                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800 ${url === `/evaluacion/${item.route.split('/').pop()}` ? 'bg-green-800' : ''}`}
                                         >
                                             {item.name || 'Sin nombre'}
                                         </Link>
@@ -141,7 +141,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                     <li className="mb-1">
                         <Link
                             href={route('certifications.create')}
-                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg ${url.includes('certifications') ? 'bg-green-800' : ''
+                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800 ${url.includes('certifications') ? 'bg-green-800' : ''
                                 }`}
                         >
                             Certificaciones
@@ -152,7 +152,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                         <>
                             <div className="divider"></div>
                             <li className="mb-1">
-                                <Link href={route('super.dashboard')} className="block px-4 py-2 hover:bg-green-800 rounded-lg">
+                                <Link href={route('super.dashboard')} className="block px-4 py-2 hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800">
                                     Ir al Panel de Super Admin
                                 </Link>
                             </li>
@@ -163,7 +163,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                         <>
                             <div className="divider"></div>
                             <li className="mb-1">
-                                <Link href={route('evaluador.dashboard')} className="block px-4 py-2 hover:bg-green-800 rounded-lg">
+                                <Link href={route('evaluador.dashboard')} className="block px-4 py-2 hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800">
                                     Evaluador
                                 </Link>
                             </li>

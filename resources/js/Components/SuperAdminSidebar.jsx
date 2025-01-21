@@ -6,11 +6,11 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
     const [isUsuariosOpen, setIsUsuariosOpen] = useState(false);
 
     // Agrupar los items de navegación
-    const evaluacionItems = navigation.filter(item => 
+    const evaluacionItems = navigation.filter(item =>
         ['Valores', 'Componentes', 'Homologaciones', 'Certificaciones', 'Indicadores'].includes(item.name)
     );
-    
-    const usuariosItems = navigation.filter(item => 
+
+    const usuariosItems = navigation.filter(item =>
         ['Usuarios', 'Empresas'].includes(item.name)
     );
 
@@ -18,9 +18,8 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
         <>
             {/* Overlay para móvil */}
             <div
-                className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${
-                    isOpen ? 'block' : 'hidden'
-                }`}
+                className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${isOpen ? 'block' : 'hidden'
+                    }`}
                 onClick={() => setIsOpen(false)}
             />
 
@@ -32,22 +31,18 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}>
                 <div className="flex lg:hidden justify-end p-4">
-                    <button onClick={() => setIsOpen(false)} className="text-white">
+                    <button onClick={() => setIsOpen(false)} className="text-white focus:text-white focus:bg-green-800 active:text-white active:bg-green-800">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                <div className="p-4 border-b border-green-800">
-                    <span className="text-lg font-semibold">Panel Super Admin</span>
-                </div>
-
-                <ul className="menu p-4 lg:pt-12">
+                <ul className="menu p-4 lg:pt-24">
                     <li className="mb-1">
                         <Link
                             href={route('dashboard')}
-                            className="block px-4 py-2 hover:bg-green-800 rounded-lg"
+                            className="block px-4 py-2 hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800"
                         >
                             Ir al Panel de Empresa
                         </Link>
@@ -60,10 +55,12 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                         <Link
                             href={route('super.dashboard')}
                             className={`
-                                block px-4 py-2 rounded-lg
+                                block px-4 py-2 rounded-lg text-white
+                                focus:text-white focus:bg-green-800
+                                active:text-white active:bg-green-800
                                 transition-colors duration-200
-                                ${route().current('super.dashboard') 
-                                    ? 'bg-green-800' 
+                                ${route().current('super.dashboard')
+                                    ? 'bg-green-800'
                                     : 'hover:bg-green-800'}
                             `}
                         >
@@ -77,7 +74,9 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                     <li className="mb-1">
                         <button
                             onClick={() => setIsEvaluacionOpen(!isEvaluacionOpen)}
-                            className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg"
+                            className="
+                            focus:text-white focus:bg-green-800
+                                active:text-white active:bg-green-800 w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg"
                         >
                             <span>Administrar Evaluación</span>
                             <svg
@@ -101,8 +100,10 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                                             className={`
                                                 block px-4 py-2 rounded-lg
                                                 transition-colors duration-200
-                                                ${item.active 
-                                                    ? 'bg-green-800' 
+                                                focus:text-white focus:bg-green-800
+                                                active:text-white active:bg-green-800
+                                                ${item.active
+                                                    ? 'bg-green-800'
                                                     : 'hover:bg-green-800'}
                                             `}
                                         >
@@ -121,7 +122,7 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                     <li className="mb-1">
                         <button
                             onClick={() => setIsUsuariosOpen(!isUsuariosOpen)}
-                            className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg"
+                            className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800"
                         >
                             <span>Administrar Perfiles</span>
                             <svg
@@ -145,8 +146,10 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                                             className={`
                                                 block px-4 py-2 rounded-lg
                                                 transition-colors duration-200
-                                                ${item.active 
-                                                    ? 'bg-green-800' 
+                                                focus:text-white focus:bg-green-800
+                                                active:text-white active:bg-green-800
+                                                ${item.active
+                                                    ? 'bg-green-800'
                                                     : 'hover:bg-green-800'}
                                             `}
                                         >
@@ -168,6 +171,8 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                             className={`
                                 block px-4 py-2 rounded-lg
                                 transition-colors duration-200
+                                focus:text-white focus:bg-green-800
+                                active:text-white active:bg-green-800
                                 ${route().current('super.reportes')
                                     ? 'bg-green-800'
                                     : 'hover:bg-green-800'}
@@ -186,6 +191,8 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                             className={`
                                 block px-4 py-2 rounded-lg
                                 transition-colors duration-200
+                                focus:text-white focus:bg-green-800
+                                active:text-white active:bg-green-800
                                 ${route().current('super.progresos')
                                     ? 'bg-green-800'
                                     : 'hover:bg-green-800'}

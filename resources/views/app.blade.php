@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title inertia>{{ config('app.name', 'Laravel') }}</title>
+    <title inertia>{{ config('app.name', 'Licenciemiento') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -21,6 +21,7 @@
             font-family: "Inter";
             font-style: normal;
             font-weight: 400;
+            font-display: swap;-
             src: url('{{ asset('assets/fonts/inter/static/Inter_24pt-Regular.ttf') }}') format("truetype");
         }
 
@@ -35,7 +36,10 @@
             font-family: "Poppins";
             font-style: normal;
             font-weight: 400;
-            src: url('{{ asset('assets/fonts/poppins/Poppins-Regular.ttf') }}') format("truetype");
+            font-display: swap;
+            src: url('{{ asset('assets/fonts/poppins/Poppins-Regular.woff2') }}') format('woff2'),
+                 url('{{ asset('assets/fonts/poppins/Poppins-Regular.woff') }}') format('woff'),
+                 url('{{ asset('assets/fonts/poppins/Poppins-Regular.ttf') }}') format('truetype');
         }
 
         @font-face {
@@ -65,6 +69,8 @@
             font-family: "Poppins ExtraBold", serif !important;
         }
     </style>
+    <link rel="preload" href="{{ asset('assets/fonts/poppins/Poppins-Regular.ttf') }}" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="{{ asset('assets/fonts/poppins/Poppins-ExtraBold.ttf') }}" as="font" type="font/ttf" crossorigin>
 </head>
 
 <body class="font-sans antialiased">
