@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 16-01-2025 a las 23:55:40
+-- Tiempo de generación: 21-01-2025 a las 22:51:38
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -44,7 +44,8 @@ CREATE TABLE `auto_evaluation_result` (
 --
 
 INSERT INTO `auto_evaluation_result` (`id`, `company_id`, `nota`, `status`, `fecha_aprobacion`, `created_at`, `updated_at`, `application_sended`, `form_sended`) VALUES
-(17, 7, 0, 'apto', '2025-01-07 23:31:49', '2025-01-07 23:10:01', '2025-01-16 23:00:20', 1, 1);
+(17, 7, 0, 'apto', '2025-01-07 23:31:49', '2025-01-07 23:10:01', '2025-01-16 23:00:20', 1, 1),
+(18, 9, 0, 'en_proceso', NULL, '2025-01-21 21:34:36', '2025-01-21 21:34:36', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -79,7 +80,11 @@ INSERT INTO `auto_evaluation_subcategory_result` (`id`, `company_id`, `value_id`
 (122, 7, 33, 33, 100, '2025-01-07 23:31:37', '2025-01-07 23:31:37', '2025-01-07 23:31:37'),
 (123, 7, 34, 34, 100, '2025-01-07 23:31:44', '2025-01-07 23:31:44', '2025-01-07 23:31:44'),
 (124, 7, 34, 36, 100, '2025-01-07 23:31:44', '2025-01-07 23:31:44', '2025-01-07 23:31:44'),
-(125, 7, 35, 35, 100, '2025-01-07 23:31:49', '2025-01-07 23:31:49', '2025-01-07 23:31:49');
+(125, 7, 35, 35, 100, '2025-01-07 23:31:49', '2025-01-07 23:31:49', '2025-01-07 23:31:49'),
+(126, 9, 31, 25, 50, '2025-01-21 21:40:29', '2025-01-21 21:34:36', '2025-01-21 21:40:29'),
+(127, 9, 31, 26, 100, '2025-01-21 21:40:29', '2025-01-21 21:34:36', '2025-01-21 21:40:29'),
+(128, 9, 31, 27, 0, '2025-01-21 21:40:29', '2025-01-21 21:34:36', '2025-01-21 21:40:29'),
+(129, 9, 31, 28, 100, '2025-01-21 21:40:29', '2025-01-21 21:34:36', '2025-01-21 21:40:29');
 
 -- --------------------------------------------------------
 
@@ -107,7 +112,8 @@ INSERT INTO `auto_evaluation_valor_result` (`id`, `company_id`, `value_id`, `sub
 (71, 7, 32, NULL, 100, '2025-01-07 23:31:31', '2025-01-07 23:31:31', '2025-01-07 23:31:31'),
 (72, 7, 33, NULL, 100, '2025-01-07 23:31:37', '2025-01-07 23:31:37', '2025-01-07 23:31:37'),
 (73, 7, 34, NULL, 100, '2025-01-07 23:31:44', '2025-01-07 23:31:44', '2025-01-07 23:31:44'),
-(74, 7, 35, NULL, 100, '2025-01-07 23:31:49', '2025-01-07 23:31:49', '2025-01-07 23:31:49');
+(74, 7, 35, NULL, 100, '2025-01-07 23:31:49', '2025-01-07 23:31:49', '2025-01-07 23:31:49'),
+(75, 9, 31, NULL, 63, '2025-01-21 21:40:29', '2025-01-21 21:34:36', '2025-01-21 21:40:29');
 
 -- --------------------------------------------------------
 
@@ -154,8 +160,8 @@ CREATE TABLE `cache` (
 --
 
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('prueba@email.com|127.0.0.1', 'i:1;', 1736268672),
-('prueba@email.com|127.0.0.1:timer', 'i:1736268672;', 1736268672);
+('mauricio@buzz.cr|127.0.0.1', 'i:1;', 1737128648),
+('mauricio@buzz.cr|127.0.0.1:timer', 'i:1737128648;', 1737128648);
 
 -- --------------------------------------------------------
 
@@ -401,7 +407,12 @@ INSERT INTO `indicator_answers` (`id`, `user_id`, `company_id`, `indicator_id`, 
 (246, 37, 7, 42, '1', 1, '2025-01-07 23:31:31', '2025-01-07 23:31:31'),
 (247, 37, 7, 43, '1', 1, '2025-01-07 23:31:37', '2025-01-07 23:31:37'),
 (248, 37, 7, 44, '1', 1, '2025-01-07 23:31:44', '2025-01-07 23:31:44'),
-(249, 37, 7, 45, '1', 1, '2025-01-07 23:31:49', '2025-01-07 23:31:49');
+(249, 37, 7, 45, '1', 1, '2025-01-07 23:31:49', '2025-01-07 23:31:49'),
+(250, 37, 9, 34, '1', 1, '2025-01-21 21:34:36', '2025-01-21 21:34:36'),
+(251, 37, 9, 35, '0', 0, '2025-01-21 21:34:36', '2025-01-21 21:34:36'),
+(252, 37, 9, 36, '1', 1, '2025-01-21 21:34:36', '2025-01-21 21:34:36'),
+(253, 37, 9, 37, '0', 0, '2025-01-21 21:34:36', '2025-01-21 21:34:36'),
+(254, 37, 9, 38, '1', 1, '2025-01-21 21:34:36', '2025-01-21 21:34:36');
 
 -- --------------------------------------------------------
 
@@ -690,8 +701,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('1j55NkL8PSXrjQPpD71v1mW6O829dQOrVLudFyGq', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiUUVoeGp3cFFTOGdZaDRSYXUyb2hPZ0ZITnp3WWM1V1l3Z1hjektkWCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzc7fQ==', 1737068044),
-('mpx2oifJRCK6Vg5BqpumbmiZiI5vfe0lnlPpWb5j', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiNmpsOFdoRk14Y2tEY1FKR1EwWTQySTBXZEZkaXlVejU4WEdKdkdsNyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1737067823);
+('aDJbF1QE06K2Uk2ukC6yZDiLtZvpahO1ZrFSvIrw', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoia2dGVkN1bWNSN1BnQTJPN0FEeVhqZm5nTldkUWowaVEzUFdmTWR0MSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzc7fQ==', 1737484025),
+('P5Nl4pQfc6zbLzqTC31ay9xvawv4vUEWbbwvknHN', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiQUZ6a3hMNHNCZXg4MUtLeVpSRGJyNXhiRzhrM3Q1QncyMXB3QnNOYiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzc7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kYXNoYm9hcmQiO319', 1737496289);
 
 -- --------------------------------------------------------
 
@@ -747,38 +758,42 @@ CREATE TABLE `users` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `company_id` bigint(20) UNSIGNED DEFAULT NULL,
   `role` varchar(255) NOT NULL DEFAULT 'user',
-  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending'
+  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `form_sended` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `lastname`, `id_number`, `phone`, `email`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`, `company_id`, `role`, `status`) VALUES
-(18, 'Admin', 'Buzz', '41125546', '38155289832', 'admin@buzz.com', NULL, '$2y$12$mVQYud6VqEmady6.GBDFgOjAlnczYmWPCzhrM8rW1rdePIEuTFWvW', NULL, '2024-11-15 01:00:54', '2024-11-15 19:04:48', 7, 'admin', 'approved'),
-(19, 'Mauricio', 'null', NULL, '515641451', 'mauricio@buzz.cr', NULL, '$2y$12$UaxIQEM6jyf71N/D0MYK3uQNoVBv.An71L1h32DGwB2VPE6OvMDWi', NULL, '2024-11-15 01:01:33', '2024-11-18 20:15:07', 7, 'user', 'approved'),
-(21, 'Mauricio', NULL, NULL, NULL, 'mauricio@email.com', NULL, '$2y$12$WlgSoQwLJpbaMvpC8By/zulkti6YiIWvoprY5tEu1oXHQheRaTiN6', NULL, '2024-11-15 01:23:58', '2024-11-15 01:24:42', 7, 'user', 'approved'),
-(22, 'Mauricio 2', NULL, NULL, NULL, 'mauricio2@email.com', NULL, '$2y$12$/JG31Cth3bQLlWkB/OqTnO3GN0DtvYzLvkXmZ1MHOz9iVPM4D2b2y', NULL, '2024-11-15 01:25:30', '2024-11-15 01:28:50', 7, 'user', 'approved'),
-(23, 'Mauricio 3', NULL, NULL, NULL, 'mauricio3@email.com', NULL, '$2y$12$oMP/uctaH4uMYPJRd9Ta4eIv5ke2jcT01NK9sCSUieG0lFS5SxC.C', NULL, '2024-11-15 01:30:19', '2024-11-15 01:30:32', 7, 'user', 'approved'),
-(24, 'Mauricio 4', NULL, NULL, NULL, 'mauricio4@email.com', NULL, '$2y$12$405q2FyfiluSLtGkMNTcC.Pv5wJBIttXRFPnJ7xl6F8jgsMtMQAzu', NULL, '2024-11-15 01:31:14', '2024-11-15 21:21:40', 7, 'user', 'approved'),
-(26, 'Admin Teruel', NULL, NULL, NULL, 'admin@teruel.com', NULL, '$2y$12$bSe..UDHVUa6DOiKr5gLruHQd3mN/OahDxVBNvCbrJlmJ9qos9PjC', NULL, '2024-11-15 01:33:50', '2024-11-15 01:34:14', 9, 'admin', 'approved'),
-(28, 'Mauricio', '5', NULL, '32845792837', 'mauricio5@gmail.com', NULL, '$2y$12$K3MrXaDImp58HppwVgD4JuqPUP9BoLs0wUkI9d89o1n3aWTnEUagy', NULL, '2024-11-15 21:10:43', '2024-11-15 21:10:43', 7, 'user', 'approved'),
-(29, 'Mauricio 7', NULL, NULL, NULL, 'mauricio7@buzz.cr', NULL, '$2y$12$9rdk7gUV9229oLOvMMAADOm80N6jcQJ5H9kphvdfW77Y8qT1mSal6', NULL, '2024-11-15 21:22:20', '2024-11-15 21:48:21', 7, 'user', 'rejected'),
-(30, 'Mauricio 8', NULL, NULL, NULL, 'mauricio8@buzz.cr', NULL, '$2y$12$B7OeNuSBZEHuol6oa.8M7.ZcoL4U.OlJhR1GwNogklRv0Irif.SDu', NULL, '2024-11-15 21:42:04', '2024-11-19 00:31:57', 7, 'user', 'rejected'),
-(31, 'Mauricio 10', NULL, NULL, NULL, 'mauricio10@buzz.cr', NULL, '$2y$12$OeyzCz5jMIryrwYep4.XceJFwBCLTX/0oziXSqmtiodVkEnup95Ti', NULL, '2024-11-19 01:06:59', '2024-11-19 01:59:38', 7, 'user', 'rejected'),
-(34, 'Mauricio Teruel 1', NULL, NULL, NULL, 'mauricioteruel98@gmail.com', NULL, '$2y$12$E5UGpVLJ.CUv7ygv5QrxtOf90cLQFLvMkcwQkiXqSnK9v6LqB5fsS', NULL, '2024-11-19 20:16:28', '2024-11-19 20:32:02', 7, 'user', 'rejected'),
-(35, 'Mauricio Teruel', NULL, NULL, NULL, 'mauricioteruel1998@gmail.com', NULL, '$2y$12$we8XoQJjyVJe3OaTocDuBuaghnFTWjknoFBa.nddU6D.b.tPt4rWm', NULL, '2024-11-19 22:37:42', '2024-11-19 23:04:13', 7, 'user', 'approved'),
-(36, 'TITITITITIT', '', NULL, '20394590238', 'ti@ti.com', NULL, '$2y$12$OgWIyk12x41vJ/UNFfSJe.wWnj/rCGmaCLYd90BOaIonNtyGaLETW', NULL, '2024-11-19 22:38:46', '2024-11-19 22:38:46', 7, 'user', 'approved'),
-(37, 'Super', 'Admin SA', NULL, '4563674563456', 'admin@admin.com', NULL, '$2y$12$gT1r4gTPiuvhf.flPkNHkut7NChjwTHlL0YEVQhsmLywNDRdfsMLG', NULL, '2024-11-20 23:09:50', '2025-01-16 00:16:36', 7, 'super_admin', 'approved'),
-(38, 'Mauricio Teruel', NULL, NULL, NULL, 'prueba400@buzz.cr', NULL, '$2y$12$FsYDUU6jJYe3BH.Drs.T6.5M0mM7y1hvcng7pov9Wfs2DSGzL4tOe', NULL, '2024-12-05 17:40:55', '2024-12-10 20:45:24', 7, 'user', 'approved'),
-(39, 'Juan pere', NULL, NULL, NULL, 'juan@teruel.com', NULL, '$2y$12$2DUtGePN8wh77zxg.zT.leqbzj05z0PkK8uIJp0cQyrQ9ZzYGZhtG', NULL, '2024-12-06 18:37:43', '2024-12-06 18:38:21', 9, 'user', 'pending'),
-(40, 'Mauricio', NULL, NULL, NULL, 'mauricio50@buzz.cr', NULL, '$2y$12$ta72rpxw3n.lrnHmBfaNT.PkAq8Dl.j7d1fHQKYszYlqn/VtpYLJG', NULL, '2024-12-18 23:02:43', '2025-01-02 23:25:37', 7, 'user', 'rejected'),
-(41, 'Evaluador', '1', NULL, NULL, 'evaluador@admin.com', NULL, '$2y$12$cxu3plTBpg.ujstsmd6XPOAr6A4HTId8N98ssBqwvRxLQYGS0Jd66', NULL, '2024-12-27 20:10:40', '2024-12-27 20:10:40', 7, 'user', 'approved'),
-(42, 'Evaluador', '1', NULL, NULL, 'evaluador1@email.com', NULL, '$2y$12$xa/5zaCopTEfYf4svsEibOQ6IHQopiBNxOJsdC8GYDuxEMF3.GNCW', NULL, '2024-12-27 20:13:16', '2025-01-02 18:53:52', 7, 'evaluador', 'approved'),
-(43, 'Prueba', NULL, NULL, NULL, 'prueba@email.com', NULL, '$2y$12$7j4O1M09ZWs7h3/LK2KaiuABABy25BjemaYIsjznBbwlYPmlFpxGS', NULL, '2025-01-07 19:50:36', '2025-01-07 19:50:36', NULL, 'user', 'pending'),
-(44, 'Maricio', '', NULL, '32845792837', 'mauricio500@gmail.com', NULL, '$2y$12$g50x20BTIYZLwxidmbSIfeWxwDFbXtozJXhkg9LoIj.gZ.JeY8UUu', NULL, '2025-01-14 18:57:26', '2025-01-14 18:57:26', 7, 'user', 'approved'),
-(45, 'Maricio', '', NULL, '32845792837', 'mauricio50000@gmail.com', NULL, '$2y$12$JjCQG/fMUMEJVXLeOEI5Z.rX89hwMzIazoph7rKXq0H8TmmQ.yCwS', NULL, '2025-01-15 17:27:41', '2025-01-15 17:27:41', 9, 'user', 'approved'),
-(46, 'aaaa', NULL, NULL, NULL, 'aaa@email.com', NULL, '$2y$12$5w2Upn/89BTHlNWvXUpuv.6S9ZI8o78zQk3wuo85S6DU.wjDhU6EG', NULL, '2025-01-17 01:45:40', '2025-01-17 01:45:40', NULL, 'user', 'pending');
+INSERT INTO `users` (`id`, `name`, `lastname`, `id_number`, `phone`, `email`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`, `company_id`, `role`, `status`, `form_sended`) VALUES
+(18, 'Admin', 'Buzz', '41125546', '38155289832', 'admin@buzz.com', NULL, '$2y$12$mVQYud6VqEmady6.GBDFgOjAlnczYmWPCzhrM8rW1rdePIEuTFWvW', NULL, '2024-11-15 01:00:54', '2024-11-15 19:04:48', 7, 'admin', 'approved', 0),
+(19, 'Mauricio', 'null', NULL, '515641451', 'mauricio@buzz.cr', NULL, '$2y$12$UaxIQEM6jyf71N/D0MYK3uQNoVBv.An71L1h32DGwB2VPE6OvMDWi', NULL, '2024-11-15 01:01:33', '2024-11-18 20:15:07', 7, 'user', 'approved', 0),
+(21, 'Mauricio', NULL, NULL, NULL, 'mauricio@email.com', NULL, '$2y$12$WlgSoQwLJpbaMvpC8By/zulkti6YiIWvoprY5tEu1oXHQheRaTiN6', NULL, '2024-11-15 01:23:58', '2024-11-15 01:24:42', 7, 'user', 'approved', 0),
+(22, 'Mauricio 2', NULL, NULL, NULL, 'mauricio2@email.com', NULL, '$2y$12$/JG31Cth3bQLlWkB/OqTnO3GN0DtvYzLvkXmZ1MHOz9iVPM4D2b2y', NULL, '2024-11-15 01:25:30', '2024-11-15 01:28:50', 7, 'user', 'approved', 0),
+(23, 'Mauricio 3', NULL, NULL, NULL, 'mauricio3@email.com', NULL, '$2y$12$oMP/uctaH4uMYPJRd9Ta4eIv5ke2jcT01NK9sCSUieG0lFS5SxC.C', NULL, '2024-11-15 01:30:19', '2024-11-15 01:30:32', 7, 'user', 'approved', 0),
+(24, 'Mauricio 4', NULL, NULL, NULL, 'mauricio4@email.com', NULL, '$2y$12$405q2FyfiluSLtGkMNTcC.Pv5wJBIttXRFPnJ7xl6F8jgsMtMQAzu', NULL, '2024-11-15 01:31:14', '2024-11-15 21:21:40', 7, 'user', 'approved', 0),
+(26, 'Admin Teruel', NULL, NULL, NULL, 'admin@teruel.com', NULL, '$2y$12$bSe..UDHVUa6DOiKr5gLruHQd3mN/OahDxVBNvCbrJlmJ9qos9PjC', NULL, '2024-11-15 01:33:50', '2024-11-15 01:34:14', 9, 'admin', 'approved', 0),
+(28, 'Mauricio', '5', NULL, '32845792837', 'mauricio5@gmail.com', NULL, '$2y$12$K3MrXaDImp58HppwVgD4JuqPUP9BoLs0wUkI9d89o1n3aWTnEUagy', NULL, '2024-11-15 21:10:43', '2024-11-15 21:10:43', 7, 'user', 'approved', 0),
+(29, 'Mauricio 7', NULL, NULL, NULL, 'mauricio7@buzz.cr', NULL, '$2y$12$9rdk7gUV9229oLOvMMAADOm80N6jcQJ5H9kphvdfW77Y8qT1mSal6', NULL, '2024-11-15 21:22:20', '2024-11-15 21:48:21', 7, 'user', 'rejected', 0),
+(30, 'Mauricio 8', NULL, NULL, NULL, 'mauricio8@buzz.cr', NULL, '$2y$12$B7OeNuSBZEHuol6oa.8M7.ZcoL4U.OlJhR1GwNogklRv0Irif.SDu', NULL, '2024-11-15 21:42:04', '2024-11-19 00:31:57', 7, 'user', 'rejected', 0),
+(31, 'Mauricio 10', NULL, NULL, NULL, 'mauricio10@buzz.cr', NULL, '$2y$12$OeyzCz5jMIryrwYep4.XceJFwBCLTX/0oziXSqmtiodVkEnup95Ti', NULL, '2024-11-19 01:06:59', '2024-11-19 01:59:38', 7, 'user', 'rejected', 0),
+(34, 'Mauricio Teruel 1', NULL, NULL, NULL, 'mauricioteruel98@gmail.com', NULL, '$2y$12$E5UGpVLJ.CUv7ygv5QrxtOf90cLQFLvMkcwQkiXqSnK9v6LqB5fsS', NULL, '2024-11-19 20:16:28', '2024-11-19 20:32:02', 7, 'user', 'rejected', 0),
+(35, 'Mauricio Teruel', NULL, NULL, NULL, 'mauricioteruel1998@gmail.com', NULL, '$2y$12$we8XoQJjyVJe3OaTocDuBuaghnFTWjknoFBa.nddU6D.b.tPt4rWm', NULL, '2024-11-19 22:37:42', '2024-11-19 23:04:13', 7, 'user', 'approved', 0),
+(36, 'TITITITITIT', '', NULL, '20394590238', 'ti@ti.com', NULL, '$2y$12$OgWIyk12x41vJ/UNFfSJe.wWnj/rCGmaCLYd90BOaIonNtyGaLETW', NULL, '2024-11-19 22:38:46', '2024-11-19 22:38:46', 7, 'user', 'approved', 0),
+(37, 'Super', 'Admin SA', '123456789', '4563674563456', 'admin@admin.com', NULL, '$2y$12$N6.347qKy0HMYXsdhE87.eJqXbEvHsu.CwXkhOj.IjxhAqesVpvd2', NULL, '2024-11-20 23:09:50', '2025-01-21 21:27:04', 9, 'super_admin', 'approved', 0),
+(38, 'Mauricio Teruel', NULL, NULL, NULL, 'prueba400@buzz.cr', NULL, '$2y$12$FsYDUU6jJYe3BH.Drs.T6.5M0mM7y1hvcng7pov9Wfs2DSGzL4tOe', NULL, '2024-12-05 17:40:55', '2024-12-10 20:45:24', 7, 'user', 'approved', 0),
+(39, 'Juan pere', NULL, NULL, NULL, 'juan@teruel.com', NULL, '$2y$12$2DUtGePN8wh77zxg.zT.leqbzj05z0PkK8uIJp0cQyrQ9ZzYGZhtG', NULL, '2024-12-06 18:37:43', '2024-12-06 18:38:21', 9, 'user', 'pending', 0),
+(40, 'Mauricio', NULL, NULL, NULL, 'mauricio50@buzz.cr', NULL, '$2y$12$ta72rpxw3n.lrnHmBfaNT.PkAq8Dl.j7d1fHQKYszYlqn/VtpYLJG', NULL, '2024-12-18 23:02:43', '2025-01-02 23:25:37', 7, 'user', 'rejected', 0),
+(41, 'Evaluador', '1', NULL, NULL, 'evaluador@admin.com', NULL, '$2y$12$cxu3plTBpg.ujstsmd6XPOAr6A4HTId8N98ssBqwvRxLQYGS0Jd66', NULL, '2024-12-27 20:10:40', '2024-12-27 20:10:40', 7, 'user', 'approved', 0),
+(42, 'Evaluador', '1', NULL, NULL, 'evaluador1@email.com', NULL, '$2y$12$xa/5zaCopTEfYf4svsEibOQ6IHQopiBNxOJsdC8GYDuxEMF3.GNCW', NULL, '2024-12-27 20:13:16', '2025-01-17 22:10:29', 7, 'evaluador', 'approved', 1),
+(43, 'Prueba', NULL, NULL, NULL, 'prueba@email.com', NULL, '$2y$12$7j4O1M09ZWs7h3/LK2KaiuABABy25BjemaYIsjznBbwlYPmlFpxGS', NULL, '2025-01-07 19:50:36', '2025-01-07 19:50:36', NULL, 'user', 'pending', 0),
+(44, 'Maricio', '', NULL, '32845792837', 'mauricio500@gmail.com', NULL, '$2y$12$g50x20BTIYZLwxidmbSIfeWxwDFbXtozJXhkg9LoIj.gZ.JeY8UUu', NULL, '2025-01-14 18:57:26', '2025-01-14 18:57:26', 7, 'user', 'approved', 0),
+(45, 'Maricio', '', NULL, '32845792837', 'mauricio50000@gmail.com', NULL, '$2y$12$JjCQG/fMUMEJVXLeOEI5Z.rX89hwMzIazoph7rKXq0H8TmmQ.yCwS', NULL, '2025-01-15 17:27:41', '2025-01-15 17:27:41', 9, 'user', 'approved', 0),
+(46, 'aaaa', NULL, NULL, NULL, 'aaa@email.com', NULL, '$2y$12$5w2Upn/89BTHlNWvXUpuv.6S9ZI8o78zQk3wuo85S6DU.wjDhU6EG', NULL, '2025-01-17 01:45:40', '2025-01-17 01:45:40', NULL, 'user', 'pending', 0),
+(47, 'Maricio', '', NULL, '32845792837', 'mauricio5111@gmail.com', NULL, '$2y$12$CE2QXb8oq.0xh/CTcDMWhOuhB669tA031vEosxVosZLHw4hnZhn32', NULL, '2025-01-17 17:57:34', '2025-01-17 17:57:34', 9, 'user', 'approved', 0),
+(48, 'Mauricio', NULL, NULL, NULL, 'mauricio111@buzz.cr', NULL, '$2y$12$as5SU//5To3m2l35eFU4pOuvIeaHuLx2.83n/Z3zIJyf9kVjFcAXu', NULL, '2025-01-17 18:23:25', '2025-01-17 18:27:47', 7, 'user', 'pending', 0),
+(50, 'Mauricio', 'aaa', NULL, NULL, 'mauricioaaa@gmail.com', NULL, '$2y$12$dtFABFzey4oO04B9F5Dr1.CUkDOzppikWr2Y6s8Aq.WSr/trEgH1q', NULL, '2025-01-17 23:54:47', '2025-01-17 23:54:47', NULL, 'user', 'pending', NULL);
 
 -- --------------------------------------------------------
 
@@ -1033,19 +1048,19 @@ ALTER TABLE `value_subcategory`
 -- AUTO_INCREMENT de la tabla `auto_evaluation_result`
 --
 ALTER TABLE `auto_evaluation_result`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de la tabla `auto_evaluation_subcategory_result`
 --
 ALTER TABLE `auto_evaluation_subcategory_result`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=126;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=130;
 
 --
 -- AUTO_INCREMENT de la tabla `auto_evaluation_valor_result`
 --
 ALTER TABLE `auto_evaluation_valor_result`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
 -- AUTO_INCREMENT de la tabla `available_certifications`
@@ -1099,7 +1114,7 @@ ALTER TABLE `indicators`
 -- AUTO_INCREMENT de la tabla `indicator_answers`
 --
 ALTER TABLE `indicator_answers`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=250;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=255;
 
 --
 -- AUTO_INCREMENT de la tabla `indicator_answers_evaluation`
@@ -1147,7 +1162,7 @@ ALTER TABLE `subcategories`
 -- AUTO_INCREMENT de la tabla `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
 
 --
 -- AUTO_INCREMENT de la tabla `values`

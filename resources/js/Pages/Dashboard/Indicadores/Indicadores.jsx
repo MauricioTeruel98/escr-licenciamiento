@@ -13,6 +13,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     const [notification, setNotification] = useState(null);
     const [bindingWarning, setBindingWarning] = useState(false);
     const [currentScore, setCurrentScore] = useState(initialScore);
+    const [autoEvaluationItems, setAutoEvaluationItems] = useState(null);
 
     console.log(user);
     console.log(certifications);
@@ -98,6 +99,19 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
         }
     }, [savedAnswers, homologatedIndicators]);
 
+    useEffect(() => {
+        const fetchValues = async () => {
+            try {
+                const response = await axios.get('/api/active-values');
+                setAutoEvaluationItems(response.data);
+            } catch (error) {
+                console.error('Error al cargar valores:', error);
+            }
+        };
+
+        fetchValues();
+    }, []);
+
     const handleStepClick = (index) => {
         setCurrentSubcategoryIndex(index);
     };
@@ -133,12 +147,40 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
         };
 
         axios.post(route('indicadores.store-answers'), formData)
-            .then(response => {
+            .then(async response => {
                 localStorage.removeItem(`answers_${valueData.id}`);
-                setNotification({
-                    type: 'success',
-                    message: response.data.message
-                });
+                
+                // Obtener el siguiente valor disponible
+                try {
+                    const valuesResponse = await axios.get('/api/active-values');
+                    const values = valuesResponse.data;
+                    const currentIndex = values.findIndex(v => v.id === valueData.id);
+                    const nextValue = values[currentIndex + 1];
+
+                    if (nextValue) {
+                        // Redirigir al siguiente valor
+                        router.visit(`/indicadores/${nextValue.id}`);
+                        setNotification({
+                            type: 'success',
+                            message: 'Respuestas guardadas. Pasando al siguiente valor...'
+                        });
+                    } else {
+                        // Si no hay más valores, mostrar mensaje de finalización
+                        setNotification({
+                            type: 'success',
+                            message: '¡Has completado todos los valores!'
+                        });
+                        // Opcional: redirigir a una página de resumen o dashboard
+                        router.visit(route('dashboard'));
+                    }
+                } catch (error) {
+                    console.error('Error al obtener siguiente valor:', error);
+                    setNotification({
+                        type: 'success',
+                        message: response.data.message
+                    });
+                }
+
                 if (response.data.finalScore !== undefined) {
                     setCurrentScore(response.data.finalScore);
                 }
@@ -363,7 +405,9 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                                             : 'bg-green-600 hover:bg-green-700'
                                     } text-white`}
                                 >
-                                    {isLastSubcategory ? 'Finalizar' : 'Continuar'}
+                                    {isLastSubcategory ? (
+                                        valueData.id === autoEvaluationItems?.slice(-1)[0]?.id ? 'Finalizar' : 'Siguiente valor'
+                                    ) : 'Continuar'}
                                 </button>
                             </div>
                         </div>
