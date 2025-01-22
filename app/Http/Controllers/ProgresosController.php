@@ -13,11 +13,9 @@ class ProgresosController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $query = Company::query()
-            ->select('id', 'name')
-            ->with(['autoEvaluationResult' => function($query) {
-                $query->select('id', 'company_id', 'status', 'form_sended', 'created_at', 'fecha_aprobacion');
-            }])
-            ->withCount(['indicatorAnswers', 'indicatorAnswersEvaluation']);
+            ->select('id', 'name as nombre', 'authorized')
+            ->withCount(['indicatorAnswers', 'indicatorAnswersEvaluation'])
+            ->with('autoEvaluationResult');
 
         if ($search) {
             $query->where('name', 'like', "%{$search}%");
@@ -48,13 +46,17 @@ class ProgresosController extends Controller
 
             return [
                 'id' => $company->id,
-                'nombre' => $company->name,
+                'nombre' => $company->nombre,
                 'estado' => $status,
-                'progreso' => round($progress),
-                'fecha_inicio' => $company->autoEvaluationResult ? $company->autoEvaluationResult->created_at->format('d/m/Y') : null,
-                'fecha_fin' => $company->autoEvaluationResult && $company->autoEvaluationResult->fecha_aprobacion 
-                    ? $company->autoEvaluationResult->fecha_aprobacion->format('d/m/Y') 
-                    : null,
+                'progreso' => $progress,
+                'authorized' => $company->authorized,
+                'form_sended' => $company->autoEvaluationResult ? 
+                    $company->autoEvaluationResult->form_sended : false,
+                'fecha_inicio' => $company->autoEvaluationResult ? 
+                    $company->autoEvaluationResult->created_at->format('d/m/Y') : null,
+                'fecha_fin' => $company->autoEvaluationResult && 
+                    $company->autoEvaluationResult->fecha_aprobacion ? 
+                    $company->autoEvaluationResult->fecha_aprobacion->format('d/m/Y') : null,
             ];
         }));
     }

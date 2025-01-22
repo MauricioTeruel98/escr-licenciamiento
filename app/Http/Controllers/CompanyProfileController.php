@@ -67,7 +67,8 @@ class CompanyProfileController extends Controller
         }
 
         // Procesar imágenes de productos
-        $productos = json_decode($request->productos, true);
+        $productos = is_string($request->productos) ? json_decode($request->productos, true) : $request->productos;
+        
         for ($i = 0; $i < 3; $i++) {
             if ($request->hasFile("producto_imagen_$i")) {
                 // Eliminar imagen anterior si existe

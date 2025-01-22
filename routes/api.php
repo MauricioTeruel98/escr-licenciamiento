@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CompanyAuthorizationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -17,3 +18,7 @@ Route::middleware(['auth:sanctum', 'web'])->group(function () {
     Route::delete('/users/company/{user}', [UserController::class, 'destroy']);
     Route::get('/active-values', [ValueController::class, 'getActiveValues']);
 });
+
+// Route::patch('companies/{company}/authorize', [CompanyAuthorizationController::class, 'authorizeCompany'])
+//     ->middleware(['auth'])
+//     ->name('companies.authorize');

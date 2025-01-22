@@ -73,6 +73,27 @@ export default function Progresos() {
                     </div>
                 </div>
             )
+        },
+        {
+            key: 'actions',
+            label: 'Acciones',
+            render: (item) => {
+                if (item.estado === 'Evaluación' && 
+                    !item.authorized && 
+                    item.form_sended) {
+                    return (
+                        <button
+                            onClick={() => handleAuthorize(item.id)}
+                            className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:outline-none focus:border-blue-700 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150"
+                        >
+                            Autorizar
+                        </button>
+                    );
+                }
+                return item.authorized ? (
+                    <span className="text-green-600 font-medium">Autorizado</span>
+                ) : null;
+            }
         }
     ];
 
@@ -115,6 +136,15 @@ export default function Progresos() {
     const handlePerPageChange = (perPage) => {
         setPagination(prev => ({ ...prev, perPage, currentPage: 1 }));
         loadEmpresas(1, perPage, searchTerm);
+    };
+
+    const handleAuthorize = async (companyId) => {
+        try {
+            await axios.patch(`/api/companies/${companyId}/authorize`);
+            loadEmpresas(pagination.currentPage, pagination.perPage, searchTerm);
+        } catch (error) {
+            console.error('Error al autorizar empresa:', error);
+        }
     };
 
     return (

@@ -31,6 +31,8 @@ use App\Http\Controllers\EvaluadorController;
 use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProgresosController;
+use App\Http\Controllers\CompanyAuthorizationController;
+use App\Http\Middleware\EnsureCompanyIsAuthorized;
 
 // Ruta principal
 Route::get('/', function () {
@@ -94,15 +96,17 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
         ->name('dashboard');
     Route::get('/indicadores/{id}', [IndicadoresController::class, 'index'])
         ->name('indicadores');
-
-    Route::get('/evaluacion/{value_id}', [EvaluationController::class, 'index'])
-        ->name('evaluacion');
     // Otras rutas protegidas...
 
     Route::post('/evaluation/send-application', [EvaluationController::class, 'sendApplication'])->name('evaluation.send-application');
 
     Route::get('/form-empresa', [DashboardController::class, 'showFormEmpresa'])
         ->name('form.empresa');
+});
+
+Route::middleware(['auth', 'verified', EnsureUserHasCompany::class, EnsureCompanyIsAuthorized::class])->group(function () {
+    Route::get('/evaluacion/{value_id}', [EvaluationController::class, 'index'])
+        ->name('evaluacion');
 });
 
 Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
@@ -262,6 +266,12 @@ Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
 // Rutas para progresos
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/api/empresas-progresos', [ProgresosController::class, 'getCompanies']);
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::patch('/api/companies/{company}/authorize', [CompanyAuthorizationController::class, 'authorizeCompany'])
+        ->middleware('can:authorize,company')
+        ->name('companies.authorize');
 });
 
 require __DIR__ . '/auth.php';

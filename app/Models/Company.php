@@ -18,7 +18,8 @@ class Company extends Model
         'commercial_activity',
         'phone',
         'mobile',
-        'is_exporter'
+        'is_exporter',
+        'authorized'
     ];
 
     protected $casts = [
