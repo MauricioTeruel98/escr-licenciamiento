@@ -74,17 +74,27 @@ export default function UsersIndex() {
             key: 'company',
             label: 'Empresa',
             render: (item) => {
-                if (item.role === 'evaluador' && item.evaluated_companies) {
+                if (item.role === 'evaluador') {
                     return (
                         <div className="flex flex-col gap-2">
-                            {item.evaluated_companies.map((company, index) => (
-                                <span 
-                                    key={company.id} 
-                                    className="text-md p-3 font-semibold mb-1 badge rounded-lg border text-gray-800 border-gray-200 bg-gray-50"
-                                >
-                                    {company.name}
-                                </span>
-                            ))}
+                            {/* <span className="text-sm font-medium text-gray-500">Empresa principal:</span>
+                            <span className="text-md p-2 font-semibold badge rounded-lg border text-gray-800 border-gray-200 bg-gray-50">
+                                {item.company?.name || 'N/A'}
+                            </span>
+                            
+                            <span className="text-sm font-medium text-gray-500 mt-2">Empresas a evaluar:</span> */}
+                            {item.evaluated_companies && item.evaluated_companies.length > 0 ? (
+                                item.evaluated_companies.map((company) => (
+                                    <span 
+                                        key={company.id} 
+                                        className="text-md p-2 font-semibold badge rounded-lg border text-gray-800 border-gray-200 bg-gray-50"
+                                    >
+                                        {company.name}
+                                    </span>
+                                ))
+                            ) : (
+                                <span className="text-sm text-gray-500">No hay empresas asignadas</span>
+                            )}
                         </div>
                     );
                 }

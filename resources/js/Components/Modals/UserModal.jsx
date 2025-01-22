@@ -28,6 +28,10 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
     useEffect(() => {
         if (isOpen) {
             if (user) {
+                const assignedCompanyIds = user.evaluated_companies 
+                    ? user.evaluated_companies.map(company => company.id.toString())
+                    : [];
+
                 setFormData({
                     name: user.name,
                     lastname: user.lastname || '',
@@ -38,8 +42,10 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                     password: '',
                     password_confirmation: ''
                 });
+                setAssignedCompanies(assignedCompanyIds);
             } else {
                 setFormData(initialFormData);
+                setAssignedCompanies([]);
             }
             fetchCompanies();
         }
@@ -277,23 +283,40 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {formData.role === 'evaluador' && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Empresas asignadas
+                                            Empresas asignadas para evaluar
                                         </label>
-                                        <select
-                                            multiple
-                                            value={assignedCompanies}
-                                            onChange={(e) => {
-                                                const values = Array.from(e.target.selectedOptions, option => option.value);
-                                                setAssignedCompanies(values);
-                                            }}
-                                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
-                                        >
+                                        <div className="mt-2 space-y-2">
                                             {companies.map((company) => (
-                                                <option key={company.id} value={company.id}>
-                                                    {company.name}
-                                                </option>
+                                                <div key={company.id} className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        id={`company-${company.id}`}
+                                                        value={company.id}
+                                                        checked={assignedCompanies.includes(company.id.toString())}
+                                                        onChange={(e) => {
+                                                            const value = e.target.value;
+                                                            setAssignedCompanies(prev =>
+                                                                e.target.checked
+                                                                    ? [...prev, value]
+                                                                    : prev.filter(id => id !== value)
+                                                            );
+                                                        }}
+                                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                                    />
+                                                    <label
+                                                        htmlFor={`company-${company.id}`}
+                                                        className="ml-2 block text-sm text-gray-900"
+                                                    >
+                                                        {company.name}
+                                                    </label>
+                                                </div>
                                             ))}
-                                        </select>
+                                        </div>
+                                        {assignedCompanies.length === 0 && (
+                                            <p className="mt-1 text-sm text-red-600">
+                                                Debe seleccionar al menos una empresa para evaluar
+                                            </p>
+                                        )}
                                     </div>
                                 )}
                             </div>

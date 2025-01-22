@@ -46,6 +46,7 @@ class UserManagementController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
             'role' => 'required|in:user,admin,evaluador',
@@ -56,6 +57,7 @@ class UserManagementController extends Controller
 
         $user = User::create([
             'name' => $validated['name'],
+            'lastname' => $validated['lastname'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
@@ -77,8 +79,12 @@ class UserManagementController extends Controller
 
     public function show(User $user)
     {
+        $userData = $user->load('company');
+        if ($user->role === 'evaluador') {
+            $userData->load('evaluatedCompanies');
+        }
         return response()->json([
-            'user' => $user->load('company')
+            'user' => $userData
         ]);
     }
 
@@ -86,6 +92,7 @@ class UserManagementController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'role' => 'required|in:user,admin,evaluador',
             'company_id' => 'required|exists:companies,id',
@@ -100,15 +107,17 @@ class UserManagementController extends Controller
             CompanyEvaluator::where('user_id', $user->id)->delete();
             
             // Crear nuevas asignaciones
-            foreach ($validated['assigned_companies'] as $companyId) {
-                CompanyEvaluator::create([
-                    'user_id' => $user->id,
-                    'company_id' => $companyId
-                ]);
+            if (!empty($validated['assigned_companies'])) {
+                foreach ($validated['assigned_companies'] as $companyId) {
+                    CompanyEvaluator::create([
+                        'user_id' => $user->id,
+                        'company_id' => $companyId
+                    ]);
+                }
             }
         }
 
-        return response()->json($user);
+        return response()->json($user->load(['company', 'evaluatedCompanies']));
     }
 
     public function destroy(User $user)
