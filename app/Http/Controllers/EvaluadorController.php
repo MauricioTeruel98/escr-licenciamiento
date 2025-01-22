@@ -25,9 +25,8 @@ class EvaluadorController extends Controller
 
     public function getCompaniesList()
     {
-        // Obtener todas las empresas (igual que el super admin)
-        $companies = Company::all();
-        return response()->json($companies);
+        $user = auth()->user();
+        return response()->json($user->evaluatedCompanies);
     }
 
     public function getActiveCompany()

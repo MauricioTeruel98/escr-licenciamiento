@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Company;
+use App\Models\CompanyEvaluator;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Hash;
@@ -12,51 +13,66 @@ class UserManagementController extends Controller
 {
     public function index(Request $request)
     {
-        $users = User::with('company')
-            ->when(request('search'), function($query, $search) {
-                $query->where(function($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%")
-                      ->orWhere('lastname', 'like', "%{$search}%")
-                      ->orWhereHas('company', function($q) use ($search) {
-                          $q->where('name', 'like', "%{$search}%");
-                      });
-                });
-            })
-            ->when(request('role'), function($query, $role) {
-                $query->where('role', $role);
-            })
-            ->when(request('status'), function($query, $status) {
-                $query->where('status', $status);
-            })
-            ->orderBy(request('sort_by', 'created_at'), request('sort_order', 'desc'))
-            ->paginate(request('per_page', 10));
+        $query = User::query()
+            ->with(['company', 'evaluatedCompanies'])
+            ->orderBy('created_at', 'desc');
 
-        return response()->json($users);
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->has('role') && $request->input('role') !== 'todos') {
+            $query->where('role', $request->input('role'));
+        }
+
+        $users = $query->paginate($request->input('per_page', 10));
+
+        // Transformar los datos para incluir las empresas evaluadas
+        $users->getCollection()->transform(function ($user) {
+            if ($user->role === 'evaluador') {
+                $user->evaluated_companies = $user->evaluatedCompanies;
+            }
+            return $user;
+        });
+
+        return $users;
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'role' => 'required|in:super_admin,admin,user,evaluador',
+            'password' => 'required|min:8',
+            'role' => 'required|in:user,admin,evaluador',
             'company_id' => 'required|exists:companies,id',
-            'status' => 'required|in:pending,approved,rejected',
-            'password' => ['required', 'confirmed', Password::defaults()],
-            'id_number' => 'nullable|string|max:20',
-            'phone' => 'nullable|string|max:20'
+            'assigned_companies' => 'required_if:role,evaluador|array',
+            'assigned_companies.*' => 'exists:companies,id'
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
-        
-        $user = User::create($validated);
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
+            'company_id' => $validated['company_id'],
+            'status' => 'approved'
+        ]);
 
-        return response()->json([
-            'message' => 'Usuario creado exitosamente',
-            'user' => $user->load('company')
-        ], 201);
+        if ($validated['role'] === 'evaluador' && isset($validated['assigned_companies'])) {
+            foreach ($validated['assigned_companies'] as $companyId) {
+                CompanyEvaluator::create([
+                    'user_id' => $user->id,
+                    'company_id' => $companyId
+                ]);
+            }
+        }
+
+        return response()->json($user);
     }
 
     public function show(User $user)
@@ -70,28 +86,29 @@ class UserManagementController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:super_admin,admin,user',
+            'role' => 'required|in:user,admin,evaluador',
             'company_id' => 'required|exists:companies,id',
-            'status' => 'required|in:pending,approved,rejected',
-            'password' => ['nullable', 'confirmed', Password::defaults()],
-            'id_number' => 'nullable|string|max:20',
-            'phone' => 'nullable|string|max:20'
+            'assigned_companies' => 'required_if:role,evaluador|array',
+            'assigned_companies.*' => 'exists:companies,id'
         ]);
-
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
 
         $user->update($validated);
 
-        return response()->json([
-            'message' => 'Usuario actualizado exitosamente',
-            'user' => $user->load('company')
-        ]);
+        if ($validated['role'] === 'evaluador') {
+            // Eliminar asignaciones anteriores
+            CompanyEvaluator::where('user_id', $user->id)->delete();
+            
+            // Crear nuevas asignaciones
+            foreach ($validated['assigned_companies'] as $companyId) {
+                CompanyEvaluator::create([
+                    'user_id' => $user->id,
+                    'company_id' => $companyId
+                ]);
+            }
+        }
+
+        return response()->json($user);
     }
 
     public function destroy(User $user)

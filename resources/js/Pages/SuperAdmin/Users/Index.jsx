@@ -73,7 +73,27 @@ export default function UsersIndex() {
         {
             key: 'company',
             label: 'Empresa',
-            render: (item) => item.company?.name || 'N/A'
+            render: (item) => {
+                if (item.role === 'evaluador' && item.evaluated_companies) {
+                    return (
+                        <div className="flex flex-col gap-2">
+                            {item.evaluated_companies.map((company, index) => (
+                                <span 
+                                    key={company.id} 
+                                    className="text-md p-3 font-semibold mb-1 badge rounded-lg border text-gray-800 border-gray-200 bg-gray-50"
+                                >
+                                    {company.name}
+                                </span>
+                            ))}
+                        </div>
+                    );
+                }
+                return (
+                    <span className="text-md p-3 font-semibold mb-1 badge rounded-lg border text-gray-800 border-gray-200 bg-gray-50">
+                        {item.company?.name || 'N/A'}
+                    </span>
+                );
+            }
         },
         {
             key: 'status',

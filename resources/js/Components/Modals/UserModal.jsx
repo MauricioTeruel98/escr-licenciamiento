@@ -17,6 +17,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
     const [formData, setFormData] = useState(initialFormData);
     const [companies, setCompanies] = useState([]);
     const [errors, setErrors] = useState({});
+    const [assignedCompanies, setAssignedCompanies] = useState([]);
 
     const roles = [
         { id: 'user', name: 'Usuario' },
@@ -79,7 +80,11 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
             return;
         }
 
-        onSubmit(formData);
+        const submitData = {
+            ...formData,
+            assigned_companies: formData.role === 'evaluador' ? assignedCompanies : []
+        };
+        onSubmit(submitData);
     };
 
     const handleClose = () => {
@@ -267,6 +272,30 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                         <p className="mt-1 text-sm text-red-600">{errors.password_confirmation}</p>
                                     )}
                                 </div>
+
+                                {/* Empresas asignadas */}
+                                {formData.role === 'evaluador' && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Empresas asignadas
+                                        </label>
+                                        <select
+                                            multiple
+                                            value={assignedCompanies}
+                                            onChange={(e) => {
+                                                const values = Array.from(e.target.selectedOptions, option => option.value);
+                                                setAssignedCompanies(values);
+                                            }}
+                                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
+                                        >
+                                            {companies.map((company) => (
+                                                <option key={company.id} value={company.id}>
+                                                    {company.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-end gap-2">

@@ -103,4 +103,9 @@ class User extends Authenticatable
     {
         $this->notify(new CustomResetPasswordNotification($token));
     }
+
+    public function evaluatedCompanies()
+    {
+        return $this->belongsToMany(Company::class, 'company_evaluator', 'user_id', 'company_id');
+    }
 }
