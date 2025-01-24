@@ -274,4 +274,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('companies.authorize');
 });
 
+Route::get('/api/lugares', function () {
+    return response()->file(storage_path('app/public/lugares.json'));
+})->name('api.lugares');
+
 require __DIR__ . '/auth.php';

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import InputError from '@/Components/InputError';
@@ -290,6 +290,58 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         }]);
     };
 
+    // Agregar estados para las opciones de ubicación
+    const [ubicaciones, setUbicaciones] = useState({
+        provincias: [],
+        cantones: [],
+        distritos: []
+    });
+
+    // Cargar datos de ubicaciones al montar el componente
+    useEffect(() => {
+        const fetchLugares = async () => {
+            try {
+                const response = await axios.get(route('api.lugares'));
+                const lugares = response.data[0]; // Tomamos el primer elemento que contiene Costa Rica
+                setUbicaciones(prev => ({
+                    ...prev,
+                    provincias: lugares.provincias
+                }));
+            } catch (error) {
+                console.error('Error al cargar lugares:', error);
+            }
+        };
+        
+        fetchLugares();
+    }, []);
+
+    // Actualizar cantones cuando cambia la provincia
+    useEffect(() => {
+        if (data.provincia) {
+            const provinciaSeleccionada = ubicaciones.provincias.find(p => p.id === data.provincia);
+            setUbicaciones(prev => ({
+                ...prev,
+                cantones: provinciaSeleccionada?.cantones || [],
+                distritos: [] // Resetear distritos
+            }));
+            setData('canton', ''); // Resetear cantón seleccionado
+            setData('distrito', ''); // Resetear distrito seleccionado
+        }
+    }, [data.provincia]);
+
+    // Actualizar distritos cuando cambia el cantón
+    useEffect(() => {
+        if (data.canton) {
+            const provinciaSeleccionada = ubicaciones.provincias.find(p => p.id === data.provincia);
+            const cantonSeleccionado = provinciaSeleccionada?.cantones.find(c => c.id === data.canton);
+            setUbicaciones(prev => ({
+                ...prev,
+                distritos: cantonSeleccionado?.distritos || []
+            }));
+            setData('distrito', ''); // Resetear distrito seleccionado
+        }
+    }, [data.canton]);
+
     return (
         <DashboardLayout userName={userName} title="Perfil de Empresa">
             <h1 className="text-4xl font-bold mt-3">Perfil de Empresa</h1>
@@ -414,7 +466,13 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 >
                                                     <option value="">Selecciona una provincia</option>
+                                                    {ubicaciones.provincias.map(provincia => (
+                                                        <option key={provincia.id} value={provincia.id}>
+                                                            {provincia.name}
+                                                        </option>
+                                                    ))}
                                                 </select>
+                                                <InputError message={errors.provincia} />
                                             </div>
 
                                             <div>
@@ -425,9 +483,16 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     value={data.canton}
                                                     onChange={e => setData('canton', e.target.value)}
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    disabled={!data.provincia}
                                                 >
                                                     <option value="">Selecciona un cantón</option>
+                                                    {ubicaciones.cantones.map(canton => (
+                                                        <option key={canton.id} value={canton.id}>
+                                                            {canton.name}
+                                                        </option>
+                                                    ))}
                                                 </select>
+                                                <InputError message={errors.canton} />
                                             </div>
 
                                             <div>
@@ -438,9 +503,16 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     value={data.distrito}
                                                     onChange={e => setData('distrito', e.target.value)}
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    disabled={!data.canton}
                                                 >
                                                     <option value="">Selecciona un distrito</option>
+                                                    {ubicaciones.distritos.map(distrito => (
+                                                        <option key={distrito.id} value={distrito.id}>
+                                                            {distrito.name}
+                                                        </option>
+                                                    ))}
                                                 </select>
+                                                <InputError message={errors.distrito} />
                                             </div>
                                         </div>
                                     </div>
