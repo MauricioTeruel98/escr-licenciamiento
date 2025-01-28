@@ -16,6 +16,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         instagram: infoAdicional?.instagram || '',
         sector: infoAdicional?.sector || '',
         tamano_empresa: infoAdicional?.tamano_empresa || '',
+        anio_fundacion: infoAdicional?.anio_fundacion || '',
         cantidad_hombres: infoAdicional?.cantidad_hombres || '',
         cantidad_mujeres: infoAdicional?.cantidad_mujeres || '',
         cantidad_otros: infoAdicional?.cantidad_otros || '',
@@ -1397,7 +1398,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     <span className="text-sm">{foto.name}</span>
                                                 </div>
                                                 <div className="flex items-center">
-                                                    <span className="text-sm mr-2">{Math.round((foto.size || 0) / 1024)} KB</span>
+                                                    {/* Añadir verificación de nulidad aquí */}
+                                                    <span className="text-sm mr-2">{foto.size ? Math.round(foto.size / 1024) : 0} KB</span>
                                                     {foto.url && (
                                                         <button 
                                                             type="button" 
@@ -1409,12 +1411,14 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                             </svg>
                                                         </button>
                                                     )}
-                                                    {/* Agregar vista previa de la imagen */}
-                                                    <img 
-                                                        src={foto.url} 
-                                                        alt={foto.name}
-                                                        className="w-10 h-10 object-cover ml-2 rounded"
-                                                    />
+                                                    {/* Verificar si existe la URL antes de mostrar la imagen */}
+                                                    {foto.url && (
+                                                        <img 
+                                                            src={foto.url} 
+                                                            alt={foto.name}
+                                                            className="w-10 h-10 object-cover ml-2 rounded"
+                                                        />
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -1464,34 +1468,39 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <div className="flex items-center">
                                                     <img 
                                                         src={infoAdicional.logo_url}
-                                                        alt="Logo actual"
-                                                        className="w-10 h-10 object-cover rounded"
+                                                        alt="Logo preview"
+                                                        className="w-10 h-10 object-cover ml-2 rounded"
                                                     />
                                                 </div>
                                             </div>
                                         )}
 
                                         {/* Vista previa del nuevo logo */}
-                                        {imagenes.logo && (
+                                        {imagenes.logo instanceof File && (
                                             <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
                                                 <div className="flex items-center">
                                                     <button
                                                         type="button"
-                                                        onClick={() => removeImagen('logo')}
+                                                        onClick={() => {
+                                                            setImagenes(prev => ({
+                                                                ...prev,
+                                                                logo: null
+                                                            }));
+                                                        }}
                                                         className="mr-2"
                                                     >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                         </svg>
                                                     </button>
-                                                    <span className="text-sm">{imagenes.logo.name}</span>
+                                                    <span className="text-sm">{imagenes.logo?.name}</span>
                                                 </div>
                                                 <div className="flex items-center">
-                                                    <span className="text-sm mr-2">{Math.round(imagenes.logo.size / 1024)} KB</span>
+                                                    <span className="text-sm mr-2">{imagenes.logo ? Math.round(imagenes.logo.size / 1024) : 0} KB</span>
                                                     <img 
                                                         src={URL.createObjectURL(imagenes.logo)}
                                                         alt="Logo preview"
-                                                        className="w-10 h-10 object-cover rounded"
+                                                        className="w-10 h-10 object-cover ml-2 rounded"
                                                     />
                                                 </div>
                                             </div>
