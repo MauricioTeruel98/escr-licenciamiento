@@ -83,7 +83,7 @@ export default function SuperAdminLayout({ children, title = null }) {
                     navigation={navigation}
                 />
 
-                <main className="flex-1 p-8 mt-16">
+                <main className="flex-1 p-8 mt-16 w-3/4">
                     <div className="max-w-8xl mx-auto">
                         {children}
                     </div>

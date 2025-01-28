@@ -22,7 +22,7 @@ export default function DashboardLayout({ children, userName, title }) {
                     ) : (
                         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
                     )}
-                    <main className="flex-1 p-4 lg:p-8 w-full">
+                    <main className="flex-1 p-4 lg:p-8 w-3/4">
                         {children}
                     </main>
                 </div>

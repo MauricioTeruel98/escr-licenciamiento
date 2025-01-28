@@ -39,7 +39,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         <>
             {/* Overlay para móvil */}
             <div
-                className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${isOpen ? 'block' : 'hidden'
+                className={`w-1/4 fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${isOpen ? 'block' : 'hidden'
                     }`}
                 onClick={() => setIsOpen(false)}
             />
