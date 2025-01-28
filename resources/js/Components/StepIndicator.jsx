@@ -1,6 +1,13 @@
 export default function StepIndicator({ steps, currentStep, onStepClick }) {
     return (
-        <nav aria-label="Progress" className="w-full overflow-x-auto">
+        <nav 
+            aria-label="Progress" 
+            className="w-full overflow-x-auto scrollbar-custom"
+            style={{
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#16a34a #e5e7eb',
+            }}
+        >
             <ol role="list" className="flex items-center min-w-max md:min-w-0">
                 {steps.map((step, index) => (
                     <li 

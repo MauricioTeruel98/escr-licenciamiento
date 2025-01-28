@@ -92,6 +92,25 @@ input {
     margin: 0px !important;
 }
 
+/* Estilos para navegadores webkit (Chrome, Safari, etc.) */
+.scrollbar-custom::-webkit-scrollbar {
+    height: 6px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+    background: #e5e7eb;
+    border-radius: 3px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+    background: #16a34a;
+    border-radius: 3px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background: #15803d;
+}
+
 @media (max-width: 768px) {
     .react-datepicker-wrapper {
         width: 100% !important;
