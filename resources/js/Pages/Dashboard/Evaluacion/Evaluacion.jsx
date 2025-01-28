@@ -71,7 +71,33 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }));
     };
 
+    const areAllQuestionsAnswered = () => {
+        let totalQuestions = 0;
+        let answeredQuestions = 0;
+
+        valueData.subcategories.forEach(subcategory => {
+            subcategory.indicators.forEach(indicator => {
+                indicator.evaluation_questions.forEach(question => {
+                    totalQuestions++;
+                    if (answers[question.id]?.value !== undefined) {
+                        answeredQuestions++;
+                    }
+                });
+            });
+        });
+
+        return totalQuestions === answeredQuestions;
+    };
+
     const handleFinish = () => {
+        if (!areAllQuestionsAnswered()) {
+            setNotification({
+                type: 'error',
+                message: 'Por favor, responde todas las preguntas antes de finalizar.'
+            });
+            return;
+        }
+
         setShowConfirmModal(true);
     };
 
@@ -122,6 +148,37 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 
                 if (response.data.savedAnswers) {
                     setAnswers(response.data.savedAnswers);
+                }
+
+                // Obtener el siguiente valor disponible
+                try {
+                    const valuesResponse = await axios.get('/api/active-values');
+                    const values = valuesResponse.data;
+                    const currentIndex = values.findIndex(v => v.id === valueData.id);
+                    const nextValue = values[currentIndex + 1];
+
+                    if (nextValue) {
+                        // Redirigir al siguiente valor
+                        router.visit(`/evaluacion/${nextValue.id}`);
+                        setNotification({
+                            type: 'success',
+                            message: 'Respuestas guardadas. Pasando al siguiente valor...'
+                        });
+                    } else {
+                        // Si no hay más valores, mostrar mensaje de finalización
+                        setNotification({
+                            type: 'success',
+                            message: '¡Has completado todos los valores!'
+                        });
+                        // Opcional: redirigir a una página de resumen o dashboard
+                        router.visit(route('dashboard'));
+                    }
+                } catch (error) {
+                    console.error('Error al obtener siguiente valor:', error);
+                    setNotification({
+                        type: 'success',
+                        message: response.data.message
+                    });
                 }
             }
         } catch (error) {
@@ -397,12 +454,23 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             <div className="ml-auto">
                                 <button
                                     onClick={isLastSubcategory ? handleFinish : handleContinue}
-                                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                                    disabled={isLastSubcategory && !areAllQuestionsAnswered()}
+                                    className={`px-4 py-2 rounded-md ${
+                                        isLastSubcategory && !areAllQuestionsAnswered()
+                                            ? 'bg-gray-400 cursor-not-allowed'
+                                            : 'bg-green-600 hover:bg-green-700'
+                                    } text-white`}
                                 >
                                     {isLastSubcategory ? 'Finalizar' : 'Continuar'}
                                 </button>
                             </div>
                         </div>
+
+                        {isLastSubcategory && !areAllQuestionsAnswered() && (
+                            <p className="text-sm text-red-600 mt-2">
+                                Debes contestar todas las preguntas antes de finalizar
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>
