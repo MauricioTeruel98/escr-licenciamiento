@@ -3,6 +3,7 @@ import { useForm } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import InputError from '@/Components/InputError';
 import axios from 'axios';
+import Toast from '@/Components/ToastAdmin';
 
 export default function CompanyProfile({ userName, infoAdicional }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -256,6 +257,13 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         }
     };
 
+    // Agregar estado para el Toast
+    const [toast, setToast] = useState({
+        show: false,
+        message: '',
+        type: 'success'
+    });
+
     const submit = async (e) => {
         e.preventDefault();
         
@@ -322,13 +330,25 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             });
             
             if (response.data.success) {
-                // Éxito
-                console.log('Guardado exitoso:', response.data);
+                setToast({
+                    show: true,
+                    message: '¡Datos guardados exitosamente!',
+                    type: 'success'
+                });
             } else {
-                console.error('Error al guardar:', response.data);
+                setToast({
+                    show: true,
+                    message: 'Error al guardar los datos',
+                    type: 'error'
+                });
             }
         } catch (error) {
             console.error('Error en la petición:', error);
+            setToast({
+                show: true,
+                message: 'Error al guardar los datos: ' + (error.response?.data?.message || error.message),
+                type: 'error'
+            });
         }
     };
 
@@ -1725,6 +1745,14 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     </div>
                 </form>
             </div>
+            
+            {toast.show && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast({ ...toast, show: false })}
+                />
+            )}
         </DashboardLayout>
     );
 }
