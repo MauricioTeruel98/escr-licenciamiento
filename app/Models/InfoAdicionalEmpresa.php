@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class InfoAdicionalEmpresa extends Model
 {
+    protected $table = 'info_adicional_empresas';
+    
     protected $guarded = [];
     
     protected $casts = [
-        'contactos' => 'array',
-        'productos' => 'array',
         'es_exportadora' => 'boolean',
         'recomienda_marca_pais' => 'boolean',
         'fotografias_paths' => 'array',
@@ -20,5 +20,10 @@ class InfoAdicionalEmpresa extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function productos()
+    {
+        return $this->hasMany(CompanyProducts::class);
     }
 } 

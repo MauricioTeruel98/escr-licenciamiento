@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Models\Indicator;
 use App\Models\IndicatorAnswer;
 use App\Models\AutoEvaluationValorResult;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -114,21 +116,72 @@ class DashboardController extends Controller
 
         // Transformar las rutas de imágenes a URLs completas si existen
         if ($infoAdicional) {
+            // Logo
             if ($infoAdicional->logo_path) {
                 $infoAdicional->logo_url = asset('storage/' . $infoAdicional->logo_path);
             }
             
+            // Procesar fotografías
+            $fotografias = [];
             if ($infoAdicional->fotografias_paths) {
-                $infoAdicional->fotografias_urls = collect($infoAdicional->fotografias_paths)
-                    ->map(fn($path) => asset('storage/' . $path))
-                    ->toArray();
+                $paths = is_string($infoAdicional->fotografias_paths) 
+                    ? json_decode($infoAdicional->fotografias_paths, true) 
+                    : $infoAdicional->fotografias_paths;
+                
+                if (is_array($paths)) {
+                    foreach ($paths as $path) {
+                        if (Storage::disk('public')->exists($path)) {
+                            $fotografias[] = [
+                                'name' => basename($path),
+                                'path' => $path,
+                                'url' => asset('storage/' . $path),
+                                'size' => Storage::disk('public')->size($path)
+                            ];
+                        }
+                    }
+                }
             }
+            $infoAdicional->fotografias_urls = $fotografias;
             
+            // Procesar certificaciones
+            $certificaciones = [];
             if ($infoAdicional->certificaciones_paths) {
-                $infoAdicional->certificaciones_urls = collect($infoAdicional->certificaciones_paths)
-                    ->map(fn($path) => asset('storage/' . $path))
-                    ->toArray();
+                $paths = is_string($infoAdicional->certificaciones_paths) 
+                    ? json_decode($infoAdicional->certificaciones_paths, true) 
+                    : $infoAdicional->certificaciones_paths;
+                
+                if (is_array($paths)) {
+                    foreach ($paths as $path) {
+                        if (Storage::disk('public')->exists($path)) {
+                            $certificaciones[] = [
+                                'name' => basename($path),
+                                'path' => $path,
+                                'url' => asset('storage/' . $path),
+                                'size' => Storage::disk('public')->size($path)
+                            ];
+                        }
+                    }
+                }
             }
+            $infoAdicional->certificaciones_urls = $certificaciones;
+
+            // Procesar productos con sus imágenes
+            if ($infoAdicional && $infoAdicional->productos) {
+                $infoAdicional->productos = $infoAdicional->productos->map(function($producto) {
+                    if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
+                        $producto->imagen_url = asset('storage/' . $producto->imagen);
+                    }
+                    return $producto;
+                });
+            }
+
+            // Debug
+            Log::info('Datos procesados de infoAdicional:', [
+                'fotografias_paths' => $infoAdicional->fotografias_paths,
+                'fotografias_urls' => $infoAdicional->fotografias_urls,
+                'certificaciones_paths' => $infoAdicional->certificaciones_paths,
+                'certificaciones_urls' => $infoAdicional->certificaciones_urls
+            ]);
         }
 
         return Inertia::render('Dashboard/FormEmpresa', [

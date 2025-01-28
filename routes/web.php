@@ -253,6 +253,8 @@ Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
 });
 
 Route::post('/company/profile', [CompanyProfileController::class, 'store'])->name('company.profile.store');
+Route::post('/company/profile/delete-file', [CompanyProfileController::class, 'deleteFile'])->name('company.profile.delete-file');
+Route::get('/company/profile/download-file', [CompanyProfileController::class, 'downloadFile'])->name('company.profile.download-file');
 
 // Rutas para reportes
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {

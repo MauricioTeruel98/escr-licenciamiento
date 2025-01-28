@@ -83,9 +83,6 @@ return new class extends Migration
             $table->string('representante_telefono')->nullable();
             $table->string('representante_celular')->nullable();
             
-            // Arrays JSON
-            $table->json('productos')->nullable();
-            
             // Agregar campos para imágenes
             $table->string('logo_path')->nullable();
             $table->json('fotografias_paths')->nullable();

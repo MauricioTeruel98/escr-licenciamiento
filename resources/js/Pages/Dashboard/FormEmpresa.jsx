@@ -64,23 +64,35 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         representante_telefono: infoAdicional?.representante_telefono || '',
         representante_celular: infoAdicional?.representante_celular || '',
         
-        productos: infoAdicional?.productos || [{}, {}, {}],
+        productos: infoAdicional?.productos 
+            ? infoAdicional.productos.map(p => ({
+                id: p.id,
+                nombre: p.nombre,
+                descripcion: p.descripcion,
+                imagen_url: p.imagen_url
+            })) 
+            : []
     });
 
     // Estado inicial para las imágenes existentes
     const [imagenes, setImagenes] = useState({
-        fotografias: [],
         logo: null,
+        fotografias: [],
         certificaciones: [],
-        productos: [], // Inicializar array vacío para imágenes de productos
-        // URLs de imágenes existentes
-        existingLogo: infoAdicional?.logo_path ? `/storage/${infoAdicional.logo_path}` : null,
-        existingFotografias: infoAdicional?.fotografias_paths?.map(path => `/storage/${path}`) || [],
-        existingCertificaciones: infoAdicional?.certificaciones_paths?.map(path => `/storage/${path}`) || [],
-        existingProductos: infoAdicional?.productos?.map(producto => 
-            producto.imagen_path ? `/storage/${producto.imagen_path}` : null
-        ) || []
+        productos: []
     });
+
+    // Cargar datos iniciales
+    useEffect(() => {
+        if (infoAdicional) {
+            setImagenes({
+                logo: infoAdicional.logo || null,
+                fotografias: infoAdicional.fotografias_urls || [],
+                certificaciones: infoAdicional.certificaciones_urls || [],
+                productos: []
+            });
+        }
+    }, [infoAdicional]);
 
     // Función para eliminar archivo existente
     const removeExistingImage = async (tipo, path, productoIndex = null) => {
@@ -95,23 +107,23 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 setImagenes(prev => {
                     switch (tipo) {
                         case 'logo':
-                            return { ...prev, existingLogo: null };
+                            return { ...prev, logo: null };
                         case 'fotografias':
                             return {
                                 ...prev,
-                                existingFotografias: prev.existingFotografias.filter(p => p !== path)
+                                fotografias: prev.fotografias.filter(p => p !== path)
                             };
                         case 'certificaciones':
                             return {
                                 ...prev,
-                                existingCertificaciones: prev.existingCertificaciones.filter(p => p !== path)
+                                certificaciones: prev.certificaciones.filter(p => p !== path)
                             };
                         case 'producto':
-                            const newExistingProductos = [...prev.existingProductos];
+                            const newExistingProductos = [...prev.productos];
                             newExistingProductos[productoIndex] = null;
                             return {
                                 ...prev,
-                                existingProductos: newExistingProductos
+                                productos: newExistingProductos
                             };
                         default:
                             return prev;
@@ -126,8 +138,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     // Renderizar imágenes existentes
     const renderExistingImages = (tipo) => {
         const images = tipo === 'logo' ? 
-            [imagenes.existingLogo] : 
-            (tipo === 'fotografias' ? imagenes.existingFotografias : imagenes.existingCertificaciones);
+            [imagenes.logo] : 
+            (tipo === 'fotografias' ? imagenes.fotografias : imagenes.certificaciones);
 
         return images.filter(Boolean).map((url, index) => (
             <div key={index} className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
@@ -243,33 +255,80 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         }
     };
 
-    const handleSubmit = (e) => {
+    const submit = async (e) => {
         e.preventDefault();
-
+        
         const formData = new FormData();
-        // Agregar todos los campos del formulario al FormData
-        Object.keys(data).forEach(key => {
-            if (key === 'productos' || key === 'contactos') {
-                formData.append(key, JSON.stringify(data[key]));
-            } else {
-                formData.append(key, data[key]);
-            }
-        });
-
-        // Agregar imágenes
-        if (imagenes.logo) {
+        
+        // Debug log
+        console.log('Imágenes a enviar:', imagenes);
+        console.log('Datos a enviar:', data);
+        
+        // Agregar logo si existe
+        if (imagenes.logo instanceof File) {
             formData.append('logo', imagenes.logo);
         }
-        imagenes.productos.forEach((producto, index) => {
-            if (producto) {
-                formData.append(`producto_imagen_${index}`, producto);
+
+        // Agregar fotografías
+        if (imagenes.fotografias && imagenes.fotografias.length > 0) {
+            imagenes.fotografias.forEach((foto, index) => {
+                if (foto instanceof File) {
+                    formData.append(`fotografias[]`, foto);
+                }
+            });
+        }
+
+        // Agregar certificaciones
+        if (imagenes.certificaciones && imagenes.certificaciones.length > 0) {
+            imagenes.certificaciones.forEach((cert, index) => {
+                if (cert instanceof File) {
+                    formData.append(`certificaciones[]`, cert);
+                }
+            });
+        }
+
+        // Agregar productos
+        if (data.productos && data.productos.length > 0) {
+            data.productos.forEach((producto, index) => {
+                formData.append(`productos[${index}][id]`, producto.id || '');
+                formData.append(`productos[${index}][nombre]`, producto.nombre || '');
+                formData.append(`productos[${index}][descripcion]`, producto.descripcion || '');
+                
+                // Agregar imagen del producto si existe
+                if (imagenes.productos && imagenes.productos[index] instanceof File) {
+                    formData.append(`productos[${index}][imagen]`, imagenes.productos[index]);
+                }
+            });
+        }
+
+        // Agregar el resto de datos
+        Object.keys(data).forEach(key => {
+            if (key !== 'productos') {
+                formData.append(key, data[key] || '');
             }
         });
 
-        // Indicar que el formulario ha sido enviado
-        formData.append('form_sended', true);
+        // Debug log del FormData
+        for (let pair of formData.entries()) {
+            console.log(pair[0], pair[1]);
+        }
 
-        post(route('company.profile.store'), formData);
+        try {
+            const response = await axios.post(route('company.profile.store'), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+            
+            if (response.data.success) {
+                // Éxito
+                console.log('Guardado exitoso:', response.data);
+            } else {
+                console.error('Error al guardar:', response.data);
+            }
+        } catch (error) {
+            console.error('Error en la petición:', error);
+        }
     };
 
     const agregarContacto = () => {
@@ -342,11 +401,51 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         }
     }, [data.canton]);
 
+    const handleFileDownload = async (path) => {
+        try {
+            window.open(route('company.profile.download-file', { path }), '_blank');
+        } catch (error) {
+            console.error('Error al descargar archivo:', error);
+        }
+    };
+
+    const handleFileDelete = async (path, type) => {
+        try {
+            const response = await axios.post(route('company.profile.delete-file'), {
+                path,
+                type
+            });
+
+            if (response.data.success) {
+                // Actualizar el estado según el tipo de archivo eliminado
+                switch (type) {
+                    case 'logo':
+                        setImagenes(prev => ({ ...prev, logo: null }));
+                        break;
+                    case 'fotografias':
+                        setImagenes(prev => ({
+                            ...prev,
+                            fotografias: prev.fotografias.filter(f => f.path !== path)
+                        }));
+                        break;
+                    case 'certificaciones':
+                        setImagenes(prev => ({
+                            ...prev,
+                            certificaciones: prev.certificaciones.filter(c => c.path !== path)
+                        }));
+                        break;
+                }
+            }
+        } catch (error) {
+            console.error('Error al eliminar archivo:', error);
+        }
+    };
+
     return (
         <DashboardLayout userName={userName} title="Perfil de Empresa">
             <h1 className="text-4xl font-bold mt-3">Perfil de Empresa</h1>
             <div className="mx-auto py-6">
-                <form onSubmit={handleSubmit} className="space-y-8">
+                <form onSubmit={submit} encType="multipart/form-data" className="space-y-8">
                     {/* Sección de Información de Empresa */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                         <button
@@ -1080,9 +1179,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                         </button>
                         {seccionesExpandidas.productos && (
                             <div className="p-6 pt-0">
-                                {[1, 2, 3].map((num, index) => (
+                                {data.productos.map((producto, index) => (
                                     <div key={index} className="mb-8">
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4">Producto {num}</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 mb-4">Producto {index + 1}</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-4">
                                                 {/* Nombre del producto */}
@@ -1092,10 +1191,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     </label>
                                                     <input
                                                         type="text"
-                                                        value={data.productos[index]?.nombre || ''}
+                                                        value={producto.nombre || ''}
                                                         onChange={e => {
                                                             const newProductos = [...data.productos];
-                                                            if (!newProductos[index]) newProductos[index] = {};
                                                             newProductos[index].nombre = e.target.value;
                                                             setData('productos', newProductos);
                                                         }}
@@ -1110,10 +1208,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                         Descripción
                                                     </label>
                                                     <textarea
-                                                        value={data.productos[index]?.descripcion || ''}
+                                                        value={producto.descripcion || ''}
                                                         onChange={e => {
                                                             const newProductos = [...data.productos];
-                                                            if (!newProductos[index]) newProductos[index] = {};
                                                             newProductos[index].descripcion = e.target.value;
                                                             setData('productos', newProductos);
                                                         }}
@@ -1149,13 +1246,13 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                         />
                                                     </label>
                                                     
-                                                    {/* Mostrar imagen existente si hay */}
-                                                    {imagenes.existingProductos[index] && (
+                                                    {/* Mostrar imagen existente */}
+                                                    {producto.imagen_url && (
                                                         <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
                                                             <div className="flex items-center">
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => removeExistingImage('producto', imagenes.existingProductos[index], index)}
+                                                                    onClick={() => removeExistingImage('producto', producto.imagen, index)}
                                                                     className="mr-2"
                                                                 >
                                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1165,23 +1262,17 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                                 <span className="text-sm">Imagen existente</span>
                                                             </div>
                                                             <div className="flex items-center">
-                                                                <a 
-                                                                    href={imagenes.existingProductos[index]} 
-                                                                    target="_blank" 
-                                                                    rel="noopener noreferrer" 
-                                                                    className="text-white hover:text-gray-200"
-                                                                >
-                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                                    </svg>
-                                                                </a>
+                                                                <img 
+                                                                    src={producto.imagen_url}
+                                                                    alt={`Producto ${index + 1}`}
+                                                                    className="w-10 h-10 object-cover rounded"
+                                                                />
                                                             </div>
                                                         </div>
                                                     )}
 
                                                     {/* Mostrar nueva imagen si se ha seleccionado */}
-                                                    {imagenes.productos[index] && (
+                                                    {imagenes.productos[index] && !producto.imagen_url && (
                                                         <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
                                                             <div className="flex items-center">
                                                                 <button
@@ -1195,7 +1286,14 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                                 </button>
                                                                 <span className="text-sm">{imagenes.productos[index].name}</span>
                                                             </div>
-                                                            <span className="text-sm">{Math.round(imagenes.productos[index].size / 1024)} KB</span>
+                                                            <div className="flex items-center">
+                                                                <span className="text-sm mr-2">{Math.round(imagenes.productos[index].size / 1024)} KB</span>
+                                                                <img 
+                                                                    src={URL.createObjectURL(imagenes.productos[index])}
+                                                                    alt={`Producto ${index + 1}`}
+                                                                    className="w-10 h-10 object-cover rounded"
+                                                                />
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
@@ -1203,6 +1301,17 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         </div>
                                     </div>
                                 ))}
+
+                                {/* Botón para agregar nuevo producto */}
+                                <div className="flex mt-6">
+                                    <button
+                                        type="button"
+                                        onClick={agregarProducto}
+                                        className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                                    >
+                                        Agregar Producto
+                                    </button>
+                                </div>
 
                                 {/* Botón de guardar */}
                                 <div className="flex mt-6">
@@ -1275,6 +1384,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                                 ...prev,
                                                                 fotografias: prev.fotografias.filter((_, i) => i !== index)
                                                             }));
+                                                            if (foto.path) {
+                                                                handleFileDelete(foto.path, 'fotografias');
+                                                            }
                                                         }}
                                                         className="mr-2"
                                                     >
@@ -1285,12 +1397,24 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     <span className="text-sm">{foto.name}</span>
                                                 </div>
                                                 <div className="flex items-center">
-                                                    <span className="text-sm mr-2">{Math.round(foto.size / 1024)} KB</span>
-                                                    <button type="button" className="download-button">
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                        </svg>
-                                                    </button>
+                                                    <span className="text-sm mr-2">{Math.round((foto.size || 0) / 1024)} KB</span>
+                                                    {foto.url && (
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => handleFileDownload(foto.path)}
+                                                            className="download-button"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                            </svg>
+                                                        </button>
+                                                    )}
+                                                    {/* Agregar vista previa de la imagen */}
+                                                    <img 
+                                                        src={foto.url} 
+                                                        alt={foto.name}
+                                                        className="w-10 h-10 object-cover ml-2 rounded"
+                                                    />
                                                 </div>
                                             </div>
                                         ))}
@@ -1321,18 +1445,39 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={(e) => handleImagenChange(e, 'logo')}
                                             />
                                         </label>
-                                        {/* Archivo cargado */}
+                                        
+                                        {/* Vista previa del logo existente */}
+                                        {infoAdicional?.logo_url && !imagenes.logo && (
+                                            <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                <div className="flex items-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeExistingImage('logo', infoAdicional.logo_path)}
+                                                        className="mr-2"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                    <span className="text-sm">Logo actual</span>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <img 
+                                                        src={infoAdicional.logo_url}
+                                                        alt="Logo actual"
+                                                        className="w-10 h-10 object-cover rounded"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Vista previa del nuevo logo */}
                                         {imagenes.logo && (
                                             <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
                                                 <div className="flex items-center">
                                                     <button
                                                         type="button"
-                                                        onClick={() => {
-                                                            setImagenes(prev => ({
-                                                                ...prev,
-                                                                logo: null
-                                                            }));
-                                                        }}
+                                                        onClick={() => removeImagen('logo')}
                                                         className="mr-2"
                                                     >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1343,11 +1488,11 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 </div>
                                                 <div className="flex items-center">
                                                     <span className="text-sm mr-2">{Math.round(imagenes.logo.size / 1024)} KB</span>
-                                                    <button type="button" className="download-button">
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                        </svg>
-                                                    </button>
+                                                    <img 
+                                                        src={URL.createObjectURL(imagenes.logo)}
+                                                        alt="Logo preview"
+                                                        className="w-10 h-10 object-cover rounded"
+                                                    />
                                                 </div>
                                             </div>
                                         )}
@@ -1385,7 +1530,15 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <div className="flex items-center">
                                                     <button
                                                         type="button"
-                                                        onClick={() => removeImagen('certificaciones', index)}
+                                                        onClick={() => {
+                                                            setImagenes(prev => ({
+                                                                ...prev,
+                                                                certificaciones: prev.certificaciones.filter((_, i) => i !== index)
+                                                            }));
+                                                            if (cert.path) {
+                                                                handleFileDelete(cert.path, 'certificaciones');
+                                                            }
+                                                        }}
                                                         className="mr-2"
                                                     >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1395,12 +1548,24 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     <span className="text-sm">{cert.name}</span>
                                                 </div>
                                                 <div className="flex items-center">
-                                                    <span className="text-sm mr-2">{Math.round(cert.size / 1024)} KB</span>
-                                                    <button type="button" className="download-button">
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                        </svg>
-                                                    </button>
+                                                    <span className="text-sm mr-2">{Math.round((cert.size || 0) / 1024)} KB</span>
+                                                    {cert.url && (
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => handleFileDownload(cert.path)}
+                                                            className="download-button"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                            </svg>
+                                                        </button>
+                                                    )}
+                                                    {/* Agregar vista previa de la imagen */}
+                                                    <img 
+                                                        src={cert.url} 
+                                                        alt={cert.name}
+                                                        className="w-10 h-10 object-cover ml-2 rounded"
+                                                    />
                                                 </div>
                                             </div>
                                         ))}
