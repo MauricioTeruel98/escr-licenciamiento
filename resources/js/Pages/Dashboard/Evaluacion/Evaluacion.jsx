@@ -89,6 +89,17 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         return totalQuestions === answeredQuestions;
     };
 
+    const areCurrentSubcategoryQuestionsAnswered = () => {
+        const currentSubcategory = subcategories[currentSubcategoryIndex];
+        return currentSubcategory.indicators.every(indicator => 
+            indicator.evaluation_questions.every(question =>
+                answers[question.id]?.value !== undefined &&
+                answers[question.id]?.description?.trim() !== '' &&
+                (answers[question.id]?.files?.length > 0)
+            )
+        );
+    };
+
     const handleFinish = () => {
         if (!areAllQuestionsAnswered()) {
             setNotification({
@@ -454,9 +465,9 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             <div className="ml-auto">
                                 <button
                                     onClick={isLastSubcategory ? handleFinish : handleContinue}
-                                    disabled={isLastSubcategory && !areAllQuestionsAnswered()}
+                                    disabled={isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()}
                                     className={`px-4 py-2 rounded-md ${
-                                        isLastSubcategory && !areAllQuestionsAnswered()
+                                        (isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered())
                                             ? 'bg-gray-400 cursor-not-allowed'
                                             : 'bg-green-600 hover:bg-green-700'
                                     } text-white`}
@@ -466,9 +477,9 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             </div>
                         </div>
 
-                        {isLastSubcategory && !areAllQuestionsAnswered() && (
+                        {!areCurrentSubcategoryQuestionsAnswered() && (
                             <p className="text-sm text-red-600 mt-2">
-                                Debes contestar todas las preguntas antes de finalizar
+                                Debes completar todos los campos requeridos de esta sección antes de continuar (respuesta, descripción y evidencias)
                             </p>
                         )}
                     </div>

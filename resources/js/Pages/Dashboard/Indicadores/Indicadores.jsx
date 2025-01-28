@@ -224,6 +224,13 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
         return totalQuestions === answeredQuestions;
     };
 
+    const areCurrentSubcategoryQuestionsAnswered = () => {
+        const currentSubcategory = subcategories[currentSubcategoryIndex];
+        return currentSubcategory.indicators.every(indicator => 
+            answers[indicator.id] !== undefined
+        );
+    };
+
     return (
         <DashboardLayout userName={userName} title="Indicadores">
             <div className="space-y-8">
@@ -398,9 +405,9 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                             <div className="ml-auto">
                                 <button
                                     onClick={isLastSubcategory ? handleFinish : handleContinue}
-                                    disabled={isLastSubcategory && !areAllQuestionsAnswered()}
+                                    disabled={isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()}
                                     className={`px-4 py-2 rounded-md ${
-                                        isLastSubcategory && !areAllQuestionsAnswered()
+                                        (isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered())
                                             ? 'bg-gray-400 cursor-not-allowed'
                                             : 'bg-green-600 hover:bg-green-700'
                                     } text-white`}
@@ -412,9 +419,9 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                             </div>
                         </div>
 
-                        {isLastSubcategory && !areAllQuestionsAnswered() && (
+                        {!areCurrentSubcategoryQuestionsAnswered() && (
                             <p className="text-sm text-red-600 mt-2">
-                                Debes contestar todas las preguntas antes de finalizar
+                                Debes contestar todas las preguntas de esta sección antes de continuar
                             </p>
                         )}
                     </div>
