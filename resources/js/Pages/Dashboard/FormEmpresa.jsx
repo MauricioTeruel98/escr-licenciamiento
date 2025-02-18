@@ -507,7 +507,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     {/* Nombre legal */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
-                                            Nombre legal de la empresa<span className="text-red-500">*</span>
+                                            Nombre de la razón social de la empresa<span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -522,7 +522,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     {/* Descripción Español */}
                                     <div className="">
                                         <label className="block text-sm font-medium text-gray-700">
-                                            Descripción (Español)<span className="text-red-500">*</span>
+                                            Descripción de la empresa (Español)<span className="text-red-500">*</span>
                                         </label>
                                         <textarea
                                             value={data.descripcion_es}
@@ -537,7 +537,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     {/* Descripción Inglés */}
                                     <div className="">
                                         <label className="block text-sm font-medium text-gray-700">
-                                            Descripción (Inglés)
+                                            Descripción de la empresa (Inglés)
                                         </label>
                                         <textarea
                                             value={data.descripcion_en}
@@ -737,10 +737,10 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
                                     {/* Cantidad de empleados */}
                                     <div className="md:col-span-2">
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4">Cantidad de personas empleadas</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 mb-4">¿Cuantas personas emplea?</h3>
                                         <div className="grid grid-cols-3 gap-4">
                                             <div>
-                                                <label className="block text-sm text-gray-600">Hombres</label>
+                                                <label className="block text-sm text-gray-600">Cantidad deHombres</label>
                                                 <input
                                                     type="number"
                                                     value={data.cantidad_hombres}
@@ -750,7 +750,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm text-gray-600">Mujeres</label>
+                                                <label className="block text-sm text-gray-600">Cantidad de mujeres</label>
                                                 <input
                                                     type="number"
                                                     value={data.cantidad_mujeres}
@@ -760,7 +760,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm text-gray-600">Otros</label>
+                                                <label className="block text-sm text-gray-600">Cantidad de otros</label>
                                                 <input
                                                     type="number"
                                                     value={data.cantidad_otros}
