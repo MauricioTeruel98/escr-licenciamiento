@@ -33,6 +33,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [notification, setNotification] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [currentProgress, setCurrentProgress] = useState(progress);
 
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
@@ -47,9 +48,77 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         setCurrentSubcategoryIndex(index);
     };
 
-    const handleContinue = () => {
-        if (currentSubcategoryIndex < subcategories.length - 1) {
-            setCurrentSubcategoryIndex(prev => prev + 1);
+    const handleContinue = async () => {
+        if (!areCurrentSubcategoryQuestionsAnswered()) {
+            setNotification({
+                type: 'error',
+                message: 'Debes completar todos los campos requeridos antes de continuar'
+            });
+            return;
+        }
+
+        try {
+            setLoading(true);
+            
+            // Obtener solo las respuestas de la subcategoría actual
+            const currentSubcategoryAnswers = {};
+            subcategories[currentSubcategoryIndex].indicators.forEach(indicator => {
+                indicator.evaluation_questions.forEach(question => {
+                    if (answers[question.id]) {
+                        currentSubcategoryAnswers[question.id] = answers[question.id];
+                    }
+                });
+            });
+
+            // Guardar las respuestas de la subcategoría actual
+            const formData = new FormData();
+            formData.append('isPartialSave', 'true');
+            
+            Object.entries(currentSubcategoryAnswers).forEach(([questionId, answerData]) => {
+                formData.append(`answers[${questionId}][value]`, answerData.value);
+                formData.append(`answers[${questionId}][description]`, answerData.description || '');
+                
+                if (answerData.files && answerData.files.length > 0) {
+                    answerData.files.forEach(file => {
+                        if (file instanceof File) {
+                            formData.append(`answers[${questionId}][files][]`, file);
+                        } else {
+                            formData.append(`answers[${questionId}][existing_files][]`, JSON.stringify(file));
+                        }
+                    });
+                }
+
+                if (isEvaluador) {
+                    formData.append(`answers[${questionId}][approved]`, approvals[questionId] ? '1' : '0');
+                    formData.append(`answers[${questionId}][evaluator_comment]`, answerData.evaluator_comment || '');
+                }
+            });
+
+            const response = await axios.post(route('evaluacion.store-answers'), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            if (response.data.success) {
+                setNotification({
+                    type: 'success',
+                    message: 'Respuestas guardadas correctamente'
+                });
+
+                // Avanzar a la siguiente subcategoría
+                if (currentSubcategoryIndex < subcategories.length - 1) {
+                    setCurrentSubcategoryIndex(prev => prev + 1);
+                }
+            }
+        } catch (error) {
+            console.error('Error al guardar respuestas:', error);
+            setNotification({
+                type: 'error',
+                message: error.response?.data?.message || 'Error al guardar las respuestas'
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -59,16 +128,44 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }
     };
 
+    const calculateProgress = () => {
+        let totalQuestions = 0;
+        let answeredQuestions = 0;
+
+        subcategories.forEach(subcategory => {
+            subcategory.indicators.forEach(indicator => {
+                indicator.evaluation_questions.forEach(question => {
+                    totalQuestions++;
+                    if (answers[question.id]?.value !== undefined &&
+                        answers[question.id]?.description?.trim() !== '' &&
+                        (answers[question.id]?.files?.length > 0)) {
+                        answeredQuestions++;
+                    }
+                });
+            });
+        });
+
+        return totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
+    };
+
     const handleAnswer = (questionId, value, description = '', files = [], evaluator_comment = '') => {
-        setAnswers(prev => ({
-            ...prev,
-            [questionId]: {
-                value: value || prev[questionId]?.value,
-                description: description || prev[questionId]?.description,
-                files: files || prev[questionId]?.files || [],
-                evaluator_comment: evaluator_comment || prev[questionId]?.evaluator_comment || ''
-            }
-        }));
+        setAnswers(prev => {
+            const newAnswers = {
+                ...prev,
+                [questionId]: {
+                    value: value || prev[questionId]?.value,
+                    description: description || prev[questionId]?.description,
+                    files: files || prev[questionId]?.files || [],
+                    evaluator_comment: evaluator_comment || prev[questionId]?.evaluator_comment || ''
+                }
+            };
+            
+            setTimeout(() => {
+                setCurrentProgress(calculateProgress());
+            }, 0);
+            
+            return newAnswers;
+        });
     };
 
     const areAllQuestionsAnswered = () => {
@@ -123,8 +220,19 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         try {
             setLoading(true);
             const formData = new FormData();
+            formData.append('isPartialSave', 'false');
             
-            Object.entries(answers).forEach(([questionId, answerData]) => {
+            // Obtener solo las respuestas de la última subcategoría
+            const lastSubcategoryAnswers = {};
+            subcategories[currentSubcategoryIndex].indicators.forEach(indicator => {
+                indicator.evaluation_questions.forEach(question => {
+                    if (answers[question.id]) {
+                        lastSubcategoryAnswers[question.id] = answers[question.id];
+                    }
+                });
+            });
+
+            Object.entries(lastSubcategoryAnswers).forEach(([questionId, answerData]) => {
                 formData.append(`answers[${questionId}][value]`, answerData.value);
                 formData.append(`answers[${questionId}][description]`, answerData.description || '');
                 
@@ -153,7 +261,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             if (response.data.success) {
                 setNotification({
                     type: 'success',
-                    message: response.data.message
+                    message: 'Respuestas guardadas correctamente'
                 });
                 setShowConfirmModal(false);
                 
@@ -229,7 +337,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                         Progreso actual
                                     </h2>
                                     <p className="text-2xl font-bold text-blue-500">
-                                        {progress}%
+                                        {currentProgress}%
                                     </p>
                                 </div>
                                 <div className="w-1/2 rounded-e-xl bg-blue-800 px-6 p-4">
@@ -243,7 +351,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
                                 <div 
                                     className="bg-blue-600 h-2.5 rounded-full transition-all duration-500" 
-                                    style={{ width: `${progress}%` }}
+                                    style={{ width: `${currentProgress}%` }}
                                 ></div>
                             </div>
                         </div>

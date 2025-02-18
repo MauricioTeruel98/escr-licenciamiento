@@ -28,6 +28,9 @@ class EvaluationAnswerController extends Controller
                 return response()->json(['message' => 'No se recibieron respuestas válidas'], 422);
             }
 
+            $isPartialSave = $request->input('isPartialSave', false);
+            $message = $isPartialSave ? 'Respuestas guardadas parcialmente' : 'Evaluación completada exitosamente';
+
             foreach ($request->answers as $questionId => $answerData) {
                 // Si es evaluador, guardar la evaluación
                 if ($user->role === 'evaluador') {
@@ -132,8 +135,9 @@ class EvaluationAnswerController extends Controller
                 'success' => true,
                 'message' => $user->role === 'evaluador' ? 
                     '¡Evaluación guardada exitosamente!' : 
-                    '¡Respuestas guardadas exitosamente!',
-                'savedAnswers' => $savedAnswers
+                    $message,
+                'savedAnswers' => $savedAnswers,
+                'isPartialSave' => $isPartialSave
             ]);
 
         } catch (\Exception $e) {
