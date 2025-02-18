@@ -15,6 +15,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         facebook: infoAdicional?.facebook || '',
         linkedin: infoAdicional?.linkedin || '',
         instagram: infoAdicional?.instagram || '',
+        otra_red_social: infoAdicional?.otra_red_social || '',
         sector: infoAdicional?.sector || '',
         tamano_empresa: infoAdicional?.tamano_empresa || '',
         anio_fundacion: infoAdicional?.anio_fundacion || '',
@@ -521,13 +522,14 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     {/* Descripción Español */}
                                     <div className="">
                                         <label className="block text-sm font-medium text-gray-700">
-                                            Descripción (Español)
+                                            Descripción (Español)<span className="text-red-500">*</span>
                                         </label>
                                         <textarea
                                             value={data.descripcion_es}
                                             onChange={e => setData('descripcion_es', e.target.value)}
                                             rows={3}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            required
                                         />
                                         <InputError message={errors.descripcion_es} />
                                     </div>
@@ -548,13 +550,14 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
-                                            ¿En que año se fundó su organización?
+                                            ¿En que año se fundó su organización? <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="number"
                                             value={data.anio_fundacion}
                                             onChange={e => setData('anio_fundacion', e.target.value)}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            required
                                         />
                                         <InputError message={errors.anio_fundacion} />
                                     </div>
@@ -562,14 +565,16 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     {/* Sitio web */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
-                                            Sitio web
+                                            Sitio web <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="url"
                                             value={data.sitio_web}
                                             onChange={e => setData('sitio_web', e.target.value)}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            required
                                         />
+                                        <InputError message={errors.sitio_web} />
                                     </div>
 
                                     {/* Dirección (Cada item como selects separados): Provincia (Select) - Canton (Select) - Distrito (Select) */}
@@ -640,7 +645,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     {/* Redes Sociales */}
                                     <div className="md:col-span-2">
                                         <h3 className="text-lg font-medium text-gray-900 mb-4">Redes Sociales</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">
                                                     Facebook
@@ -678,6 +683,19 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                                 <InputError message={errors.instagram} />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    Otra red social
+                                                </label>
+                                                <input
+                                                    type="url"
+                                                    value={data.otra_red_social}
+                                                    onChange={e => setData('otra_red_social', e.target.value)}
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                />
+                                                <InputError message={errors.otra_red_social} />
                                             </div>
                                         </div>
                                     </div>
