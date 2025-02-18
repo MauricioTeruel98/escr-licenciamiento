@@ -10,6 +10,11 @@ use App\Models\Indicator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use PDF;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AutoEvaluationResults;
+use App\Models\Value;
+use Illuminate\Support\Str;
 
 class IndicadorAnswerController extends Controller
 {
@@ -138,9 +143,73 @@ class IndicadorAnswerController extends Controller
 
             DB::commit();
 
+            // Verificar si este es el último valor
+            $isLastValue = Value::where('is_active', true)
+                ->orderBy('id', 'desc')
+                ->first()->id === $request->value_id;
+
+            if ($isLastValue) {
+                // Obtener todos los valores y sus respuestas
+                $allValues = Value::with(['subcategories.indicators'])
+                    ->where('is_active', true)
+                    ->get();
+
+                $allAnswers = IndicatorAnswer::where('company_id', $user->company_id)
+                    ->with('indicator.subcategory.value')
+                    ->get()
+                    ->groupBy('indicator.subcategory.value.id');
+
+                // Generar PDF con todos los valores
+                $pdf = PDF::loadView('pdf/autoevaluation', [
+                    'values' => $allValues,
+                    'answers' => $allAnswers,
+                    'company' => $user->company,
+                    'date' => now()->format('d/m/Y'),
+                    'finalScores' => AutoEvaluationValorResult::where('company_id', $user->company_id)
+                        ->get()
+                        ->keyBy('value_id')
+                ]);
+
+                // Crear estructura de carpetas para la empresa
+                $companySlug = Str::slug($user->company->name); // Convertir nombre de empresa a slug
+                $basePath = storage_path('app/public/autoevaluations');
+                $companyPath = "{$basePath}/{$user->company_id}-{$companySlug}";
+
+                // Crear carpetas si no existen
+                if (!file_exists($basePath)) {
+                    mkdir($basePath, 0755, true);
+                }
+                if (!file_exists($companyPath)) {
+                    mkdir($companyPath, 0755, true);
+                }
+                
+                // Generar nombre de archivo con timestamp
+                $fileName = "autoevaluation_{$user->company_id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
+                $fullPath = "{$companyPath}/{$fileName}";
+
+                // Guardar PDF
+                $pdf->save($fullPath);
+
+                // Enviar email con PDF
+                Mail::to($user->email)->send(new AutoEvaluationResults($fullPath));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => '¡Autoevaluación completada! Se ha enviado un PDF a su correo con los resultados.',
+                    'finalScore' => $finalScore,
+                    'progress' => [
+                        'answered' => $answeredIndicators,
+                        'total' => $totalIndicators,
+                        'status' => $status,
+                        'hasFailedBindingQuestions' => $hasFailedBindingQuestions,
+                        'hasFailedValues' => $hasFailedValues
+                    ]
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => '¡Respuestas guardadas exitosamente!',
+                'message' => 'Respuestas guardadas exitosamente.',
                 'finalScore' => $finalScore,
                 'progress' => [
                     'answered' => $answeredIndicators,
