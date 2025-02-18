@@ -18,8 +18,21 @@ export default function InstructionsLayout({ children, title }) {
                 </div>
 
                 {/* Main content */}
-                <div className="w-full md:w-7/12 flex items-center justify-center p-4 md:p-8">
-                    {children}
+                <div className="w-full md:w-7/12 flex flex-col p-4 md:p-8">
+                    <div className="flex-1 flex items-center justify-center">
+                        {children}
+                    </div>
+                    {/* Términos y condiciones link */}
+                    <div className="text-center mt-4">
+                        <a
+                            href="/assets/pdfs/Consentimiento informado.pdf"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-green-700 hover:text-green-800 underline text-sm"
+                        >
+                            Ver términos y condiciones
+                        </a>
+                    </div>
                 </div>
 
                 {/* Mobile background image */}
