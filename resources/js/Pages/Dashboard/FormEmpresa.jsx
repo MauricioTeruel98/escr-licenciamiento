@@ -762,8 +762,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         <input
                                             type="text"
                                             value={data.cedula_juridica}
-                                            onChange={e => setData('cedula_juridica', e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            disabled={true}
+                                            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed"
                                             required
                                         />
                                         <p className="text-sm text-gray-500 mt-1">
@@ -911,6 +911,402 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             placeholder="Respuesta"
                                         />
                                         <InputError message={errors.planes_expansion} />
+                                    </div>
+                                </div>
+
+                                {/* Botón de guardar */}
+                                <div className="flex mt-6">
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="bg-green-700 text-white px-6 py-2 rounded-md hover:bg-green-800 transition-colors disabled:opacity-50"
+                                    >
+                                        {processing ? 'Guardando...' : 'Guardar Cambios'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Sección de Logos y Fotografías */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <button
+                            type="button"
+                            onClick={() => toggleSeccion('logos')}
+                            className="w-full p-6 flex justify-between items-center text-left"
+                        >
+                            <h2 className="text-xl font-semibold">Logos y fotografías</h2>
+                            <svg
+                                className={`w-6 h-6 transform transition-transform ${
+                                    seccionesExpandidas.logos ? 'rotate-180' : ''
+                                }`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        {seccionesExpandidas.logos && (
+                            <div className="p-6 pt-0">
+                                {/* Fotografías de la empresa */}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Fotografías de la empresa (máximo 3)<span className="text-red-500">*</span>
+                                    </label>
+                                    <div className="mt-2">
+                                        <label 
+                                            htmlFor="fotografias-input" 
+                                            className="border border-gray-300 rounded-md p-4 block cursor-pointer"
+                                            onDragOver={handleDragOver}
+                                            onDragLeave={handleDragLeave}
+                                            onDrop={(e) => handleDrop(e, 'fotografias')}
+                                        >
+                                            <div className="text-center text-gray-600">
+                                                Arrastre png, jpg o <span className="text-green-600">Cargar</span>
+                                            </div>
+                                            <input
+                                                id="fotografias-input"
+                                                type="file"
+                                                className="hidden"
+                                                accept=".png,.jpg,.jpeg"
+                                                multiple
+                                                onChange={(e) => handleImagenChange(e, 'fotografias')}
+                                            />
+                                        </label>
+                                        {/* Archivos cargados */}
+                                        {imagenes.fotografias?.map((foto, index) => (
+                                            <div key={index} className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                <div className="flex items-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setImagenes(prev => ({
+                                                                ...prev,
+                                                                fotografias: prev.fotografias.filter((_, i) => i !== index)
+                                                            }));
+                                                            if (foto.path) {
+                                                                handleFileDelete(foto.path, 'fotografias');
+                                                            }
+                                                        }}
+                                                        className="mr-2"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                    <span className="text-sm">{foto.name}</span>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    {/* Añadir verificación de nulidad aquí */}
+                                                    <span className="text-sm mr-2">{foto.size ? Math.round(foto.size / 1024) : 0} KB</span>
+                                                    {foto.url && (
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => handleFileDownload(foto.path)}
+                                                            className="download-button"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                            </svg>
+                                                        </button>
+                                                    )}
+                                                    {/* Verificar si existe la URL antes de mostrar la imagen */}
+                                                    {foto.url && (
+                                                        <img 
+                                                            src={foto.url} 
+                                                            alt={foto.name}
+                                                            className="w-10 h-10 object-cover ml-2 rounded"
+                                                        />
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Logo de la empresa */}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Logo de la empresa<span className="text-red-500">*</span>
+                                    </label>
+                                    <div className="mt-2">
+                                        <label 
+                                            htmlFor="logo-input" 
+                                            className="border border-gray-300 rounded-md p-4 block cursor-pointer"
+                                            onDragOver={handleDragOver}
+                                            onDragLeave={handleDragLeave}
+                                            onDrop={(e) => handleDrop(e, 'logo')}
+                                        >
+                                            <div className="text-center text-gray-600">
+                                                Arrastre png, jpg o <span className="text-green-600">Cargar</span>
+                                            </div>
+                                            <input
+                                                id="logo-input"
+                                                type="file"
+                                                className="hidden"
+                                                accept=".png,.jpg,.jpeg"
+                                                onChange={(e) => handleImagenChange(e, 'logo')}
+                                            />
+                                        </label>
+                                        
+                                        {/* Vista previa del logo existente */}
+                                        {infoAdicional?.logo_url && !imagenes.logo && (
+                                            <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                <div className="flex items-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeExistingImage('logo', infoAdicional.logo_path)}
+                                                        className="mr-2"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                    <span className="text-sm">Logo actual</span>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <img 
+                                                        src={infoAdicional.logo_url}
+                                                        alt="Logo preview"
+                                                        className="w-10 h-10 object-cover ml-2 rounded"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Vista previa del nuevo logo */}
+                                        {imagenes.logo instanceof File && (
+                                            <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                <div className="flex items-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setImagenes(prev => ({
+                                                                ...prev,
+                                                                logo: null
+                                                            }));
+                                                        }}
+                                                        className="mr-2"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                    <span className="text-sm">{imagenes.logo?.name}</span>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <span className="text-sm mr-2">{imagenes.logo ? Math.round(imagenes.logo.size / 1024) : 0} KB</span>
+                                                    <img 
+                                                        src={URL.createObjectURL(imagenes.logo)}
+                                                        alt="Logo preview"
+                                                        className="w-10 h-10 object-cover ml-2 rounded"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Logos de certificaciones */}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Logos de certificaciones
+                                    </label>
+                                    <div className="mt-2">
+                                        <label 
+                                            htmlFor="certificaciones-input"
+                                            className="border border-gray-300 rounded-md p-4 block cursor-pointer"
+                                            onDragOver={handleDragOver}
+                                            onDragLeave={handleDragLeave}
+                                            onDrop={(e) => handleDrop(e, 'certificaciones')}
+                                        >
+                                            <div className="text-center text-gray-600">
+                                                Arrastre png, jpg o <span className="text-green-600">Cargar</span>
+                                            </div>
+                                            <input
+                                                id="certificaciones-input"
+                                                type="file"
+                                                className="hidden"
+                                                accept=".png,.jpg,.jpeg"
+                                                multiple
+                                                onChange={(e) => handleImagenChange(e, 'certificaciones')}
+                                            />
+                                        </label>
+                                        {/* Archivos cargados */}
+                                        {imagenes.certificaciones?.map((cert, index) => (
+                                            <div key={index} className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                <div className="flex items-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setImagenes(prev => ({
+                                                                ...prev,
+                                                                certificaciones: prev.certificaciones.filter((_, i) => i !== index)
+                                                            }));
+                                                            if (cert.path) {
+                                                                handleFileDelete(cert.path, 'certificaciones');
+                                                            }
+                                                        }}
+                                                        className="mr-2"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                    <span className="text-sm">{cert.name}</span>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <span className="text-sm mr-2">{Math.round((cert.size || 0) / 1024)} KB</span>
+                                                    {cert.url && (
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => handleFileDownload(cert.path)}
+                                                            className="download-button"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                            </svg>
+                                                        </button>
+                                                    )}
+                                                    {/* Agregar vista previa de la imagen */}
+                                                    <img 
+                                                        src={cert.url} 
+                                                        alt={cert.name}
+                                                        className="w-10 h-10 object-cover ml-2 rounded"
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Botón de guardar */}
+                                <div className="flex justify mt-6">
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="bg-green-700 text-white px-6 py-2 rounded-md hover:bg-green-800 transition-colors disabled:opacity-50"
+                                    >
+                                        {processing ? 'Guardando...' : 'Guardar Cambios'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Sección de Licenciamiento */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <button
+                            type="button"
+                            onClick={() => toggleSeccion('licenciamiento')}
+                            className="w-full p-6 flex justify-between items-center text-left"
+                        >
+                            <h2 className="text-xl font-semibold">Licenciamiento</h2>
+                            <svg
+                                className={`w-6 h-6 transform transition-transform ${
+                                    seccionesExpandidas.licenciamiento ? 'rotate-180' : ''
+                                }`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        {seccionesExpandidas.licenciamiento && (
+                            <div className="p-6 pt-0">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Razón licenciamiento español */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            ¿Por qué razón decidieron licenciarse Marca País (Español)?<span className="text-red-500">*</span>
+                                        </label>
+                                        <textarea
+                                            value={data.razon_licenciamiento_es}
+                                            onChange={e => setData('razon_licenciamiento_es', e.target.value)}
+                                            rows={4}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            placeholder="Respuesta"
+                                            required
+                                        />
+                                    </div>
+
+                                    {/* Razón licenciamiento inglés */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            ¿Por qué razón decidieron licenciarse Marca País (Inglés)?<span className="text-red-500">*</span>
+                                        </label>
+                                        <textarea
+                                            value={data.razon_licenciamiento_en}
+                                            onChange={e => setData('razon_licenciamiento_en', e.target.value)}
+                                            rows={4}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            placeholder="Answer"
+                                            required
+                                        />
+                                    </div>
+
+                                    {/* Proceso de licenciamiento */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            ¿Cómo fue el proceso para obtener el licenciamiento?<span className="text-red-500">*</span>
+                                        </label>
+                                        <textarea
+                                            value={data.proceso_licenciamiento}
+                                            onChange={e => setData('proceso_licenciamiento', e.target.value)}
+                                            rows={4}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            placeholder="Respuesta"
+                                            required
+                                        />
+                                    </div>
+
+                                    {/* Recomendación y Observaciones */}
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                ¿Recomendaría a otras empresas obtener la Marca País?
+                                            </label>
+                                            <div className="mt-2 flex gap-4">
+                                                <label className="inline-flex items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name="recomienda_marca_pais"
+                                                        value="1"
+                                                        checked={data.recomienda_marca_pais === true}
+                                                        onChange={e => setData('recomienda_marca_pais', true)}
+                                                        className="form-radio text-green-600 focus:ring-green-500"
+                                                    />
+                                                    <span className="ml-2">Sí</span>
+                                                </label>
+                                                <label className="inline-flex items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name="recomienda_marca_pais"
+                                                        value="0"
+                                                        checked={data.recomienda_marca_pais === false}
+                                                        onChange={e => setData('recomienda_marca_pais', false)}
+                                                        className="form-radio text-green-600 focus:ring-green-500"
+                                                    />
+                                                    <span className="ml-2">No</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Observaciones<span className="text-red-500">*</span>
+                                            </label>
+                                            <textarea
+                                                value={data.observaciones}
+                                                onChange={e => setData('observaciones', e.target.value)}
+                                                rows={4}
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                placeholder="Respuesta"
+                                                required
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1348,401 +1744,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                         )}
                     </div>
 
-                    {/* Sección de Logos y Fotografías */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <button
-                            type="button"
-                            onClick={() => toggleSeccion('logos')}
-                            className="w-full p-6 flex justify-between items-center text-left"
-                        >
-                            <h2 className="text-xl font-semibold">Logos y fotografías</h2>
-                            <svg
-                                className={`w-6 h-6 transform transition-transform ${
-                                    seccionesExpandidas.logos ? 'rotate-180' : ''
-                                }`}
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-                        {seccionesExpandidas.logos && (
-                            <div className="p-6 pt-0">
-                                {/* Fotografías de la empresa */}
-                                <div className="mb-6">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Fotografías de la empresa (máximo 3)<span className="text-red-500">*</span>
-                                    </label>
-                                    <div className="mt-2">
-                                        <label 
-                                            htmlFor="fotografias-input" 
-                                            className="border border-gray-300 rounded-md p-4 block cursor-pointer"
-                                            onDragOver={handleDragOver}
-                                            onDragLeave={handleDragLeave}
-                                            onDrop={(e) => handleDrop(e, 'fotografias')}
-                                        >
-                                            <div className="text-center text-gray-600">
-                                                Arrastre png, jpg o <span className="text-green-600">Cargar</span>
-                                            </div>
-                                            <input
-                                                id="fotografias-input"
-                                                type="file"
-                                                className="hidden"
-                                                accept=".png,.jpg,.jpeg"
-                                                multiple
-                                                onChange={(e) => handleImagenChange(e, 'fotografias')}
-                                            />
-                                        </label>
-                                        {/* Archivos cargados */}
-                                        {imagenes.fotografias?.map((foto, index) => (
-                                            <div key={index} className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
-                                                <div className="flex items-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setImagenes(prev => ({
-                                                                ...prev,
-                                                                fotografias: prev.fotografias.filter((_, i) => i !== index)
-                                                            }));
-                                                            if (foto.path) {
-                                                                handleFileDelete(foto.path, 'fotografias');
-                                                            }
-                                                        }}
-                                                        className="mr-2"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                    <span className="text-sm">{foto.name}</span>
-                                                </div>
-                                                <div className="flex items-center">
-                                                    {/* Añadir verificación de nulidad aquí */}
-                                                    <span className="text-sm mr-2">{foto.size ? Math.round(foto.size / 1024) : 0} KB</span>
-                                                    {foto.url && (
-                                                        <button 
-                                                            type="button" 
-                                                            onClick={() => handleFileDownload(foto.path)}
-                                                            className="download-button"
-                                                        >
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                            </svg>
-                                                        </button>
-                                                    )}
-                                                    {/* Verificar si existe la URL antes de mostrar la imagen */}
-                                                    {foto.url && (
-                                                        <img 
-                                                            src={foto.url} 
-                                                            alt={foto.name}
-                                                            className="w-10 h-10 object-cover ml-2 rounded"
-                                                        />
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Logo de la empresa */}
-                                <div className="mb-6">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Logo de la empresa<span className="text-red-500">*</span>
-                                    </label>
-                                    <div className="mt-2">
-                                        <label 
-                                            htmlFor="logo-input" 
-                                            className="border border-gray-300 rounded-md p-4 block cursor-pointer"
-                                            onDragOver={handleDragOver}
-                                            onDragLeave={handleDragLeave}
-                                            onDrop={(e) => handleDrop(e, 'logo')}
-                                        >
-                                            <div className="text-center text-gray-600">
-                                                Arrastre png, jpg o <span className="text-green-600">Cargar</span>
-                                            </div>
-                                            <input
-                                                id="logo-input"
-                                                type="file"
-                                                className="hidden"
-                                                accept=".png,.jpg,.jpeg"
-                                                onChange={(e) => handleImagenChange(e, 'logo')}
-                                            />
-                                        </label>
-                                        
-                                        {/* Vista previa del logo existente */}
-                                        {infoAdicional?.logo_url && !imagenes.logo && (
-                                            <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
-                                                <div className="flex items-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeExistingImage('logo', infoAdicional.logo_path)}
-                                                        className="mr-2"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                    <span className="text-sm">Logo actual</span>
-                                                </div>
-                                                <div className="flex items-center">
-                                                    <img 
-                                                        src={infoAdicional.logo_url}
-                                                        alt="Logo preview"
-                                                        className="w-10 h-10 object-cover ml-2 rounded"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Vista previa del nuevo logo */}
-                                        {imagenes.logo instanceof File && (
-                                            <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
-                                                <div className="flex items-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setImagenes(prev => ({
-                                                                ...prev,
-                                                                logo: null
-                                                            }));
-                                                        }}
-                                                        className="mr-2"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                    <span className="text-sm">{imagenes.logo?.name}</span>
-                                                </div>
-                                                <div className="flex items-center">
-                                                    <span className="text-sm mr-2">{imagenes.logo ? Math.round(imagenes.logo.size / 1024) : 0} KB</span>
-                                                    <img 
-                                                        src={URL.createObjectURL(imagenes.logo)}
-                                                        alt="Logo preview"
-                                                        className="w-10 h-10 object-cover ml-2 rounded"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Logos de certificaciones */}
-                                <div className="mb-6">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Logos de certificaciones
-                                    </label>
-                                    <div className="mt-2">
-                                        <label 
-                                            htmlFor="certificaciones-input"
-                                            className="border border-gray-300 rounded-md p-4 block cursor-pointer"
-                                            onDragOver={handleDragOver}
-                                            onDragLeave={handleDragLeave}
-                                            onDrop={(e) => handleDrop(e, 'certificaciones')}
-                                        >
-                                            <div className="text-center text-gray-600">
-                                                Arrastre png, jpg o <span className="text-green-600">Cargar</span>
-                                            </div>
-                                            <input
-                                                id="certificaciones-input"
-                                                type="file"
-                                                className="hidden"
-                                                accept=".png,.jpg,.jpeg"
-                                                multiple
-                                                onChange={(e) => handleImagenChange(e, 'certificaciones')}
-                                            />
-                                        </label>
-                                        {/* Archivos cargados */}
-                                        {imagenes.certificaciones?.map((cert, index) => (
-                                            <div key={index} className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
-                                                <div className="flex items-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setImagenes(prev => ({
-                                                                ...prev,
-                                                                certificaciones: prev.certificaciones.filter((_, i) => i !== index)
-                                                            }));
-                                                            if (cert.path) {
-                                                                handleFileDelete(cert.path, 'certificaciones');
-                                                            }
-                                                        }}
-                                                        className="mr-2"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                    <span className="text-sm">{cert.name}</span>
-                                                </div>
-                                                <div className="flex items-center">
-                                                    <span className="text-sm mr-2">{Math.round((cert.size || 0) / 1024)} KB</span>
-                                                    {cert.url && (
-                                                        <button 
-                                                            type="button" 
-                                                            onClick={() => handleFileDownload(cert.path)}
-                                                            className="download-button"
-                                                        >
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                            </svg>
-                                                        </button>
-                                                    )}
-                                                    {/* Agregar vista previa de la imagen */}
-                                                    <img 
-                                                        src={cert.url} 
-                                                        alt={cert.name}
-                                                        className="w-10 h-10 object-cover ml-2 rounded"
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Botón de guardar */}
-                                <div className="flex justify mt-6">
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="bg-green-700 text-white px-6 py-2 rounded-md hover:bg-green-800 transition-colors disabled:opacity-50"
-                                    >
-                                        {processing ? 'Guardando...' : 'Guardar Cambios'}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Sección de Licenciamiento */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <button
-                            type="button"
-                            onClick={() => toggleSeccion('licenciamiento')}
-                            className="w-full p-6 flex justify-between items-center text-left"
-                        >
-                            <h2 className="text-xl font-semibold">Licenciamiento</h2>
-                            <svg
-                                className={`w-6 h-6 transform transition-transform ${
-                                    seccionesExpandidas.licenciamiento ? 'rotate-180' : ''
-                                }`}
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-                        {seccionesExpandidas.licenciamiento && (
-                            <div className="p-6 pt-0">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Razón licenciamiento español */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            ¿Por qué razón decidieron licenciarse Marca País (Español)?<span className="text-red-500">*</span>
-                                        </label>
-                                        <textarea
-                                            value={data.razon_licenciamiento_es}
-                                            onChange={e => setData('razon_licenciamiento_es', e.target.value)}
-                                            rows={4}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            placeholder="Respuesta"
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Razón licenciamiento inglés */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            ¿Por qué razón decidieron licenciarse Marca País (Inglés)?<span className="text-red-500">*</span>
-                                        </label>
-                                        <textarea
-                                            value={data.razon_licenciamiento_en}
-                                            onChange={e => setData('razon_licenciamiento_en', e.target.value)}
-                                            rows={4}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            placeholder="Answer"
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Proceso de licenciamiento */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            ¿Cómo fue el proceso para obtener el licenciamiento?<span className="text-red-500">*</span>
-                                        </label>
-                                        <textarea
-                                            value={data.proceso_licenciamiento}
-                                            onChange={e => setData('proceso_licenciamiento', e.target.value)}
-                                            rows={4}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            placeholder="Respuesta"
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Recomendación y Observaciones */}
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                ¿Recomendaría a otras empresas obtener la Marca País?
-                                            </label>
-                                            <div className="mt-2 flex gap-4">
-                                                <label className="inline-flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="recomienda_marca_pais"
-                                                        value="1"
-                                                        checked={data.recomienda_marca_pais === true}
-                                                        onChange={e => setData('recomienda_marca_pais', true)}
-                                                        className="form-radio text-green-600 focus:ring-green-500"
-                                                    />
-                                                    <span className="ml-2">Sí</span>
-                                                </label>
-                                                <label className="inline-flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="recomienda_marca_pais"
-                                                        value="0"
-                                                        checked={data.recomienda_marca_pais === false}
-                                                        onChange={e => setData('recomienda_marca_pais', false)}
-                                                        className="form-radio text-green-600 focus:ring-green-500"
-                                                    />
-                                                    <span className="ml-2">No</span>
-                                                </label>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Observaciones<span className="text-red-500">*</span>
-                                            </label>
-                                            <textarea
-                                                value={data.observaciones}
-                                                onChange={e => setData('observaciones', e.target.value)}
-                                                rows={4}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                placeholder="Respuesta"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Botón de guardar */}
-                                <div className="flex mt-6">
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="bg-green-700 text-white px-6 py-2 rounded-md hover:bg-green-800 transition-colors disabled:opacity-50"
-                                    >
-                                        {processing ? 'Guardando...' : 'Guardar Cambios'}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    
                 </form>
             </div>
             

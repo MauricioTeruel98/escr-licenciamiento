@@ -23,30 +23,30 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         $isAdmin = $user->isAdmin();
-        
+
         // Obtener el total de indicadores activos
         $totalIndicadores = Indicator::where('is_active', true)->count();
 
         //Resultados de la autoevaluación
         $autoEvaluationResult = AutoEvaluationResult::where('company_id', $user->company_id)->first();
-        
+
         // Obtener el número de respuestas de la empresa
-        $indicadoresRespondidos = IndicatorAnswer::whereHas('indicator', function($query) {
+        $indicadoresRespondidos = IndicatorAnswer::whereHas('indicator', function ($query) {
             $query->where('is_active', true);
         })
-        ->where('company_id', $user->company_id)
-        ->count();
-        
+            ->where('company_id', $user->company_id)
+            ->count();
+
         // Calcular el porcentaje de progreso
         $progreso = $totalIndicadores > 0 ? round(($indicadoresRespondidos / $totalIndicadores) * 100) : 0;
-        
+
         // Obtener indicadores vinculantes fallidos
         $failedBindingIndicators = IndicatorAnswer::where('company_id', $user->company_id)
             ->where('is_binding', true)
             ->where('answer', 0)
             ->with('indicator:id,name,self_evaluation_question')
             ->get()
-            ->map(function($answer) {
+            ->map(function ($answer) {
                 return [
                     'name' => $answer->indicator->name,
                     'question' => $answer->indicator->self_evaluation_question
@@ -58,17 +58,17 @@ class DashboardController extends Controller
             ->where('nota', '<', 70)
             ->with('value:id,name')
             ->get()
-            ->map(function($result) {
+            ->map(function ($result) {
                 return [
                     'name' => $result->value->name,
                     'nota' => $result->nota
                 ];
             });
-        
+
         // Determinar el status
         $status = 'en_proceso';
         $autoEvaluationResult = \App\Models\AutoEvaluationResult::where('company_id', $user->company_id)->first();
-        
+
         if ($autoEvaluationResult) {
             if ($indicadoresRespondidos === $totalIndicadores) {
                 if ($failedBindingIndicators->isEmpty() && $failedValues->isEmpty()) {
@@ -108,26 +108,39 @@ class DashboardController extends Controller
         $company = $user->company;
         $infoAdicional = $company->infoAdicional;
 
-        // Actualizar form_sended en auto_evaluation_result
-        if ($request->has('form_sended')) {
-            AutoEvaluationResult::where('company_id', $user->company_id)
-                ->update(['form_sended' => true]);
-        }
+        // Combinar los datos de la empresa con infoAdicional
+        $companyData = [
+            'nombre_comercial' => $company->name,
+            'sitio_web' => $company->website,
+            'sector' => $company->sector,
+            'ciudad' => $company->city,
+            'cedula_juridica' => $company->legal_id,
+            'actividad_comercial' => $company->commercial_activity,
+            'es_exportadora' => $company->is_exporter,
+            'telefono_1' => $company->phone,
+            'telefono_2' => $company->mobile,
+        ];
 
-        // Transformar las rutas de imágenes a URLs completas si existen
+        // Si existe infoAdicional, combinar con los datos de la empresa
         if ($infoAdicional) {
+            // Actualizar form_sended en auto_evaluation_result
+            if ($request->has('form_sended')) {
+                AutoEvaluationResult::where('company_id', $user->company_id)
+                    ->update(['form_sended' => true]);
+            }
+
             // Logo
             if ($infoAdicional->logo_path) {
                 $infoAdicional->logo_url = asset('storage/' . $infoAdicional->logo_path);
             }
-            
+
             // Procesar fotografías
             $fotografias = [];
             if ($infoAdicional->fotografias_paths) {
-                $paths = is_string($infoAdicional->fotografias_paths) 
-                    ? json_decode($infoAdicional->fotografias_paths, true) 
+                $paths = is_string($infoAdicional->fotografias_paths)
+                    ? json_decode($infoAdicional->fotografias_paths, true)
                     : $infoAdicional->fotografias_paths;
-                
+
                 if (is_array($paths)) {
                     foreach ($paths as $path) {
                         if (Storage::disk('public')->exists($path)) {
@@ -142,14 +155,14 @@ class DashboardController extends Controller
                 }
             }
             $infoAdicional->fotografias_urls = $fotografias;
-            
+
             // Procesar certificaciones
             $certificaciones = [];
             if ($infoAdicional->certificaciones_paths) {
-                $paths = is_string($infoAdicional->certificaciones_paths) 
-                    ? json_decode($infoAdicional->certificaciones_paths, true) 
+                $paths = is_string($infoAdicional->certificaciones_paths)
+                    ? json_decode($infoAdicional->certificaciones_paths, true)
                     : $infoAdicional->certificaciones_paths;
-                
+
                 if (is_array($paths)) {
                     foreach ($paths as $path) {
                         if (Storage::disk('public')->exists($path)) {
@@ -167,10 +180,10 @@ class DashboardController extends Controller
 
             // Cargar explícitamente la relación de productos
             $infoAdicional->load('productos');
-            
+
             // Verificar que productos existe antes de usar map
             if ($infoAdicional->productos) {
-                $infoAdicional->productos = $infoAdicional->productos->map(function($producto) {
+                $infoAdicional->productos = $infoAdicional->productos->map(function ($producto) {
                     if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
                         $producto->imagen_url = asset('storage/' . $producto->imagen);
                     }
@@ -185,6 +198,10 @@ class DashboardController extends Controller
                 'certificaciones_paths' => $infoAdicional->certificaciones_paths,
                 'certificaciones_urls' => $infoAdicional->certificaciones_urls
             ]);
+
+            $infoAdicional = array_merge($companyData, $infoAdicional->toArray());
+        } else {
+            $infoAdicional = $companyData;
         }
 
         return Inertia::render('Dashboard/FormEmpresa', [
@@ -207,4 +224,4 @@ class DashboardController extends Controller
     {
         return Inertia::render('SuperAdmin/Progresos');
     }
-} 
+}
