@@ -130,27 +130,33 @@ export default function Evaluation({
                     <h2 className="card-title text-xl mb-4">Solicitudes de Acceso Pendientes</h2>
                     <div className="space-y-4">
                         {pendingRequests.map((request) => (
-                            <div key={request.id}
-                                className="border rounded-lg p-4 flex items-center justify-between bg-gray-50">
-                                <div className="space-y-1">
-                                    <p className="font-medium">{request.name}</p>
-                                    <p className="text-sm text-gray-600">{request.email}</p>
-                                    <p className="text-xs text-gray-500">
-                                        Solicitud recibida: {new Date(request.created_at).toLocaleDateString()}
+                            <div key={request.id} className="bg-green-100/50 rounded-xl shadow-sm p-4 flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-900">
+                                        {request.name}
+                                    </p>
+                                    <p className="text-sm text-gray-500">
+                                        {request.email}
                                     </p>
                                 </div>
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => post(route('user.approve', request.id))}
-                                        className="btn btn-success bg-green-700 text-white hover:bg-green-800"
+                                        className="flex items-center justify-center w-6 h-6 rounded-full bg-green-600 hover:bg-green-700"
+                                        title="Aprobar"
                                     >
-                                        Aprobar
+                                        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
                                     </button>
                                     <button
                                         onClick={() => post(route('user.reject', request.id))}
-                                        className="btn btn-error bg-red-600 text-white hover:bg-red-700"
+                                        className="flex items-center justify-center w-6 h-6 rounded-full bg-red-600 hover:bg-red-700"
+                                        title="Rechazar"
                                     >
-                                        Rechazar
+                                        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
                                     </button>
                                 </div>
                             </div>

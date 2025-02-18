@@ -411,14 +411,14 @@ export default function UsersManagement() {
                 <div className="lg:col-span-3 space-y-4">
                     {/* Sección de Solicitudes Pendientes */}
                     {solicitudesPendientes.length > 0 && (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 divide-y divide-gray-200">
-                            <div className="p-4">
-                                <h2 className="text-sm font-medium text-gray-900">
+                        <div className="bg-green-100/50 rounded-xl shadow-sm p-4">
+                            <div className="">
+                                <h2 className="text-sm font-medium text-gray-900 mb-4">
                                     Solicitudes Pendientes
                                 </h2>
                             </div>
                             {solicitudesPendientes.map((solicitud) => (
-                                <div key={solicitud.id} className="p-4 flex items-center justify-between">
+                                <div key={solicitud.id} className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-900">
                                             {solicitud.name}
@@ -430,17 +430,21 @@ export default function UsersManagement() {
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => handleApprove(solicitud.id)}
-                                            className="text-green-600 hover:text-green-700"
+                                            className="flex items-center justify-center w-6 h-6 rounded-full bg-green-600 hover:bg-green-700"
                                             title="Aprobar"
                                         >
-                                            <CheckCircle className="h-5 w-5" />
+                                            <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            </svg>
                                         </button>
                                         <button
                                             onClick={() => handleReject(solicitud.id)}
-                                            className="text-red-600 hover:text-red-700"
+                                            className="flex items-center justify-center w-6 h-6 rounded-full bg-red-600 hover:bg-red-700"
                                             title="Rechazar"
                                         >
-                                            <XCircle className="h-5 w-5" />
+                                            <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            </svg>
                                         </button>
                                     </div>
                                 </div>
