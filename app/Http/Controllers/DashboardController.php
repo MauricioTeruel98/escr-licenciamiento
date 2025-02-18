@@ -165,8 +165,11 @@ class DashboardController extends Controller
             }
             $infoAdicional->certificaciones_urls = $certificaciones;
 
-            // Procesar productos con sus imágenes
-            if ($infoAdicional && $infoAdicional->productos) {
+            // Cargar explícitamente la relación de productos
+            $infoAdicional->load('productos');
+            
+            // Verificar que productos existe antes de usar map
+            if ($infoAdicional->productos) {
                 $infoAdicional->productos = $infoAdicional->productos->map(function($producto) {
                     if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
                         $producto->imagen_url = asset('storage/' . $producto->imagen);
