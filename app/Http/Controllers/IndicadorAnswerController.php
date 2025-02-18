@@ -191,7 +191,7 @@ class IndicadorAnswerController extends Controller
                 $pdf->save($fullPath);
 
                 // Enviar email con PDF
-                Mail::to($user->email)->send(new AutoEvaluationResults($fullPath));
+                Mail::to($user->email)->send(new AutoEvaluationResults($fullPath, $user->company));
 
                 return response()->json([
                     'success' => true,
