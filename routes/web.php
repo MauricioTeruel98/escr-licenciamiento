@@ -34,6 +34,7 @@ use App\Http\Controllers\ProgresosController;
 use App\Http\Controllers\CompanyAuthorizationController;
 use App\Http\Middleware\EnsureCompanyIsAuthorized;
 use App\Http\Controllers\RequisitosController;
+use App\Http\Controllers\PDFController;
 // Ruta principal
 Route::get('/', function () {
     if (Auth::check()) {
@@ -140,7 +141,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::delete('/api/requisitos/{requisito}', [RequisitosController::class, 'destroy']);
     Route::post('/api/requisitos/bulk-delete', [RequisitosController::class, 'bulkDelete']);
     Route::get('/api/requisitos/subcategories', [RequisitosController::class, 'getSubcategories']);
-    
+    Route::get('/api/subcategories/{subcategory}/requisitos', [RequisitosController::class, 'getRequisitosBySubcategory']);
 
     // Rutas para homologaciones (AvailableCertification)
     Route::get('/api/homologations', [AvailableCertificationController::class, 'index']);
@@ -288,6 +289,8 @@ Route::get('/api/lugares', function () {
     return response()->file(storage_path('app/public/lugares.json'));
 })->name('api.lugares');
 
-Route::get('/api/subcategories/{subcategory}/requisitos', [RequisitosController::class, 'getRequisitosBySubcategory']);
+Route::get('/download-indicators-pdf', [PDFController::class, 'downloadIndicatorsPDF'])
+    ->name('download.indicators.pdf')
+    ->middleware(['auth']);
 
 require __DIR__ . '/auth.php';

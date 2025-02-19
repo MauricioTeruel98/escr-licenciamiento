@@ -120,6 +120,10 @@ export default function Evaluation({
         }
     };
 
+    const handleDownloadPDF = () => {
+        window.open(route('download.indicators.pdf'), '_blank');
+    };
+
     // Componente para las solicitudes pendientes
     const PendingRequestsAlert = () => {
         if (!isAdmin || !pendingRequests || pendingRequests.length === 0) return null;
@@ -301,7 +305,7 @@ export default function Evaluation({
                                                     >
                                                         <path
                                                             fillRule="evenodd"
-                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                                                             clipRule="evenodd"
                                                         />
                                                     </svg>
@@ -433,6 +437,19 @@ export default function Evaluation({
                                         </p>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Botón para descargar PDF de indicadores */}
+                        <div className="card bg-white shadow">
+                            <div className="card-body">
+                                <h2 className="card-title">Descargar Indicadores</h2>
+                                <button
+                                    onClick={handleDownloadPDF}
+                                    className="inline-block px-4 py-2 mt-4 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                                >
+                                    Descargar PDF de Indicadores
+                                </button>
                             </div>
                         </div>
 
