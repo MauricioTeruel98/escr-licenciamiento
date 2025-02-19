@@ -1,0 +1,103 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Requisitos;
+use App\Models\Subcategory;
+use App\Models\Value;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class RequisitosController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = Requisitos::with('value');
+
+        if ($request->has('search')) {
+            $searchTerm = $request->search;
+            $query->where('name', 'like', "%{$searchTerm}%");
+        }
+
+        $requisitos = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        return response()->json($requisitos);
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'value_id' => 'required|exists:values,id',
+            'subcategory_id' => 'required|exists:subcategories,id',
+            'is_active' => 'boolean'
+        ]);
+
+        $requisito = Requisitos::create($request->all());
+
+        return response()->json([
+            'message' => 'Requisito creado exitosamente',
+            'requisito' => $requisito
+        ], 201);
+    }
+
+    public function update(Request $request, Requisitos $requisito)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'value_id' => 'required|exists:values,id',
+            'subcategory_id' => 'required|exists:subcategories,id',
+            'is_active' => 'boolean'
+        ]);
+
+        $requisito->update($request->all());
+
+        return response()->json([
+            'message' => 'Requisito actualizado exitosamente',
+            'requisito' => $requisito
+        ]);
+    }
+
+    public function destroy(Requisitos $requisito)
+    {
+        $requisito->delete();
+        return response()->json(['message' => 'Requisito eliminado exitosamente']);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        try {
+            $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'exists:requisitos,id'
+            ]);
+
+            $count = Requisitos::whereIn('id', $request->ids)->delete();
+
+            return response()->json([
+                'message' => "{$count} requisitos eliminados exitosamente"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al eliminar los requisitos: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getSubcategories()
+    {
+        try {
+            $subcategories = Subcategory::where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name']);
+
+            return response()->json($subcategories);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al obtener las subcategorías: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+}

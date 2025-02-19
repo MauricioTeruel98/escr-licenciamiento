@@ -33,7 +33,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProgresosController;
 use App\Http\Controllers\CompanyAuthorizationController;
 use App\Http\Middleware\EnsureCompanyIsAuthorized;
-
+use App\Http\Controllers\RequisitosController;
 // Ruta principal
 Route::get('/', function () {
     if (Auth::check()) {
@@ -123,6 +123,8 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/super/certifications', [SuperAdminController::class, 'certifications'])->name('super.certifications');
     Route::get('/super/settings', [SuperAdminController::class, 'settings'])->name('super.settings');
     Route::get('/super/values', [SuperAdminController::class, 'values'])->name('super.values');
+    Route::get('/super/subcategories', [SuperAdminController::class, 'subcategories'])->name('super.subcategories');
+    Route::get('/super/requisitos', [SuperAdminController::class, 'requisitos'])->name('super.requisitos');
     Route::get('/super/homologations', [SuperAdminController::class, 'homologations'])->name('super.homologations');
     Route::get('/super/indicators', [SuperAdminController::class, 'indicators'])->name('super.indicators');
 
@@ -131,8 +133,14 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::put('/api/subcategories/{subcategory}', [SubcategoryController::class, 'update']);
     Route::delete('/api/subcategories/{subcategory}', [SubcategoryController::class, 'destroy']);
     Route::post('/api/subcategories/bulk-delete', [SubcategoryController::class, 'bulkDelete']);
-    Route::get('/super/subcategories', [SuperAdminController::class, 'subcategories'])
-        ->name('super.subcategories');
+
+    Route::get('/api/requisitos', [RequisitosController::class, 'index']);
+    Route::post('/api/requisitos', [RequisitosController::class, 'store']);
+    Route::put('/api/requisitos/{requisito}', [RequisitosController::class, 'update']);
+    Route::delete('/api/requisitos/{requisito}', [RequisitosController::class, 'destroy']);
+    Route::post('/api/requisitos/bulk-delete', [RequisitosController::class, 'bulkDelete']);
+    Route::get('/api/requisitos/subcategories', [RequisitosController::class, 'getSubcategories']);
+    
 
     // Rutas para homologaciones (AvailableCertification)
     Route::get('/api/homologations', [AvailableCertificationController::class, 'index']);

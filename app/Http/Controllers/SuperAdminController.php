@@ -10,6 +10,7 @@ use App\Models\Indicator;
 use App\Models\Value;
 use App\Models\Subcategory;
 use App\Models\AvailableCertification;
+use App\Models\Requisitos;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -191,6 +192,17 @@ class SuperAdminController extends Controller
         
         return Inertia::render('SuperAdmin/Subcategories/Index', [
             'initialSubcategories' => $subcategories
+        ]);
+    }
+
+    public function requisitos()
+    {
+        $requisitos = Requisitos::with('value')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        return Inertia::render('SuperAdmin/Requisitos/Index', [
+            'initialRequisitos' => $requisitos
         ]);
     }
 
