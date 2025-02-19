@@ -26,4 +26,9 @@ class Value extends Model
     {
         return $this->hasMany(Subcategory::class);
     }
+
+    public function requisitos(): HasMany
+    {
+        return $this->hasMany(Requisitos::class);
+    }
 } 

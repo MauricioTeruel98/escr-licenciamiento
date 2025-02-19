@@ -14,6 +14,7 @@ class Indicator extends Model
         'self_evaluation_question',
         'value_id',
         'subcategory_id',
+        'requisito_id',
         'evaluation_questions',
         'guide',
         'is_active'
@@ -40,6 +41,11 @@ class Indicator extends Model
     public function subcategory(): BelongsTo
     {
         return $this->belongsTo(Subcategory::class);
+    }
+
+    public function requisito(): BelongsTo
+    {
+        return $this->belongsTo(Requisitos::class);
     }
 
     public function getFormattedQuestionsAttribute(): array

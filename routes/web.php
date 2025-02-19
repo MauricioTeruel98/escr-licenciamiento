@@ -288,4 +288,6 @@ Route::get('/api/lugares', function () {
     return response()->file(storage_path('app/public/lugares.json'));
 })->name('api.lugares');
 
+Route::get('/api/subcategories/{subcategory}/requisitos', [RequisitosController::class, 'getRequisitosBySubcategory']);
+
 require __DIR__ . '/auth.php';

@@ -104,4 +104,13 @@ class RequisitosController extends Controller
             ], 500);
         }
     }
+
+    public function getRequisitosBySubcategory($subcategoryId)
+    {
+        $requisitos = Requisitos::where('subcategory_id', $subcategoryId)
+            ->where('is_active', true)
+            ->get(['id', 'name']);
+
+        return response()->json($requisitos);
+    }
 }

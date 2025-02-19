@@ -80,6 +80,11 @@ export default function IndicatorsIndex() {
             render: (item) => item.subcategory?.name || 'N/A'
         },
         {
+            key: 'requisito', 
+            label: 'Requisito',
+            render: (item) => item.requisito?.name || 'N/A'
+        },
+        {
             key: 'is_active',
             label: 'Estado',
             render: (item) => (
@@ -128,6 +133,8 @@ export default function IndicatorsIndex() {
         loadIndicators();
         loadRelatedData();
     }, []);
+
+    console.log(indicators);
 
     const loadIndicators = async (page = 1, perPage = 10, search = '') => {
         try {

@@ -28,6 +28,7 @@ export default function IndicatorModal({
 
     const [formData, setFormData] = useState(initialFormData);
     const [availableSubcategories, setAvailableSubcategories] = useState([]);
+    const [availableRequisitos, setAvailableRequisitos] = useState([]);
 
     useEffect(() => {
         if (isOpen) {
@@ -43,9 +44,11 @@ export default function IndicatorModal({
                     value_id: indicator.value_id,
                     subcategory_id: indicator.subcategory?.id || '',
                 });
+                loadRequisitos(indicator.subcategory_id);
             } else {
                 setFormData(initialFormData);
                 setAvailableSubcategories([]);
+                setAvailableRequisitos([]);
             }
         }
     }, [isOpen, indicator]);
@@ -65,6 +68,21 @@ export default function IndicatorModal({
         }
     };
 
+    const loadRequisitos = async (subcategoryId) => {
+        if (!subcategoryId) {
+            setAvailableRequisitos([]);
+            return;
+        }
+
+        try {
+            const response = await axios.get(`/api/subcategories/${subcategoryId}/requisitos`);
+            setAvailableRequisitos(response.data);
+        } catch (error) {
+            console.error('Error al cargar requisitos:', error);
+            setAvailableRequisitos([]);
+        }
+    };
+
     const handleValueChange = async (valueId) => {
         setFormData(prev => ({
             ...prev,
@@ -73,6 +91,16 @@ export default function IndicatorModal({
         }));
 
         await loadSubcategories(valueId);
+    };
+
+    const handleSubcategoryChange = async (subcategoryId) => {
+        setFormData(prev => ({
+            ...prev,
+            subcategory_id: subcategoryId,
+            requisito_id: ''
+        }));
+
+        await loadRequisitos(subcategoryId);
     };
 
     const handleSubmit = (e) => {
@@ -235,7 +263,7 @@ export default function IndicatorModal({
                                         </label>
                                         <select
                                             value={formData.subcategory_id}
-                                            onChange={(e) => setFormData({ ...formData, subcategory_id: e.target.value })}
+                                            onChange={(e) => handleSubcategoryChange(e.target.value)}
                                             className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
                                             required
                                             disabled={!formData.value_id}
@@ -254,6 +282,36 @@ export default function IndicatorModal({
                                         {formData.value_id && availableSubcategories.length === 0 && (
                                             <p className="mt-1 text-sm text-red-500">
                                                 No hay subcategorías disponibles para este valor
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Requisito */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Requisito *
+                                        </label>
+                                        <select
+                                            value={formData.requisito_id}
+                                            onChange={(e) => setFormData({ ...formData, requisito_id: e.target.value })}
+                                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
+                                            required
+                                            disabled={!formData.subcategory_id}
+                                        >
+                                            <option value="">
+                                                {formData.subcategory_id
+                                                    ? 'Seleccione un requisito'
+                                                    : 'Primero seleccione una subcategoría'}
+                                            </option>
+                                            {availableRequisitos.map((requisito) => (
+                                                <option key={requisito.id} value={requisito.id}>
+                                                    {requisito.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {formData.subcategory_id && availableRequisitos.length === 0 && (
+                                            <p className="mt-1 text-sm text-red-500">
+                                                No hay requisitos disponibles para esta subcategoría
                                             </p>
                                         )}
                                     </div>

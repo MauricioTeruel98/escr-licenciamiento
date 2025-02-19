@@ -12,7 +12,7 @@ class IndicatorController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Indicator::with(['homologations', 'value', 'subcategory', 'evaluationQuestions']);
+        $query = Indicator::with(['homologations', 'value', 'subcategory', 'evaluationQuestions', 'requisito']);
 
         if ($request->has('search')) {
             $searchTerm = $request->search;
@@ -42,7 +42,8 @@ class IndicatorController extends Controller
             'evaluation_questions' => 'nullable|array',
             'evaluation_questions.*' => 'string',
             'guide' => 'nullable|string',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
+            'requisito_id' => 'required|exists:requisitos,id'
         ]);
 
         $indicator = Indicator::create([
@@ -54,6 +55,7 @@ class IndicatorController extends Controller
             'evaluation_questions' => $request->evaluation_questions,
             'guide' => $request->guide,
             'is_active' => $request->is_active ?? true,
+            'requisito_id' => $request->requisito_id,
         ]);
 
         $indicator->homologations()->attach($request->homologation_ids);
@@ -83,7 +85,8 @@ class IndicatorController extends Controller
             'evaluation_questions' => 'nullable|array',
             'evaluation_questions.*' => 'string',
             'guide' => 'nullable|string',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
+            'requisito_id' => 'required|exists:requisitos,id'
         ]);
 
         $indicator->update([
@@ -95,6 +98,7 @@ class IndicatorController extends Controller
             'evaluation_questions' => $request->evaluation_questions,
             'guide' => $request->guide,
             'is_active' => $request->is_active ?? true,
+            'requisito_id' => $request->requisito_id,
         ]);
 
         $indicator->homologations()->sync($request->homologation_ids);
