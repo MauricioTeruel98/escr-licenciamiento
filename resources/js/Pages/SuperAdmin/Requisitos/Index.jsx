@@ -205,6 +205,8 @@ export default function RequisitosIndex() {
         }
     };
 
+    console.log(requisitos);
+
     return (
         <SuperAdminLayout>
             <Head title="Listado de Componentes" />

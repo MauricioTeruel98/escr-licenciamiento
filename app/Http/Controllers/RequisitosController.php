@@ -12,7 +12,7 @@ class RequisitosController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Requisitos::with('value');
+        $query = Requisitos::with(['value', 'subcategory']);
 
         if ($request->has('search')) {
             $searchTerm = $request->search;
@@ -86,12 +86,16 @@ class RequisitosController extends Controller
         }
     }
 
-    public function getSubcategories()
+    public function getSubcategories(Request $request)
     {
         try {
+            $valueId = $request->query('value_id');
             $subcategories = Subcategory::where('is_active', true)
+                ->when($valueId, function ($query, $valueId) {
+                    return $query->where('value_id', $valueId);
+                })
                 ->orderBy('name')
-                ->get(['id', 'name']);
+                ->get(['id', 'name', 'value_id']);
 
             return response()->json($subcategories);
         } catch (\Exception $e) {

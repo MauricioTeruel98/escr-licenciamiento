@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import axios from 'axios';
 
-export default function RequisitoModal({ isOpen, onClose, onSubmit, requisito = null, values, subcategories }) {
+export default function RequisitoModal({ isOpen, onClose, onSubmit, requisito = null, values }) {
     const initialFormData = {
         name: '',
         description: '',
@@ -11,6 +12,7 @@ export default function RequisitoModal({ isOpen, onClose, onSubmit, requisito = 
     };
 
     const [formData, setFormData] = useState(initialFormData);
+    const [filteredSubcategories, setFilteredSubcategories] = useState([]);
 
     useEffect(() => {
         if (isOpen) {
@@ -27,6 +29,23 @@ export default function RequisitoModal({ isOpen, onClose, onSubmit, requisito = 
             }
         }
     }, [isOpen, requisito]);
+
+    useEffect(() => {
+        if (formData.value_id) {
+            // Realizar solicitud al backend para obtener subcategorías
+            axios.get(`/api/requisitos/subcategories`, {
+                params: { value_id: formData.value_id }
+            })
+            .then(response => {
+                setFilteredSubcategories(response.data);
+            })
+            .catch(error => {
+                console.error('Error al cargar subcategorías:', error);
+            });
+        } else {
+            setFilteredSubcategories([]);
+        }
+    }, [formData.value_id]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -122,7 +141,7 @@ export default function RequisitoModal({ isOpen, onClose, onSubmit, requisito = 
                                         required
                                     >
                                         <option value="">Seleccione una subcategoría</option>
-                                        {subcategories.map((subcategory) => (
+                                        {filteredSubcategories.map((subcategory) => (
                                             <option key={subcategory.id} value={subcategory.id}>
                                                 {subcategory.name}
                                             </option>

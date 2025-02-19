@@ -27,6 +27,12 @@ export default function SuperAdminLayout({ children, title = null }) {
             active: route().current('super.subcategories')
         },
         {
+            name: 'Requisitos',
+            href: route('super.requisitos'),
+            icon: FileText,
+            active: route().current('super.requisitos')
+        },
+        {
             name: 'Homologaciones',
             href: route('super.homologations'),
             icon: Award,
