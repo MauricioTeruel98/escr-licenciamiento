@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Informe de Evaluación</title>
     <style>
-
         @font-face {
             font-family: 'Poppins';
             src: url('/public/fonts/poppins/Poppins-Regular.ttf') format('truetype');
@@ -98,7 +97,7 @@
 
 <body>
     <header>
-        <img src="public/assets/img/logo_esc.png" alt="Logo">
+        <img src="/public/assets/img/logo_esc_white.png" alt="Logo">
         <h1>Informe de Evaluación del Protocolo Marca País</h1>
     </header>
 
@@ -117,31 +116,13 @@
             <th>Calificación mínima</th>
             <th>Calificación obtenida</th>
         </tr>
-        <tr>
-            <td>Excelencia</td>
-            <td>85%</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Sostenibilidad</td>
-            <td>80%</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Progreso Social</td>
-            <td>80%</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Innovación</td>
-            <td>80%</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Vinculación</td>
-            <td>100%</td>
-            <td></td>
-        </tr>
+        @foreach($values as $value)
+            <tr>
+                <td>{{ $value->name }}</td>
+                <td>{{ $value->minimum_score }}%</td>
+                <td>{{ $finalScores[$value->id]->nota ?? 0 }}%</td>
+            </tr>
+        @endforeach
     </table>
 
     <h2>Datos participantes clave</h2>
@@ -293,24 +274,49 @@
     <p class="highlight">EXCEL ADJUNTO</p>
     <p><strong>PORFA REVISEMOS EN CONJUNTO PARA VER COMO ES LA MEJOR OPCIÓN DE PODER TENER LA INFO</strong></p>
 
-    <h3>Valores</h3>
-    <h4>Excelencia</h4>
-    <table border="1">
-        <tr>
-            <th>Componente</th>
-            <th>Requisito</th>
-            <th>Indicador</th>
-            <th>Cumplimiento</th>
-            <th>Justificación</th>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>Si / No</td>
-            <td></td>
-        </tr>
-    </table>
+    @foreach($values as $value)
+        <h3>{{ $value->name }}</h3>
+        <div class="score">
+            <p><strong>Puntuación obtenida:</strong> {{ $finalScores[$value->id]->nota ?? 0 }}/100</p>
+            <p><strong>Nota mínima requerida:</strong> {{ $value->minimum_score }}</p>
+        </div>
+
+        <table border="1">
+            <tr>
+                <th>Componente</th>
+                <th>Requisito</th>
+                <th>Indicador</th>
+                <th>Cumplimiento</th>
+                <th>Justificación</th>
+            </tr>
+            @foreach($value->subcategories as $subcategory)
+                @foreach($subcategory->indicators as $indicator)
+                    <tr>
+                        <td>{{ $subcategory->name }}</td>
+                        <td></td>
+                        <td>
+                            {{ $indicator->name }}
+                            @if($indicator->binding)
+                                <span class="binding">(Vinculante)</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if(isset($answers[$value->id]))
+                                {{ $answers[$value->id]->firstWhere('indicator_id', $indicator->id)->answer === "1" ? 'Sí' : 'No' }}
+                            @else
+                                No respondida
+                            @endif
+                        </td>
+                        <td>{{ $indicator->self_evaluation_question }}</td>
+                    </tr>
+                @endforeach
+            @endforeach
+        </table>
+
+        @if(!$loop->last)
+            <div class="page-break"></div>
+        @endif
+    @endforeach
 
     <h3>Disposiciones finales</h3>
     <ol>

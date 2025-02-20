@@ -14,6 +14,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     const [bindingWarning, setBindingWarning] = useState(false);
     const [currentScore, setCurrentScore] = useState(initialScore);
     const [autoEvaluationItems, setAutoEvaluationItems] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     console.log(user);
     console.log(certifications);
@@ -141,6 +142,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     };
 
     const handleConfirmSubmit = () => {
+        setLoading(true);
         const formData = {
             value_id: valueData.id,
             answers: answers
@@ -185,6 +187,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
                     setCurrentScore(response.data.finalScore);
                 }
                 setShowConfirmModal(false);
+                setLoading(false);
             })
             .catch(error => {
                 console.error('Error al guardar:', error);
@@ -193,6 +196,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
                     message: error.response?.data?.message || 'Error al guardar las respuestas'
                 });
                 setShowConfirmModal(false);
+                setLoading(false);
             });
     };
 
@@ -463,14 +467,26 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                                     <button
                                         onClick={() => setShowConfirmModal(false)}
                                         className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                        disabled={loading}
                                     >
                                         Cancelar
                                     </button>
                                     <button
                                         onClick={handleConfirmSubmit}
                                         className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                        disabled={loading}
                                     >
-                                        Confirmar
+                                        {loading ? (
+                                            <>
+                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Procesando...
+                                            </>
+                                        ) : (
+                                            'Confirmar'
+                                        )}
                                     </button>
                                 </div>
                             </div>

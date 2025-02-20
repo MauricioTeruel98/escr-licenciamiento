@@ -10,6 +10,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
     <!-- Scripts -->
     @routes
@@ -17,7 +18,7 @@
     @vite(['resources/js/app.jsx', "resources/js/Pages/{$page['component']}.jsx"])
     @inertiaHead
     <style>
-        @font-face {
+        /* @font-face {
             font-family: "Inter";
             font-style: normal;
             font-weight: 400;
@@ -47,7 +48,7 @@
             font-style: normal;
             font-weight: 400;
             src: url('{{ asset('assets/fonts/poppins/Poppins-ExtraBold.ttf') }}') format("truetype");
-        }
+        } */
 
         body {
             font-family: "Poppins", sans-serif;
@@ -66,7 +67,8 @@
         }
 
         h1 {
-            font-family: "Poppins ExtraBold", serif !important;
+            font-family: "Poppins", serif !important;
+            font-weight: 800;
         }
     </style>
     <link rel="preload" href="{{ asset('assets/fonts/poppins/Poppins-Regular.ttf') }}" as="font" type="font/ttf" crossorigin>

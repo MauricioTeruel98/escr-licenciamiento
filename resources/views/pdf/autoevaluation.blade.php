@@ -1,81 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resultados de Autoevaluación</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            color: #333;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
+        @font-face {
+            font-family: 'Poppins';
+            src: url('/public/fonts/poppins/Poppins-Regular.ttf') format('truetype');
+            font-weight: normal;
         }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            background-color: #15803d;
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        .company-info {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #4b5563;
-        }
-        .value-section {
-            margin-top: 40px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 20px;
-            background-color: #ffffff;
-        }
-        .value-header {
-            background-color: #f3f4f6;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-        }
-        .subcategory {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #f9fafb;
-            border-radius: 6px;
-        }
-        .question {
-            margin-bottom: 20px;
-            padding: 10px;
-            border-left: 3px solid #15803d;
-        }
-        .answer {
-            margin-left: 20px;
-            color: #2563eb;
+
+        @font-face {
+            font-family: 'Poppins';
+            src: url('/public/fonts/poppins/Poppins-Bold.ttf') format('truetype');
             font-weight: bold;
         }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #007b00;
+            padding: 15px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .header img {
+            height: 50px;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            color: #007b00;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin: 10px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background-color: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007b00;
+            color: white;
+        }
+
         .binding {
             color: #dc2626;
             font-size: 0.9em;
             font-weight: bold;
         }
+
         .score {
             background-color: #f3f4f6;
             padding: 15px;
             border-radius: 6px;
             margin-top: 10px;
         }
+
         .final-score {
             text-align: center;
             margin-top: 40px;
             padding: 20px;
-            background-color: #15803d;
+            background-color: #007b00;
             color: white;
             border-radius: 8px;
         }
-        h1, h2, h3 {
-            color: #111827;
-            margin-top: 0;
-        }
+
         .page-break {
             page-break-after: always;
         }
@@ -83,6 +103,7 @@
 </head>
 <body>
     <div class="header">
+        <img src="/public/assets/img/logo_esc_white.png" alt="Logo">
         <h1>Resultados de Autoevaluación</h1>
     </div>
 
@@ -101,31 +122,37 @@
                 </div>
             </div>
 
-            @foreach($value->subcategories as $subcategory)
-                <div class="subcategory">
-                    <h3>{{ $subcategory->name }}</h3>
-                    
+            <table>
+                <tr>
+                    <th>Componente</th>
+                    <th>Requisito</th>
+                    <th>Indicador</th>
+                    <th>Cumplimiento</th>
+                    <th>Justificación</th>
+                </tr>
+                @foreach($value->subcategories as $subcategory)
                     @foreach($subcategory->indicators as $indicator)
-                        <div class="question">
-                            <p>
-                                <strong>{{ $indicator->name }}</strong>
+                        <tr>
+                            <td>{{ $subcategory->name }}</td>
+                            <td></td>
+                            <td>
+                                {{ $indicator->name }}
                                 @if($indicator->binding)
                                     <span class="binding">(Vinculante)</span>
                                 @endif
-                            </p>
-                            <p>{{ $indicator->self_evaluation_question }}</p>
-                            <p class="answer">
-                                Respuesta: 
+                            </td>
+                            <td>
                                 @if(isset($answers[$value->id]))
                                     {{ $answers[$value->id]->firstWhere('indicator_id', $indicator->id)->answer === "1" ? 'Sí' : 'No' }}
                                 @else
                                     No respondida
                                 @endif
-                            </p>
-                        </div>
+                            </td>
+                            <td>{{ $indicator->self_evaluation_question }}</td>
+                        </tr>
                     @endforeach
-                </div>
-            @endforeach
+                @endforeach
+            </table>
         </div>
 
         @if(!$loop->last)
