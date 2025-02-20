@@ -6,7 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class EvaluationCompletedNotification extends Notification
+class EvaluationCompletedNotificationSuperAdmin extends Notification
 {
     use Queueable;
 
@@ -28,7 +28,7 @@ class EvaluationCompletedNotification extends Notification
     {
         return (new MailMessage)
             ->subject('Evaluación completada')
-            ->view('emails.evaluation_completed', [
+            ->view('emails.evaluation_completed_super_admin', [
                 'user' => $this->user,
                 'companyName' => $this->companyName
             ]);

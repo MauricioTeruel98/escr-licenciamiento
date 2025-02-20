@@ -116,7 +116,8 @@ class EvaluationController extends Controller
             'savedAnswers' => $savedAnswers,
             'isEvaluador' => $isEvaluador,
             'progress' => $progress,
-            'totalSteps' => $valueData->subcategories->count()
+            'totalSteps' => $valueData->subcategories->count(),
+            'value_id' => $value_id
         ]);
     }
 

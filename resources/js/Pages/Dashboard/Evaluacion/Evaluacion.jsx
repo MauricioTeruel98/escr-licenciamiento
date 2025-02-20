@@ -4,8 +4,9 @@ import FileManager from '@/Components/FileManager';
 import Toast from '@/Components/Toast';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { router } from '@inertiajs/react';
 
-export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, progress, totalSteps }) {
+export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, progress, totalSteps, value_id }) {
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [approvals, setApprovals] = useState(() => {
         const initialApprovals = {};
@@ -73,6 +74,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             // Guardar las respuestas de la subcategoría actual
             const formData = new FormData();
             formData.append('isPartialSave', 'true');
+            formData.append('value_id', value_id);
             
             Object.entries(currentSubcategoryAnswers).forEach(([questionId, answerData]) => {
                 formData.append(`answers[${questionId}][value]`, answerData.value);
@@ -220,6 +222,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             setLoading(true);
             const formData = new FormData();
             formData.append('isPartialSave', 'false');
+            formData.append('value_id', value_id);
             
             // Obtener solo las respuestas de la última subcategoría
             const lastSubcategoryAnswers = {};

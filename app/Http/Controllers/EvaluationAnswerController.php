@@ -9,7 +9,10 @@ use App\Models\IndicatorAnswerEvaluation;
 use App\Models\Indicator;
 use Illuminate\Support\Facades\Storage;
 use App\Models\EvaluatorAssessment;
-
+use App\Notifications\EvaluationCompletedNotification;
+use App\Notifications\EvaluationCompletedNotificationSuperAdmin;
+use App\Models\User;
+use App\Models\Value;
 class EvaluationAnswerController extends Controller
 {
     public function store(Request $request)
@@ -29,7 +32,7 @@ class EvaluationAnswerController extends Controller
             }
 
             $isPartialSave = $request->input('isPartialSave', false);
-            $message = $isPartialSave ? 'Respuestas guardadas parcialmente' : 'Evaluación completada exitosamente';
+            $message = $isPartialSave ? 'Respuestas guardadas correctamente' : 'Evaluación completada exitosamente';
 
             foreach ($request->answers as $questionId => $answerData) {
                 // Si es evaluador, guardar la evaluación
@@ -130,6 +133,27 @@ class EvaluationAnswerController extends Controller
             }
 
             DB::commit();
+
+            // Verificar si este es el último valor
+            $isLastValue = Value::where('is_active', true)
+                ->orderBy('id', 'desc')
+                ->first()->id == $request->value_id;
+
+            // Enviar notificación al completar la evaluación
+            if ($isLastValue) {
+                $adminUser = User::where('role', 'admin')->first();
+                $superAdminUser = User::where('role', 'super_admin')->first();
+
+                $companyName = $user->company->name; // Obtener el nombre de la empresa
+
+                $user->notify(new EvaluationCompletedNotification($user, $companyName));
+                if ($adminUser) {
+                    $adminUser->notify(new EvaluationCompletedNotification($user, $companyName));
+                }
+                if ($superAdminUser) {
+                    $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $companyName));
+                }
+            }
 
             return response()->json([
                 'success' => true,
