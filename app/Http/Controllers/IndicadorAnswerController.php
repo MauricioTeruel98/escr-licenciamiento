@@ -167,7 +167,7 @@ class IndicadorAnswerController extends Controller
                 $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
 
                 // Generar PDF con todos los valores
-                $pdf = PDF::loadView('pdf/evaluation', [
+                $pdf = PDF::loadView('pdf/autoevaluation', [
                     'values' => $allValues,
                     'answers' => $allAnswers,
                     'company' => $company,

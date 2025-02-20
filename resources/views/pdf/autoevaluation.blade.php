@@ -7,13 +7,13 @@
     <style>
         @font-face {
             font-family: 'Poppins';
-            src: url('/public/fonts/poppins/Poppins-Regular.ttf') format('truetype');
+            src: url('{{ storage_path('fonts/poppins/Poppins-Regular.ttf') }}') format('truetype');
             font-weight: normal;
         }
 
         @font-face {
             font-family: 'Poppins';
-            src: url('/public/fonts/poppins/Poppins-Bold.ttf') format('truetype');
+            src: url('{{ storage_path('fonts/poppins/Poppins-Bold.ttf') }}') format('truetype');
             font-weight: bold;
         }
 
@@ -23,7 +23,6 @@
             color: #333;
             margin: 0;
             padding: 20px;
-            line-height: 1.6;
         }
 
         .header {
