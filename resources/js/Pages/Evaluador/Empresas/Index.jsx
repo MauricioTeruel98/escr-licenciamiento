@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import SuperAdminLayout from '@/Layouts/SuperAdminLayout';
 import TableList from '@/Components/TableList';
-import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, Eye } from 'lucide-react';
 import CompanyModal from '@/Components/Modals/CompanyModal';
 import DeleteModal from '@/Components/Modals/DeleteModal';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
 import EditIcon from '@/Components/Icons/EditIcon';
 import TrashIcon from '@/Components/Icons/TrashIcon';
+import CompanyInfoModal from '@/Components/Modals/CompanyInfoModal';
 
 export default function EmpresasEvaluadorIndex() {
     const [companies, setCompanies] = useState([]);
@@ -24,6 +25,7 @@ export default function EmpresasEvaluadorIndex() {
         perPage: 10
     });
     const [error, setError] = useState(null);
+    const [infoModalOpen, setInfoModalOpen] = useState(false);
 
     const columns = [
         { key: 'legal_id', label: 'Cedula' },
@@ -54,18 +56,12 @@ export default function EmpresasEvaluadorIndex() {
             render: (item) => (
                 <div className="flex items-center gap-2">
                     <button
-                        onClick={() => handleEdit(item)}
-                        className="text-green-700 hover:text-green-800 flex items-center gap-1"
+                        onClick={() => handleViewInfo(item)}
+                        className="text-gray-600 hover:text-gray-800 flex items-center gap-1"
+                        title="Ver información"
                     >
-                        <EditIcon />
-                        Editar
-                    </button>
-                    <button
-                        onClick={() => handleDelete(item)}
-                        className="p-1 text-red-600 hover:text-red-900 flex items-center gap-1"
-                    >
-                        <TrashIcon />
-                        Eliminar
+                        <Eye className="h-5 w-5" />
+                        Ver
                     </button>
                 </div>
             )
@@ -162,6 +158,11 @@ export default function EmpresasEvaluadorIndex() {
         }
     };
 
+    const handleViewInfo = (company) => {
+        setSelectedCompany(company);
+        setInfoModalOpen(true);
+    };
+
     return (
         <SuperAdminLayout>
             <Head title="Gestión de Empresas" />
@@ -217,6 +218,12 @@ export default function EmpresasEvaluadorIndex() {
                         onClose={() => setNotification(null)}
                     />
                 )}
+
+                <CompanyInfoModal
+                    isOpen={infoModalOpen}
+                    onClose={() => setInfoModalOpen(false)}
+                    company={selectedCompany}
+                />
             </div>
         </SuperAdminLayout>
     );
