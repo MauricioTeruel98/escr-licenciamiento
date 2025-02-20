@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\AutoEvaluationResults;
 use App\Models\Value;
 use Illuminate\Support\Str;
+use App\Models\Company;
+use App\Models\InfoAdicionalEmpresa;
+use App\Models\User;
+use App\Models\Certification;
 
 class IndicadorAnswerController extends Controller
 {
@@ -159,11 +163,14 @@ class IndicadorAnswerController extends Controller
                     ->get()
                     ->groupBy('indicator.subcategory.value.id');
 
+                // Obtener información adicional de la empresa
+                $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
+
                 // Generar PDF con todos los valores
-                $pdf = PDF::loadView('pdf/autoevaluation', [
+                $pdf = PDF::loadView('pdf/evaluation', [
                     'values' => $allValues,
                     'answers' => $allAnswers,
-                    'company' => $user->company,
+                    'company' => $company,
                     'date' => now()->format('d/m/Y'),
                     'finalScores' => AutoEvaluationValorResult::where('company_id', $user->company_id)
                         ->get()

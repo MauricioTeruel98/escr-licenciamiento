@@ -88,6 +88,11 @@ class CompanyProfileController extends Controller
                 $allData
             );
 
+            // Actualizar el campo form_sended en la tabla auto_evaluation_result
+            DB::table('auto_evaluation_result')
+                ->where('company_id', $companyId)
+                ->update(['form_sended' => 1]);
+
             // Procesar productos
             if ($request->has('productos')) {
                 Log::info('Procesando productos', ['productos' => $request->productos]);

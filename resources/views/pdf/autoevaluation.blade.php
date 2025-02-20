@@ -30,10 +30,12 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: #007b00;
+            background-color: #157f3d;
             padding: 15px;
             color: white;
             margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
         }
 
         .header img {
@@ -47,7 +49,7 @@
 
         h2 {
             font-size: 1.5em;
-            color: #007b00;
+            color: #157f3d;
             margin-top: 20px;
             margin-bottom: 10px;
         }
@@ -58,9 +60,13 @@
 
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             margin-top: 10px;
             background-color: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
         }
 
         th, td {
@@ -70,7 +76,7 @@
         }
 
         th {
-            background-color: #007b00;
+            background-color: #157f3d;
             color: white;
         }
 
@@ -83,7 +89,8 @@
         .score {
             background-color: #f3f4f6;
             padding: 15px;
-            border-radius: 6px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
             margin-top: 10px;
         }
 
@@ -91,9 +98,10 @@
             text-align: center;
             margin-top: 40px;
             padding: 20px;
-            background-color: #007b00;
+            background-color: #157f3d;
             color: white;
             border-radius: 8px;
+            border: 1px solid #e5e7eb;
         }
 
         .page-break {
@@ -160,9 +168,9 @@
         @endif
     @endforeach
 
-    <div class="final-score">
+    {{-- <div class="final-score">
         <h2>Resultado Final</h2>
         <p>Estado: {{ $status ?? 'En proceso' }}</p>
-    </div>
+    </div> --}}
 </body>
 </html> 

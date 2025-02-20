@@ -31,10 +31,12 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: #007b00;
+            background-color: #157f3d;
             padding: 15px;
             color: white;
             margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
         }
 
         header img {
@@ -48,7 +50,7 @@
 
         h2 {
             font-size: 1.5em;
-            color: #007b00;
+            color: #157f3d;
             margin-top: 20px;
             margin-bottom: 10px;
         }
@@ -59,9 +61,13 @@
 
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             margin-top: 10px;
             background-color: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
         }
 
         th, td {
@@ -71,7 +77,7 @@
         }
 
         th {
-            background-color: #007b00;
+            background-color: #157f3d;
             color: white;
         }
 
@@ -80,17 +86,33 @@
             font-weight: bold;
         }
 
-        .signature-container {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
+        .signature-table {
+            width: 100%;
+            margin-top: 60px;
+            border: none;
+            background-color: #f4f4f9;
         }
 
-        .signature-box {
-            width: 45%;
-            border-top: 1px solid #333;
+        .signature-table td {
+            width: 50%;
+            padding: 20px;
             text-align: center;
+            border: none;
+        }
+
+        .signature-line {
+            border-top: 1px solid #333;
+            margin: 0 auto;
+            width: 80%;
             padding-top: 10px;
+        }
+
+        .score {
+            background-color: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -102,12 +124,31 @@
     </header>
 
     <h2>Datos de la organización</h2>
-    <p><strong>Nombre comercial:</strong></p>
-    <p><strong>Razón social:</strong></p>
-    <p><strong>Cédula jurídica:</strong></p>
-    <p><strong>Descripción:</strong></p>
-    <p><strong>Exporta actualmente:</strong> Sí [ ] No [ ]</p>
-    <p><strong>Productos/servicios:</strong></p>
+    <p><strong>Nombre comercial:</strong> {{ $company->infoAdicional->nombre_comercial ?? 'N/A' }}</p>
+    <p><strong>Razón social:</strong> {{ $company->infoAdicional->nombre_legal ?? 'N/A' }}</p>
+    <p><strong>Cédula jurídica:</strong> {{ $company->infoAdicional->cedula_juridica ?? 'N/A' }}</p>
+    <p><strong>Descripción:</strong> {{ $company->infoAdicional->descripcion_es ?? 'N/A' }}</p>
+    <p><strong>Año de fundación:</strong> {{ $company->infoAdicional->anio_fundacion ?? 'N/A' }}</p>
+    <p><strong>Proceso de licenciamiento:</strong> {{ $company->infoAdicional->proceso_licenciamiento ?? 'N/A' }}</p>
+    <p><strong>Exporta actualmente:</strong> {{ $company->infoAdicional->es_exportadora ? 'Sí' : 'No' }}</p>
+    <p><strong>Países de exportación:</strong> {{ $company->infoAdicional->paises_exportacion ?? 'N/A' }}</p>
+    <p><strong>Productos/servicios:</strong> {{ $company->infoAdicional->producto_servicio ?? 'N/A' }}</p>
+    <p><strong>Rango de exportaciones:</strong> {{ $company->infoAdicional->rango_exportaciones ?? 'N/A' }}</p>
+    <p><strong>Total de empleados:</strong> {{ $company->infoAdicional->cantidad_hombres + $company->infoAdicional->cantidad_mujeres + $company->infoAdicional->cantidad_otros }}</p>
+    <p><strong>Distribución de empleados:</strong></p>
+    <p>- Hombres: {{ $company->infoAdicional->cantidad_hombres ?? 0 }}</p>
+    <p>- Mujeres: {{ $company->infoAdicional->cantidad_mujeres ?? 0 }}</p>
+    <p>- Otros: {{ $company->infoAdicional->cantidad_otros ?? 0 }}</p>
+    <p><strong>Dirección:</strong></p>
+    <p>- Provincia: {{ $company->infoAdicional->provincia ?? 'N/A' }}</p>
+    <p>- Cantón: {{ $company->infoAdicional->canton ?? 'N/A' }}</p>
+    <p>- Distrito: {{ $company->infoAdicional->distrito ?? 'N/A' }}</p>
+    <p>- Dirección: {{ $company->infoAdicional->direccion ?? 'N/A' }}</p>
+    <p><strong>Redes sociales:</strong></p>
+    <p>- Sitio web: <a href="{{ $company->infoAdicional->sitio_web }}">{{ $company->infoAdicional->sitio_web }}</a></p>
+    <p>- Facebook: <a href="{{ $company->infoAdicional->facebook }}">{{ $company->infoAdicional->facebook }}</a></p>
+    <p>- Instagram: <a href="{{ $company->infoAdicional->instagram }}">{{ $company->infoAdicional->instagram }}</a></p>
+    <p>- LinkedIn: <a href="{{ $company->infoAdicional->linkedin }}">{{ $company->infoAdicional->linkedin }}</a></p>
 
     <h2>Resumen de evaluación</h2>
     <table>
@@ -129,89 +170,54 @@
     <table>
         <tr>
             <th>Nombre</th>
-            <th>Departamento</th>
-            <th>Posición</th>
+            <th>Apellido</th>
             <th>Correo electrónico</th>
             <th>Teléfono</th>
+            <th>Rol</th>
         </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
+        @foreach($company->users as $user)
+            <tr>
+                <td>{{ $user->name }}</td>
+                <td>{{ $user->lastname }}</td>
+                <td>{{ $user->email }}</td>
+                <td>{{ $user->phone }}</td>
+                <td>{{ $user->role }}</td>
+            </tr>
+        @endforeach
     </table>
 
     <h2>Certificaciones vigentes</h2>
     <table>
         <tr>
             <th>Certificación</th>
+            <th>Fecha de obtención</th>
             <th>Fecha de vencimiento</th>
             <th>Organismo certificador</th>
         </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
+        @foreach($company->certifications as $certification)
+            <tr>
+                <td>{{ $certification->nombre }}</td>
+                <td>{{ $certification->fecha_obtencion->format('d/m/Y') }}</td>
+                <td>{{ $certification->fecha_expiracion->format('d/m/Y') }}</td>
+                <td>{{ $certification->organismo_certificador }}</td>
+            </tr>
+        @endforeach
     </table>
 
-    <h2>Datos complementarios: función central</h2>
+    {{-- <h2>Datos complementarios: función central</h2>
     <p><strong>Organización multi-sitio:</strong> Sí [ ] No [ ]</p>
 
     <h3>Emplazamientos Evaluados</h3>
     <p><strong>Nombre comercial:</strong></p>
     <p><strong>Dirección:</strong> Provincia Cantón Distrito Dirección</p>
-    <p><strong>Empleados:</strong> Hombres Mujeres Otros</p>
+    <p><strong>Empleados:</strong></p>
+    <p>Hombres <input type="text" size="5"> Mujeres <input type="text" size="5"> Otros <input type="text" size="5"></p> --}}
 
-    <h2>Puntos fuertes de la organización:</h2>
+    {{-- <h2>Puntos fuertes de la organización:</h2>
     <p></p>
 
     <h2>Oportunidades de mejora de la organización:</h2>
-    <p></p>
-
-    <h3>Datos participantes clave en el proceso de evaluación</h3>
-    <table border="1">
-        <tr>
-            <th>Nombre</th>
-            <th>Departamento</th>
-            <th>Posición</th>
-            <th>Correo electrónico</th>
-            <th>Teléfono</th>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-    </table>
-
-    <h3>Certificaciones vigentes de la organización que justifican homologaciones dadas</h3>
-    <table border="1">
-        <tr>
-            <th>Certificación</th>
-            <th>Fecha de vencimiento</th>
-            <th>Organismo certificador</th>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-    </table>
-
-    <h3>Datos complementarios: función central</h3>
-    <p>¿La organización es multi-sitio? Si <input type="checkbox"> No <input type="checkbox"></p>
-
-    <h3>Emplazamientos Evaluados</h3>
-    <p><strong>Nombre comercial de la empresa:</strong></p>
-    <p><strong>Dirección:</strong> Provincia Cantón Distrito Dirección</p>
-    <p><strong>¿Cuántas personas emplea?</strong></p>
-    <p>Hombres <input type="text" size="5"> Mujeres <input type="text" size="5"> Otros <input type="text" size="5"></p>
-
+    <p></p> --}}
 
     <h2>Datos de contacto</h2>
     <h3>Contacto para recibir Notificaciones de Marca País</h3>
@@ -267,12 +273,7 @@
 
     <h2>Descripción y justificación de cumplimiento del protocolo</h2>
     <p><strong>Indicadores de marca país esencial COSTA RICA</strong></p>
-    <p>Todo cumplimiento o incumplimiento de indicador debe ser justificado de acuerdo a los requisitos generales.
-    </p>
-
-    <p class="highlight">TODO ESTE CUADRO ES EL</p>
-    <p class="highlight">EXCEL ADJUNTO</p>
-    <p><strong>PORFA REVISEMOS EN CONJUNTO PARA VER COMO ES LA MEJOR OPCIÓN DE PODER TENER LA INFO</strong></p>
+    <p>Todo cumplimiento o incumplimiento de indicador debe ser justificado de acuerdo a los requisitos generales.</p>
 
     @foreach($values as $value)
         <h3>{{ $value->name }}</h3>
@@ -281,19 +282,19 @@
             <p><strong>Nota mínima requerida:</strong> {{ $value->minimum_score }}</p>
         </div>
 
-        <table border="1">
+        <table>
             <tr>
                 <th>Componente</th>
                 <th>Requisito</th>
                 <th>Indicador</th>
                 <th>Cumplimiento</th>
-                <th>Justificación</th>
+                {{-- <th>Justificación</th> --}}
             </tr>
             @foreach($value->subcategories as $subcategory)
                 @foreach($subcategory->indicators as $indicator)
                     <tr>
                         <td>{{ $subcategory->name }}</td>
-                        <td></td>
+                        <td>{{ $indicator->requisito->name ?? 'N/A' }}</td>
                         <td>
                             {{ $indicator->name }}
                             @if($indicator->binding)
@@ -307,7 +308,7 @@
                                 No respondida
                             @endif
                         </td>
-                        <td>{{ $indicator->self_evaluation_question }}</td>
+                        {{-- <td>{{ $indicator->self_evaluation_question }}</td> --}}
                     </tr>
                 @endforeach
             @endforeach
@@ -367,16 +368,22 @@
         contempla el Código Penal.</p>
 
     <h2>Firma</h2>
-    <div class="signature-container">
-        <div class="signature-box">
-            <p><strong>REPRESENTANTE DE LA ORGANIZACIÓN</strong></p>
-            <p>(Nombre, firma y número de cédula)</p>
-        </div>
-        <div class="signature-box">
-            <p><strong>EVALUADOR</strong></p>
-            <p>(Nombre, firma y número de carné)</p>
-        </div>
-    </div>
+    <table class="signature-table">
+        <tr>
+            <td>
+                <div class="signature-line">
+                    <p><strong>REPRESENTANTE DE LA ORGANIZACIÓN</strong></p>
+                    <p>(Nombre, firma y número de cédula)</p>
+                </div>
+            </td>
+            <td>
+                <div class="signature-line">
+                    <p><strong>EVALUADOR</strong></p>
+                    <p>(Nombre, firma y número de carné)</p>
+                </div>
+            </td>
+        </tr>
+    </table>
 
 </body>
 

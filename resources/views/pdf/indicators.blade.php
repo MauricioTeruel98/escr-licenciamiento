@@ -4,32 +4,78 @@
     <meta charset="utf-8">
     <title>Indicadores</title>
     <style>
+        @font-face {
+            font-family: 'Poppins';
+            src: url('/public/fonts/poppins/Poppins-Regular.ttf') format('truetype');
+            font-weight: normal;
+        }
+
+        @font-face {
+            font-family: 'Poppins';
+            src: url('/public/fonts/poppins/Poppins-Bold.ttf') format('truetype');
+            font-weight: bold;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f9;
             color: #333;
-            line-height: 1.6;
             margin: 0;
             padding: 20px;
+            line-height: 1.6;
         }
+
         .header {
-            text-align: center;
-            margin-bottom: 30px;
-            background-color: #15803d;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #157f3d;
+            padding: 15px;
             color: white;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        .value-section, .subcategory-section, .requisito-section {
             margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            background-color: #f9fafb;
+            border-radius: 8px; /* Borde redondeado */
+            border: 1px solid #e5e7eb; /* Borde */
         }
+
+        .header img {
+            height: 50px;
+        }
+
         h1, h2, h3, h4 {
             color: #111827;
             margin-top: 0;
         }
+
+        .value-section, .subcategory-section, .requisito-section {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #e5e7eb; /* Borde */
+            border-radius: 8px; /* Borde redondeado */
+            background-color: #f9fafb;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate; /* Cambiado a 'separate' para bordes redondeados */
+            border-spacing: 0; /* Espaciado entre celdas */
+            margin-top: 10px;
+            background-color: white;
+            border-radius: 8px; /* Borde redondeado */
+            border: 1px solid #e5e7eb; /* Borde */
+            overflow: hidden; /* Para asegurar que el borde redondeado se aplique */
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #157f3d;
+            color: white;
+        }
+
         .text-white {
             color: white;
         }
@@ -37,6 +83,7 @@
 </head>
 <body>
     <div class="header">
+        <img src="/public/assets/img/logo_esc_white.png" alt="Logo">
         <h1 class="text-white">Lista de Indicadores</h1>
     </div>
 
