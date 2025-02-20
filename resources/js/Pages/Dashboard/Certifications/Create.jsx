@@ -68,7 +68,8 @@ export default function Certifications({ certifications: initialCertifications, 
     const [selectedCertification, setSelectedCertification] = useState(null);
     const [nuevaCertificacion, setNuevaCertificacion] = useState({
         fechaObtencion: null,
-        fechaExpiracion: null
+        fechaExpiracion: null,
+        organismoCertificador: ""
     });
 
     // Agregar estados para el modal
@@ -167,12 +168,21 @@ export default function Certifications({ certifications: initialCertifications, 
 
         if (!validarFechaExpiracion(nuevaCertificacion.fechaExpiracion)) return;
 
+        console.log('Datos enviados:', {
+            nombre: selectedCertification.nombre,
+            homologation_id: selectedCertification.id,
+            fecha_obtencion: nuevaCertificacion.fechaObtencion.toISOString().split('T')[0],
+            fecha_expiracion: nuevaCertificacion.fechaExpiracion.toISOString().split('T')[0],
+            organismo_certificador: nuevaCertificacion.organismoCertificador
+        });
+
         try {
             const response = await axios.post('/certifications', {
                 nombre: selectedCertification.nombre,
-                homologation_id: selectedCertification.id, // Agregar el ID
+                homologation_id: selectedCertification.id,
                 fecha_obtencion: nuevaCertificacion.fechaObtencion.toISOString().split('T')[0],
-                fecha_expiracion: nuevaCertificacion.fechaExpiracion.toISOString().split('T')[0]
+                fecha_expiracion: nuevaCertificacion.fechaExpiracion.toISOString().split('T')[0],
+                organismo_certificador: nuevaCertificacion.organismoCertificador
             });
 
             const newCertification = {
@@ -187,7 +197,8 @@ export default function Certifications({ certifications: initialCertifications, 
             setSelectedCertification(null);
             setNuevaCertificacion({
                 fechaObtencion: null,
-                fechaExpiracion: null
+                fechaExpiracion: null,
+                organismoCertificador: ""
             });
             
             showNotification('success', response.data.message);
@@ -405,6 +416,23 @@ export default function Certifications({ certifications: initialCertifications, 
                                         {fechaError}
                                     </p>
                                 )}
+                            </div>
+
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text text-sm font-medium">
+                                        Organismo Certificador<span className="text-red-500">*</span>
+                                    </span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={nuevaCertificacion.organismoCertificador}
+                                    onChange={(e) => setNuevaCertificacion({
+                                        ...nuevaCertificacion,
+                                        organismoCertificador: e.target.value
+                                    })}
+                                    className="w-full px-3 py-2 border rounded-md border-gray-300"
+                                />
                             </div>
 
                             <button

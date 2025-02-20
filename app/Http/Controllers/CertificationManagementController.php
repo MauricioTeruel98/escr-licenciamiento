@@ -29,12 +29,15 @@ class CertificationManagementController extends Controller
 
     public function store(Request $request)
     {
+        Log::info('Datos recibidos:', $request->all());
+
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'fecha_obtencion' => 'required|date',
             'fecha_expiracion' => 'required|date|after:fecha_obtencion',
             'indicadores' => 'required|integer|min:0',
-            'company_id' => 'required|exists:companies,id'
+            'company_id' => 'required|exists:companies,id',
+            'organismo_certificador' => 'required|string|max:255'
         ]);
 
         $certification = Certification::create($validated);
@@ -52,7 +55,8 @@ class CertificationManagementController extends Controller
             'fecha_obtencion' => 'required|date',
             'fecha_expiracion' => 'required|date|after:fecha_obtencion',
             'indicadores' => 'required|integer|min:0',
-            'company_id' => 'required|exists:companies,id'
+            'company_id' => 'required|exists:companies,id',
+            'organismo_certificador' => 'string|max:255'
         ]);
 
         $certification->update($validated);
