@@ -122,13 +122,21 @@ class CompanyProfileController extends Controller
                             'producto_index' => $index,
                             'path' => $imagenPath
                         ]);
+                    } else {
+                        // Mantener la imagen existente si no se sube una nueva
+                        $existingProduct = CompanyProducts::where('info_adicional_empresa_id', $infoAdicional->id)
+                            ->where('nombre', $producto['nombre'])
+                            ->first();
+                        if ($existingProduct) {
+                            $productoData['imagen'] = $existingProduct->imagen;
+                        }
                     }
 
                     $newProducto = CompanyProducts::create($productoData);
                     
                     // Agregar URL de la imagen al producto
                     if (isset($productoData['imagen'])) {
-                        $newProducto->imagen_url = asset('storage/' . $productoData['imagen']);
+                        $newProducto->imagen = asset('storage/' . $productoData['imagen']);
                     }
                 }
             }

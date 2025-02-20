@@ -304,9 +304,12 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 formData.append(`productos[${index}][nombre]`, producto.nombre || '');
                 formData.append(`productos[${index}][descripcion]`, producto.descripcion || '');
                 
-                // Agregar imagen del producto si existe
+                // Agregar imagen del producto si existe y es un nuevo archivo
                 if (imagenes.productos && imagenes.productos[index] instanceof File) {
                     formData.append(`productos[${index}][imagen]`, imagenes.productos[index]);
+                } else if (producto.imagen) {
+                    // Mantener la imagen existente si no se sube una nueva
+                    formData.append(`productos[${index}][imagen]`, producto.imagen);
                 }
             });
         }
