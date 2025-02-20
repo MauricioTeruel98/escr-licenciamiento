@@ -72,7 +72,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 id: p.id,
                 nombre: p.nombre,
                 descripcion: p.descripcion,
-                imagen_url: p.imagen_url
+                imagen: p.imagen
             })) 
             : []
     });
@@ -1084,6 +1084,15 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     <span className="text-sm">Logo actual</span>
                                                 </div>
                                                 <div className="flex items-center">
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => handleFileDownload(infoAdicional.logo_path)}
+                                                        className="download-button"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                        </svg>
+                                                    </button>
                                                     <img 
                                                         src={infoAdicional.logo_url}
                                                         alt="Logo preview"
@@ -1680,9 +1689,11 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                             onChange={(e) => handleImagenChange(e, 'producto', index)}
                                                         />
                                                     </label>
+
+                                                    {console.log(producto)}
                                                     
                                                     {/* Mostrar imagen existente */}
-                                                    {producto.imagen_url && (
+                                                    {producto.imagen && (
                                                         <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
                                                             <div className="flex items-center">
                                                                 <button
@@ -1698,7 +1709,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                             </div>
                                                             <div className="flex items-center">
                                                                 <img 
-                                                                    src={producto.imagen_url}
+                                                                    src={producto.imagen}
                                                                     alt={`Producto ${index + 1}`}
                                                                     className="w-10 h-10 object-cover rounded"
                                                                 />
@@ -1707,7 +1718,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     )}
 
                                                     {/* Mostrar nueva imagen si se ha seleccionado */}
-                                                    {imagenes.productos[index] && !producto.imagen_url && (
+                                                    {imagenes.productos[index] && !producto.imagen && (
                                                         <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
                                                             <div className="flex items-center">
                                                                 <button
@@ -1724,7 +1735,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                             <div className="flex items-center">
                                                                 <span className="text-sm mr-2">{Math.round(imagenes.productos[index].size / 1024)} KB</span>
                                                                 <img 
-                                                                    src={URL.createObjectURL(imagenes.productos[index])}
+                                                                    src={imagenes.productos[index]}
                                                                     alt={`Producto ${index + 1}`}
                                                                     className="w-10 h-10 object-cover rounded"
                                                                 />

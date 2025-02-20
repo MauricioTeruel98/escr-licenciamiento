@@ -191,8 +191,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         return currentSubcategory.indicators.every(indicator => 
             indicator.evaluation_questions.every(question =>
                 answers[question.id]?.value !== undefined &&
-                answers[question.id]?.description?.trim() !== '' &&
-                (answers[question.id]?.files?.length > 0)
+                answers[question.id]?.description?.trim() !== '' 
             )
         );
     };

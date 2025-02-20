@@ -460,11 +460,11 @@ export default function Certifications({ certifications: initialCertifications, 
                                                     {/* Primera fila: Nombre y botón editar */}
                                                     <div>
                                                         <div className="flex flex-col justify-between items-start">
-                                                            <h3 className="text-lg font-semibold">{cert.nombre}</h3>
+                                                            <h3 className="text-lg font-semibold">{cert.nombre} - {cert.organismo_certificador || 'N/A'}</h3>
                                                             <div className="flex items-center mt-5">
                                                                 <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-blue-600/20">
                                                                     {cert.indicadores} Indicadores homologados.
-                                                                    {console.log(cert)}
+                                                                    
                                                                 </span>
                                                             </div>
                                                         </div>

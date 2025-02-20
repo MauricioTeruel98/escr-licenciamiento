@@ -41,6 +41,7 @@ class CertificationController extends Controller
             'homologation_id' => 'required|exists:available_certifications,id',
             'fecha_obtencion' => 'required|date_format:Y-m-d',
             'fecha_expiracion' => 'required|date_format:Y-m-d|after:fecha_obtencion',
+            'organismo_certificador' => 'string',
         ]);
 
         try {
@@ -58,7 +59,8 @@ class CertificationController extends Controller
                 'homologation_id' => $validated['homologation_id'],
                 'fecha_obtencion' => $validated['fecha_obtencion'],
                 'fecha_expiracion' => $validated['fecha_expiracion'],
-                'indicadores' => $indicadoresCount
+                'indicadores' => $indicadoresCount,
+                'organismo_certificador' => $validated['organismo_certificador']
             ]);
 
             $certification->refresh();
@@ -87,6 +89,7 @@ class CertificationController extends Controller
         $validated = $request->validate([
             'fecha_obtencion' => 'required|date_format:Y-m-d',
             'fecha_expiracion' => 'required|date_format:Y-m-d|after:fecha_obtencion',
+            'organismo_certificador' => 'string',
         ]);
 
         try {
