@@ -5,6 +5,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from 'date-fns/locale';
 import axios from 'axios';
+import Toast from '@/Components/Toast';
 
 // Componente Modal de confirmación
 const ConfirmModal = ({ isOpen, onClose, onConfirm, certName }) => {
@@ -155,7 +156,10 @@ export default function Certifications({ certifications: initialCertifications, 
         setTimeout(() => setNotification({ type: '', message: '' }), 3000);
     };
 
-    // Actualizar el handleSubmit para incluir la validación
+    // Agregar estado para el indicador de carga
+    const [loading, setLoading] = useState(false);
+
+    // Actualizar el handleSubmit para incluir el estado de carga
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!selectedCertification || !nuevaCertificacion.fechaObtencion || !nuevaCertificacion.fechaExpiracion) return;
@@ -168,13 +172,7 @@ export default function Certifications({ certifications: initialCertifications, 
 
         if (!validarFechaExpiracion(nuevaCertificacion.fechaExpiracion)) return;
 
-        console.log('Datos enviados:', {
-            nombre: selectedCertification.nombre,
-            homologation_id: selectedCertification.id,
-            fecha_obtencion: nuevaCertificacion.fechaObtencion.toISOString().split('T')[0],
-            fecha_expiracion: nuevaCertificacion.fechaExpiracion.toISOString().split('T')[0],
-            organismo_certificador: nuevaCertificacion.organismoCertificador
-        });
+        setLoading(true); // Iniciar el estado de carga
 
         try {
             const response = await axios.post('/certifications', {
@@ -204,6 +202,8 @@ export default function Certifications({ certifications: initialCertifications, 
             showNotification('success', response.data.message);
         } catch (error) {
             showNotification('error', error.response?.data?.error || 'Error al crear la certificación');
+        } finally {
+            setLoading(false); // Finalizar el estado de carga
         }
     };
 
@@ -437,10 +437,20 @@ export default function Certifications({ certifications: initialCertifications, 
 
                             <button
                                 type="submit"
-                                className="rounded-md bg-green-700 px-4 py-2 text-white hover:bg-green-800 disabled:opacity-50"
-                                disabled={!nombreCertificacion || !nuevaCertificacion.fechaObtencion || !nuevaCertificacion.fechaExpiracion || fechaError}
+                                className="rounded-md bg-green-700 px-4 py-2 text-white hover:bg-green-800 disabled:opacity-50 flex items-center justify-center"
+                                disabled={!nombreCertificacion || !nuevaCertificacion.fechaObtencion || !nuevaCertificacion.fechaExpiracion || fechaError || loading}
                             >
-                                Agregar
+                                {loading ? (
+                                    <>
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Procesando...
+                                    </>
+                                ) : (
+                                    'Agregar'
+                                )}
                             </button>
                         </form>
                     </div>
@@ -632,13 +642,13 @@ export default function Certifications({ certifications: initialCertifications, 
                 certName={certToDelete?.nombre}
             />
 
+            {/* Implementar el Toast para mostrar notificaciones */}
             {notification.message && (
-                <div className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg ${
-                    notification.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 
-                    'bg-red-50 text-red-700 border border-red-200'
-                }`}>
-                    <p className="text-sm font-medium">{notification.message}</p>
-                </div>
+                <Toast
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={() => setNotification({ type: '', message: '' })}
+                />
             )}
         </DashboardLayout>
     );

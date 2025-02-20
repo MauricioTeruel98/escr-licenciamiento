@@ -266,6 +266,10 @@ Route::post('/company/profile', [CompanyProfileController::class, 'store'])->nam
 Route::post('/company/profile/delete-file', [CompanyProfileController::class, 'deleteFile'])->name('company.profile.delete-file');
 Route::get('/company/profile/download-file', [CompanyProfileController::class, 'downloadFile'])->name('company.profile.download-file');
 
+Route::delete('/company/product/{productId}', [CompanyProfileController::class, 'destroyProduct'])
+    ->name('company.product.destroy')
+    ->middleware(['auth', 'verified', EnsureUserHasCompany::class]);
+
 // Rutas para reportes
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/api/empresas-reportes', [ReportController::class, 'getCompanies']);

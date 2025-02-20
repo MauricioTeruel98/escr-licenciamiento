@@ -4,6 +4,7 @@ import DashboardLayout from '@/Layouts/DashboardLayout';
 import InputError from '@/Components/InputError';
 import axios from 'axios';
 import Toast from '@/Components/ToastAdmin';
+import { TrashIcon } from '@heroicons/react/20/solid';
 
 export default function CompanyProfile({ userName, infoAdicional }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -26,56 +27,58 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         telefono_2: infoAdicional?.telefono_2 || '',
         es_exportadora: infoAdicional?.es_exportadora || false,
         paises_exportacion: infoAdicional?.paises_exportacion || '',
-        
+
         provincia: infoAdicional?.provincia || '',
         canton: infoAdicional?.canton || '',
         distrito: infoAdicional?.distrito || '',
-        
+
         cedula_juridica: infoAdicional?.cedula_juridica || '',
         actividad_comercial: infoAdicional?.actividad_comercial || '',
         producto_servicio: infoAdicional?.producto_servicio || '',
         rango_exportaciones: infoAdicional?.rango_exportaciones || '',
         planes_expansion: infoAdicional?.planes_expansion || '',
-        
+
         razon_licenciamiento_es: infoAdicional?.razon_licenciamiento_es || '',
         razon_licenciamiento_en: infoAdicional?.razon_licenciamiento_en || '',
         proceso_licenciamiento: infoAdicional?.proceso_licenciamiento || '',
         recomienda_marca_pais: infoAdicional?.recomienda_marca_pais || false,
         observaciones: infoAdicional?.observaciones || '',
-        
+
         mercadeo_nombre: infoAdicional?.mercadeo_nombre || '',
         mercadeo_email: infoAdicional?.mercadeo_email || '',
         mercadeo_puesto: infoAdicional?.mercadeo_puesto || '',
         mercadeo_telefono: infoAdicional?.mercadeo_telefono || '',
         mercadeo_celular: infoAdicional?.mercadeo_celular || '',
-        
+
         micrositio_nombre: infoAdicional?.micrositio_nombre || '',
         micrositio_email: infoAdicional?.micrositio_email || '',
         micrositio_puesto: infoAdicional?.micrositio_puesto || '',
         micrositio_telefono: infoAdicional?.micrositio_telefono || '',
         micrositio_celular: infoAdicional?.micrositio_celular || '',
-        
+
         vocero_nombre: infoAdicional?.vocero_nombre || '',
         vocero_email: infoAdicional?.vocero_email || '',
         vocero_puesto: infoAdicional?.vocero_puesto || '',
         vocero_telefono: infoAdicional?.vocero_telefono || '',
         vocero_celular: infoAdicional?.vocero_celular || '',
-        
+
         representante_nombre: infoAdicional?.representante_nombre || '',
         representante_email: infoAdicional?.representante_email || '',
         representante_puesto: infoAdicional?.representante_puesto || '',
         representante_telefono: infoAdicional?.representante_telefono || '',
         representante_celular: infoAdicional?.representante_celular || '',
-        
-        productos: infoAdicional?.productos 
+
+        productos: infoAdicional?.productos
             ? infoAdicional.productos.map(p => ({
                 id: p.id,
                 nombre: p.nombre,
                 descripcion: p.descripcion,
                 imagen: p.imagen
-            })) 
+            }))
             : []
     });
+
+    const [loading, setLoading] = useState(false);
 
     // Estado inicial para las imágenes existentes
     const [imagenes, setImagenes] = useState({
@@ -140,8 +143,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
     // Renderizar imágenes existentes
     const renderExistingImages = (tipo) => {
-        const images = tipo === 'logo' ? 
-            [imagenes.logo] : 
+        const images = tipo === 'logo' ?
+            [imagenes.logo] :
             (tipo === 'fotografias' ? imagenes.fotografias : imagenes.certificaciones);
 
         return images.filter(Boolean).map((url, index) => (
@@ -187,7 +190,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     const handleDrop = (e, tipo) => {
         e.preventDefault();
         setIsDragging(false);
-        
+
         const files = Array.from(e.dataTransfer.files).filter(
             file => file.type.startsWith('image/')
         );
@@ -267,13 +270,15 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
     const submit = async (e) => {
         e.preventDefault();
-        
+
+        setLoading(true);
+
         const formData = new FormData();
-        
+
         // Debug log
         console.log('Imágenes a enviar:', imagenes);
         console.log('Datos a enviar:', data);
-        
+
         // Agregar logo si existe
         if (imagenes.logo instanceof File) {
             formData.append('logo', imagenes.logo);
@@ -303,7 +308,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 formData.append(`productos[${index}][id]`, producto.id || '');
                 formData.append(`productos[${index}][nombre]`, producto.nombre || '');
                 formData.append(`productos[${index}][descripcion]`, producto.descripcion || '');
-                
+
                 // Agregar imagen del producto si existe y es un nuevo archivo
                 if (imagenes.productos && imagenes.productos[index] instanceof File) {
                     formData.append(`productos[${index}][imagen]`, imagenes.productos[index]);
@@ -332,7 +337,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     'Content-Type': 'multipart/form-data',
                 }
             });
-            
+
             if (response.data.success) {
                 setToast({
                     show: true,
@@ -346,6 +351,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     type: 'error'
                 });
             }
+            setLoading(false);
         } catch (error) {
             console.error('Error en la petición:', error);
             setToast({
@@ -353,6 +359,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 message: 'Error al guardar los datos: ' + (error.response?.data?.message || error.message),
                 type: 'error'
             });
+            setLoading(false);
         }
     };
 
@@ -395,7 +402,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 console.error('Error al cargar lugares:', error);
             }
         };
-        
+
         fetchLugares();
     }, []);
 
@@ -463,6 +470,28 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             }
         } catch (error) {
             console.error('Error al eliminar archivo:', error);
+        }
+    };
+
+    const eliminarProducto = async (productId) => {
+        try {
+            const response = await axios.delete(route('company.product.destroy', { productId }));
+
+            if (response.data.success) {
+                setData('productos', data.productos.filter(p => p.id !== productId));
+                setToast({
+                    show: true,
+                    message: 'Producto eliminado correctamente',
+                    type: 'success'
+                });
+            }
+        } catch (error) {
+            console.error('Error al eliminar producto:', error);
+            setToast({
+                show: true,
+                message: 'Error al eliminar el producto',
+                type: 'error'
+            });
         }
     };
 
@@ -788,7 +817,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             required
                                         />
                                         <p className="text-sm text-gray-500 mt-1">
-                                            Para cambiar la cédula jurídica, favor comunicarse con 
+                                            Para cambiar la cédula jurídica, favor comunicarse con
                                             <a href="#" className="text-green-600 hover:text-green-700"> soporte técnico</a>
                                         </p>
                                         <InputError message={errors.cedula_juridica} />
@@ -939,10 +968,20 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                 <div className="flex mt-6">
                                     <button
                                         type="submit"
-                                        disabled={processing}
-                                        className="bg-green-700 text-white px-6 py-2 rounded-md hover:bg-green-800 transition-colors disabled:opacity-50"
+                                        disabled={processing || loading}
+                                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800"
                                     >
-                                        {processing ? 'Guardando...' : 'Guardar Cambios'}
+                                        {loading ? (
+                                            <>
+                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Procesando...
+                                            </>
+                                        ) : (
+                                            'Guardar Cambios'
+                                        )}
                                     </button>
                                 </div>
                             </div>
@@ -958,9 +997,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                         >
                             <h2 className="text-xl font-semibold">Logos y fotografías</h2>
                             <svg
-                                className={`w-6 h-6 transform transition-transform ${
-                                    seccionesExpandidas.logos ? 'rotate-180' : ''
-                                }`}
+                                className={`w-6 h-6 transform transition-transform ${seccionesExpandidas.logos ? 'rotate-180' : ''
+                                    }`}
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -976,8 +1014,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         Fotografías de la empresa (máximo 3)<span className="text-red-500">*</span>
                                     </label>
                                     <div className="mt-2">
-                                        <label 
-                                            htmlFor="fotografias-input" 
+                                        <label
+                                            htmlFor="fotografias-input"
                                             className="border border-gray-300 rounded-md p-4 block cursor-pointer"
                                             onDragOver={handleDragOver}
                                             onDragLeave={handleDragLeave}
@@ -1022,8 +1060,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     {/* Añadir verificación de nulidad aquí */}
                                                     <span className="text-sm mr-2">{foto.size ? Math.round(foto.size / 1024) : 0} KB</span>
                                                     {foto.url && (
-                                                        <button 
-                                                            type="button" 
+                                                        <button
+                                                            type="button"
                                                             onClick={() => handleFileDownload(foto.path)}
                                                             className="download-button"
                                                         >
@@ -1034,8 +1072,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     )}
                                                     {/* Verificar si existe la URL antes de mostrar la imagen */}
                                                     {foto.url && (
-                                                        <img 
-                                                            src={foto.url} 
+                                                        <img
+                                                            src={foto.url}
                                                             alt={foto.name}
                                                             className="w-10 h-10 object-cover ml-2 rounded"
                                                         />
@@ -1052,8 +1090,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         Logo de la empresa<span className="text-red-500">*</span>
                                     </label>
                                     <div className="mt-2">
-                                        <label 
-                                            htmlFor="logo-input" 
+                                        <label
+                                            htmlFor="logo-input"
                                             className="border border-gray-300 rounded-md p-4 block cursor-pointer"
                                             onDragOver={handleDragOver}
                                             onDragLeave={handleDragLeave}
@@ -1070,7 +1108,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={(e) => handleImagenChange(e, 'logo')}
                                             />
                                         </label>
-                                        
+
                                         {/* Vista previa del logo existente */}
                                         {infoAdicional?.logo_url && !imagenes.logo && (
                                             <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
@@ -1087,8 +1125,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     <span className="text-sm">Logo actual</span>
                                                 </div>
                                                 <div className="flex items-center">
-                                                    <button 
-                                                        type="button" 
+                                                    <button
+                                                        type="button"
                                                         onClick={() => handleFileDownload(infoAdicional.logo_path)}
                                                         className="download-button"
                                                     >
@@ -1096,7 +1134,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                                         </svg>
                                                     </button>
-                                                    <img 
+                                                    <img
                                                         src={infoAdicional.logo_url}
                                                         alt="Logo preview"
                                                         className="w-10 h-10 object-cover ml-2 rounded"
@@ -1127,7 +1165,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 </div>
                                                 <div className="flex items-center">
                                                     <span className="text-sm mr-2">{imagenes.logo ? Math.round(imagenes.logo.size / 1024) : 0} KB</span>
-                                                    <img 
+                                                    <img
                                                         src={URL.createObjectURL(imagenes.logo)}
                                                         alt="Logo preview"
                                                         className="w-10 h-10 object-cover ml-2 rounded"
@@ -1144,7 +1182,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         Logos de certificaciones
                                     </label>
                                     <div className="mt-2">
-                                        <label 
+                                        <label
                                             htmlFor="certificaciones-input"
                                             className="border border-gray-300 rounded-md p-4 block cursor-pointer"
                                             onDragOver={handleDragOver}
@@ -1189,8 +1227,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <div className="flex items-center">
                                                     <span className="text-sm mr-2">{Math.round((cert.size || 0) / 1024)} KB</span>
                                                     {cert.url && (
-                                                        <button 
-                                                            type="button" 
+                                                        <button
+                                                            type="button"
                                                             onClick={() => handleFileDownload(cert.path)}
                                                             className="download-button"
                                                         >
@@ -1200,8 +1238,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                         </button>
                                                     )}
                                                     {/* Agregar vista previa de la imagen */}
-                                                    <img 
-                                                        src={cert.url} 
+                                                    <img
+                                                        src={cert.url}
                                                         alt={cert.name}
                                                         className="w-10 h-10 object-cover ml-2 rounded"
                                                     />
@@ -1212,13 +1250,23 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                 </div>
 
                                 {/* Botón de guardar */}
-                                <div className="flex justify mt-6">
+                                <div className="flex mt-6">
                                     <button
                                         type="submit"
-                                        disabled={processing}
-                                        className="bg-green-700 text-white px-6 py-2 rounded-md hover:bg-green-800 transition-colors disabled:opacity-50"
+                                        disabled={processing || loading}
+                                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800"
                                     >
-                                        {processing ? 'Guardando...' : 'Guardar Cambios'}
+                                        {loading ? (
+                                            <>
+                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Procesando...
+                                            </>
+                                        ) : (
+                                            'Guardar Cambios'
+                                        )}
                                     </button>
                                 </div>
                             </div>
@@ -1234,9 +1282,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                         >
                             <h2 className="text-xl font-semibold">Licenciamiento</h2>
                             <svg
-                                className={`w-6 h-6 transform transition-transform ${
-                                    seccionesExpandidas.licenciamiento ? 'rotate-180' : ''
-                                }`}
+                                className={`w-6 h-6 transform transition-transform ${seccionesExpandidas.licenciamiento ? 'rotate-180' : ''
+                                    }`}
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -1344,10 +1391,20 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                 <div className="flex mt-6">
                                     <button
                                         type="submit"
-                                        disabled={processing}
-                                        className="bg-green-700 text-white px-6 py-2 rounded-md hover:bg-green-800 transition-colors disabled:opacity-50"
+                                        disabled={processing || loading}
+                                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800"
                                     >
-                                        {processing ? 'Guardando...' : 'Guardar Cambios'}
+                                        {loading ? (
+                                            <>
+                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Procesando...
+                                            </>
+                                        ) : (
+                                            'Guardar Cambios'
+                                        )}
                                     </button>
                                 </div>
                             </div>
@@ -1363,9 +1420,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                         >
                             <h2 className="text-xl font-semibold">Contactos</h2>
                             <svg
-                                className={`w-6 h-6 transform transition-transform ${
-                                    seccionesExpandidas.contactos ? 'rotate-180' : ''
-                                }`}
+                                className={`w-6 h-6 transform transition-transform ${seccionesExpandidas.contactos ? 'rotate-180' : ''
+                                    }`}
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -1595,10 +1651,20 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                 <div className="flex mt-6">
                                     <button
                                         type="submit"
-                                        disabled={processing}
-                                        className="bg-green-700 text-white px-6 py-2 rounded-md hover:bg-green-800 transition-colors disabled:opacity-50"
+                                        disabled={processing || loading}
+                                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800"
                                     >
-                                        {processing ? 'Guardando...' : 'Guardar Cambios'}
+                                        {loading ? (
+                                            <>
+                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Procesando...
+                                            </>
+                                        ) : (
+                                            'Guardar Cambios'
+                                        )}
                                     </button>
                                 </div>
                             </div>
@@ -1614,9 +1680,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                         >
                             <h2 className="text-xl font-semibold">Productos</h2>
                             <svg
-                                className={`w-6 h-6 transform transition-transform ${
-                                    seccionesExpandidas.productos ? 'rotate-180' : ''
-                                }`}
+                                className={`w-6 h-6 transform transition-transform ${seccionesExpandidas.productos ? 'rotate-180' : ''
+                                    }`}
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -1628,7 +1693,17 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                             <div className="p-6 pt-0">
                                 {data.productos.map((producto, index) => (
                                     <div key={index} className="mb-8">
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4">Producto {index + 1}</h3>
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="text-lg font-medium text-gray-900">Producto {index + 1}</h3>
+                                            <button
+                                                type="button"
+                                                onClick={() => eliminarProducto(producto.id)}
+                                                className="bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                                                title="Eliminar Producto"
+                                            >
+                                                <TrashIcon className="w-5 h-5" />
+                                            </button>
+                                        </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-4">
                                                 {/* Nombre del producto */}
@@ -1674,7 +1749,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     Fotografía producto
                                                 </label>
                                                 <div className="mt-1">
-                                                    <label 
+                                                    <label
                                                         htmlFor={`producto-input-${index}`}
                                                         className="border border-gray-300 rounded-md p-4 block cursor-pointer"
                                                         onDragOver={handleDragOver}
@@ -1694,7 +1769,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     </label>
 
                                                     {console.log(producto)}
-                                                    
+
                                                     {/* Mostrar imagen existente */}
                                                     {producto.imagen && (
                                                         <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
@@ -1711,8 +1786,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                                 <span className="text-sm">Imagen existente</span>
                                                             </div>
                                                             <div className="flex items-center">
-                                                                <img 
-                                                                    src={producto.imagen}
+                                                                <img
+                                                                    src={`storage/${producto.imagen}`}
                                                                     alt={`Producto ${index + 1}`}
                                                                     className="w-10 h-10 object-cover rounded"
                                                                 />
@@ -1737,7 +1812,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                             </div>
                                                             <div className="flex items-center">
                                                                 <span className="text-sm mr-2">{Math.round(imagenes.productos[index].size / 1024)} KB</span>
-                                                                <img 
+                                                                <img
                                                                     src={imagenes.productos[index]}
                                                                     alt={`Producto ${index + 1}`}
                                                                     className="w-10 h-10 object-cover rounded"
@@ -1766,20 +1841,30 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                 <div className="flex mt-6">
                                     <button
                                         type="submit"
-                                        disabled={processing}
-                                        className="bg-green-700 text-white px-6 py-2 rounded-md hover:bg-green-800 transition-colors disabled:opacity-50"
+                                        disabled={processing || loading}
+                                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800"
                                     >
-                                        {processing ? 'Guardando...' : 'Guardar Cambios'}
+                                        {loading ? (
+                                            <>
+                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Procesando...
+                                            </>
+                                        ) : (
+                                            'Guardar Cambios'
+                                        )}
                                     </button>
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    
+
                 </form>
             </div>
-            
+
             {toast.show && (
                 <Toast
                     message={toast.message}

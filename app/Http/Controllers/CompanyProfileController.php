@@ -97,9 +97,6 @@ class CompanyProfileController extends Controller
             if ($request->has('productos')) {
                 Log::info('Procesando productos', ['productos' => $request->productos]);
                 
-                // Eliminar productos existentes
-                CompanyProducts::where('info_adicional_empresa_id', $infoAdicional->id)->delete();
-
                 foreach ($request->productos as $index => $producto) {
                     $productoData = [
                         'company_id' => $companyId,
@@ -132,12 +129,11 @@ class CompanyProfileController extends Controller
                         }
                     }
 
-                    $newProducto = CompanyProducts::create($productoData);
-                    
-                    // Agregar URL de la imagen al producto
-                    if (isset($productoData['imagen'])) {
-                        $newProducto->imagen = asset('storage/' . $productoData['imagen']);
-                    }
+                    // Crear o actualizar el producto
+                    CompanyProducts::updateOrCreate(
+                        ['info_adicional_empresa_id' => $infoAdicional->id, 'nombre' => $producto['nombre']],
+                        $productoData
+                    );
                 }
             }
 
@@ -284,6 +280,37 @@ class CompanyProfileController extends Controller
                 'success' => false,
                 'message' => 'Error al descargar el archivo: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function destroyProduct(Request $request, $productId)
+    {
+        try {
+            $user = auth()->user();
+            $product = CompanyProducts::where('id', $productId)
+                ->where('company_id', $user->company_id)
+                ->first();
+
+            if (!$product) {
+                return response()->json(['success' => false, 'message' => 'Producto no encontrado'], 404);
+            }
+
+            // Eliminar la imagen del producto si existe
+            if ($product->imagen && Storage::disk('public')->exists($product->imagen)) {
+                Storage::disk('public')->delete($product->imagen);
+            }
+
+            // Eliminar el producto
+            $product->delete();
+
+            return response()->json(['success' => true, 'message' => 'Producto eliminado correctamente']);
+        } catch (\Exception $e) {
+            Log::error('Error al eliminar producto:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json(['success' => false, 'message' => 'Error al eliminar el producto: ' . $e->getMessage()], 500);
         }
     }
 }
