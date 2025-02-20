@@ -112,6 +112,7 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class, EnsureCompan
 
 Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
     Route::get('/evaluador/reportes', [EvaluadorController::class, 'reportes'])->name('evaluador.reportes');
+    Route::get('/api/evaluador/companies', [EvaluadorController::class, 'getCompaniesList']);
 });
 
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
@@ -255,8 +256,8 @@ Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
     Route::get('/evaluador/companies', [EvaluadorController::class, 'companies'])->name('evaluador.companies');
     Route::get('/evaluador/evaluations', [EvaluadorController::class, 'evaluations'])->name('evaluador.evaluations');
     Route::get('/evaluador/profile', [ProfileController::class, 'edit'])->name('evaluador.profile.edit');
+    Route::get('/evaluador/empresas', [EvaluadorController::class, 'empresas'])->name('evaluador.empresas');
 
-    Route::get('/api/evaluador/companies', [EvaluadorController::class, 'getCompaniesList']);
     Route::get('/api/evaluador/active-company', [EvaluadorController::class, 'getActiveCompany']);
     Route::post('/api/evaluador/switch-company', [EvaluadorController::class, 'switchCompany']);
 });

@@ -13,11 +13,6 @@ class EvaluadorController extends Controller
         return Inertia::render('Evaluador/Dashboard');
     }
 
-    public function companies()
-    {
-        return Inertia::render('Evaluador/Companies');
-    }
-
     public function evaluations()
     {
         return Inertia::render('Evaluador/Evaluations');
@@ -25,8 +20,13 @@ class EvaluadorController extends Controller
 
     public function getCompaniesList()
     {
-        $user = auth()->user();
-        return response()->json($user->evaluatedCompanies);
+        try {
+            $user = auth()->user();
+            $companies = $user->evaluatedCompanies()->withCount('users')->get();
+            return response()->json($companies);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener las empresas'], 500);
+        }
     }
 
     public function getActiveCompany()
@@ -56,6 +56,20 @@ class EvaluadorController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    public function companies()
+    {
+        $companies = Company::with(['users' => function ($query) {
+            $query->where('role', 'admin');
+        }])
+            ->withCount('users')
+            ->latest()
+            ->paginate(10);
+
+        return Inertia::render('Evaluador/Empresas/Index', [
+            'companies' => $companies
+        ]);
     }
 
     public function reportes()
