@@ -128,13 +128,13 @@
                     <th>Requisito</th>
                     <th>Indicador</th>
                     <th>Cumplimiento</th>
-                    <th>Justificación</th>
+                    {{-- <th>Justificación</th> --}}
                 </tr>
                 @foreach($value->subcategories as $subcategory)
                     @foreach($subcategory->indicators as $indicator)
                         <tr>
                             <td>{{ $subcategory->name }}</td>
-                            <td></td>
+                            <td>{{ $indicator->requisito->name ?? 'N/A' }}</td>
                             <td>
                                 {{ $indicator->name }}
                                 @if($indicator->binding)
@@ -148,7 +148,7 @@
                                     No respondida
                                 @endif
                             </td>
-                            <td>{{ $indicator->self_evaluation_question }}</td>
+                            {{-- <td></td> --}}
                         </tr>
                     @endforeach
                 @endforeach
