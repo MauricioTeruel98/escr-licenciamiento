@@ -17,6 +17,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap"
         rel="stylesheet">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+
     <!-- Scripts -->
     @routes
     @viteReactRefresh
@@ -71,7 +77,7 @@
         }
 
         body {
-            font-family: "Poppins", sans-serif;
+            font-family: "Montserrat", sans-serif;
         }
 
         h1,
@@ -83,11 +89,11 @@
         p,
         span,
         div {
-            font-family: "Poppins", sans-serif !important;
+            font-family: "Montserrat", sans-serif !important;
         }
 
         h1 {
-            font-family: "Poppins", serif !important;
+            font-family: "Montserrat", serif !important;
             font-weight: 800;
         }
 

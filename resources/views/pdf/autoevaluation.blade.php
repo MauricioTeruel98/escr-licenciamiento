@@ -17,8 +17,20 @@
             font-weight: bold;
         }
 
+        @font-face {
+            font-family: 'Montserrat';
+            src: url('{{ storage_path('fonts/montserrat/Montserrat-Regular.ttf') }}') format('truetype');
+            font-weight: normal;
+        }
+
+        @font-face {
+            font-family: 'Montserrat';
+            src: url('{{ storage_path('fonts/montserrat/Montserrat-Bold.ttf') }}') format('truetype');
+            font-weight: bold;
+        }
+
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Montserrat', sans-serif;
             background-color: #f4f4f9;
             color: #333;
             margin: 0;
