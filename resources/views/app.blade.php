@@ -12,6 +12,11 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+
     <!-- Scripts -->
     @routes
     @viteReactRefresh
@@ -50,6 +55,21 @@
             src: url('{{ asset('assets/fonts/poppins/Poppins-ExtraBold.ttf') }}') format("truetype");
         } */
 
+        @font-face {
+            font-family: "Gotham";
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url('{{ asset('assets/fonts/gotham/GothamMedium.ttf') }}') format('truetype');
+        }
+
+        @font-face {
+            font-family: "Gotham ExtraBold";
+            font-style: normal;
+            font-weight: 400;
+            src: url('{{ asset('assets/fonts/gotham/GothamBold.ttf') }}') format("truetype");
+        }
+
         body {
             font-family: "Poppins", sans-serif;
         }
@@ -71,8 +91,10 @@
             font-weight: 800;
         }
     </style>
-    <link rel="preload" href="{{ asset('assets/fonts/poppins/Poppins-Regular.ttf') }}" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="{{ asset('assets/fonts/poppins/Poppins-ExtraBold.ttf') }}" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="{{ asset('assets/fonts/poppins/Poppins-Regular.ttf') }}" as="font" type="font/ttf"
+        crossorigin>
+    <link rel="preload" href="{{ asset('assets/fonts/poppins/Poppins-ExtraBold.ttf') }}" as="font"
+        type="font/ttf" crossorigin>
 </head>
 
 <body class="font-sans antialiased">
