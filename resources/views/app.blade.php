@@ -90,6 +90,14 @@
             font-family: "Poppins", serif !important;
             font-weight: 800;
         }
+
+        td {
+            font-size: 14px !important;
+        }
+
+        td span {
+            font-size: 12px !important;
+        }
     </style>
     <link rel="preload" href="{{ asset('assets/fonts/poppins/Poppins-Regular.ttf') }}" as="font" type="font/ttf"
         crossorigin>

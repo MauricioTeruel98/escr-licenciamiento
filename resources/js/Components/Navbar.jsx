@@ -75,7 +75,7 @@ export default function Navbar({ userName, onMenuClick }) {
                     />
                 </Link>
             </div>
-            <div className="flex-none gap-2">
+            <div className="flex-none gap-2 pe-5">
                 {(auth.user.role === 'admin' || auth.user.role === 'super_admin') && (
                     <div className="dropdown dropdown-end">
                         <div tabIndex={0} role="button" className="btn btn-ghost btn-circle relative">

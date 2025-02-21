@@ -38,7 +38,7 @@ export default function ValuesIndex() {
                             {item.subcategories.map((subcategory) => (
                                 <span
                                     key={subcategory.id}
-                                    className="text-md p-3 font-semibold mb-1 badge rounded-lg border text-blue-800 border-blue-200 bg-blue-50"
+                                    className="p-3 font-semibold mb-1 badge rounded-lg border text-blue-800 border-blue-200 bg-blue-50"
                                 >
                                     {subcategory.name}
                                 </span>
@@ -56,7 +56,7 @@ export default function ValuesIndex() {
             key: 'is_active',
             label: 'Estado',
             render: (item) => (
-                <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${
+                <span className={`p-3 font-semibold mb-1 badge rounded-lg border ${
                     item.is_active 
                         ? 'text-green-800 border-green-200 bg-green-50' 
                         : 'text-red-800 border-red-200 bg-red-50'
