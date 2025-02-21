@@ -284,6 +284,10 @@ Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
 // Rutas para progresos
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/api/empresas-progresos', [ProgresosController::class, 'getCompanies']);
+});
+
+// Rutas para gestionar enlaces de almacenamiento
+Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/storage/link', [StorageCommandController::class, 'link'])->name('storage.link');
     Route::get('/storage/unlink', [StorageCommandController::class, 'unlink'])->name('storage.unlink');
 });
