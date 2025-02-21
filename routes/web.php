@@ -35,6 +35,8 @@ use App\Http\Controllers\CompanyAuthorizationController;
 use App\Http\Middleware\EnsureCompanyIsAuthorized;
 use App\Http\Controllers\RequisitosController;
 use App\Http\Controllers\PDFController;
+use App\Http\Controllers\Commands\StorageCommandController;
+
 // Ruta principal
 Route::get('/', function () {
     if (Auth::check()) {
@@ -282,6 +284,8 @@ Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
 // Rutas para progresos
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/api/empresas-progresos', [ProgresosController::class, 'getCompanies']);
+    Route::get('/storage/link', [StorageCommandController::class, 'link'])->name('storage.link');
+    Route::get('/storage/unlink', [StorageCommandController::class, 'unlink'])->name('storage.unlink');
 });
 
 Route::middleware(['auth'])->group(function () {
