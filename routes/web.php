@@ -36,7 +36,7 @@ use App\Http\Middleware\EnsureCompanyIsAuthorized;
 use App\Http\Controllers\RequisitosController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\Commands\StorageCommandController;
-
+use App\Http\Controllers\UsersManagementSuperAdminController;
 // Ruta principal
 Route::get('/', function () {
     if (Auth::check()) {
@@ -180,15 +180,15 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
         ->name('super.indicators');
 
     // Rutas para gestión de usuarios
-    Route::get('/api/users', [UserManagementController::class, 'index']);
-    Route::post('/api/users', [UserManagementController::class, 'store']);
-    Route::get('/api/users/{user}', [UserManagementController::class, 'show']);
-    Route::put('/api/users/{user}', [UserManagementController::class, 'update']);
-    Route::delete('/api/users/{user}', [UserManagementController::class, 'destroy']);
-    Route::post('/api/users/bulk-delete', [UserManagementController::class, 'bulkDelete']);
-    Route::patch('/api/users/{user}/status', [UserManagementController::class, 'updateStatus']);
-    Route::patch('/api/users/{user}/role', [UserManagementController::class, 'updateRole']);
-    Route::get('/api/companies/active', [UserManagementController::class, 'getActiveCompanies']);
+    Route::get('/api/users', [UsersManagementSuperAdminController::class, 'index']);
+    Route::post('/api/users', [UsersManagementSuperAdminController::class, 'store']);
+    Route::get('/api/users/{user}', [UsersManagementSuperAdminController::class, 'show']);
+    Route::put('/api/users/{user}', [UsersManagementSuperAdminController::class, 'update']);
+    Route::delete('/api/users/{user}', [UsersManagementSuperAdminController::class, 'destroy']);
+    Route::post('/api/users/bulk-delete', [UsersManagementSuperAdminController::class, 'bulkDelete']);
+    Route::patch('/api/users/{user}/status', [UsersManagementSuperAdminController::class, 'updateStatus']);
+    Route::patch('/api/users/{user}/role', [UsersManagementSuperAdminController::class, 'updateRole']);
+    Route::get('/api/companies/active', [UsersManagementSuperAdminController::class, 'getActiveCompanies']);
 
     // Ruta para la vista
     Route::get('/super/users', [SuperAdminController::class, 'users'])->name('super.users');

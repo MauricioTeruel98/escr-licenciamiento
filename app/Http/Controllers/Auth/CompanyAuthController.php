@@ -161,7 +161,7 @@ class CompanyAuthController extends Controller
     public function approveAccess(Request $request, User $user)
     {
         try {
-            if (!Auth::user()->isAdmin()) {
+            if (!Auth::user()->role === 'admin' && !Auth::user()->role === 'super_admin') {
                 throw new \Exception('No tiene permisos para realizar esta acción');
             }
 
@@ -177,7 +177,7 @@ class CompanyAuthController extends Controller
     public function rejectAccess(Request $request, User $user)
     {
         try {
-            if (!Auth::user()->isAdmin()) {
+            if (!Auth::user()->role === 'admin' && !Auth::user()->role === 'super_admin') {
                 throw new \Exception('No tiene permisos para realizar esta acción');
             }
 
