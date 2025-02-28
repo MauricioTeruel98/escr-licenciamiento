@@ -13,6 +13,21 @@ class CompanyController extends Controller
         $user = auth()->user();
         $company = Company::find($user->company_id);
 
+        // Cargar las provincias desde el archivo lugares.json
+        $lugaresJson = file_get_contents(storage_path('app/public/lugares.json'));
+        $lugares = json_decode($lugaresJson, true);
+        
+        // Extraer solo las provincias
+        $provincias = [];
+        if (isset($lugares[0]['provincias'])) {
+            foreach ($lugares[0]['provincias'] as $provincia) {
+                $provincias[] = [
+                    'id' => $provincia['id'],
+                    'name' => $provincia['name']
+                ];
+            }
+        }
+
         return Inertia::render('Company/Edit', [
             'company' => $company,
             'userName' => $user->name,
@@ -23,13 +38,7 @@ class CompanyController extends Controller
                 'Tecnología',
                 // Agregar más sectores según necesites
             ],
-            'cities' => [
-                'San José',
-                'Alajuela',
-                'Cartago',
-                'Heredia',
-                // Agregar más ciudades según necesites
-            ]
+            'provincias' => $provincias
         ]);
     }
 
@@ -39,7 +48,7 @@ class CompanyController extends Controller
             'name' => 'required|string|max:255',
             'website' => 'required|url',
             'sector' => 'required|string',
-            'city' => 'required|string',
+            'provincia' => 'required|string',
             'commercial_activity' => 'required|string',
             'phone' => 'required|string',
             'mobile' => 'required|string',

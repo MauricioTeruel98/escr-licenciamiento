@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import ImageLayout from '@/Layouts/ImageLayout';
 
-export default function CompanyRegister({ legalId }) {
+export default function CompanyRegister({ legalId, provincias }) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         website: '',
         sector: '',
-        city: '',
+        provincia: '',
         legal_id: legalId || '',
         commercial_activity: '',
         phone: '',
@@ -17,6 +17,21 @@ export default function CompanyRegister({ legalId }) {
     });
     
     const [validationErrors, setValidationErrors] = useState({});
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [filteredProvincias, setFilteredProvincias] = useState([]);
+
+    // Efecto para filtrar provincias basado en el término de búsqueda
+    useEffect(() => {
+        if (searchTerm.trim() === '') {
+            setFilteredProvincias(provincias || []);
+        } else {
+            const filtered = (provincias || []).filter(provincia => 
+                provincia.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredProvincias(filtered);
+        }
+    }, [searchTerm, provincias]);
 
     // Validación para cédula jurídica
     const validateLegalId = (legalId) => {
@@ -143,23 +158,55 @@ export default function CompanyRegister({ legalId }) {
                             <InputError message={errors.sector} />
                         </div>
 
-                        {/* Ciudad */}
-                        <div className="space-y-1">
-                            <label htmlFor="city" className="block text-sm">
-                                Ciudad<span className="text-red-500">*</span>
+                        {/* Provincia */}
+                        <div className="space-y-1 relative">
+                            <label htmlFor="provincia" className="block text-sm">
+                                Provincia<span className="text-red-500">*</span>
                             </label>
-                            <select
-                                id="city"
-                                value={data.city}
-                                onChange={e => setData('city', e.target.value)}
-                                className="w-full rounded-md border border-gray-300 p-2"
-                            >
-                                <option value="">Escoger ciudad</option>
-                                <option value="san-jose">San José</option>
-                                <option value="alajuela">Alajuela</option>
-                                <option value="cartago">Cartago</option>
-                            </select>
-                            <InputError message={errors.city} />
+                            <div className="relative">
+                                <input
+                                    id="provincia-search"
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={e => {
+                                        setSearchTerm(e.target.value);
+                                        setShowDropdown(true);
+                                    }}
+                                    className="w-full rounded-md border border-gray-300 p-2"
+                                    placeholder="Buscar provincia"
+                                    onFocus={() => setShowDropdown(true)}
+                                    onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                                />
+                                <input 
+                                    type="hidden" 
+                                    name="provincia" 
+                                    value={data.provincia} 
+                                />
+                                {showDropdown && (
+                                    <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        {filteredProvincias.length > 0 ? (
+                                            filteredProvincias.map(provincia => (
+                                                <div
+                                                    key={provincia.id}
+                                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                                    onClick={() => {
+                                                        setData('provincia', provincia.name);
+                                                        setSearchTerm(provincia.name);
+                                                        setShowDropdown(false);
+                                                    }}
+                                                >
+                                                    {provincia.name}
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="px-4 py-2 text-gray-500">
+                                                No se encontraron resultados
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                            <InputError message={errors.provincia} />
                         </div>
 
                         {/* Cédula jurídica */}

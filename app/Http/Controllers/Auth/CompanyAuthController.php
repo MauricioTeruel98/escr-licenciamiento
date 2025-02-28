@@ -29,8 +29,24 @@ class CompanyAuthController extends Controller
         // Obtener la cédula jurídica de la sesión
         $legalId = session('legal_id', '');
         
+        // Cargar las provincias desde el archivo lugares.json
+        $lugaresJson = file_get_contents(storage_path('app/public/lugares.json'));
+        $lugares = json_decode($lugaresJson, true);
+        
+        // Extraer solo las provincias
+        $provincias = [];
+        if (isset($lugares[0]['provincias'])) {
+            foreach ($lugares[0]['provincias'] as $provincia) {
+                $provincias[] = [
+                    'id' => $provincia['id'],
+                    'name' => $provincia['name']
+                ];
+            }
+        }
+        
         return Inertia::render('Auth/CompanyRegister', [
-            'legalId' => $legalId
+            'legalId' => $legalId,
+            'provincias' => $provincias
         ]);
     }
 
@@ -174,7 +190,7 @@ class CompanyAuthController extends Controller
                 'name' => 'required|string|max:255',
                 'website' => 'required|url',
                 'sector' => 'required|string',
-                'city' => 'required|string',
+                'provincia' => 'required|string',
                 'legal_id' => ['required', 'string', 'regex:/^[a-zA-Z0-9]+$/'],
                 'commercial_activity' => 'required|string',
                 'phone' => ['required', 'string', 'regex:/^[0-9\-\(\)]+$/'],

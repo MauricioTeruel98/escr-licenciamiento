@@ -14,7 +14,7 @@ class Company extends Model
         'name',
         'website',
         'sector',
-        'city',
+        'provincia',
         'commercial_activity',
         'phone',
         'mobile',

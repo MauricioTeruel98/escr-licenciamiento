@@ -5,20 +5,36 @@ import Toast from '@/Components/Toast';
 import { useState, useEffect } from 'react';
 import { CheckCircle } from 'lucide-react';
 
-export default function CompanyEdit({ company, sectors, cities, userName }) {
+export default function CompanyEdit({ company, sectors, provincias, userName }) {
     const { flash } = usePage().props;
 
     const { data, setData, patch, errors, processing } = useForm({
         name: company.name || '',
         website: company.website || '',
         sector: company.sector || '',
-        city: company.city || '',
+        provincia: company.provincia || '',
         legal_id: company.legal_id || '',
         commercial_activity: company.commercial_activity || '',
         phone: company.phone || '',
         mobile: company.mobile || '',
         is_exporter: company.is_exporter || false,
     });
+
+    const [searchTerm, setSearchTerm] = useState(company.provincia || '');
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [filteredProvincias, setFilteredProvincias] = useState([]);
+
+    // Efecto para filtrar provincias basado en el término de búsqueda
+    useEffect(() => {
+        if (searchTerm.trim() === '') {
+            setFilteredProvincias(provincias || []);
+        } else {
+            const filtered = (provincias || []).filter(provincia => 
+                provincia.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredProvincias(filtered);
+        }
+    }, [searchTerm, provincias]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -95,22 +111,54 @@ export default function CompanyEdit({ company, sectors, cities, userName }) {
                                 <InputError message={errors.sector} className="mt-2" />
                             </div>
 
-                            {/* Ciudad */}
+                            {/* Provincia */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">
-                                    Ciudad<span className="text-red-500">*</span>
+                                    Provincia<span className="text-red-500">*</span>
                                 </label>
-                                <select
-                                    value={data.city}
-                                    onChange={e => setData('city', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                >
-                                    <option value="">Escoger ciudad</option>
-                                    {cities.map(city => (
-                                        <option key={city} value={city}>{city}</option>
-                                    ))}
-                                </select>
-                                <InputError message={errors.city} className="mt-2" />
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={searchTerm || data.provincia}
+                                        onChange={e => {
+                                            setSearchTerm(e.target.value);
+                                            setShowDropdown(true);
+                                        }}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                        placeholder="Buscar provincia"
+                                        onFocus={() => setShowDropdown(true)}
+                                        onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                                    />
+                                    <input 
+                                        type="hidden" 
+                                        name="provincia" 
+                                        value={data.provincia} 
+                                    />
+                                    {showDropdown && (
+                                        <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                            {filteredProvincias.length > 0 ? (
+                                                filteredProvincias.map(provincia => (
+                                                    <div
+                                                        key={provincia.id}
+                                                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                                        onClick={() => {
+                                                            setData('provincia', provincia.name);
+                                                            setSearchTerm(provincia.name);
+                                                            setShowDropdown(false);
+                                                        }}
+                                                    >
+                                                        {provincia.name}
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="px-4 py-2 text-gray-500">
+                                                    No se encontraron resultados
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                                <InputError message={errors.provincia} className="mt-2" />
                             </div>
 
                             {/* Cédula jurídica */}
