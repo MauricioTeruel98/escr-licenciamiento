@@ -28,7 +28,8 @@ class User extends Authenticatable
         'role',
         'company_id',
         'status',
-        'form_sended'
+        'form_sended',
+        'terms_accepted'
     ];
 
     /**

@@ -36,11 +36,14 @@ class RegisteredUserController extends Controller
             'lastname' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class, 'regex:/^[a-zA-Z0-9._@+\-]+$/'],
             'password' => ['required', 'confirmed', Rules\Password::defaults(), 'regex:/^[^\s\'"]+$/'],
+            'terms_accepted' => ['required', 'accepted'],
         ], [
             'name.regex' => 'El nombre solo puede contener letras y espacios.',
             'lastname.regex' => 'El apellido solo puede contener letras y espacios.',
             'email.regex' => 'El correo no puede contener espacios ni caracteres especiales excepto guiones, arroba, punto y signo más.',
             'password.regex' => 'La contraseña no puede contener espacios, comillas simples o dobles.',
+            'terms_accepted.required' => 'Debe aceptar los términos y condiciones para registrarse.',
+            'terms_accepted.accepted' => 'Debe aceptar los términos y condiciones para registrarse.',
         ]);
 
         $user = User::create([
@@ -48,6 +51,7 @@ class RegisteredUserController extends Controller
             'lastname' => $request->lastname,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'terms_accepted' => true,
         ]);
 
         event(new Registered($user));

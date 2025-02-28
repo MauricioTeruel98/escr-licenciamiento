@@ -15,6 +15,7 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
+        terms_accepted: false,
     });
 
     const validateName = (name) => {
@@ -148,6 +149,14 @@ export default function Register() {
             return;
         }
         
+        if (!data.terms_accepted) {
+            setValidationErrors({
+                ...validationErrors,
+                terms_accepted: 'Debe aceptar los términos y condiciones para registrarse.'
+            });
+            return;
+        }
+        
         post(route('register'), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
@@ -266,6 +275,28 @@ export default function Register() {
                             </button>
                             <InputError message={errors.password_confirmation || validationErrors.password_confirmation} className="mt-2" />
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex items-start">
+                            <div className="flex items-center h-5">
+                                <input
+                                    id="terms_accepted"
+                                    type="checkbox"
+                                    checked={data.terms_accepted}
+                                    onChange={(e) => setData('terms_accepted', e.target.checked)}
+                                    className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-green-300"
+                                    required
+                                />
+                            </div>
+                            <div className="ml-3 text-sm">
+                                <label htmlFor="terms_accepted" className="font-light text-gray-600">
+                                    Acepto los <a href="#" className="text-green-700 hover:underline">términos y condiciones</a> del sitio web
+                                    <span className="text-red-500">*</span>
+                                </label>
+                            </div>
+                        </div>
+                        <InputError message={errors.terms_accepted || validationErrors.terms_accepted} className="mt-2" />
                     </div>
 
                     <button
