@@ -64,8 +64,8 @@ class CompanyAuthController extends Controller
     {
         // Limpiar los datos de entrada
         if (is_string($request->legal_id)) {
-            // Eliminar espacios en blanco al inicio y comillas
-            $cleanedValue = preg_replace('/[\'"]/', '', ltrim($request->legal_id));
+            // Eliminar espacios en blanco al inicio, comillas, barras y barras invertidas
+            $cleanedValue = preg_replace('/[\'"\\\\\\/]/', '', ltrim($request->legal_id));
             $request->merge(['legal_id' => $cleanedValue]);
         }
         
@@ -197,8 +197,13 @@ class CompanyAuthController extends Controller
             $cleanedData = [];
             foreach ($request->all() as $key => $value) {
                 if (is_string($value)) {
-                    // Eliminar espacios en blanco al inicio y comillas
-                    $cleanedValue = preg_replace('/[\'"]/', '', ltrim($value));
+                    if ($key === 'website') {
+                        // Para URLs solo eliminamos espacios al inicio y comillas
+                        $cleanedValue = preg_replace('/[\'"]/', '', ltrim($value));
+                    } else {
+                        // Para otros campos eliminamos espacios al inicio, comillas, barras y barras invertidas
+                        $cleanedValue = preg_replace('/[\'"\\\\\\/]/', '', ltrim($value));
+                    }
                     $request->merge([$key => $cleanedValue]);
                     $cleanedData[$key] = $cleanedValue;
                 }
@@ -208,7 +213,7 @@ class CompanyAuthController extends Controller
                 'name' => 'required|string|max:255',
                 'website' => 'required|url',
                 'sector' => 'required|string',
-                'provincia' => 'required|string',
+                'provincia' => ['required', 'string', 'regex:/^[a-zA-Z0-9\s\-áéíóúÁÉÍÓÚñÑ]+$/'],
                 'legal_id' => ['required', 'string', 'regex:/^[a-zA-Z0-9]+$/'],
                 'commercial_activity' => 'required|string',
                 'phone' => ['required', 'string', 'regex:/^[0-9\-\(\)]+$/'],
@@ -217,7 +222,8 @@ class CompanyAuthController extends Controller
             ], [
                 'legal_id.regex' => 'La cédula jurídica solo puede contener letras y números, sin espacios ni caracteres especiales.',
                 'phone.regex' => 'El teléfono solo puede contener números, guiones y paréntesis.',
-                'mobile.regex' => 'El teléfono celular solo puede contener números, guiones y paréntesis.'
+                'mobile.regex' => 'El teléfono celular solo puede contener números, guiones y paréntesis.',
+                'provincia.regex' => 'La provincia solo puede contener letras, números, espacios y guiones.'
             ]);
     
             DB::beginTransaction();

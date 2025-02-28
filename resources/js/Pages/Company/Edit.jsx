@@ -27,13 +27,20 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
     // Función para limpiar valores de entrada
     const cleanInputValue = (value) => {
         if (typeof value !== 'string') return value;
-        // Eliminar espacios en blanco al inicio y comillas simples/dobles
-        return value.replace(/^[\s]+|['\"]/g, '');
+        // Eliminar espacios en blanco al inicio, comillas simples/dobles, barras y barras invertidas
+        return value.replace(/^[\s]+|['"\\\/]/g, '');
     };
 
     const handleInputChange = (e, field) => {
-        const cleanedValue = cleanInputValue(e.target.value);
-        setData(field, cleanedValue);
+        if (field === 'website') {
+            // Para URLs permitimos barras y barras invertidas, solo eliminamos espacios al inicio y comillas
+            const cleanedValue = e.target.value.replace(/^[\s]+|['\"]/g, '');
+            setData(field, cleanedValue);
+        } else {
+            // Para otros campos eliminamos espacios al inicio, comillas, barras y barras invertidas
+            const cleanedValue = cleanInputValue(e.target.value);
+            setData(field, cleanedValue);
+        }
     };
 
     // Efecto para filtrar provincias basado en el término de búsqueda
@@ -55,7 +62,13 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
         const cleanedData = {};
         Object.keys(data).forEach(key => {
             if (typeof data[key] === 'string') {
-                cleanedData[key] = cleanInputValue(data[key]);
+                if (key === 'website') {
+                    // Para URLs solo eliminamos espacios al inicio y comillas
+                    cleanedData[key] = data[key].replace(/^[\s]+|['\"]/g, '');
+                } else {
+                    // Para otros campos eliminamos espacios al inicio, comillas, barras y barras invertidas
+                    cleanedData[key] = cleanInputValue(data[key]);
+                }
             } else {
                 cleanedData[key] = data[key];
             }
@@ -149,7 +162,9 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                         type="text"
                                         value={searchTerm || data.provincia}
                                         onChange={e => {
-                                            setSearchTerm(e.target.value);
+                                            // Limpiar el valor de entrada eliminando comillas, barras y barras invertidas
+                                            const cleanedValue = e.target.value.replace(/['"\\\/]/g, '');
+                                            setSearchTerm(cleanedValue);
                                             setShowDropdown(true);
                                         }}
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
@@ -170,8 +185,10 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                                         key={provincia.id}
                                                         className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                                                         onClick={() => {
-                                                            setData('provincia', provincia.name);
-                                                            setSearchTerm(provincia.name);
+                                                            // Asegurar que el nombre de provincia no tenga caracteres especiales
+                                                            const cleanedValue = provincia.name.replace(/['"\\\/]/g, '');
+                                                            setData('provincia', cleanedValue);
+                                                            setSearchTerm(cleanedValue);
                                                             setShowDropdown(false);
                                                         }}
                                                     >
