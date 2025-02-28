@@ -223,7 +223,8 @@ class CompanyAuthController extends Controller
                 'legal_id.regex' => 'La cédula jurídica solo puede contener letras y números, sin espacios ni caracteres especiales.',
                 'phone.regex' => 'El teléfono solo puede contener números, guiones y paréntesis.',
                 'mobile.regex' => 'El teléfono celular solo puede contener números, guiones y paréntesis.',
-                'provincia.regex' => 'La provincia solo puede contener letras, números, espacios y guiones.'
+                'provincia.regex' => 'La provincia solo puede contener letras, números, espacios y guiones.',
+                'website.url' => 'El formato del sitio web no es válido. Debe incluir "https://" o "http://" al inicio (ejemplo: https://www.miempresa.com)'
             ]);
     
             DB::beginTransaction();

@@ -55,7 +55,16 @@ export default function CompanyRegister({ legalId, provincias }) {
     const handleInputChange = (e, field) => {
         if (field === 'website') {
             // Para URLs permitimos barras y barras invertidas, solo eliminamos espacios al inicio y comillas
-            const cleanedValue = e.target.value.replace(/^[\s]+|['\"]/g, '');
+            let cleanedValue = e.target.value.replace(/^[\s]+|['\"]/g, '');
+            
+            // Verificar si la URL tiene el protocolo, si no, agregar https://
+            if (cleanedValue && !cleanedValue.match(/^https?:\/\//i)) {
+                // Solo agregar el protocolo si el usuario ha escrito algo más que solo www.
+                if (cleanedValue.length > 4) {
+                    cleanedValue = 'https://' + cleanedValue;
+                }
+            }
+            
             setData(field, cleanedValue);
         } else {
             // Para otros campos eliminamos espacios al inicio, comillas, barras y barras invertidas
@@ -125,7 +134,14 @@ export default function CompanyRegister({ legalId, provincias }) {
             if (typeof data[key] === 'string') {
                 if (key === 'website') {
                     // Para URLs solo eliminamos espacios al inicio y comillas
-                    cleanedData[key] = data[key].replace(/^[\s]+|['\"]/g, '');
+                    let cleanedValue = data[key].replace(/^[\s]+|['\"]/g, '');
+                    
+                    // Asegurar que la URL tenga el protocolo
+                    if (cleanedValue && !cleanedValue.match(/^https?:\/\//i)) {
+                        cleanedValue = 'https://' + cleanedValue;
+                    }
+                    
+                    cleanedData[key] = cleanedValue;
                 } else {
                     // Para otros campos eliminamos espacios al inicio, comillas, barras y barras invertidas
                     cleanedData[key] = cleanInputValue(data[key]);
@@ -177,8 +193,11 @@ export default function CompanyRegister({ legalId, provincias }) {
                                 value={data.website}
                                 onChange={e => handleInputChange(e, 'website')}
                                 className="w-full rounded-md border border-gray-300 p-2"
-                                placeholder="www.ejemplo.com"
+                                placeholder="https://www.ejemplo.com"
                             />
+                            <p className="text-xs text-gray-500 mt-1">
+                                Debe incluir "https://" o "http://" al inicio de la dirección (ejemplo: https://www.miempresa.com)
+                            </p>
                             <InputError message={errors.website} />
                         </div>
 

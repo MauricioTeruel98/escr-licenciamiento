@@ -70,7 +70,8 @@ class CompanyController extends Controller
             'mobile' => 'required|string',
             'is_exporter' => 'required|boolean',
         ], [
-            'provincia.regex' => 'La provincia solo puede contener letras, números, espacios y guiones.'
+            'provincia.regex' => 'La provincia solo puede contener letras, números, espacios y guiones.',
+            'website.url' => 'El formato del sitio web no es válido. Debe incluir "https://" o "http://" al inicio (ejemplo: https://www.miempresa.com)'
         ]);
 
         $company = Company::find(auth()->user()->company_id);
