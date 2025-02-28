@@ -150,7 +150,7 @@ class UsersManagementSuperAdminController extends Controller
             'phone' => trim($request->phone),
         ]);
 
-        $validated = $request->validate([
+        $validationRules = [
             'name' => [
                 'required',
                 'string',
@@ -180,7 +180,14 @@ class UsersManagementSuperAdminController extends Controller
             'company_id' => 'required|exists:companies,id',
             'assigned_companies' => 'required_if:role,evaluador|array',
             'assigned_companies.*' => 'exists:companies,id'
-        ], [
+        ];
+
+        // Agregar validación de contraseña solo si se proporciona
+        if ($request->filled('password')) {
+            $validationRules['password'] = 'min:8';
+        }
+
+        $validated = $request->validate($validationRules, [
             'email.unique' => 'El correo electrónico ya está en uso por otro usuario.',
             'name.regex' => 'El nombre solo debe contener letras y espacios',
             'name.max' => 'El nombre no debe exceder los 50 caracteres',
@@ -191,6 +198,7 @@ class UsersManagementSuperAdminController extends Controller
             'puesto.max' => 'El puesto no debe exceder los 50 caracteres',
             'phone.regex' => 'El teléfono solo debe contener números, +, - y espacios',
             'phone.max' => 'El teléfono no debe exceder los 20 caracteres',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres',
         ]);
 
         // Eliminar espacios al final
@@ -199,7 +207,15 @@ class UsersManagementSuperAdminController extends Controller
         $validated['puesto'] = rtrim($validated['puesto']);
         $validated['phone'] = rtrim($validated['phone']);
 
-        $user->update($validated);
+        // Preparar datos para actualizar
+        $userData = $validated;
+        
+        // Si se proporcionó una nueva contraseña, hashearla
+        if ($request->filled('password')) {
+            $userData['password'] = Hash::make($request->password);
+        }
+
+        $user->update($userData);
 
         if ($validated['role'] === 'evaluador') {
             // Eliminar asignaciones anteriores
