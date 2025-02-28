@@ -2,13 +2,46 @@ import { useState } from "react";
 import { Head, useForm } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import ImageLayout from "@/Layouts/ImageLayout";
+
 export default function LegalId() {
     const { data, setData, post, processing, errors } = useForm({
         legal_id: '',
     });
+    
+    const [validationErrors, setValidationErrors] = useState({});
+
+    const validateLegalId = (legalId) => {
+        // Solo permitir letras y números (sin espacios ni caracteres especiales)
+        const legalIdRegex = /^[a-zA-Z0-9]+$/;
+        return legalIdRegex.test(legalId);
+    };
+
+    const handleLegalIdChange = (e) => {
+        // Filtrar espacios y caracteres especiales
+        const value = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
+        
+        setData('legal_id', value);
+        
+        if (value && !validateLegalId(value)) {
+            setValidationErrors({
+                ...validationErrors,
+                legal_id: 'La cédula jurídica solo puede contener letras y números, sin espacios ni caracteres especiales.'
+            });
+        } else {
+            const newErrors = {...validationErrors};
+            delete newErrors.legal_id;
+            setValidationErrors(newErrors);
+        }
+    };
 
     const submit = (e) => {
         e.preventDefault();
+        
+        // Validar antes de enviar
+        if (data.legal_id && !validateLegalId(data.legal_id)) {
+            return;
+        }
+        
         post(route('legal-id.verify'));
     };
 
@@ -36,12 +69,12 @@ export default function LegalId() {
                             id="legal_id"
                             type="text"
                             value={data.legal_id}
-                            onChange={(e) => setData('legal_id', e.target.value)}
+                            onChange={handleLegalIdChange}
                             className="w-full rounded-lg border border-gray-300 p-2"
                             placeholder="010101010101"
                             required
                         />
-                        <InputError message={errors.legal_id} className="mt-2" />
+                        <InputError message={errors.legal_id || validationErrors.legal_id} className="mt-2" />
                         
                     </div>
 

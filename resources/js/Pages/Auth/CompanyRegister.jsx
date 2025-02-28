@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import ImageLayout from '@/Layouts/ImageLayout';
@@ -14,9 +15,73 @@ export default function CompanyRegister() {
         mobile: '',
         is_exporter: false,
     });
+    
+    const [validationErrors, setValidationErrors] = useState({});
+
+    // Validación para cédula jurídica
+    const validateLegalId = (legalId) => {
+        const legalIdRegex = /^[a-zA-Z0-9]+$/;
+        return legalIdRegex.test(legalId);
+    };
+
+    // Validación para teléfonos (solo números, guiones y paréntesis)
+    const validatePhone = (phone) => {
+        const phoneRegex = /^[0-9\-\(\)]+$/;
+        return phoneRegex.test(phone);
+    };
+
+    const handleLegalIdChange = (e) => {
+        // Filtrar espacios y caracteres especiales
+        const value = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
+        
+        setData('legal_id', value);
+        
+        if (value && !validateLegalId(value)) {
+            setValidationErrors({
+                ...validationErrors,
+                legal_id: 'La cédula jurídica solo puede contener letras y números, sin espacios ni caracteres especiales.'
+            });
+        } else {
+            const newErrors = {...validationErrors};
+            delete newErrors.legal_id;
+            setValidationErrors(newErrors);
+        }
+    };
+
+    const handlePhoneChange = (e, field) => {
+        // Filtrar caracteres no permitidos en teléfonos
+        const value = e.target.value.replace(/[^0-9\-\(\)]/g, '');
+        
+        setData(field, value);
+        
+        if (value && !validatePhone(value)) {
+            setValidationErrors({
+                ...validationErrors,
+                [field]: 'El teléfono solo puede contener números, guiones y paréntesis.'
+            });
+        } else {
+            const newErrors = {...validationErrors};
+            delete newErrors[field];
+            setValidationErrors(newErrors);
+        }
+    };
 
     const submit = (e) => {
         e.preventDefault();
+        
+        // Validar antes de enviar
+        if (data.legal_id && !validateLegalId(data.legal_id)) {
+            return;
+        }
+        
+        if (data.phone && !validatePhone(data.phone)) {
+            return;
+        }
+        
+        if (data.mobile && !validatePhone(data.mobile)) {
+            return;
+        }
+        
         post(route('company.store'));
     };
 
@@ -106,11 +171,11 @@ export default function CompanyRegister() {
                                 id="legal_id"
                                 type="text"
                                 value={data.legal_id}
-                                onChange={e => setData('legal_id', e.target.value)}
+                                onChange={handleLegalIdChange}
                                 className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="#-###-######"
                             />
-                            <InputError message={errors.legal_id} />
+                            <InputError message={errors.legal_id || validationErrors.legal_id} />
                         </div>
 
                         {/* Actividad comercial */}
@@ -138,11 +203,11 @@ export default function CompanyRegister() {
                                 id="phone"
                                 type="tel"
                                 value={data.phone}
-                                onChange={e => setData('phone', e.target.value)}
+                                onChange={e => handlePhoneChange(e, 'phone')}
                                 className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="2222-2222"
                             />
-                            <InputError message={errors.phone} />
+                            <InputError message={errors.phone || validationErrors.phone} />
                         </div>
 
                         {/* Teléfono celular */}
@@ -154,11 +219,11 @@ export default function CompanyRegister() {
                                 id="mobile"
                                 type="tel"
                                 value={data.mobile}
-                                onChange={e => setData('mobile', e.target.value)}
+                                onChange={e => handlePhoneChange(e, 'mobile')}
                                 className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="2222-2222"
                             />
-                            <InputError message={errors.mobile} />
+                            <InputError message={errors.mobile || validationErrors.mobile} />
                         </div>
                     </div>
 

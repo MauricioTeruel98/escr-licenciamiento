@@ -42,7 +42,13 @@ class CompanyAuthController extends Controller
     public function verifyLegalId(Request $request)
     {
         $request->validate([
-            'legal_id' => 'required|string'
+            'legal_id' => [
+                'required',
+                'string',
+                'regex:/^[a-zA-Z0-9]+$/'
+            ]
+        ], [
+            'legal_id.regex' => 'La cédula jurídica solo puede contener letras y números, sin espacios ni caracteres especiales.'
         ]);
 
         try {
@@ -164,10 +170,15 @@ class CompanyAuthController extends Controller
                 'website' => 'required|url',
                 'sector' => 'required|string',
                 'city' => 'required|string',
+                'legal_id' => ['required', 'string', 'regex:/^[a-zA-Z0-9]+$/'],
                 'commercial_activity' => 'required|string',
-                'phone' => 'required|string',
-                'mobile' => 'required|string',
+                'phone' => ['required', 'string', 'regex:/^[0-9\-\(\)]+$/'],
+                'mobile' => ['required', 'string', 'regex:/^[0-9\-\(\)]+$/'],
                 'is_exporter' => 'required|boolean',
+            ], [
+                'legal_id.regex' => 'La cédula jurídica solo puede contener letras y números, sin espacios ni caracteres especiales.',
+                'phone.regex' => 'El teléfono solo puede contener números, guiones y paréntesis.',
+                'mobile.regex' => 'El teléfono celular solo puede contener números, guiones y paréntesis.'
             ]);
     
             DB::beginTransaction();

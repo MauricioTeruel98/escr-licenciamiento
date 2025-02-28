@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
@@ -9,9 +10,41 @@ export default function ForgotPassword({ status }) {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
     });
+    
+    const [validationErrors, setValidationErrors] = useState({});
+
+    const validateEmail = (email) => {
+        // Regex para permitir solo letras, números, guiones, puntos y arroba (sin espacios)
+        const emailRegex = /^[a-zA-Z0-9._@-]+$/;
+        return emailRegex.test(email);
+    };
+
+    const handleEmailChange = (e) => {
+        // Filtrar espacios y caracteres especiales no permitidos
+        const value = e.target.value.replace(/[^a-zA-Z0-9._@-]/g, '');
+        
+        // Actualizar el valor en el formulario con el texto filtrado
+        setData('email', value);
+        
+        if (value && !validateEmail(value)) {
+            setValidationErrors({
+                ...validationErrors,
+                email: 'El correo no puede contener espacios ni caracteres especiales excepto guiones, arroba y punto.'
+            });
+        } else {
+            const newErrors = {...validationErrors};
+            delete newErrors.email;
+            setValidationErrors(newErrors);
+        }
+    };
 
     const submit = (e) => {
         e.preventDefault();
+        
+        // Validar antes de enviar
+        if (data.email && !validateEmail(data.email)) {
+            return;
+        }
 
         post(route('password.email'));
     };
@@ -47,9 +80,9 @@ export default function ForgotPassword({ status }) {
                             value={data.email}
                             className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="nombre@empresa.com"
-                            onChange={(e) => setData('email', e.target.value)}
+                            onChange={handleEmailChange}
                         />
-                        <InputError message={errors.email} className="mt-2" />
+                        <InputError message={errors.email || validationErrors.email} className="mt-2" />
                     </div>
 
                     <button
