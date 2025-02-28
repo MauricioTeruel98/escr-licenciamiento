@@ -206,21 +206,30 @@ export default function UsersIndex() {
                     type: 'success',
                     message: 'Usuario actualizado exitosamente'
                 });
+                setModalOpen(false);
+                fetchUsers();
             } else {
                 await axios.post('/api/users', formData);
                 setNotification({
                     type: 'success',
                     message: 'Usuario creado exitosamente'
                 });
+                setModalOpen(false);
+                fetchUsers();
             }
-            setModalOpen(false);
-            fetchUsers();
         } catch (error) {
             console.error('Error:', error);
-            setNotification({
-                type: 'error',
-                message: 'Error al guardar el usuario'
-            });
+            
+            // Verificar si hay errores de validación
+            if (error.response && error.response.data && error.response.data.errors) {
+                // Pasar los errores al modal para que los muestre
+                return error.response.data.errors;
+            } else {
+                setNotification({
+                    type: 'error',
+                    message: error.response?.data?.message || 'Error al guardar el usuario'
+                });
+            }
         }
     };
 

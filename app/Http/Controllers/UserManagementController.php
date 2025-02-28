@@ -44,37 +44,51 @@ class UserManagementController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8',
-            'role' => 'required|in:user,admin,evaluador',
-            'company_id' => 'required|exists:companies,id',
-            'assigned_companies' => 'required_if:role,evaluador|array',
-            'assigned_companies.*' => 'exists:companies,id'
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'lastname' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|min:8',
+                'role' => 'required|in:user,admin,evaluador',
+                'company_id' => 'required|exists:companies,id',
+                'assigned_companies' => 'required_if:role,evaluador|array',
+                'assigned_companies.*' => 'exists:companies,id'
+            ], [
+                'email.unique' => 'El correo electrónico ya está en uso por otro usuario.'
+            ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'lastname' => $validated['lastname'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
-            'company_id' => $validated['company_id'],
-            'status' => 'approved'
-        ]);
+            $user = User::create([
+                'name' => $validated['name'],
+                'lastname' => $validated['lastname'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role' => $validated['role'],
+                'company_id' => $validated['company_id'],
+                'status' => 'approved'
+            ]);
 
-        if ($validated['role'] === 'evaluador' && isset($validated['assigned_companies'])) {
-            foreach ($validated['assigned_companies'] as $companyId) {
-                CompanyEvaluator::create([
-                    'user_id' => $user->id,
-                    'company_id' => $companyId
-                ]);
+            if ($validated['role'] === 'evaluador' && isset($validated['assigned_companies'])) {
+                foreach ($validated['assigned_companies'] as $companyId) {
+                    CompanyEvaluator::create([
+                        'user_id' => $user->id,
+                        'company_id' => $companyId
+                    ]);
+                }
             }
-        }
 
-        return response()->json($user);
+            return response()->json($user);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al crear el usuario',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function show(User $user)
@@ -90,34 +104,48 @@ class UserManagementController extends Controller
 
     public function update(Request $request, User $user)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:user,admin,evaluador',
-            'company_id' => 'required|exists:companies,id',
-            'assigned_companies' => 'required_if:role,evaluador|array',
-            'assigned_companies.*' => 'exists:companies,id'
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'lastname' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'role' => 'required|in:user,admin,evaluador',
+                'company_id' => 'required|exists:companies,id',
+                'assigned_companies' => 'required_if:role,evaluador|array',
+                'assigned_companies.*' => 'exists:companies,id'
+            ], [
+                'email.unique' => 'El correo electrónico ya está en uso por otro usuario.'
+            ]);
 
-        $user->update($validated);
+            $user->update($validated);
 
-        if ($validated['role'] === 'evaluador') {
-            // Eliminar asignaciones anteriores
-            CompanyEvaluator::where('user_id', $user->id)->delete();
-            
-            // Crear nuevas asignaciones
-            if (!empty($validated['assigned_companies'])) {
-                foreach ($validated['assigned_companies'] as $companyId) {
-                    CompanyEvaluator::create([
-                        'user_id' => $user->id,
-                        'company_id' => $companyId
-                    ]);
+            if ($validated['role'] === 'evaluador') {
+                // Eliminar asignaciones anteriores
+                CompanyEvaluator::where('user_id', $user->id)->delete();
+                
+                // Crear nuevas asignaciones
+                if (!empty($validated['assigned_companies'])) {
+                    foreach ($validated['assigned_companies'] as $companyId) {
+                        CompanyEvaluator::create([
+                            'user_id' => $user->id,
+                            'company_id' => $companyId
+                        ]);
+                    }
                 }
             }
-        }
 
-        return response()->json($user->load(['company', 'evaluatedCompanies']));
+            return response()->json($user->load(['company', 'evaluatedCompanies']));
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el usuario',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy(User $user)

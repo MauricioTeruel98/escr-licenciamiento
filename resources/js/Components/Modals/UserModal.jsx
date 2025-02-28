@@ -90,7 +90,16 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
             ...formData,
             assigned_companies: formData.role === 'evaluador' ? assignedCompanies : []
         };
-        onSubmit(submitData);
+        
+        // Enviar datos y manejar errores del servidor
+        const serverErrors = onSubmit(submitData);
+        if (serverErrors) {
+            Promise.resolve(serverErrors).then(errors => {
+                if (errors) {
+                    setErrors(errors);
+                }
+            });
+        }
     };
 
     const handleClose = () => {
