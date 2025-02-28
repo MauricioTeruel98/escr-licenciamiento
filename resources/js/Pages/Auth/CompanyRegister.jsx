@@ -45,6 +45,18 @@ export default function CompanyRegister({ legalId, provincias }) {
         return phoneRegex.test(phone);
     };
 
+    // Función para limpiar valores de entrada
+    const cleanInputValue = (value) => {
+        if (typeof value !== 'string') return value;
+        // Eliminar espacios en blanco al inicio y comillas simples/dobles
+        return value.replace(/^[\s]+|['\"]/g, '');
+    };
+
+    const handleInputChange = (e, field) => {
+        const cleanedValue = cleanInputValue(e.target.value);
+        setData(field, cleanedValue);
+    };
+
     const handleLegalIdChange = (e) => {
         // Filtrar espacios y caracteres especiales
         const value = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
@@ -64,12 +76,15 @@ export default function CompanyRegister({ legalId, provincias }) {
     };
 
     const handlePhoneChange = (e, field) => {
-        // Filtrar caracteres no permitidos en teléfonos
+        // Filtrar caracteres no permitidos en teléfonos y comillas
         const value = e.target.value.replace(/[^0-9\-\(\)]/g, '');
         
-        setData(field, value);
+        // Eliminar comillas si por alguna razón quedaron
+        const cleanedValue = cleanInputValue(value);
         
-        if (value && !validatePhone(value)) {
+        setData(field, cleanedValue);
+        
+        if (cleanedValue && !validatePhone(cleanedValue)) {
             setValidationErrors({
                 ...validationErrors,
                 [field]: 'El teléfono solo puede contener números, guiones y paréntesis.'
@@ -97,6 +112,21 @@ export default function CompanyRegister({ legalId, provincias }) {
             return;
         }
         
+        // Limpiar todos los campos de texto antes de enviar
+        const cleanedData = {};
+        Object.keys(data).forEach(key => {
+            if (typeof data[key] === 'string') {
+                cleanedData[key] = cleanInputValue(data[key]);
+            } else {
+                cleanedData[key] = data[key];
+            }
+        });
+        
+        // Actualizar los datos con los valores limpios
+        Object.keys(cleanedData).forEach(key => {
+            setData(key, cleanedData[key]);
+        });
+        
         post(route('company.store'));
     };
 
@@ -116,7 +146,7 @@ export default function CompanyRegister({ legalId, provincias }) {
                                 id="name"
                                 type="text"
                                 value={data.name}
-                                onChange={e => setData('name', e.target.value)}
+                                onChange={e => handleInputChange(e, 'name')}
                                 className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="Nombre de la empresa"
                             />
@@ -132,7 +162,7 @@ export default function CompanyRegister({ legalId, provincias }) {
                                 id="website"
                                 type="url"
                                 value={data.website}
-                                onChange={e => setData('website', e.target.value)}
+                                onChange={e => handleInputChange(e, 'website')}
                                 className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="www.ejemplo.com"
                             />
@@ -151,9 +181,10 @@ export default function CompanyRegister({ legalId, provincias }) {
                                 className="w-full rounded-md border border-gray-300 p-2"
                             >
                                 <option value="">Escoger sector</option>
-                                <option value="tecnologia">Tecnología</option>
-                                <option value="agricultura">Agricultura</option>
-                                <option value="turismo">Turismo</option>
+                                <option value="agricola">Agricola</option>
+                                <option value="alimentos">Alimentos</option>
+                                <option value="industria-especializada">Industria especializada</option>
+                                <option value="servicios">Servicios</option>
                             </select>
                             <InputError message={errors.sector} />
                         </div>
@@ -240,7 +271,7 @@ export default function CompanyRegister({ legalId, provincias }) {
                                 id="commercial_activity"
                                 type="text"
                                 value={data.commercial_activity}
-                                onChange={e => setData('commercial_activity', e.target.value)}
+                                onChange={e => handleInputChange(e, 'commercial_activity')}
                                 className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="Actividad comercial"
                             />

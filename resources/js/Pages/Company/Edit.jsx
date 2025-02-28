@@ -24,6 +24,18 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
     const [showDropdown, setShowDropdown] = useState(false);
     const [filteredProvincias, setFilteredProvincias] = useState([]);
 
+    // Función para limpiar valores de entrada
+    const cleanInputValue = (value) => {
+        if (typeof value !== 'string') return value;
+        // Eliminar espacios en blanco al inicio y comillas simples/dobles
+        return value.replace(/^[\s]+|['\"]/g, '');
+    };
+
+    const handleInputChange = (e, field) => {
+        const cleanedValue = cleanInputValue(e.target.value);
+        setData(field, cleanedValue);
+    };
+
     // Efecto para filtrar provincias basado en el término de búsqueda
     useEffect(() => {
         if (searchTerm.trim() === '') {
@@ -38,6 +50,22 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        
+        // Limpiar todos los campos de texto antes de enviar
+        const cleanedData = {};
+        Object.keys(data).forEach(key => {
+            if (typeof data[key] === 'string') {
+                cleanedData[key] = cleanInputValue(data[key]);
+            } else {
+                cleanedData[key] = data[key];
+            }
+        });
+        
+        // Actualizar los datos con los valores limpios
+        Object.keys(cleanedData).forEach(key => {
+            setData(key, cleanedData[key]);
+        });
+        
         patch(route('company.update'));
     };
 
@@ -71,7 +99,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                 <input
                                     type="text"
                                     value={data.name}
-                                    onChange={e => setData('name', e.target.value)}
+                                    onChange={e => handleInputChange(e, 'name')}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                     placeholder="Nombre de la empresa"
                                 />
@@ -86,7 +114,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                 <input
                                     type="text"
                                     value={data.website}
-                                    onChange={e => setData('website', e.target.value)}
+                                    onChange={e => handleInputChange(e, 'website')}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                     placeholder="www.ejemplo.com"
                                 />
@@ -100,7 +128,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                 </label>
                                 <select
                                     value={data.sector}
-                                    onChange={e => setData('sector', e.target.value)}
+                                    onChange={e => handleInputChange(e, 'sector')}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                 >
                                     <option value="">Escoger sector</option>
@@ -190,7 +218,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                 <input
                                     type="text"
                                     value={data.commercial_activity}
-                                    onChange={e => setData('commercial_activity', e.target.value)}
+                                    onChange={e => handleInputChange(e, 'commercial_activity')}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                     placeholder="Actividad comercial"
                                 />
@@ -205,7 +233,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                 <input
                                     type="text"
                                     value={data.phone}
-                                    onChange={e => setData('phone', e.target.value)}
+                                    onChange={e => handleInputChange(e, 'phone')}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                     placeholder="2222-2222"
                                 />
@@ -220,7 +248,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                 <input
                                     type="text"
                                     value={data.mobile}
-                                    onChange={e => setData('mobile', e.target.value)}
+                                    onChange={e => handleInputChange(e, 'mobile')}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                     placeholder="2222-2222"
                                 />

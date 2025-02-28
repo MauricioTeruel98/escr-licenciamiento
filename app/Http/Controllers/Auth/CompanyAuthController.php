@@ -62,6 +62,13 @@ class CompanyAuthController extends Controller
 
     public function verifyLegalId(Request $request)
     {
+        // Limpiar los datos de entrada
+        if (is_string($request->legal_id)) {
+            // Eliminar espacios en blanco al inicio y comillas
+            $cleanedValue = preg_replace('/[\'"]/', '', ltrim($request->legal_id));
+            $request->merge(['legal_id' => $cleanedValue]);
+        }
+        
         $request->validate([
             'legal_id' => [
                 'required',
@@ -186,6 +193,17 @@ class CompanyAuthController extends Controller
     public function storeCompany(Request $request)
     {
         try {
+            // Limpiar los datos de entrada
+            $cleanedData = [];
+            foreach ($request->all() as $key => $value) {
+                if (is_string($value)) {
+                    // Eliminar espacios en blanco al inicio y comillas
+                    $cleanedValue = preg_replace('/[\'"]/', '', ltrim($value));
+                    $request->merge([$key => $cleanedValue]);
+                    $cleanedData[$key] = $cleanedValue;
+                }
+            }
+            
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'website' => 'required|url',
