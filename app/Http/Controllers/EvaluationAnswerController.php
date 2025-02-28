@@ -31,6 +31,15 @@ class EvaluationAnswerController extends Controller
                 return response()->json(['message' => 'No se recibieron respuestas válidas'], 422);
             }
 
+            // Validar tipos de archivos permitidos
+            $validationResult = $this->validateFileTypes($request);
+            if (!$validationResult['valid']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validationResult['message']
+                ], 422);
+            }
+
             $isPartialSave = $request->input('isPartialSave', false);
             $message = $isPartialSave ? 'Respuestas guardadas correctamente' : 'Evaluación completada exitosamente';
 
@@ -262,5 +271,71 @@ class EvaluationAnswerController extends Controller
                 'message' => 'Error al obtener evaluaciones: ' . $e->getMessage()
             ], 422);
         }
+    }
+
+    /**
+     * Valida que los archivos subidos sean de los tipos permitidos
+     * (jpg, jpeg, png, pdf, excel y word) y no excedan el tamaño máximo
+     * 
+     * @param Request $request
+     * @return array
+     */
+    private function validateFileTypes(Request $request)
+    {
+        $allowedTypes = [
+            // Imágenes
+            'image/jpeg', 'image/jpg', 'image/png',
+            // PDF
+            'application/pdf',
+            // Excel
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            // Word
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        
+        // Tamaño máximo: 2MB
+        $maxSize = 2 * 1024 * 1024;
+        
+        // Número máximo de archivos por pregunta
+        $maxFiles = 3;
+        
+        $errorMessages = [];
+
+        if ($request->has('answers') && is_array($request->answers)) {
+            foreach ($request->answers as $questionId => $answerData) {
+                if (isset($answerData['files']) && is_array($answerData['files'])) {
+                    // Verificar que no se exceda el número máximo de archivos por pregunta
+                    if (count($answerData['files']) > $maxFiles) {
+                        $errorMessages[] = "Solo se permite subir hasta {$maxFiles} archivos por pregunta.";
+                        continue;
+                    }
+                    
+                    foreach ($answerData['files'] as $index => $file) {
+                        if ($file instanceof \Illuminate\Http\UploadedFile) {
+                            // Validar tipo de archivo
+                            if (!in_array($file->getMimeType(), $allowedTypes)) {
+                                $errorMessages[] = "El archivo '{$file->getClientOriginalName()}' no es de un tipo permitido. Solo se permiten archivos jpg, jpeg, png, pdf, excel y word.";
+                            }
+                            
+                            // Validar tamaño de archivo
+                            if ($file->getSize() > $maxSize) {
+                                $errorMessages[] = "El archivo '{$file->getClientOriginalName()}' excede el tamaño máximo permitido de 2MB.";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!empty($errorMessages)) {
+            return [
+                'valid' => false,
+                'message' => implode("\n", $errorMessages)
+            ];
+        }
+
+        return ['valid' => true];
     }
 }

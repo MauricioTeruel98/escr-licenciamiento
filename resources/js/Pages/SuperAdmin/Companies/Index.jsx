@@ -28,7 +28,7 @@ export default function CompaniesIndex() {
         { key: 'legal_id', label: 'Cedula' },
         { key: 'name', label: 'Nombre' },
         { key: 'sector', label: 'Sector' },
-        { key: 'city', label: 'Ciudad' },
+        { key: 'provincia', label: 'Provincia' },
         { 
             key: 'is_exporter', 
             label: 'Exportador',

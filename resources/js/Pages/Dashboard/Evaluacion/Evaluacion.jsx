@@ -454,6 +454,14 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                         <FileManager
                                                             files={answers[question.id]?.files || []}
                                                             questionId={question.id}
+                                                            maxFiles={3}
+                                                            maxSize={2097152} // 2MB
+                                                            acceptedTypes=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,application/pdf,image/jpeg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                                            errorMessages={{
+                                                                maxFiles: 'Solo se permite subir hasta 3 archivos por pregunta',
+                                                                maxSize: 'El archivo excede el tamaño máximo permitido (2MB)',
+                                                                fileType: 'Tipo de archivo no permitido. Solo se permiten archivos jpg, jpeg, png, pdf, excel y word.'
+                                                            }}
                                                             onFileSelect={(file) => {
                                                                 if (!isEvaluador) {
                                                                     const currentFiles = answers[question.id]?.files || [];

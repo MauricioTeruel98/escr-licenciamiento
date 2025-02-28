@@ -118,7 +118,7 @@ Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
     Route::get('/evaluador/dashboard', [EvaluadorController::class, 'dashboard'])->name('evaluador.dashboard');
     Route::get('/evaluador/companies', [EvaluadorController::class, 'companies'])->name('evaluador.companies');
     Route::get('/evaluador/profile', [ProfileController::class, 'edit'])->name('evaluador.profile.edit');
-    Route::get('/evaluador/empresas', [EvaluadorController::class, 'empresas'])->name('evaluador.empresas');
+    Route::get('/evaluador/empresas', [EvaluadorController::class, 'companies'])->name('evaluador.empresas');
     Route::get('/api/evaluador/active-company', [EvaluadorController::class, 'getActiveCompany']);
     Route::post('/api/evaluador/switch-company', [EvaluadorController::class, 'switchCompany']);
 });

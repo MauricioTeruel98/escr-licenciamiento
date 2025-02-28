@@ -8,12 +8,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class CompanyProfileController extends Controller
 {
     public function store(Request $request)
     {
         try {
+            // Validar tipos de archivos permitidos
+            $this->validateFileTypes($request);
+            
             DB::beginTransaction();
 
             $companyId = auth()->user()->company_id;
@@ -311,6 +315,88 @@ class CompanyProfileController extends Controller
             ]);
 
             return response()->json(['success' => false, 'message' => 'Error al eliminar el producto: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Valida que los archivos subidos sean de los tipos permitidos (jpg, jpeg, png)
+     * y que no excedan la cantidad máxima permitida por tipo
+     */
+    private function validateFileTypes(Request $request)
+    {
+        $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        $errorMessages = [];
+
+        // Límites de archivos por tipo
+        $maxFiles = [
+            'logo' => 1,
+            'fotografias' => 3,
+            'certificaciones' => 5,
+            'productos' => 1 // Por producto
+        ];
+
+        // Validar logo
+        if ($request->hasFile('logo')) {
+            $logo = $request->file('logo');
+            if (!in_array($logo->getMimeType(), $allowedTypes)) {
+                $errorMessages[] = 'El logo debe ser un archivo de tipo: jpg, jpeg o png.';
+            }
+            
+            // El logo ya está limitado a 1 por la estructura del formulario
+        }
+
+        // Validar fotografías
+        if ($request->hasFile('fotografias')) {
+            $fotografias = $request->file('fotografias');
+            
+            // Validar cantidad máxima
+            if (count($fotografias) > $maxFiles['fotografias']) {
+                $errorMessages[] = "Solo puede subir un máximo de {$maxFiles['fotografias']} fotografías.";
+            }
+            
+            // Validar tipos de archivo
+            foreach ($fotografias as $index => $foto) {
+                if (!in_array($foto->getMimeType(), $allowedTypes)) {
+                    $errorMessages[] = "La fotografía #{$index} debe ser un archivo de tipo: jpg, jpeg o png.";
+                }
+            }
+        }
+
+        // Validar certificaciones
+        if ($request->hasFile('certificaciones')) {
+            $certificaciones = $request->file('certificaciones');
+            
+            // Validar cantidad máxima
+            if (count($certificaciones) > $maxFiles['certificaciones']) {
+                $errorMessages[] = "Solo puede subir un máximo de {$maxFiles['certificaciones']} certificaciones.";
+            }
+            
+            // Validar tipos de archivo
+            foreach ($certificaciones as $index => $cert) {
+                if (!in_array($cert->getMimeType(), $allowedTypes)) {
+                    $errorMessages[] = "La certificación #{$index} debe ser un archivo de tipo: jpg, jpeg o png.";
+                }
+            }
+        }
+
+        // Validar imágenes de productos
+        if ($request->has('productos')) {
+            foreach ($request->productos as $index => $producto) {
+                $imagenKey = "productos.{$index}.imagen";
+                if ($request->hasFile($imagenKey)) {
+                    $imagen = $request->file($imagenKey);
+                    if (!in_array($imagen->getMimeType(), $allowedTypes)) {
+                        $errorMessages[] = "La imagen del producto '{$producto['nombre']}' debe ser un archivo de tipo: jpg, jpeg o png.";
+                    }
+                    
+                    // Cada producto solo puede tener 1 imagen, lo cual ya está controlado por la estructura del formulario
+                }
+            }
+        }
+
+        // Si hay errores, lanzar excepción
+        if (!empty($errorMessages)) {
+            throw new \Exception(implode("\n", $errorMessages));
         }
     }
 }

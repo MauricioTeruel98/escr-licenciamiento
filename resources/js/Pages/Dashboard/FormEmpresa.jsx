@@ -191,9 +191,29 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         e.preventDefault();
         setIsDragging(false);
 
+        // Validar tipos de archivos permitidos
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         const files = Array.from(e.dataTransfer.files).filter(
-            file => file.type.startsWith('image/')
+            file => allowedTypes.includes(file.type)
         );
+        
+        // Mostrar mensaje si hay archivos no permitidos
+        if (files.length < e.dataTransfer.files.length) {
+            alert('Solo se permiten archivos de tipo: jpg, jpeg o png. Los archivos no válidos han sido ignorados.');
+        }
+        
+        // Si no hay archivos válidos, salir
+        if (files.length === 0) {
+            return;
+        }
+
+        // Definir límites por tipo de archivo
+        const maxFiles = {
+            logo: 1,
+            fotografias: 3,
+            certificaciones: 5,
+            productos: 1
+        };
 
         if (tipo === 'logo') {
             if (files.length > 0) {
@@ -202,7 +222,55 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     logo: files[0]
                 }));
             }
+        } else if (tipo === 'fotografias') {
+            // Verificar si se excede el límite de fotografías
+            const currentCount = (imagenes.fotografias || []).length;
+            const availableSlots = maxFiles.fotografias - currentCount;
+            
+            if (availableSlots <= 0) {
+                alert(`Ya has alcanzado el límite máximo de ${maxFiles.fotografias} fotografías.`);
+                return;
+            }
+            
+            // Tomar solo los archivos que caben dentro del límite
+            const filesToAdd = files.slice(0, availableSlots);
+            
+            if (filesToAdd.length < files.length) {
+                alert(`Solo se han añadido ${filesToAdd.length} fotografías. El límite máximo es de ${maxFiles.fotografias} fotografías.`);
+            }
+            
+            setImagenes(prev => ({
+                ...prev,
+                fotografias: [...(prev.fotografias || []), ...filesToAdd]
+            }));
+        } else if (tipo === 'certificaciones') {
+            // Verificar si se excede el límite de certificaciones
+            const currentCount = (imagenes.certificaciones || []).length;
+            const availableSlots = maxFiles.certificaciones - currentCount;
+            
+            if (availableSlots <= 0) {
+                alert(`Ya has alcanzado el límite máximo de ${maxFiles.certificaciones} certificaciones.`);
+                return;
+            }
+            
+            // Tomar solo los archivos que caben dentro del límite
+            const filesToAdd = files.slice(0, availableSlots);
+            
+            if (filesToAdd.length < files.length) {
+                alert(`Solo se han añadido ${filesToAdd.length} certificaciones. El límite máximo es de ${maxFiles.certificaciones} certificaciones.`);
+            }
+            
+            setImagenes(prev => ({
+                ...prev,
+                certificaciones: [...(prev.certificaciones || []), ...filesToAdd]
+            }));
         } else {
+            // Para productos, solo se permite 1 imagen por producto
+            if (files.length > maxFiles.productos) {
+                alert(`Solo se permite ${maxFiles.productos} imagen por producto.`);
+                files = [files[0]]; // Tomar solo el primer archivo
+            }
+            
             setImagenes(prev => ({
                 ...prev,
                 [tipo]: [...(prev[tipo] || []), ...files]
@@ -228,9 +296,78 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
     const handleImagenChange = (e, tipo, productoIndex = null) => {
         const files = Array.from(e.target.files);
+        
+        // Validar tipos de archivos permitidos
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
+        
+        if (invalidFiles.length > 0) {
+            alert('Solo se permiten archivos de tipo: jpg, jpeg o png.');
+            e.target.value = null; // Limpiar el input
+            return;
+        }
+        
+        // Definir límites por tipo de archivo
+        const maxFiles = {
+            logo: 1,
+            fotografias: 3,
+            certificaciones: 5,
+            productos: 1
+        };
+        
         if (tipo === 'logo') {
             setImagenes(prev => ({ ...prev, logo: files[0] }));
+        } else if (tipo === 'fotografias') {
+            // Verificar si se excede el límite de fotografías
+            const currentCount = (imagenes.fotografias || []).length;
+            const availableSlots = maxFiles.fotografias - currentCount;
+            
+            if (availableSlots <= 0) {
+                alert(`Ya has alcanzado el límite máximo de ${maxFiles.fotografias} fotografías.`);
+                e.target.value = null; // Limpiar el input
+                return;
+            }
+            
+            // Tomar solo los archivos que caben dentro del límite
+            const filesToAdd = files.slice(0, availableSlots);
+            
+            if (filesToAdd.length < files.length) {
+                alert(`Solo se han añadido ${filesToAdd.length} fotografías. El límite máximo es de ${maxFiles.fotografias} fotografías.`);
+            }
+            
+            setImagenes(prev => ({
+                ...prev,
+                fotografias: [...(prev.fotografias || []), ...filesToAdd]
+            }));
+        } else if (tipo === 'certificaciones') {
+            // Verificar si se excede el límite de certificaciones
+            const currentCount = (imagenes.certificaciones || []).length;
+            const availableSlots = maxFiles.certificaciones - currentCount;
+            
+            if (availableSlots <= 0) {
+                alert(`Ya has alcanzado el límite máximo de ${maxFiles.certificaciones} certificaciones.`);
+                e.target.value = null; // Limpiar el input
+                return;
+            }
+            
+            // Tomar solo los archivos que caben dentro del límite
+            const filesToAdd = files.slice(0, availableSlots);
+            
+            if (filesToAdd.length < files.length) {
+                alert(`Solo se han añadido ${filesToAdd.length} certificaciones. El límite máximo es de ${maxFiles.certificaciones} certificaciones.`);
+            }
+            
+            setImagenes(prev => ({
+                ...prev,
+                certificaciones: [...(prev.certificaciones || []), ...filesToAdd]
+            }));
         } else if (tipo === 'producto') {
+            // Para productos, solo se permite 1 imagen por producto
+            if (files.length > maxFiles.productos) {
+                alert(`Solo se permite ${maxFiles.productos} imagen por producto.`);
+                files = [files[0]]; // Tomar solo el primer archivo
+            }
+            
             setImagenes(prev => {
                 const newProductos = [...(prev.productos || [])];
                 if (!newProductos[productoIndex]) {
@@ -1023,6 +1160,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         >
                                             <div className="text-center text-gray-600">
                                                 Arrastre png, jpg o <span className="text-green-600">Cargar</span>
+                                                <p className="text-xs mt-1">Máximo 3 fotografías. Solo formatos jpg, jpeg o png.</p>
                                             </div>
                                             <input
                                                 id="fotografias-input"
@@ -1099,6 +1237,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         >
                                             <div className="text-center text-gray-600">
                                                 Arrastre png, jpg o <span className="text-green-600">Cargar</span>
+                                                <p className="text-xs mt-1">Máximo 1 logo. Solo formatos jpg, jpeg o png.</p>
                                             </div>
                                             <input
                                                 id="logo-input"
@@ -1191,6 +1330,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         >
                                             <div className="text-center text-gray-600">
                                                 Arrastre png, jpg o <span className="text-green-600">Cargar</span>
+                                                <p className="text-xs mt-1">Máximo 5 certificaciones. Solo formatos jpg, jpeg o png.</p>
                                             </div>
                                             <input
                                                 id="certificaciones-input"
@@ -1758,6 +1898,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     >
                                                         <div className="text-center text-gray-600">
                                                             Arrastre png, jpg o <span className="text-green-600">Cargar</span>
+                                                            <p className="text-xs mt-1">Máximo 1 imagen por producto. Solo formatos jpg, jpeg o png.</p>
                                                         </div>
                                                         <input
                                                             id={`producto-input-${index}`}

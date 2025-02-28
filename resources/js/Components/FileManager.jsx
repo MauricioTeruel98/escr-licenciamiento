@@ -4,15 +4,15 @@ export default function FileManager({
     onFileSelect,
     onFileRemove,
     files = [],
-    maxFiles = 10,
-    maxSize = 5242880,
+    maxFiles = 1,
+    maxSize = 2097152, // 2MB (2 * 1024 * 1024)
     acceptedTypes = '*',
     className = '',
     dragDropText = 'Arrastre documentos o',
     buttonText = 'Cargar',
     errorMessages = {
-        maxFiles: 'Número máximo de archivos excedido',
-        maxSize: 'El archivo excede el tamaño máximo permitido',
+        maxFiles: 'Solo se permite subir 1 archivo',
+        maxSize: 'El archivo excede el tamaño máximo permitido (2MB)',
         fileType: 'Tipo de archivo no permitido'
     },
     indicatorId,
@@ -38,7 +38,12 @@ export default function FileManager({
     const validateFile = (file) => {
         // Validar tamaño
         if (file.size > maxSize) {
-            setError(errorMessages.maxSize);
+            const fileSize = formatFileSize(file.size);
+            const maxSizeFormatted = formatFileSize(maxSize);
+            setError(prevError => {
+                const newError = `El archivo "${file.name}" (${fileSize}) excede el tamaño máximo permitido (${maxSizeFormatted}).`;
+                return prevError ? `${prevError}\n${newError}` : newError;
+            });
             return false;
         }
 
@@ -46,7 +51,10 @@ export default function FileManager({
         if (acceptedTypes !== '*') {
             const types = acceptedTypes.split(',').map(type => type.trim());
             if (!types.some(type => file.type.match(type))) {
-                setError(errorMessages.fileType);
+                setError(prevError => {
+                    const newError = `El archivo "${file.name}" no es de un tipo permitido. Solo se permiten archivos jpg, jpeg, png, pdf, excel y word.`;
+                    return prevError ? `${prevError}\n${newError}` : newError;
+                });
                 return false;
             }
         }
@@ -59,16 +67,31 @@ export default function FileManager({
 
         // Validar número máximo de archivos
         if (files.length + fileList.length > maxFiles) {
-            setError(errorMessages.maxFiles);
+            const mensaje = maxFiles === 1 
+                ? 'Solo se permite subir 1 archivo. Por favor, elimine el archivo existente antes de subir uno nuevo.' 
+                : `Solo se permiten subir ${maxFiles} archivos. Ya tiene ${files.length} archivo(s) subido(s).`;
+            setError(mensaje);
             return;
         }
 
         // Convertir FileList a Array y procesar cada archivo
+        const validFiles = [];
+        let hasErrors = false;
+
         Array.from(fileList).forEach(file => {
             if (validateFile(file)) {
-                onFileSelect(file);
+                validFiles.push(file);
+            } else {
+                hasErrors = true;
             }
         });
+
+        // Si no hay errores o hay algunos archivos válidos, enviarlos al componente padre
+        if (!hasErrors || validFiles.length > 0) {
+            validFiles.forEach(file => {
+                onFileSelect(file);
+            });
+        }
     };
 
     const handleDrop = (e) => {
@@ -158,8 +181,15 @@ export default function FileManager({
                             {buttonText}
                         </button>
                     </p>
+                    <p className="text-gray-500 text-xs mt-1">
+                        Máximo {maxFiles} {maxFiles === 1 ? 'archivo' : 'archivos'} de {formatFileSize(maxSize)} - Formatos: jpg, jpeg, png, pdf, excel, word
+                    </p>
                     {error && (
-                        <p className="text-red-500 text-sm mt-2">{error}</p>
+                        <div className="text-red-500 text-sm mt-2">
+                            {error.split('\n').map((line, index) => (
+                                <p key={index}>{line}</p>
+                            ))}
+                        </div>
                     )}
                 </div>
             </div>
