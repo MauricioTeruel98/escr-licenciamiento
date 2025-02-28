@@ -30,6 +30,15 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Validaciones adicionales
+        $request->validate([
+            'email' => ['required', 'string', 'email', 'regex:/^[a-zA-Z0-9._@+\-]+$/'],
+            'password' => ['required', 'string', 'regex:/^[^\s\'"]+$/'],
+        ], [
+            'email.regex' => 'El correo no puede contener espacios ni caracteres especiales excepto guiones, arroba, punto y signo más.',
+            'password.regex' => 'La contraseña no puede contener espacios, comillas simples o dobles.',
+        ]);
+
         $request->authenticate();
         $request->session()->regenerate();
         $user = auth()->user();

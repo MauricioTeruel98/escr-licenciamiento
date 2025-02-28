@@ -32,10 +32,15 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/'],
+            'lastname' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class, 'regex:/^[a-zA-Z0-9._@+\-]+$/'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults(), 'regex:/^[^\s\'"]+$/'],
+        ], [
+            'name.regex' => 'El nombre solo puede contener letras y espacios.',
+            'lastname.regex' => 'El apellido solo puede contener letras y espacios.',
+            'email.regex' => 'El correo no puede contener espacios ni caracteres especiales excepto guiones, arroba, punto y signo más.',
+            'password.regex' => 'La contraseña no puede contener espacios, comillas simples o dobles.',
         ]);
 
         $user = User::create([

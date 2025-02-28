@@ -7,6 +7,7 @@ import InstructionsLayout from "@/Layouts/InstructionsLayout";
 export default function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [validationErrors, setValidationErrors] = useState({});
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -16,8 +17,137 @@ export default function Register() {
         password_confirmation: '',
     });
 
+    const validateName = (name) => {
+        // Solo permitir letras, espacios y acentos para nombres
+        const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/;
+        return nameRegex.test(name);
+    };
+
+    const validateEmail = (email) => {
+        // Regex para permitir solo letras, números, guiones, puntos y arroba (sin espacios)
+        const emailRegex = /^[a-zA-Z0-9._@+\-]+$/;
+        return emailRegex.test(email);
+    };
+
+    const validatePassword = (password) => {
+        // Verificar que no contenga espacios, comillas simples o dobles
+        return !(/[\s'"]/.test(password));
+    };
+
+    const handleNameChange = (e) => {
+        // Filtrar caracteres no permitidos (solo letras, espacios y acentos)
+        const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+        
+        setData('name', value);
+        
+        if (value && !validateName(value)) {
+            setValidationErrors({
+                ...validationErrors,
+                name: 'El nombre solo puede contener letras y espacios.'
+            });
+        } else {
+            const newErrors = {...validationErrors};
+            delete newErrors.name;
+            setValidationErrors(newErrors);
+        }
+    };
+
+    const handleLastnameChange = (e) => {
+        // Filtrar caracteres no permitidos (solo letras, espacios y acentos)
+        const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+        
+        setData('lastname', value);
+        
+        if (value && !validateName(value)) {
+            setValidationErrors({
+                ...validationErrors,
+                lastname: 'El apellido solo puede contener letras y espacios.'
+            });
+        } else {
+            const newErrors = {...validationErrors};
+            delete newErrors.lastname;
+            setValidationErrors(newErrors);
+        }
+    };
+
+    const handleEmailChange = (e) => {
+        // Filtrar espacios y caracteres especiales no permitidos
+        const value = e.target.value.replace(/[^a-zA-Z0-9._@+\-]/g, '');
+        
+        setData('email', value);
+        
+        if (value && !validateEmail(value)) {
+            setValidationErrors({
+                ...validationErrors,
+                email: 'El correo no puede contener espacios ni caracteres especiales excepto guiones, arroba, punto y signo más.'
+            });
+        } else {
+            const newErrors = {...validationErrors};
+            delete newErrors.email;
+            setValidationErrors(newErrors);
+        }
+    };
+
+    const handlePasswordChange = (e) => {
+        // Filtrar espacios y comillas
+        const value = e.target.value.replace(/[\s'"]/g, '');
+        
+        setData('password', value);
+        
+        if (value && !validatePassword(value)) {
+            setValidationErrors({
+                ...validationErrors,
+                password: 'La contraseña no puede contener espacios, comillas simples o dobles.'
+            });
+        } else {
+            const newErrors = {...validationErrors};
+            delete newErrors.password;
+            setValidationErrors(newErrors);
+        }
+    };
+
+    const handleConfirmPasswordChange = (e) => {
+        // Filtrar espacios y comillas
+        const value = e.target.value.replace(/[\s'"]/g, '');
+        
+        setData('password_confirmation', value);
+        
+        if (value && !validatePassword(value)) {
+            setValidationErrors({
+                ...validationErrors,
+                password_confirmation: 'La contraseña no puede contener espacios, comillas simples o dobles.'
+            });
+        } else {
+            const newErrors = {...validationErrors};
+            delete newErrors.password_confirmation;
+            setValidationErrors(newErrors);
+        }
+    };
+
     const submit = (e) => {
         e.preventDefault();
+        
+        // Validar todos los campos antes de enviar
+        if (data.name && !validateName(data.name)) {
+            return;
+        }
+        
+        if (data.lastname && !validateName(data.lastname)) {
+            return;
+        }
+        
+        if (data.email && !validateEmail(data.email)) {
+            return;
+        }
+        
+        if (data.password && !validatePassword(data.password)) {
+            return;
+        }
+        
+        if (data.password_confirmation && !validatePassword(data.password_confirmation)) {
+            return;
+        }
+        
         post(route('register'), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
@@ -38,12 +168,12 @@ export default function Register() {
                             id="name"
                             type="text"
                             value={data.name}
-                            onChange={(e) => setData('name', e.target.value)}
+                            onChange={handleNameChange}
                             className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="Juan Pérez"
                             required
                         />
-                        <InputError message={errors.name} className="mt-2" />
+                        <InputError message={errors.name || validationErrors.name} className="mt-2" />
                     </div>
 
                     <div className="space-y-2">
@@ -55,12 +185,12 @@ export default function Register() {
                             id="lastname"
                             type="text"
                             value={data.lastname}
-                            onChange={(e) => setData('lastname', e.target.value)}
+                            onChange={handleLastnameChange}
                             className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="Pérez"
                             required
                         />
-                        <InputError message={errors.lastname} className="mt-2" />
+                        <InputError message={errors.lastname || validationErrors.lastname} className="mt-2" />
                     </div>
 
                     <div className="space-y-2">
@@ -72,12 +202,12 @@ export default function Register() {
                             id="email"
                             type="email"
                             value={data.email}
-                            onChange={(e) => setData('email', e.target.value)}
+                            onChange={handleEmailChange}
                             className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="nombre@empresa.com"
                             required
                         />
-                        <InputError message={errors.email} className="mt-2" />
+                        <InputError message={errors.email || validationErrors.email} className="mt-2" />
                     </div>
 
                     <div className="space-y-2">
@@ -90,7 +220,7 @@ export default function Register() {
                                 id="password"
                                 type={showPassword ? "text" : "password"}
                                 value={data.password}
-                                onChange={(e) => setData('password', e.target.value)}
+                                onChange={handlePasswordChange}
                                 className="w-full rounded-md border border-gray-300 p-2 pr-10"
                                 required
                             />
@@ -105,7 +235,7 @@ export default function Register() {
                                     <Eye className="h-4 w-4" />
                                 )}
                             </button>
-                            <InputError message={errors.password} className="mt-2" />
+                            <InputError message={errors.password || validationErrors.password} className="mt-2" />
                         </div>
                     </div>
 
@@ -119,7 +249,7 @@ export default function Register() {
                                 id="password_confirmation"
                                 type={showConfirmPassword ? "text" : "password"}
                                 value={data.password_confirmation}
-                                onChange={(e) => setData('password_confirmation', e.target.value)}
+                                onChange={handleConfirmPasswordChange}
                                 className="w-full rounded-md border border-gray-300 p-2 pr-10"
                                 required
                             />
@@ -134,7 +264,7 @@ export default function Register() {
                                     <Eye className="h-4 w-4" />
                                 )}
                             </button>
-                            <InputError message={errors.password_confirmation} className="mt-2" />
+                            <InputError message={errors.password_confirmation || validationErrors.password_confirmation} className="mt-2" />
                         </div>
                     </div>
 

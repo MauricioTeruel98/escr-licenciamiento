@@ -6,14 +6,74 @@ import InstructionsLayout from '@/Layouts/InstructionsLayout';
 
 export default function Login({ status, canResetPassword }) {
     const [showPassword, setShowPassword] = useState(false);
+    const [validationErrors, setValidationErrors] = useState({});
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
         remember: false,
     });
 
+    const validateEmail = (email) => {
+        // Regex para permitir solo letras, números, guiones, puntos y arroba (sin espacios)
+        const emailRegex = /^[a-zA-Z0-9._@+\-]+$/;
+        return emailRegex.test(email);
+    };
+
+    const validatePassword = (password) => {
+        // Verificar que no contenga espacios, comillas simples o dobles
+        return !(/[\s'"]/.test(password));
+    };
+
+    const handleEmailChange = (e) => {
+        // Filtrar espacios y caracteres especiales no permitidos
+        const value = e.target.value.replace(/[^a-zA-Z0-9._@+\-]/g, '');
+        
+        // Actualizar el valor en el formulario con el texto filtrado
+        setData('email', value);
+        
+        if (value && !validateEmail(value)) {
+            setValidationErrors({
+                ...validationErrors,
+                email: 'El correo no puede contener espacios ni caracteres especiales excepto guiones, arroba, punto y signo más.'
+            });
+        } else {
+            const newErrors = {...validationErrors};
+            delete newErrors.email;
+            setValidationErrors(newErrors);
+        }
+    };
+
+    const handlePasswordChange = (e) => {
+        // Filtrar espacios y comillas
+        const value = e.target.value.replace(/[\s'"]/g, '');
+        
+        // Actualizar el valor en el formulario con el texto filtrado
+        setData('password', value);
+        
+        if (value && !validatePassword(value)) {
+            setValidationErrors({
+                ...validationErrors,
+                password: 'La contraseña no puede contener espacios, comillas simples o dobles.'
+            });
+        } else {
+            const newErrors = {...validationErrors};
+            delete newErrors.password;
+            setValidationErrors(newErrors);
+        }
+    };
+
     const submit = (e) => {
         e.preventDefault();
+        
+        // Validar antes de enviar
+        if (data.email && !validateEmail(data.email)) {
+            return;
+        }
+        
+        if (data.password && !validatePassword(data.password)) {
+            return;
+        }
+        
         post(route('login'), {
             onFinish: () => reset('password'),
         });
@@ -40,11 +100,11 @@ export default function Login({ status, canResetPassword }) {
                             id="email"
                             type="email"
                             value={data.email}
-                            onChange={(e) => setData('email', e.target.value)}
+                            onChange={handleEmailChange}
                             className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="nombre@empresa.com"
                         />
-                        <InputError message={errors.email} className="mt-2" />
+                        <InputError message={errors.email || validationErrors.email} className="mt-2" />
                     </div>
 
                     <div className="space-y-2">
@@ -57,7 +117,7 @@ export default function Login({ status, canResetPassword }) {
                                 id="password"
                                 type={showPassword ? "text" : "password"}
                                 value={data.password}
-                                onChange={(e) => setData('password', e.target.value)}
+                                onChange={handlePasswordChange}
                                 className="w-full rounded-md border border-gray-300 p-2 pr-10"
                             />
                             <button
@@ -71,7 +131,7 @@ export default function Login({ status, canResetPassword }) {
                                     <Eye className="h-4 w-4" />
                                 )}
                             </button>
-                            <InputError message={errors.password} className="mt-2" />
+                            <InputError message={errors.password || validationErrors.password} className="mt-2" />
                         </div>
                     </div>
 
