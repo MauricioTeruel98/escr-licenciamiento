@@ -100,15 +100,12 @@ export default function LegalId() {
                         </button>
                     </div>
 
-                    <div className="text-sm mt-3">
+                    {/* <div className="text-sm mt-3">
                         ¿Su empresa ya fue registrada?{" "}
-                        {/* <a href={route('request-access')} className="text-green-700 hover:underline">
-                            Solicitar acceso
-                        </a> */}
                         <a href={''} className="text-green-700 hover:underline">
                             Solicitar acceso
                         </a>
-                    </div>
+                    </div> */}
                 </form>
             </div>
         </ImageLayout>

@@ -29,14 +29,14 @@ export default function CompanyExists() {
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-4 w-full">
-                        <button
+                        {/* <button
                             type="button"
                             onClick={handleRequestAccess}
                             disabled={processing}
                             className="flex-1 bg-green-700 text-white py-2 px-4 rounded-md hover:bg-green-800 transition-colors disabled:opacity-50"
                         >
                             Solicitar Acceso
-                        </button>
+                        </button> */}
                         
                         <button
                             type="button"
