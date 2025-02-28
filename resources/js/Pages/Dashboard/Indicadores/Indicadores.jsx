@@ -320,7 +320,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
                                         )}
                                         {bindingWarning
                                             ? "Indicadores E1, E2 son descalificatorios"
-                                            : `! Necesitas ${valueData.minimum_score - currentScore} puntos más para aprobar`
+                                            : `Necesitas ${valueData.minimum_score - currentScore} puntos más para aprobar`
                                         }
                                     </p>
                                 )}

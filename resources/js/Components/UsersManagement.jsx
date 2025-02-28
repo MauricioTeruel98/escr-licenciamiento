@@ -151,10 +151,10 @@ export default function UsersManagement() {
             setShowToast(true);
         } catch (error) {
             console.error('Error al crear usuario:', error);
-            
+
             // Manejo específico de errores
             let errorMessage = 'Error al crear usuario';
-            
+
             if (error.response) {
                 // El servidor respondió con un estado de error
                 if (error.response.data.messages) {
@@ -165,7 +165,7 @@ export default function UsersManagement() {
                     errorMessage = error.response.data.message;
                 }
             }
-            
+
             setToastMessage(errorMessage);
             setShowToast(true);
         }
@@ -316,12 +316,12 @@ export default function UsersManagement() {
     return (
         <div className="p-6 mx-auto">
             {showToast && (
-                <Toast 
-                    message={toastMessage} 
-                    onClose={() => setShowToast(false)} 
+                <Toast
+                    message={toastMessage}
+                    onClose={() => setShowToast(false)}
                 />
             )}
-            
+
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900">
                     Administrar Usuarios
@@ -417,37 +417,40 @@ export default function UsersManagement() {
                                     Solicitudes Pendientes
                                 </h2>
                             </div>
-                            {solicitudesPendientes.map((solicitud) => (
-                                <div key={solicitud.id} className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-900">
-                                            {solicitud.name}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            {solicitud.email}
-                                        </p>
+                            {solicitudesPendientes.map((solicitud, index) => (
+                                <>
+                                    <div key={solicitud.id} className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-900">
+                                                {solicitud.name}
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                {solicitud.email}
+                                            </p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => handleApprove(solicitud.id)}
+                                                className="flex items-center justify-center w-6 h-6 rounded-full bg-green-600 hover:bg-green-700"
+                                                title="Aprobar"
+                                            >
+                                                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                onClick={() => handleReject(solicitud.id)}
+                                                className="flex items-center justify-center w-6 h-6 rounded-full bg-red-600 hover:bg-red-700"
+                                                title="Rechazar"
+                                            >
+                                                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => handleApprove(solicitud.id)}
-                                            className="flex items-center justify-center w-6 h-6 rounded-full bg-green-600 hover:bg-green-700"
-                                            title="Aprobar"
-                                        >
-                                            <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                            </svg>
-                                        </button>
-                                        <button
-                                            onClick={() => handleReject(solicitud.id)}
-                                            className="flex items-center justify-center w-6 h-6 rounded-full bg-red-600 hover:bg-red-700"
-                                            title="Rechazar"
-                                        >
-                                            <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
+                                    {index < solicitudesPendientes.length - 1 && <div className="divider"></div>}
+                                </>
                             ))}
                         </div>
                     )}
@@ -457,15 +460,14 @@ export default function UsersManagement() {
                         {usuarios.map((usuario) => (
                             <div key={usuario.id} className="p-4 border-b border-gray-200 last:border-b-0">
                                 <div className="flex justify-between items-center mb-4">
-                                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                        usuario.status === 'approved' 
+                                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${usuario.status === 'approved'
                                             ? 'bg-green-100 text-green-800'
                                             : usuario.status === 'rejected'
-                                                ? 'bg-red-100 text-red-800' 
+                                                ? 'bg-red-100 text-red-800'
                                                 : 'bg-yellow-100 text-yellow-800'
-                                    }`}>
-                                        {usuario.status === 'approved' 
-                                            ? 'Aprobado' 
+                                        }`}>
+                                        {usuario.status === 'approved'
+                                            ? 'Aprobado'
                                             : usuario.status === 'rejected'
                                                 ? 'Rechazado'
                                                 : 'Pendiente'
