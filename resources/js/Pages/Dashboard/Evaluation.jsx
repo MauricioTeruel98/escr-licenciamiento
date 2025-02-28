@@ -150,7 +150,7 @@ export default function Evaluation({
                                         title="Aprobar"
                                     >
                                         <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     </button>
                                     <button
@@ -159,7 +159,7 @@ export default function Evaluation({
                                         title="Rechazar"
                                     >
                                         <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     </button>
                                 </div>
@@ -341,73 +341,70 @@ export default function Evaluation({
 
                 </div>
 
-                {
-                    (!autoEvaluationResult || autoEvaluationResult.application_sended == 0) && (
-                        <div className="card bg-white shadow">
-                            <div className="card-body">
-                                <h2 className="card-title">Estos son los pasos para licenciarse</h2>
+                <div className="card bg-white shadow">
+                    <div className="card-body">
+                        <h2 className="card-title">Estos son los pasos para licenciarse</h2>
+                    </div>
+                    <div className="card-body">
+                        <div className='flex flex-col md:flex-row items-center justify-between w-full px-8 gap-4'>
+                            <div className='flex flex-col items-center gap-2 text-green-700'>
+                                <img src="/assets/img/icons-home/check.png" alt="Check" />
+                                <h2 className='w-[80%] text-center'>Evaluación</h2>
                             </div>
-                            <div className="card-body">
-                                <div className='flex flex-col md:flex-row items-center justify-between w-full px-8 gap-4'>
-                                    <div className='flex flex-col items-center gap-2 text-green-700'>
-                                        <img src="/assets/img/icons-home/check.png" alt="Check" />
-                                        <h2 className='w-[80%] text-center'>Evaluación</h2>
-                                    </div>
-                                    <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                        <CircleArrowDown />
-                                    </div>
-                                    <div className='hidden md:block' style={{ color: '#157f3d' }}>
-                                        <CircleArrowRight />
-                                    </div>
-                                    <div className='flex flex-col items-center gap-2 text-green-700'>
-                                        <img src="/assets/img/icons-home/list.png" alt="List" />
-                                        <h2 className='w-[80%] text-center'>Autoevaluación rápida</h2>
-                                    </div>
-                                    <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                        <CircleArrowDown />
-                                    </div>
-                                    <div className='hidden md:block' style={{ color: '#157f3d' }}>
-                                        <CircleArrowRight />
-                                    </div>
-                                    <div className='flex flex-col items-center gap-2 text-green-700'>
-                                        <img src="/assets/img/icons-home/archive.png" alt="Archive" />
-                                        <h2 className='w-[80%] text-center'>Consultar los requisitos</h2>
-                                    </div>
-                                    <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                        <CircleArrowDown />
-                                    </div>
-                                    <div className='hidden md:block' style={{ color: '#157f3d' }}>
-                                        <CircleArrowRight />
-                                    </div>
-                                    <div className='flex flex-col items-center gap-2 text-green-700'>
-                                        <img src="/assets/img/icons-home/calendar.png" alt="Calendar" />
-                                        <h2 className='w-[80%] text-center'>Pedir una cita de certificación</h2>
-                                    </div>
-                                    <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                        <CircleArrowDown />
-                                    </div>
-                                    <div className='hidden md:block' style={{ color: '#157f3d' }}>
-                                        <CircleArrowRight />
-                                    </div>
-                                    <div className='flex flex-col items-center gap-2 text-green-700'>
-                                        <img src="/assets/img/icons-home/doc.png" alt="Doc" />
-                                        <h2 className='w-[80%] text-center'>Enviar los documentos</h2>
-                                    </div>
-                                    <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                        <CircleArrowDown />
-                                    </div>
-                                    <div className='hidden md:block' style={{ color: '#157f3d' }}>
-                                        <CircleArrowRight />
-                                    </div>
-                                    <div className='flex flex-col items-center gap-2 text-green-700'>
-                                        <img src="/assets/img/icons-home/timber.png" alt="Timber" />
-                                        <h2 className='w-[80%] text-center'>Notificación de aceptación</h2>
-                                    </div>
-                                </div>
+                            <div className='md:hidden' style={{ color: '#157f3d' }}>
+                                <CircleArrowDown />
+                            </div>
+                            <div className='hidden md:block' style={{ color: '#157f3d' }}>
+                                <CircleArrowRight />
+                            </div>
+                            <div className='flex flex-col items-center gap-2 text-green-700'>
+                                <img src="/assets/img/icons-home/list.png" alt="List" />
+                                <h2 className='w-[80%] text-center'>Autoevaluación rápida</h2>
+                            </div>
+                            <div className='md:hidden' style={{ color: '#157f3d' }}>
+                                <CircleArrowDown />
+                            </div>
+                            <div className='hidden md:block' style={{ color: '#157f3d' }}>
+                                <CircleArrowRight />
+                            </div>
+                            <div className='flex flex-col items-center gap-2 text-green-700'>
+                                <img src="/assets/img/icons-home/archive.png" alt="Archive" />
+                                <h2 className='w-[80%] text-center'>Consultar los requisitos</h2>
+                            </div>
+                            <div className='md:hidden' style={{ color: '#157f3d' }}>
+                                <CircleArrowDown />
+                            </div>
+                            <div className='hidden md:block' style={{ color: '#157f3d' }}>
+                                <CircleArrowRight />
+                            </div>
+                            <div className='flex flex-col items-center gap-2 text-green-700'>
+                                <img src="/assets/img/icons-home/calendar.png" alt="Calendar" />
+                                <h2 className='w-[80%] text-center'>Pedir una cita de certificación</h2>
+                            </div>
+                            <div className='md:hidden' style={{ color: '#157f3d' }}>
+                                <CircleArrowDown />
+                            </div>
+                            <div className='hidden md:block' style={{ color: '#157f3d' }}>
+                                <CircleArrowRight />
+                            </div>
+                            <div className='flex flex-col items-center gap-2 text-green-700'>
+                                <img src="/assets/img/icons-home/doc.png" alt="Doc" />
+                                <h2 className='w-[80%] text-center'>Enviar los documentos</h2>
+                            </div>
+                            <div className='md:hidden' style={{ color: '#157f3d' }}>
+                                <CircleArrowDown />
+                            </div>
+                            <div className='hidden md:block' style={{ color: '#157f3d' }}>
+                                <CircleArrowRight />
+                            </div>
+                            <div className='flex flex-col items-center gap-2 text-green-700'>
+                                <img src="/assets/img/icons-home/timber.png" alt="Timber" />
+                                <h2 className='w-[80%] text-center'>Notificación de aceptación</h2>
                             </div>
                         </div>
-                    )
-                }
+                    </div>
+                </div>
+
 
                 <div className="grid md:grid-cols-2 gap-8">
                     {/* Left Column */}
