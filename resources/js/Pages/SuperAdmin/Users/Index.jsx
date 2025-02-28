@@ -30,6 +30,24 @@ export default function UsersIndex() {
         { key: 'name', label: 'Nombre' },
         { key: 'email', label: 'Email' },
         {
+            key: 'puesto',
+            label: 'Puesto',
+            render: (item) => (
+                <div className="text-sm text-gray-700">
+                    {item.puesto || 'No especificado'}
+                </div>
+            )
+        },
+        {
+            key: 'phone',
+            label: 'Teléfono',
+            render: (item) => (
+                <div className="text-sm text-gray-700">
+                    {item.phone || 'No especificado'}
+                </div>
+            )
+        },
+        {
             key: 'created_at',
             label: 'Fecha de Registro',
             render: (item) => {

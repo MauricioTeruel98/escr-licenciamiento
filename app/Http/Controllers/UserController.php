@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -32,7 +33,7 @@ class UserController extends Controller
     public function indexCompany(Request $request)
     {
         $query = User::query()
-            ->where('company_id', auth()->user()->company_id);
+            ->where('company_id', Auth::user()->company_id);
 
         if ($request->has('search')) {
             $search = $request->input('search');
@@ -120,7 +121,7 @@ class UserController extends Controller
                 'password' => Hash::make($password),
                 'role' => 'user',
                 'status' => 'approved',
-                'company_id' => auth()->user()->company_id,
+                'company_id' => Auth::user()->company_id,
                 'form_sended' => false,
             ]);
 
@@ -236,9 +237,9 @@ class UserController extends Controller
     public function getPendingUsers()
     {
         try {
-            $pendingUsers = User::where('company_id', auth()->user()->company_id)
+            $pendingUsers = User::where('company_id', Auth::user()->company_id)
                             ->where('status', 'pending')
-                            ->get(['id', 'name', 'lastname', 'email', 'created_at']);
+                            ->get(['id', 'name', 'lastname', 'email', 'puesto', 'phone', 'created_at']);
 
             return response()->json($pendingUsers);
         } catch (\Exception $e) {

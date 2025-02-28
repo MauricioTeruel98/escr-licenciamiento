@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
-class UserManagementController extends Controller
+class UsersManagementSuperAdminController extends Controller
 {
     public function index(Request $request)
     {

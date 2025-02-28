@@ -87,7 +87,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/approval-pending', function () {
-        $user = auth()->user();
+        $user = Auth::user();
         return Inertia::render('Auth/PendingApproval', [
             'status' => $user->status
         ]);
@@ -304,5 +304,15 @@ Route::get('/api/lugares', function () {
 Route::get('/download-indicators-pdf', [PDFController::class, 'downloadIndicatorsPDF'])
     ->name('download.indicators.pdf')
     ->middleware(['auth']);
+
+// Rutas para gestión de usuarios por compañía
+Route::middleware(['auth'])->group(function () {
+    Route::get('/api/users/company', [UserManagementController::class, 'index']);
+    Route::post('/api/users/company', [UserManagementController::class, 'store']);
+    Route::get('/api/users/company/{user}', [UserManagementController::class, 'show']);
+    Route::put('/api/users/company/{user}', [UserManagementController::class, 'update']);
+    Route::delete('/api/users/company/{user}', [UserManagementController::class, 'destroy']);
+    Route::get('/api/pending-users/company', [UserManagementController::class, 'getPendingUsers']);
+});
 
 require __DIR__ . '/auth.php';

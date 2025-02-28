@@ -103,7 +103,7 @@ export default function EvaluadorDashboard({ auth }) {
                                         <Building2 className="h-5 w-5 text-green-700" />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-green-700">Administrando actualmente:</p>
+                                        <p className="text-sm text-green-700">Evaluando actualmente:</p>
                                         <h2 className="text-lg font-semibold text-green-900">{activeCompany.name}</h2>
                                     </div>
                                 </div>

@@ -55,7 +55,8 @@ export default function UsersManagement() {
     const [usuarios, setUsuarios] = useState([]);
     const [solicitudesPendientes, setSolicitudesPendientes] = useState([]);
     const [nuevoUsuario, setNuevoUsuario] = useState({
-        nombreCompleto: '',
+        name: '',
+        lastname: '',
         correo: '',
         puesto: '',
         telefono: ''
@@ -84,21 +85,34 @@ export default function UsersManagement() {
     const validateField = (field, value) => {
         let error = null;
         
-        // Validación para nombre completo y puesto
-        if (field === 'nombreCompleto' || field === 'puesto') {
+        // Validación para nombre y apellidos
+        if (field === 'name' || field === 'lastname') {
             // Verificar si está vacío
             if (!value || value.trim() === '') {
-                error = `El campo ${field === 'nombreCompleto' ? 'nombre completo' : 'puesto'} es obligatorio`;
+                error = `El campo ${field === 'name' ? 'nombre' : 'apellidos'} es obligatorio`;
             }
             // Verificar si contiene números o caracteres especiales
             else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) {
-                error = `El campo ${field === 'nombreCompleto' ? 'nombre completo' : 'puesto'} solo debe contener letras y espacios`;
+                error = `El campo ${field === 'name' ? 'nombre' : 'apellidos'} solo debe contener letras y espacios`;
             }
             // Verificar longitud máxima
-            else if (field === 'nombreCompleto' && value.length > 100) {
-                error = 'El nombre completo no debe exceder los 100 caracteres';
-            } 
-            else if (field === 'puesto' && value.length > 50) {
+            else if (value.length > 50) {
+                error = `El ${field === 'name' ? 'nombre' : 'apellidos'} no debe exceder los 50 caracteres`;
+            }
+        }
+        
+        // Validación para puesto
+        if (field === 'puesto') {
+            // Verificar si está vacío
+            if (!value || value.trim() === '') {
+                error = 'El puesto es obligatorio';
+            }
+            // Verificar si contiene números o caracteres especiales
+            else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) {
+                error = 'El puesto solo debe contener letras y espacios';
+            }
+            // Verificar longitud máxima
+            else if (value.length > 50) {
                 error = 'El puesto no debe exceder los 50 caracteres';
             }
         }
@@ -152,7 +166,8 @@ export default function UsersManagement() {
                 .filter(user => user.role !== 'super_admin') // Filtro adicional en el frontend
                 .map(user => ({
                     id: user.id,
-                    nombreCompleto: `${user.name} ${user.lastname}`,
+                    name: user.name || '',
+                    lastname: user.lastname || '',
                     correo: user.email,
                     puesto: user.puesto || '',
                     telefono: user.phone || '',
@@ -230,25 +245,33 @@ export default function UsersManagement() {
         const trimmedData = { ...nuevoUsuario };
         Object.keys(trimmedData).forEach(key => {
             if (typeof trimmedData[key] === 'string') {
-                if (key !== 'nombreCompleto') {
-                    trimmedData[key] = trimmedData[key].trim();
-                } else {
-                    // Para nombreCompleto, permitir espacios entre nombres pero eliminar al final
-                    trimmedData[key] = trimmedData[key].replace(/\s+$/, '');
-                }
+                trimmedData[key] = trimmedData[key].trim();
             }
         });
         
         try {
-            const response = await axios.post('/api/users/company', trimmedData);
+            const response = await axios.post('/api/users/company', {
+                name: trimmedData.name,
+                lastname: trimmedData.lastname,
+                email: trimmedData.correo,
+                puesto: trimmedData.puesto,
+                phone: trimmedData.telefono
+            });
             setNuevoUsuario({
-                nombreCompleto: '',
+                name: '',
+                lastname: '',
                 correo: '',
                 puesto: '',
                 telefono: ''
             });
             cargarUsuarios();
-            setToastMessage(response.data.message || 'Usuario creado exitosamente');
+            
+            // Mostrar mensaje con la contraseña generada
+            if (response.data.password) {
+                setToastMessage(`Usuario creado exitosamente. Contraseña generada: ${response.data.password}`);
+            } else {
+                setToastMessage(response.data.message || 'Usuario creado exitosamente');
+            }
             setShowToast(true);
         } catch (error) {
             console.error('Error al crear usuario:', error);
@@ -299,21 +322,17 @@ export default function UsersManagement() {
         const trimmedData = { ...usuario };
         Object.keys(trimmedData).forEach(key => {
             if (typeof trimmedData[key] === 'string') {
-                if (key !== 'nombreCompleto') {
-                    trimmedData[key] = trimmedData[key].trim();
-                } else {
-                    // Para nombreCompleto, permitir espacios entre nombres pero eliminar al final
-                    trimmedData[key] = trimmedData[key].replace(/\s+$/, '');
-                }
+                trimmedData[key] = trimmedData[key].trim();
             }
         });
         
         try {
             await axios.put(`/api/users/company/${id}`, {
-                nombreCompleto: trimmedData.nombreCompleto,
-                correo: trimmedData.correo,
+                name: trimmedData.name,
+                lastname: trimmedData.lastname,
+                email: trimmedData.correo,
                 puesto: trimmedData.puesto,
-                telefono: trimmedData.telefono
+                phone: trimmedData.telefono
             });
             setUsuarios(usuarios.map(u =>
                 u.id === id ? { ...trimmedData, editando: false } : u
@@ -348,7 +367,7 @@ export default function UsersManagement() {
         // Validar caracteres según el tipo de campo
         let processedValue = value;
         
-        if (field === 'nombreCompleto' || field === 'puesto') {
+        if (field === 'name' || field === 'lastname' || field === 'puesto') {
             // Solo permitir letras y espacios
             const lastChar = value.charAt(value.length - 1);
             if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]$/.test(lastChar) && lastChar !== '') {
@@ -357,8 +376,7 @@ export default function UsersManagement() {
             }
             
             // Verificar longitud máxima
-            if ((field === 'nombreCompleto' && value.length > 100) || 
-                (field === 'puesto' && value.length > 50)) {
+            if (value.length > 50) {
                 return;
             }
         }
@@ -420,7 +438,7 @@ export default function UsersManagement() {
         const { name, value } = e.target;
         
         // Validar caracteres según el tipo de campo
-        if (name === 'nombreCompleto' || name === 'puesto') {
+        if (name === 'name' || name === 'lastname' || name === 'puesto') {
             // Solo permitir letras y espacios
             const lastChar = value.charAt(value.length - 1);
             if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]$/.test(lastChar) && lastChar !== '') {
@@ -429,8 +447,7 @@ export default function UsersManagement() {
             }
             
             // Verificar longitud máxima
-            if ((name === 'nombreCompleto' && value.length > 100) || 
-                (name === 'puesto' && value.length > 50)) {
+            if (value.length > 50) {
                 return;
             }
         }
@@ -595,19 +612,37 @@ export default function UsersManagement() {
                         <form onSubmit={handleSubmit} className="p-4 space-y-4">
                             <div>
                                 <label className="block text-sm mb-1">
-                                    Nombre Completo<span className="text-red-500">*</span>
+                                    Nombre<span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
-                                    name="nombreCompleto"
-                                    value={nuevoUsuario.nombreCompleto}
+                                    name="name"
+                                    value={nuevoUsuario.name}
                                     onChange={handleInputChange}
                                     className="w-full rounded-md border border-gray-300 p-2"
                                     required
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 100 caracteres.</p>
-                                {validationErrors.nombreCompleto && (
-                                    <p className="text-sm text-red-600 mt-1">{validationErrors.nombreCompleto}</p>
+                                <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 50 caracteres.</p>
+                                {validationErrors.name && (
+                                    <p className="text-sm text-red-600 mt-1">{validationErrors.name}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm mb-1">
+                                    Apellidos<span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="lastname"
+                                    value={nuevoUsuario.lastname}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-md border border-gray-300 p-2"
+                                    required
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 50 caracteres.</p>
+                                {validationErrors.lastname && (
+                                    <p className="text-sm text-red-600 mt-1">{validationErrors.lastname}</p>
                                 )}
                             </div>
 
@@ -745,19 +780,37 @@ export default function UsersManagement() {
                                 <div className="grid md:grid-cols-2 gap-x-6 gap-y-4">
                                     <div>
                                         <label className="block text-sm mb-1">
-                                            Nombre Completo
+                                            Nombre
                                             {usuario.editando && <span className="text-red-500">*</span>}
                                         </label>
                                         <input
                                             type="text"
-                                            value={usuario.nombreCompleto}
-                                            onChange={(e) => handleChange(usuario.id, 'nombreCompleto', e.target.value)}
+                                            value={usuario.name}
+                                            onChange={(e) => handleChange(usuario.id, 'name', e.target.value)}
                                             disabled={!usuario.editando}
                                             className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
                                         />
-                                        {usuario.editando && <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 100 caracteres.</p>}
-                                        {usuario.editando && validationErrors.nombreCompleto && (
-                                            <p className="text-sm text-red-600 mt-1">{validationErrors.nombreCompleto}</p>
+                                        {usuario.editando && <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 50 caracteres.</p>}
+                                        {usuario.editando && validationErrors.name && (
+                                            <p className="text-sm text-red-600 mt-1">{validationErrors.name}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm mb-1">
+                                            Apellidos
+                                            {usuario.editando && <span className="text-red-500">*</span>}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={usuario.lastname}
+                                            onChange={(e) => handleChange(usuario.id, 'lastname', e.target.value)}
+                                            disabled={!usuario.editando}
+                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
+                                        />
+                                        {usuario.editando && <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 50 caracteres.</p>}
+                                        {usuario.editando && validationErrors.lastname && (
+                                            <p className="text-sm text-red-600 mt-1">{validationErrors.lastname}</p>
                                         )}
                                     </div>
 
@@ -794,24 +847,6 @@ export default function UsersManagement() {
                                         {usuario.editando && <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 50 caracteres.</p>}
                                         {usuario.editando && validationErrors.puesto && (
                                             <p className="text-sm text-red-600 mt-1">{validationErrors.puesto}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm mb-1">
-                                            Teléfono
-                                            {usuario.editando && <span className="text-red-500">*</span>}
-                                        </label>
-                                        <input
-                                            type="tel"
-                                            value={usuario.telefono}
-                                            onChange={(e) => handleChange(usuario.id, 'telefono', e.target.value)}
-                                            disabled={!usuario.editando}
-                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
-                                        />
-                                        {usuario.editando && <p className="text-xs text-gray-500 mt-1">Solo números, +, - y espacios. Máx. 20 caracteres.</p>}
-                                        {usuario.editando && validationErrors.telefono && (
-                                            <p className="text-sm text-red-600 mt-1">{validationErrors.telefono}</p>
                                         )}
                                     </div>
                                 </div>
@@ -855,7 +890,7 @@ export default function UsersManagement() {
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}
                 onConfirm={confirmDelete}
-                userName={userToDelete?.nombreCompleto}
+                userName={userToDelete?.name}
             />
         </div>
     );
