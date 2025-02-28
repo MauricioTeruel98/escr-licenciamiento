@@ -444,7 +444,7 @@ export default function UsersManagement() {
         if (name === 'correo') {
             // Permitir caracteres válidos para email
             const lastChar = value.charAt(value.length - 1);
-            if (!/^[a-zA-Z0-9@._-]$/.test(lastChar) && lastChar !== '') {
+            if (!/^[a-zA-Z0-9@._+\-]$/.test(lastChar) && lastChar !== '') {
                 return;
             }
             
