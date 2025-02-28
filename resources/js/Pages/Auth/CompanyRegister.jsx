@@ -3,13 +3,13 @@ import { useForm } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import ImageLayout from '@/Layouts/ImageLayout';
 
-export default function CompanyRegister() {
+export default function CompanyRegister({ legalId }) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         website: '',
         sector: '',
         city: '',
-        legal_id: '',
+        legal_id: legalId || '',
         commercial_activity: '',
         phone: '',
         mobile: '',
@@ -172,9 +172,15 @@ export default function CompanyRegister() {
                                 type="text"
                                 value={data.legal_id}
                                 onChange={handleLegalIdChange}
-                                className="w-full rounded-md border border-gray-300 p-2"
+                                className={`w-full rounded-md border border-gray-300 p-2 ${legalId ? 'bg-gray-100' : ''}`}
                                 placeholder="#-###-######"
+                                readOnly={!!legalId}
                             />
+                            {legalId && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Cédula jurídica ingresada previamente.
+                                </p>
+                            )}
                             <InputError message={errors.legal_id || validationErrors.legal_id} />
                         </div>
 

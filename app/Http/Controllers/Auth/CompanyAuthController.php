@@ -26,7 +26,12 @@ class CompanyAuthController extends Controller
 
     public function showCompanyRegister()
     {
-        return Inertia::render('Auth/CompanyRegister');
+        // Obtener la cédula jurídica de la sesión
+        $legalId = session('legal_id', '');
+        
+        return Inertia::render('Auth/CompanyRegister', [
+            'legalId' => $legalId
+        ]);
     }
 
     public function showLegalId()
@@ -183,10 +188,7 @@ class CompanyAuthController extends Controller
     
             DB::beginTransaction();
             
-            $company = Company::create([
-                'legal_id' => session('legal_id'),
-                ...$validated
-            ]);
+            $company = Company::create($validated);
     
             // Vincular la empresa al usuario actual y establecerlo como admin
             $user = Auth::user();
@@ -195,6 +197,9 @@ class CompanyAuthController extends Controller
             $user->status = 'approved';
             $user->save();
     
+            // Limpiar la sesión
+            session()->forget('legal_id');
+            
             DB::commit();
     
             return redirect()->route('dashboard')->with('success', 'Empresa registrada exitosamente');
