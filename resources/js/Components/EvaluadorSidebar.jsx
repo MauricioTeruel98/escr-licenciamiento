@@ -7,8 +7,31 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
     const { url } = usePage();
     const [isEvaluacionOpen, setIsEvaluacionOpen] = useState(false);
     const [evaluacionItems, setEvaluacionItems] = useState([]);
+    const [activeCompany, setActiveCompany] = useState(null);
+    const [isCompanyAuthorized, setIsCompanyAuthorized] = useState(false);
 
     useEffect(() => {
+        const fetchActiveCompany = async () => {
+            try {
+                const response = await axios.get('/api/evaluador/active-company');
+                setActiveCompany(response.data);
+                setIsCompanyAuthorized(response.data?.authorized === 1);
+            } catch (error) {
+                console.error('Error al cargar empresa activa:', error);
+                setActiveCompany(null);
+                setIsCompanyAuthorized(false);
+            }
+        };
+
+        fetchActiveCompany();
+    }, []);
+
+    useEffect(() => {
+        if (!isCompanyAuthorized) {
+            setEvaluacionItems([]);
+            return;
+        }
+
         const fetchValues = async () => {
             try {
                 const response = await axios.get('/api/active-values');
@@ -25,7 +48,7 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
         };
 
         fetchValues();
-    }, [url]);
+    }, [url, isCompanyAuthorized]);
 
     return (
         <>
@@ -74,42 +97,44 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
                         </Link>
                     </li>
 
-                    {/* Menú Administrar Evaluación */}
-                    <li className="mb-1">
-                        <button
-                            onClick={() => setIsEvaluacionOpen(!isEvaluacionOpen)}
-                            className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800"
-                        >
-                            <div className="flex items-center">
-                                <ClipboardList className="mr-3 h-5 w-5" />
-                                <span>Administrar Evaluación</span>
-                            </div>
-                            <svg
-                                className={`w-4 h-4 transition-transform ${isEvaluacionOpen ? 'rotate-180' : ''}`}
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                    {/* Menú Administrar Evaluación - Solo mostrar si la empresa está autorizada */}
+                    {isCompanyAuthorized && activeCompany && (
+                        <li className="mb-1">
+                            <button
+                                onClick={() => setIsEvaluacionOpen(!isEvaluacionOpen)}
+                                className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800"
                             >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
+                                <div className="flex items-center">
+                                    <ClipboardList className="mr-3 h-5 w-5" />
+                                    <span>Administrar Evaluación</span>
+                                </div>
+                                <svg
+                                    className={`w-4 h-4 transition-transform ${isEvaluacionOpen ? 'rotate-180' : ''}`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
 
-                        {/* Submenú de Evaluación */}
-                        <ul className={`ml-4 mt-1 space-y-1 ${isEvaluacionOpen ? 'block' : 'hidden'}`}>
-                            {evaluacionItems.map((item, index) => (
-                                <li key={index}>
-                                    <Link
-                                        href={item.route}
-                                        className={`block px-4 py-2 hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800 ${
-                                            item.active ? 'bg-green-800' : ''
-                                        }`}
-                                    >
-                                        {item.name}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </li>
+                            {/* Submenú de Evaluación */}
+                            <ul className={`ml-4 mt-1 space-y-1 ${isEvaluacionOpen ? 'block' : 'hidden'}`}>
+                                {evaluacionItems.map((item, index) => (
+                                    <li key={index}>
+                                        <Link
+                                            href={item.route}
+                                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800 ${
+                                                item.active ? 'bg-green-800' : ''
+                                            }`}
+                                        >
+                                            {item.name}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </li>
+                    )}
 
                     {/* Empresas */}
                     <li className="mb-1">

@@ -115,6 +115,16 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class, EnsureCompan
 Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
     Route::get('/evaluador/reportes', [EvaluadorController::class, 'reportes'])->name('evaluador.reportes');
     Route::get('/api/evaluador/companies', [EvaluadorController::class, 'getCompaniesList']);
+    Route::get('/evaluador/dashboard', [EvaluadorController::class, 'dashboard'])->name('evaluador.dashboard');
+    Route::get('/evaluador/companies', [EvaluadorController::class, 'companies'])->name('evaluador.companies');
+    Route::get('/evaluador/profile', [ProfileController::class, 'edit'])->name('evaluador.profile.edit');
+    Route::get('/evaluador/empresas', [EvaluadorController::class, 'empresas'])->name('evaluador.empresas');
+    Route::get('/api/evaluador/active-company', [EvaluadorController::class, 'getActiveCompany']);
+    Route::post('/api/evaluador/switch-company', [EvaluadorController::class, 'switchCompany']);
+});
+
+Route::middleware(['auth', EnsureUserIsEvaluador::class, EnsureCompanyIsAuthorized::class])->group(function () {
+    Route::get('/evaluador/evaluations', [EvaluadorController::class, 'evaluations'])->name('evaluador.evaluations');
 });
 
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
@@ -252,17 +262,6 @@ Route::post('/evaluacion/store-answers', [EvaluationAnswerController::class, 'st
 
 Route::delete('/evaluacion/delete-file', [EvaluationAnswerController::class, 'deleteFile'])
     ->name('evaluacion.delete-file');
-
-Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
-    Route::get('/evaluador/dashboard', [EvaluadorController::class, 'dashboard'])->name('evaluador.dashboard');
-    Route::get('/evaluador/companies', [EvaluadorController::class, 'companies'])->name('evaluador.companies');
-    Route::get('/evaluador/evaluations', [EvaluadorController::class, 'evaluations'])->name('evaluador.evaluations');
-    Route::get('/evaluador/profile', [ProfileController::class, 'edit'])->name('evaluador.profile.edit');
-    Route::get('/evaluador/empresas', [EvaluadorController::class, 'empresas'])->name('evaluador.empresas');
-
-    Route::get('/api/evaluador/active-company', [EvaluadorController::class, 'getActiveCompany']);
-    Route::post('/api/evaluador/switch-company', [EvaluadorController::class, 'switchCompany']);
-});
 
 Route::post('/company/profile', [CompanyProfileController::class, 'store'])->name('company.profile.store');
 Route::post('/company/profile/delete-file', [CompanyProfileController::class, 'deleteFile'])->name('company.profile.delete-file');

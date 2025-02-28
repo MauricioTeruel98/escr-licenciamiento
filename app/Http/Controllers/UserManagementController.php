@@ -8,6 +8,7 @@ use App\Models\CompanyEvaluator;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class UserManagementController extends Controller
 {
@@ -15,6 +16,7 @@ class UserManagementController extends Controller
     {
         $query = User::query()
             ->with(['company', 'evaluatedCompanies'])
+            ->where('role', '!=', 'super_admin')
             ->orderBy('created_at', 'desc');
 
         if ($request->has('search')) {
@@ -223,7 +225,7 @@ class UserManagementController extends Controller
 
     public function destroy(User $user)
     {
-        if ($user->id === auth()->id()) {
+        if ($user->id === Auth::id()) {
             return response()->json([
                 'message' => 'No puedes eliminar tu propio usuario'
             ], 403);
@@ -244,7 +246,7 @@ class UserManagementController extends Controller
         ]);
 
         // Evitar eliminar al usuario actual
-        $ids = array_diff($request->ids, [auth()->id()]);
+        $ids = array_diff($request->ids, [Auth::id()]);
         
         $count = User::whereIn('id', $ids)->delete();
 
@@ -282,7 +284,7 @@ class UserManagementController extends Controller
             'role' => 'required|in:super_admin,admin,user'
         ]);
 
-        if ($user->id === auth()->id() && $validated['role'] !== 'super_admin') {
+        if ($user->id === Auth::id() && $validated['role'] !== 'super_admin') {
             return response()->json([
                 'message' => 'No puedes cambiar tu propio rol de super admin'
             ], 403);

@@ -1,16 +1,18 @@
 import { useState, useEffect, Fragment } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import EvaluadorLayout from '@/Layouts/EvaluadorLayout';
-import { Building2, ClipboardList, Users } from 'lucide-react';
+import { Building2, ClipboardList, Users, AlertTriangle, XCircle } from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import { Combobox, Transition } from '@headlessui/react';
 import { ChevronUpDownIcon, CheckIcon } from '@heroicons/react/20/solid';
 
 export default function EvaluadorDashboard({ auth }) {
+    const { flash } = usePage().props;
     const [companies, setCompanies] = useState([]);
     const [selectedCompany, setSelectedCompany] = useState(null);
     const [activeCompany, setActiveCompany] = useState(null);
+    const [isCompanyAuthorized, setIsCompanyAuthorized] = useState(false);
     const [query, setQuery] = useState('');
 
     useEffect(() => {
@@ -40,6 +42,7 @@ export default function EvaluadorDashboard({ auth }) {
         try {
             const response = await axios.get('/api/evaluador/active-company');
             setActiveCompany(response.data);
+            setIsCompanyAuthorized(response.data?.authorized === 1);
         } catch (error) {
             console.error('Error al cargar empresa activa:', error);
         }
@@ -67,6 +70,22 @@ export default function EvaluadorDashboard({ auth }) {
 
             <div className="py-4">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {/* Mensaje de error de redirección */}
+                    {flash.error && (
+                        <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4">
+                            <div className="flex">
+                                <div className="flex-shrink-0">
+                                    <XCircle className="h-5 w-5 text-red-500" />
+                                </div>
+                                <div className="ml-3">
+                                    <p className="text-sm text-red-700">
+                                        {flash.error}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6">
                         <h1 className="text-2xl font-semibold text-gray-900">
                             ¡Bienvenido, {auth.user.name}!
@@ -87,6 +106,24 @@ export default function EvaluadorDashboard({ auth }) {
                                         <p className="text-sm text-green-700">Administrando actualmente:</p>
                                         <h2 className="text-lg font-semibold text-green-900">{activeCompany.name}</h2>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Mensaje de advertencia cuando la empresa no está autorizada */}
+                    {activeCompany && !isCompanyAuthorized && (
+                        <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                                <div className="mt-0.5">
+                                    <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-md font-semibold text-yellow-800">Empresa no autorizada para evaluación</h3>
+                                    <p className="text-sm text-yellow-700 mt-1">
+                                        Esta empresa aún no ha sido autorizada para realizar la evaluación. 
+                                        No se podrá acceder a las opciones de evaluación hasta que la empresa sea autorizada.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -188,38 +225,6 @@ export default function EvaluadorDashboard({ auth }) {
                             </div>
                         </div>
                     </div>
-
-                    {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <Link href={route('evaluador.companies')} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-                            <div className="flex flex-col items-center text-center">
-                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                    <Building2 className="h-6 w-6 text-green-700" />
-                                </div>
-                                <h3 className="text-lg font-semibold text-gray-900">Empresas</h3>
-                                <p className="mt-2 text-sm text-gray-600">Ver y evaluar empresas</p>
-                            </div>
-                        </Link>
-
-                        <Link href={route('evaluador.evaluations')} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-                            <div className="flex flex-col items-center text-center">
-                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                    <ClipboardList className="h-6 w-6 text-green-700" />
-                                </div>
-                                <h3 className="text-lg font-semibold text-gray-900">Evaluaciones</h3>
-                                <p className="mt-2 text-sm text-gray-600">Gestionar evaluaciones pendientes</p>
-                            </div>
-                        </Link>
-
-                        <Link href={route('evaluador.profile.edit')} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-                            <div className="flex flex-col items-center text-center">
-                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                    <Users className="h-6 w-6 text-green-700" />
-                                </div>
-                                <h3 className="text-lg font-semibold text-gray-900">Mi Perfil</h3>
-                                <p className="mt-2 text-sm text-gray-600">Gestionar información personal</p>
-                            </div>
-                        </Link>
-                    </div> */}
                 </div>
             </div>
         </EvaluadorLayout>

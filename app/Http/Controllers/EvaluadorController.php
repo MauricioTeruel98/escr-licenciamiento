@@ -34,7 +34,8 @@ class EvaluadorController extends Controller
         // Obtener la empresa actual del usuario
         $user = auth()->user();
         if ($user->company_id) {
-            return response()->json(Company::find($user->company_id));
+            $company = Company::find($user->company_id);
+            return response()->json($company);
         }
         return response()->json(null);
     }
