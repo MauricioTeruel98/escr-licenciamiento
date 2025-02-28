@@ -52,11 +52,55 @@ class UserController extends Controller
     public function store(Request $request)
     {
         try {
+            // Limpiar espacios al inicio y final
+            $nombreCompleto = trim($request->nombreCompleto);
+            $correo = trim($request->correo);
+            $puesto = trim($request->puesto);
+            $telefono = trim($request->telefono);
+
+            $request->merge([
+                'nombreCompleto' => $nombreCompleto,
+                'correo' => $correo,
+                'puesto' => $puesto,
+                'telefono' => $telefono,
+            ]);
+
             $request->validate([
-                'nombreCompleto' => 'required|string',
-                'correo' => 'required|email|unique:users,email',
-                'puesto' => 'required|string',
-                'telefono' => 'required|string',
+                'nombreCompleto' => [
+                    'required',
+                    'string',
+                    'max:100',
+                    'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'
+                ],
+                'correo' => [
+                    'required',
+                    'email',
+                    'max:255',
+                    'unique:users,email'
+                ],
+                'puesto' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'
+                ],
+                'telefono' => [
+                    'required',
+                    'string',
+                    'max:20'
+                ],
+            ], [
+                'nombreCompleto.required' => 'El nombre completo es requerido',
+                'nombreCompleto.regex' => 'El nombre solo debe contener letras y espacios',
+                'nombreCompleto.max' => 'El nombre no debe exceder los 100 caracteres',
+                'correo.required' => 'El correo electrónico es requerido',
+                'correo.email' => 'El correo electrónico debe ser válido',
+                'correo.unique' => 'Este correo electrónico ya está en uso',
+                'puesto.required' => 'El puesto es requerido',
+                'puesto.regex' => 'El puesto solo debe contener letras y espacios',
+                'puesto.max' => 'El puesto no debe exceder los 50 caracteres',
+                'telefono.required' => 'El teléfono es requerido',
+                'telefono.max' => 'El teléfono no debe exceder los 20 caracteres',
             ]);
 
             // Separar nombre y apellido
@@ -83,7 +127,7 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'Usuario creado exitosamente',
                 'user' => $user
-            ], 201); // Agregamos código de estado 201 para Created
+            ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Error de validación
@@ -104,18 +148,62 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        $request->validate([
-            'nombreCompleto' => 'required|string',
-            'correo' => 'required|email|unique:users,email,' . $user->id,
-            'puesto' => 'required|string',
-            'telefono' => 'required|string',
-        ]);
-
-        $nombreCompleto = explode(' ', $request->nombreCompleto);
-        $name = $nombreCompleto[0];
-        $lastname = count($nombreCompleto) > 1 ? implode(' ', array_slice($nombreCompleto, 1)) : '';
-
         try {
+            // Limpiar espacios al inicio y final
+            $nombreCompleto = trim($request->nombreCompleto);
+            $correo = trim($request->correo);
+            $puesto = trim($request->puesto);
+            $telefono = trim($request->telefono);
+
+            $request->merge([
+                'nombreCompleto' => $nombreCompleto,
+                'correo' => $correo,
+                'puesto' => $puesto,
+                'telefono' => $telefono,
+            ]);
+
+            $request->validate([
+                'nombreCompleto' => [
+                    'required',
+                    'string',
+                    'max:100',
+                    'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'
+                ],
+                'correo' => [
+                    'required',
+                    'email',
+                    'max:255',
+                    'unique:users,email,' . $user->id
+                ],
+                'puesto' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'
+                ],
+                'telefono' => [
+                    'required',
+                    'string',
+                    'max:20'
+                ],
+            ], [
+                'nombreCompleto.required' => 'El nombre completo es requerido',
+                'nombreCompleto.regex' => 'El nombre solo debe contener letras y espacios',
+                'nombreCompleto.max' => 'El nombre no debe exceder los 100 caracteres',
+                'correo.required' => 'El correo electrónico es requerido',
+                'correo.email' => 'El correo electrónico debe ser válido',
+                'correo.unique' => 'Este correo electrónico ya está en uso',
+                'puesto.required' => 'El puesto es requerido',
+                'puesto.regex' => 'El puesto solo debe contener letras y espacios',
+                'puesto.max' => 'El puesto no debe exceder los 50 caracteres',
+                'telefono.required' => 'El teléfono es requerido',
+                'telefono.max' => 'El teléfono no debe exceder los 20 caracteres',
+            ]);
+
+            $nombreCompleto = explode(' ', $request->nombreCompleto);
+            $name = $nombreCompleto[0];
+            $lastname = count($nombreCompleto) > 1 ? implode(' ', array_slice($nombreCompleto, 1)) : '';
+
             $user->update([
                 'name' => $name,
                 'lastname' => $lastname,
@@ -128,6 +216,11 @@ class UserController extends Controller
                 'message' => 'Usuario actualizado exitosamente',
                 'user' => $user
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Error de validación',
+                'messages' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             Log::error('Error updating user: ' . $e->getMessage());
             return response()->json(['error' => 'Error al actualizar usuario'], 500);

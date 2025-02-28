@@ -3,7 +3,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import Toast from '@/Components/Toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff, CheckCircle } from 'lucide-react';
 import UsersManagement from '@/Components/UsersManagement';
 
@@ -12,6 +12,7 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
     const [showToast, setShowToast] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
+    const [validationErrors, setValidationErrors] = useState({});
     
     const { data, setData, patch, errors, processing, reset } = useForm({
         name: auth.user.name || '',
@@ -24,9 +25,100 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
         password_confirmation: '',
     });
 
+    // Función para validar campos
+    const validateField = (field, value) => {
+        let error = null;
+        
+        // Validación para nombre y apellido
+        if ((field === 'name' || field === 'lastname') && value) {
+            // Verificar si contiene números o caracteres especiales
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) {
+                error = `El campo ${field === 'name' ? 'nombre' : 'apellidos'} solo debe contener letras y espacios`;
+            }
+            
+            // Verificar longitud máxima
+            if (value.length > 50) {
+                error = `El campo ${field === 'name' ? 'nombre' : 'apellidos'} no debe exceder los 50 caracteres`;
+            }
+        }
+        
+        // Validación para número de identificación
+        if (field === 'id_number' && value) {
+            if (value.length > 20) {
+                error = 'La cédula no debe exceder los 20 caracteres';
+            }
+        }
+        
+        // Validación para teléfono
+        if (field === 'phone' && value) {
+            if (value.length > 20) {
+                error = 'El teléfono no debe exceder los 20 caracteres';
+            }
+        }
+        
+        return error;
+    };
+
+    // Función para manejar cambios en los campos
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        
+        // Eliminar espacios al inicio y final para todos los campos excepto nombre y apellido
+        let processedValue = value;
+        if (name !== 'name' && name !== 'lastname') {
+            processedValue = value.trim();
+        }
+        
+        // Validar el campo
+        const error = validateField(name, processedValue);
+        
+        // Actualizar errores de validación
+        setValidationErrors(prev => ({
+            ...prev,
+            [name]: error
+        }));
+        
+        // Actualizar el valor del campo
+        setData(name, processedValue);
+    };
+
     const submit = (e) => {
         e.preventDefault();
+        
+        // Validar todos los campos antes de enviar
+        let hasErrors = false;
+        const newErrors = {};
+        
+        Object.entries(data).forEach(([field, value]) => {
+            if (typeof value === 'string') {
+                const error = validateField(field, value);
+                if (error) {
+                    newErrors[field] = error;
+                    hasErrors = true;
+                }
+            }
+        });
+        
+        setValidationErrors(newErrors);
+        
+        if (hasErrors) {
+            return;
+        }
+        
+        // Eliminar espacios al inicio y final antes de enviar
+        const trimmedData = { ...data };
+        Object.keys(trimmedData).forEach(key => {
+            if (typeof trimmedData[key] === 'string' && key !== 'name' && key !== 'lastname') {
+                trimmedData[key] = trimmedData[key].trim();
+            }
+        });
+        
+        // Eliminar espacios al final de nombre y apellido
+        if (trimmedData.name) trimmedData.name = trimmedData.name.replace(/\s+$/, '');
+        if (trimmedData.lastname) trimmedData.lastname = trimmedData.lastname.replace(/\s+$/, '');
+        
         patch(route('profile.update'), {
+            data: trimmedData,
             onSuccess: () => {
                 reset('current_password', 'password', 'password_confirmation');
                 setShowToast(true);
@@ -83,10 +175,11 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                                     <input
                                         type="text"
                                         value={data.name}
-                                        onChange={e => setData('name', e.target.value)}
+                                        onChange={handleChange}
+                                        name="name"
                                         className="w-full rounded-md border border-gray-300 p-2"
                                     />
-                                    <InputError message={errors.name} className="mt-2" />
+                                    <InputError message={errors.name || validationErrors.name} className="mt-2" />
                                 </div>
 
                                 {/* Apellidos */}
@@ -97,10 +190,11 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                                     <input
                                         type="text"
                                         value={data.lastname}
-                                        onChange={e => setData('lastname', e.target.value)}
+                                        onChange={handleChange}
+                                        name="lastname"
                                         className="w-full rounded-md border border-gray-300 p-2"
                                     />
-                                    <InputError message={errors.lastname} className="mt-2" />
+                                    <InputError message={errors.lastname || validationErrors.lastname} className="mt-2" />
                                 </div>
 
                                 {/* Cédula */}
@@ -111,10 +205,11 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                                     <input
                                         type="text"
                                         value={data.id_number}
-                                        onChange={e => setData('id_number', e.target.value)}
+                                        onChange={handleChange}
+                                        name="id_number"
                                         className="w-full rounded-md border border-gray-300 p-2"
                                     />
-                                    <InputError message={errors.id_number} className="mt-2" />
+                                    <InputError message={errors.id_number || validationErrors.id_number} className="mt-2" />
                                 </div>
 
                                 {/* Teléfono */}
@@ -125,10 +220,11 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                                     <input
                                         type="text"
                                         value={data.phone}
-                                        onChange={e => setData('phone', e.target.value)}
+                                        onChange={handleChange}
+                                        name="phone"
                                         className="w-full rounded-md border border-gray-300 p-2"
                                     />
-                                    <InputError message={errors.phone} className="mt-2" />
+                                    <InputError message={errors.phone || validationErrors.phone} className="mt-2" />
                                 </div>
 
                                 {/* Correo Electrónico */}
