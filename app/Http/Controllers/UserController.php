@@ -116,7 +116,7 @@ class UserController extends Controller
                 'lastname' => $lastname,
                 'email' => $request->correo,
                 'phone' => $request->telefono,
-                'position' => $request->puesto,
+                'puesto' => $request->puesto,
                 'password' => Hash::make($password),
                 'role' => 'user',
                 'status' => 'approved',
@@ -209,7 +209,7 @@ class UserController extends Controller
                 'lastname' => $lastname,
                 'email' => $request->correo,
                 'phone' => $request->telefono,
-                'position' => $request->puesto,
+                'puesto' => $request->puesto,
             ]);
 
             return response()->json([

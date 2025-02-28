@@ -60,6 +60,7 @@ export default function UsersManagement() {
         puesto: '',
         telefono: ''
     });
+    const [validationErrors, setValidationErrors] = useState({});
 
     // Agregamos estados para el modal
     const [modalOpen, setModalOpen] = useState(false);
@@ -79,6 +80,64 @@ export default function UsersManagement() {
         cargarSolicitudesPendientes();
     }, []);
 
+    // Función para validar campos
+    const validateField = (field, value) => {
+        let error = null;
+        
+        // Validación para nombre completo y puesto
+        if (field === 'nombreCompleto' || field === 'puesto') {
+            // Verificar si está vacío
+            if (!value || value.trim() === '') {
+                error = `El campo ${field === 'nombreCompleto' ? 'nombre completo' : 'puesto'} es obligatorio`;
+            }
+            // Verificar si contiene números o caracteres especiales
+            else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) {
+                error = `El campo ${field === 'nombreCompleto' ? 'nombre completo' : 'puesto'} solo debe contener letras y espacios`;
+            }
+            // Verificar longitud máxima
+            else if (field === 'nombreCompleto' && value.length > 100) {
+                error = 'El nombre completo no debe exceder los 100 caracteres';
+            } 
+            else if (field === 'puesto' && value.length > 50) {
+                error = 'El puesto no debe exceder los 50 caracteres';
+            }
+        }
+        
+        // Validación para teléfono
+        if (field === 'telefono') {
+            // Verificar si está vacío
+            if (!value || value.trim() === '') {
+                error = 'El teléfono es obligatorio';
+            }
+            // Verificar si contiene caracteres no válidos
+            else if (!/^[0-9+\-\s]+$/.test(value)) {
+                error = 'El teléfono solo debe contener números, +, - y espacios';
+            }
+            // Verificar longitud máxima
+            else if (value.length > 20) {
+                error = 'El teléfono no debe exceder los 20 caracteres';
+            }
+        }
+        
+        // Validación para correo
+        if (field === 'correo') {
+            // Verificar si está vacío
+            if (!value || value.trim() === '') {
+                error = 'El correo electrónico es obligatorio';
+            }
+            // Verificar longitud máxima
+            else if (value.length > 255) {
+                error = 'El correo no debe exceder los 255 caracteres';
+            }
+            // Validar formato de correo
+            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                error = 'Ingrese un correo electrónico válido';
+            }
+        }
+        
+        return error;
+    };
+
     const cargarUsuarios = async (page = 1) => {
         try {
             console.log('Intentando cargar usuarios...');
@@ -89,7 +148,7 @@ export default function UsersManagement() {
                 id: user.id,
                 nombreCompleto: `${user.name} ${user.lastname}`,
                 correo: user.email,
-                puesto: user.position || '',
+                puesto: user.puesto || '',
                 telefono: user.phone || '',
                 editando: false,
                 status: user.status
@@ -138,8 +197,44 @@ export default function UsersManagement() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Validar todos los campos antes de enviar
+        let hasErrors = false;
+        const newErrors = {};
+        
+        Object.entries(nuevoUsuario).forEach(([field, value]) => {
+            if (typeof value === 'string') {
+                const error = validateField(field, value);
+                if (error) {
+                    newErrors[field] = error;
+                    hasErrors = true;
+                }
+            }
+        });
+        
+        setValidationErrors(newErrors);
+        
+        if (hasErrors) {
+            setToastMessage('Por favor corrija los errores en el formulario');
+            setShowToast(true);
+            return;
+        }
+        
+        // Eliminar espacios al inicio y final antes de enviar
+        const trimmedData = { ...nuevoUsuario };
+        Object.keys(trimmedData).forEach(key => {
+            if (typeof trimmedData[key] === 'string') {
+                if (key !== 'nombreCompleto') {
+                    trimmedData[key] = trimmedData[key].trim();
+                } else {
+                    // Para nombreCompleto, permitir espacios entre nombres pero eliminar al final
+                    trimmedData[key] = trimmedData[key].replace(/\s+$/, '');
+                }
+            }
+        });
+        
         try {
-            const response = await axios.post('/api/users/company', nuevoUsuario);
+            const response = await axios.post('/api/users/company', trimmedData);
             setNuevoUsuario({
                 nombreCompleto: '',
                 correo: '',
@@ -173,18 +268,68 @@ export default function UsersManagement() {
 
     const handleSave = async (id) => {
         const usuario = usuarios.find(u => u.id === id);
+        
+        // Validar todos los campos antes de enviar
+        let hasErrors = false;
+        const newErrors = {};
+        
+        Object.entries(usuario).forEach(([field, value]) => {
+            if (typeof value === 'string' && field !== 'status' && field !== 'id') {
+                const error = validateField(field, value);
+                if (error) {
+                    newErrors[field] = error;
+                    hasErrors = true;
+                }
+            }
+        });
+        
+        if (hasErrors) {
+            setToastMessage('Por favor corrija los errores en el formulario');
+            setShowToast(true);
+            return;
+        }
+        
+        // Eliminar espacios al inicio y final antes de enviar
+        const trimmedData = { ...usuario };
+        Object.keys(trimmedData).forEach(key => {
+            if (typeof trimmedData[key] === 'string') {
+                if (key !== 'nombreCompleto') {
+                    trimmedData[key] = trimmedData[key].trim();
+                } else {
+                    // Para nombreCompleto, permitir espacios entre nombres pero eliminar al final
+                    trimmedData[key] = trimmedData[key].replace(/\s+$/, '');
+                }
+            }
+        });
+        
         try {
             await axios.put(`/api/users/company/${id}`, {
-                nombreCompleto: usuario.nombreCompleto,
-                correo: usuario.correo,
-                puesto: usuario.puesto,
-                telefono: usuario.telefono
+                nombreCompleto: trimmedData.nombreCompleto,
+                correo: trimmedData.correo,
+                puesto: trimmedData.puesto,
+                telefono: trimmedData.telefono
             });
             setUsuarios(usuarios.map(u =>
-                u.id === id ? { ...u, editando: false } : u
+                u.id === id ? { ...trimmedData, editando: false } : u
             ));
+            setToastMessage('Usuario actualizado exitosamente');
+            setShowToast(true);
         } catch (error) {
             console.error('Error al actualizar usuario:', error);
+            
+            // Manejo específico de errores
+            let errorMessage = 'Error al actualizar usuario';
+
+            if (error.response) {
+                if (error.response.data.messages) {
+                    errorMessage = Object.values(error.response.data.messages)[0][0];
+                } else if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+            }
+
+            setToastMessage(errorMessage);
+            setShowToast(true);
         }
     };
 
@@ -194,8 +339,59 @@ export default function UsersManagement() {
     };
 
     const handleChange = (id, field, value) => {
+        // Validar caracteres según el tipo de campo
+        let processedValue = value;
+        
+        if (field === 'nombreCompleto' || field === 'puesto') {
+            // Solo permitir letras y espacios
+            const lastChar = value.charAt(value.length - 1);
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]$/.test(lastChar) && lastChar !== '') {
+                // Si el último carácter no es válido, no actualizar el valor
+                return;
+            }
+            
+            // Verificar longitud máxima
+            if ((field === 'nombreCompleto' && value.length > 100) || 
+                (field === 'puesto' && value.length > 50)) {
+                return;
+            }
+        }
+        
+        if (field === 'telefono') {
+            // Solo permitir números, +, - y espacios para teléfono
+            const lastChar = value.charAt(value.length - 1);
+            if (!/^[0-9+\-\s]$/.test(lastChar) && lastChar !== '') {
+                return;
+            }
+            
+            if (value.length > 20) {
+                return;
+            }
+        }
+        
+        if (field === 'correo') {
+            // Permitir caracteres válidos para email
+            const lastChar = value.charAt(value.length - 1);
+            if (!/^[a-zA-Z0-9@._-]$/.test(lastChar) && lastChar !== '') {
+                return;
+            }
+            
+            if (value.length > 255) {
+                return;
+            }
+        }
+        
+        // Validar el campo
+        const error = validateField(field, processedValue);
+        
+        // Actualizar errores de validación
+        setValidationErrors(prev => ({
+            ...prev,
+            [field]: error
+        }));
+        
         setUsuarios(usuarios.map(usuario =>
-            usuario.id === id ? { ...usuario, [field]: value } : usuario
+            usuario.id === id ? { ...usuario, [field]: processedValue } : usuario
         ));
     };
 
@@ -205,13 +401,67 @@ export default function UsersManagement() {
             setUsuarios(usuarios.filter(usuario => usuario.id !== userToDelete.id));
             setModalOpen(false);
             setUserToDelete(null);
+            setToastMessage('Usuario eliminado exitosamente');
+            setShowToast(true);
         } catch (error) {
             console.error('Error al eliminar usuario:', error);
+            setToastMessage('Error al eliminar usuario');
+            setShowToast(true);
         }
     };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        
+        // Validar caracteres según el tipo de campo
+        if (name === 'nombreCompleto' || name === 'puesto') {
+            // Solo permitir letras y espacios
+            const lastChar = value.charAt(value.length - 1);
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]$/.test(lastChar) && lastChar !== '') {
+                // Si el último carácter no es válido, no actualizar el valor
+                return;
+            }
+            
+            // Verificar longitud máxima
+            if ((name === 'nombreCompleto' && value.length > 100) || 
+                (name === 'puesto' && value.length > 50)) {
+                return;
+            }
+        }
+        
+        if (name === 'telefono') {
+            // Solo permitir números, +, - y espacios para teléfono
+            const lastChar = value.charAt(value.length - 1);
+            if (!/^[0-9+\-\s]$/.test(lastChar) && lastChar !== '') {
+                return;
+            }
+            
+            if (value.length > 20) {
+                return;
+            }
+        }
+        
+        if (name === 'correo') {
+            // Permitir caracteres válidos para email
+            const lastChar = value.charAt(value.length - 1);
+            if (!/^[a-zA-Z0-9@._-]$/.test(lastChar) && lastChar !== '') {
+                return;
+            }
+            
+            if (value.length > 255) {
+                return;
+            }
+        }
+        
+        // Validar el campo
+        const error = validateField(name, value);
+        
+        // Actualizar errores de validación
+        setValidationErrors(prev => ({
+            ...prev,
+            [name]: error
+        }));
+        
         setNuevoUsuario(prev => ({
             ...prev,
             [name]: value
@@ -353,6 +603,10 @@ export default function UsersManagement() {
                                     className="w-full rounded-md border border-gray-300 p-2"
                                     required
                                 />
+                                <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 100 caracteres.</p>
+                                {validationErrors.nombreCompleto && (
+                                    <p className="text-sm text-red-600 mt-1">{validationErrors.nombreCompleto}</p>
+                                )}
                             </div>
 
                             <div>
@@ -367,6 +621,10 @@ export default function UsersManagement() {
                                     className="w-full rounded-md border border-gray-300 p-2"
                                     required
                                 />
+                                <p className="text-xs text-gray-500 mt-1">Formato válido: ejemplo@dominio.com</p>
+                                {validationErrors.correo && (
+                                    <p className="text-sm text-red-600 mt-1">{validationErrors.correo}</p>
+                                )}
                             </div>
 
                             <div>
@@ -381,6 +639,10 @@ export default function UsersManagement() {
                                     className="w-full rounded-md border border-gray-300 p-2"
                                     required
                                 />
+                                <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 50 caracteres.</p>
+                                {validationErrors.puesto && (
+                                    <p className="text-sm text-red-600 mt-1">{validationErrors.puesto}</p>
+                                )}
                             </div>
 
                             <div>
@@ -395,6 +657,10 @@ export default function UsersManagement() {
                                     className="w-full rounded-md border border-gray-300 p-2"
                                     required
                                 />
+                                <p className="text-xs text-gray-500 mt-1">Solo números, +, - y espacios. Máx. 20 caracteres.</p>
+                                {validationErrors.telefono && (
+                                    <p className="text-sm text-red-600 mt-1">{validationErrors.telefono}</p>
+                                )}
                             </div>
 
                             <button
@@ -487,6 +753,10 @@ export default function UsersManagement() {
                                             disabled={!usuario.editando}
                                             className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
                                         />
+                                        {usuario.editando && <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 100 caracteres.</p>}
+                                        {usuario.editando && validationErrors.nombreCompleto && (
+                                            <p className="text-sm text-red-600 mt-1">{validationErrors.nombreCompleto}</p>
+                                        )}
                                     </div>
 
                                     <div>
@@ -501,6 +771,10 @@ export default function UsersManagement() {
                                             disabled={!usuario.editando}
                                             className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
                                         />
+                                        {usuario.editando && <p className="text-xs text-gray-500 mt-1">Formato válido: ejemplo@dominio.com</p>}
+                                        {usuario.editando && validationErrors.correo && (
+                                            <p className="text-sm text-red-600 mt-1">{validationErrors.correo}</p>
+                                        )}
                                     </div>
 
                                     <div>
@@ -515,6 +789,10 @@ export default function UsersManagement() {
                                             disabled={!usuario.editando}
                                             className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
                                         />
+                                        {usuario.editando && <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 50 caracteres.</p>}
+                                        {usuario.editando && validationErrors.puesto && (
+                                            <p className="text-sm text-red-600 mt-1">{validationErrors.puesto}</p>
+                                        )}
                                     </div>
 
                                     <div>
@@ -529,6 +807,10 @@ export default function UsersManagement() {
                                             disabled={!usuario.editando}
                                             className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
                                         />
+                                        {usuario.editando && <p className="text-xs text-gray-500 mt-1">Solo números, +, - y espacios. Máx. 20 caracteres.</p>}
+                                        {usuario.editando && validationErrors.telefono && (
+                                            <p className="text-sm text-red-600 mt-1">{validationErrors.telefono}</p>
+                                        )}
                                     </div>
                                 </div>
 

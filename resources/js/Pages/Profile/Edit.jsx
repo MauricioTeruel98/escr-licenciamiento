@@ -30,29 +30,41 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
         let error = null;
         
         // Validación para nombre y apellido
-        if ((field === 'name' || field === 'lastname') && value) {
+        if (field === 'name' || field === 'lastname') {
+            // Verificar si está vacío
+            if (!value || value.trim() === '') {
+                error = `El campo ${field === 'name' ? 'nombre' : 'apellidos'} es obligatorio`;
+            }
             // Verificar si contiene números o caracteres especiales
-            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) {
+            else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) {
                 error = `El campo ${field === 'name' ? 'nombre' : 'apellidos'} solo debe contener letras y espacios`;
             }
-            
             // Verificar longitud máxima
-            if (value.length > 50) {
+            else if (value.length > 50) {
                 error = `El campo ${field === 'name' ? 'nombre' : 'apellidos'} no debe exceder los 50 caracteres`;
             }
         }
         
         // Validación para número de identificación
-        if (field === 'id_number' && value) {
-            if (value.length > 20) {
+        if (field === 'id_number') {
+            // Verificar si está vacío
+            if (!value || value.trim() === '') {
+                error = 'La cédula es obligatoria';
+            }
+            // Verificar longitud máxima
+            else if (value.length > 20) {
                 error = 'La cédula no debe exceder los 20 caracteres';
             }
         }
         
         // Validación para teléfono
-        if (field === 'phone' && value) {
-            if (value.length > 20) {
+        if (field === 'phone') {
+            if (value && value.length > 20) {
                 error = 'El teléfono no debe exceder los 20 caracteres';
+            }
+            // Verificar si contiene caracteres no válidos
+            else if (value && !/^[0-9+\-\s]+$/.test(value)) {
+                error = 'El teléfono solo debe contener números, +, - y espacios';
             }
         }
         
@@ -63,14 +75,41 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
     const handleChange = (e) => {
         const { name, value } = e.target;
         
-        // Eliminar espacios al inicio y final para todos los campos excepto nombre y apellido
-        let processedValue = value;
-        if (name !== 'name' && name !== 'lastname') {
-            processedValue = value.trim();
+        // Validar caracteres según el tipo de campo
+        if (name === 'name' || name === 'lastname') {
+            // Solo permitir letras y espacios
+            const lastChar = value.charAt(value.length - 1);
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]$/.test(lastChar) && lastChar !== '') {
+                // Si el último carácter no es válido, no actualizar el valor
+                return;
+            }
+            
+            // Verificar longitud máxima
+            if (value.length > 50) {
+                return;
+            }
+        }
+        
+        if (name === 'id_number') {
+            if (value.length > 20) {
+                return;
+            }
+        }
+        
+        if (name === 'phone') {
+            // Solo permitir números, +, - y espacios para teléfono
+            const lastChar = value.charAt(value.length - 1);
+            if (!/^[0-9+\-\s]$/.test(lastChar) && lastChar !== '') {
+                return;
+            }
+            
+            if (value.length > 20) {
+                return;
+            }
         }
         
         // Validar el campo
-        const error = validateField(name, processedValue);
+        const error = validateField(name, value);
         
         // Actualizar errores de validación
         setValidationErrors(prev => ({
@@ -79,7 +118,7 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
         }));
         
         // Actualizar el valor del campo
-        setData(name, processedValue);
+        setData(name, value);
     };
 
     const submit = (e) => {
@@ -179,6 +218,7 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                                         name="name"
                                         className="w-full rounded-md border border-gray-300 p-2"
                                     />
+                                    <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 50 caracteres.</p>
                                     <InputError message={errors.name || validationErrors.name} className="mt-2" />
                                 </div>
 
@@ -194,6 +234,7 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                                         name="lastname"
                                         className="w-full rounded-md border border-gray-300 p-2"
                                     />
+                                    <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 50 caracteres.</p>
                                     <InputError message={errors.lastname || validationErrors.lastname} className="mt-2" />
                                 </div>
 
@@ -209,6 +250,7 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                                         name="id_number"
                                         className="w-full rounded-md border border-gray-300 p-2"
                                     />
+                                    <p className="text-xs text-gray-500 mt-1">Máx. 20 caracteres.</p>
                                     <InputError message={errors.id_number || validationErrors.id_number} className="mt-2" />
                                 </div>
 
@@ -224,6 +266,7 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
                                         name="phone"
                                         className="w-full rounded-md border border-gray-300 p-2"
                                     />
+                                    <p className="text-xs text-gray-500 mt-1">Solo números, +, - y espacios. Máx. 20 caracteres.</p>
                                     <InputError message={errors.phone || validationErrors.phone} className="mt-2" />
                                 </div>
 

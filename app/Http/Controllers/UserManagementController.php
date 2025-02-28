@@ -45,18 +45,54 @@ class UserManagementController extends Controller
     public function store(Request $request)
     {
         try {
+            // Limpiar espacios al inicio y final
+            $request->merge([
+                'name' => trim($request->name),
+                'lastname' => trim($request->lastname),
+                'email' => trim($request->email),
+                'puesto' => trim($request->puesto),
+            ]);
+
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'lastname' => 'required|string|max:255',
+                'name' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'
+                ],
+                'lastname' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'
+                ],
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required|min:8',
                 'role' => 'required|in:user,admin,evaluador',
+                'puesto' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'
+                ],
                 'company_id' => 'required|exists:companies,id',
                 'assigned_companies' => 'required_if:role,evaluador|array',
                 'assigned_companies.*' => 'exists:companies,id'
             ], [
-                'email.unique' => 'El correo electrónico ya está en uso por otro usuario.'
+                'email.unique' => 'El correo electrónico ya está en uso por otro usuario.',
+                'name.regex' => 'El nombre solo debe contener letras y espacios',
+                'name.max' => 'El nombre no debe exceder los 50 caracteres',
+                'lastname.regex' => 'Los apellidos solo deben contener letras y espacios',
+                'lastname.max' => 'Los apellidos no deben exceder los 50 caracteres',
+                'puesto.required' => 'El puesto es requerido',
+                'puesto.regex' => 'El puesto solo debe contener letras y espacios',
+                'puesto.max' => 'El puesto no debe exceder los 50 caracteres',
             ]);
+
+            // Eliminar espacios al final
+            $validated['name'] = rtrim($validated['name']);
+            $validated['lastname'] = rtrim($validated['lastname']);
+            $validated['puesto'] = rtrim($validated['puesto']);
 
             $user = User::create([
                 'name' => $validated['name'],
@@ -64,6 +100,7 @@ class UserManagementController extends Controller
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
                 'role' => $validated['role'],
+                'puesto' => $validated['puesto'],
                 'company_id' => $validated['company_id'],
                 'status' => 'approved'
             ]);
@@ -105,17 +142,53 @@ class UserManagementController extends Controller
     public function update(Request $request, User $user)
     {
         try {
+            // Limpiar espacios al inicio y final
+            $request->merge([
+                'name' => trim($request->name),
+                'lastname' => trim($request->lastname),
+                'email' => trim($request->email),
+                'puesto' => trim($request->puesto),
+            ]);
+
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'lastname' => 'required|string|max:255',
+                'name' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'
+                ],
+                'lastname' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'
+                ],
+                'puesto' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'
+                ],
                 'email' => 'required|email|unique:users,email,' . $user->id,
                 'role' => 'required|in:user,admin,evaluador',
                 'company_id' => 'required|exists:companies,id',
                 'assigned_companies' => 'required_if:role,evaluador|array',
                 'assigned_companies.*' => 'exists:companies,id'
             ], [
-                'email.unique' => 'El correo electrónico ya está en uso por otro usuario.'
+                'email.unique' => 'El correo electrónico ya está en uso por otro usuario.',
+                'name.regex' => 'El nombre solo debe contener letras y espacios',
+                'name.max' => 'El nombre no debe exceder los 50 caracteres',
+                'lastname.regex' => 'Los apellidos solo deben contener letras y espacios',
+                'lastname.max' => 'Los apellidos no deben exceder los 50 caracteres',
+                'puesto.required' => 'El puesto es requerido',
+                'puesto.regex' => 'El puesto solo debe contener letras y espacios',
+                'puesto.max' => 'El puesto no debe exceder los 50 caracteres',
             ]);
+
+            // Eliminar espacios al final
+            $validated['name'] = rtrim($validated['name']);
+            $validated['lastname'] = rtrim($validated['lastname']);
+            $validated['puesto'] = rtrim($validated['puesto']);
 
             $user->update($validated);
 
