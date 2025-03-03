@@ -17,9 +17,9 @@ export default function EvaluadorLayout({ children, title = null }) {
         },
         {
             name: 'Empresas',
-            href: route('evaluador.companies'),
+            href: route('evaluador.empresas'),
             icon: Building2,
-            active: route().current('evaluador.companies')
+            active: route().current('evaluador.empresas')
         },
         {
             name: 'Evaluaciones',

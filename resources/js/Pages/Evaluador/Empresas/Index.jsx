@@ -10,6 +10,7 @@ import axios from 'axios';
 import EditIcon from '@/Components/Icons/EditIcon';
 import TrashIcon from '@/Components/Icons/TrashIcon';
 import CompanyInfoModal from '@/Components/Modals/CompanyInfoModal';
+import EvaluadorLayout from '@/Layouts/EvaluadorLayout';
 
 export default function EmpresasEvaluadorIndex() {
     const [companies, setCompanies] = useState([]);
@@ -164,7 +165,7 @@ export default function EmpresasEvaluadorIndex() {
     };
 
     return (
-        <SuperAdminLayout>
+        <EvaluadorLayout>
             <Head title="Gestión de Empresas" />
 
             <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -225,6 +226,6 @@ export default function EmpresasEvaluadorIndex() {
                     company={selectedCompany}
                 />
             </div>
-        </SuperAdminLayout>
+        </EvaluadorLayout>
     );
 } 

@@ -277,7 +277,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
 });
 
 Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
-    Route::get('/api/empresas-reportes-evaluador', [ReportController::class, 'getCompanies']);
+    Route::get('/api/empresas-reportes-evaluador', [ReportController::class, 'getCompaniesEmpresa']);
 });
 
 // Rutas para progresos

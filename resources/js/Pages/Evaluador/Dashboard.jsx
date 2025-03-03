@@ -131,7 +131,7 @@ export default function EvaluadorDashboard({ auth }) {
 
                     <div className="mb-8">
                         <div className="flex items-center gap-4">
-                            <span className="text-xl font-semibold">Acceder como</span>
+                            <span className="text-xl font-semibold">Evaluar empresa:</span>
                             <div className="relative w-[300px]">
                                 <Combobox value={selectedCompany} onChange={setSelectedCompany}>
                                     <div className="relative mt-1">
