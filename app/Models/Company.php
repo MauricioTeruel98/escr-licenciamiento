@@ -19,11 +19,13 @@ class Company extends Model
         'phone',
         'mobile',
         'is_exporter',
-        'authorized'
+        'authorized',
+        'autoeval_ended'
     ];
 
     protected $casts = [
         'is_exporter' => 'boolean',
+        'autoeval_ended' => 'boolean',
     ];
 
     public function users()

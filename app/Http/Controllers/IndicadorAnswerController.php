@@ -200,6 +200,9 @@ class IndicadorAnswerController extends Controller
                 // Enviar email con PDF
                 Mail::to($user->email)->send(new AutoEvaluationResults($fullPath, $user->company));
 
+                // Actualizar la columna autoeval_ended en la tabla companies
+                $company->update(['autoeval_ended' => true]);
+
                 return response()->json([
                     'success' => true,
                     'message' => '¡Autoevaluación completada! Se ha enviado un PDF a su correo con los resultados.',

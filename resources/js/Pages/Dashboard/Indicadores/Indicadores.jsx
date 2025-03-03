@@ -6,7 +6,7 @@ import IndicatorIndex from '@/Components/IndicatorIndex';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
 
-export default function Indicadores({ valueData, userName, user, savedAnswers, currentScore: initialScore, certifications, homologatedIndicators }) {
+export default function Indicadores({ valueData, userName, user, savedAnswers, currentScore: initialScore, certifications, homologatedIndicators, company, availableToModifyAutoeval }) {
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [answers, setAnswers] = useState({});
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -235,6 +235,8 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
         );
     };
 
+    console.log(availableToModifyAutoeval);
+
     return (
         <DashboardLayout userName={userName} title="Indicadores">
             <div className="space-y-8">
@@ -381,6 +383,8 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                                                 isBinding={indicator.binding}
                                                 homologation={homologation ? homologation.certification_name : null}
                                                 guide={indicator.guide}
+                                                autoeval_ended={company.autoeval_ended}
+                                                availableToModifyAutoeval={availableToModifyAutoeval}
                                             />
                                         </div>
                                         {indicator.binding && (

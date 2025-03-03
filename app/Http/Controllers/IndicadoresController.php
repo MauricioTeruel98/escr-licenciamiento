@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AutoEvaluationResult;
+use App\Models\Company;
 use App\Models\Value;
 use App\Models\Indicator;
 use App\Models\IndicatorAnswer;
@@ -18,6 +20,26 @@ class IndicadoresController extends Controller
 
         // Obtener las certificaciones de la empresa
         $certifications = $user->company->certifications;
+
+        $company = Company::find($user->company_id);
+
+        $autoevaluationResult = AutoEvaluationResult::where('company_id', $user->company_id)->first();
+
+        $autoevaluationResultFormSended = false;
+        $autoevaluationResultApplicationSended = false;
+
+        if($autoevaluationResult) {
+            $autoevaluationResultFormSended = $autoevaluationResult->form_sended;
+            $autoevaluationResultApplicationSended = $autoevaluationResult->application_sended;
+        }
+
+        $autoevalEnded = $company->autoeval_ended;
+
+        $availableToModifyAutoeval = true;
+
+        if ($autoevaluationResultFormSended && $autoevaluationResultApplicationSended && $autoevalEnded) {
+            $availableToModifyAutoeval = false;
+        }
 
         // Obtener los IDs de las certificaciones disponibles asociadas
         $homologationIds = $certifications->pluck('homologation_id')->filter();
@@ -52,12 +74,14 @@ class IndicadoresController extends Controller
 
         return Inertia::render('Dashboard/Indicadores/Indicadores', [
             'valueData' => $value,
-            'userName' => $user->name,
+            'userName' => $user->name,  
             'user' => $user,
             'savedAnswers' => $savedAnswers,
             'currentScore' => $currentScore,
             'certifications' => $certifications,
-            'homologatedIndicators' => $homologatedIndicators
+            'homologatedIndicators' => $homologatedIndicators,
+            'company' => $company,
+            'availableToModifyAutoeval' => $availableToModifyAutoeval
         ]);
     }
 }

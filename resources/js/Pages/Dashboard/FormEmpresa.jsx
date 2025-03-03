@@ -632,6 +632,68 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         }
     };
 
+    // Función para validar campos
+    const validarCampo = (valor, tipo = 'texto') => {
+        const regexTexto = /["'\\/]/g; // Comillas simples, dobles, barras y barras invertidas
+        const regexURL = /["'\\]/g; // Comillas simples, dobles y barras invertidas
+
+        if (tipo === 'url') {
+            return !regexURL.test(valor);
+        }
+        return !regexTexto.test(valor);
+    };
+
+    // Función para manejar cambios en campos de texto
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        
+        // Si es un campo de radio button, manejar de forma especial
+        if (e.target.type === 'radio') {
+            const newValue = value === 'true' ? true : value === 'false' ? false : value;
+            setData(name, newValue);
+            return;
+        }
+        
+        if (!validarCampo(value)) {
+            alert('El campo contiene caracteres no permitidos.');
+            return;
+        }
+        
+        // Actualizar el estado con el valor válido
+        setData(name, value);
+    };
+
+    // Función para manejar cambios en campos de URL
+    const handleURLChange = (e) => {
+        const { name, value } = e.target;
+        if (!validarCampo(value, 'url')) {
+            alert('El campo URL contiene caracteres no permitidos.');
+            return;
+        }
+        // Actualizar el estado con el valor válido
+        setData(name, value);
+    };
+    
+    // Función específica para manejar el año de fundación
+    const handleAnioFundacionChange = (e) => {
+        const { name, value } = e.target;
+        const anio = parseInt(value);
+        
+        // Validar que sea un número y esté en un rango razonable (1800 hasta el año actual)
+        const anioActual = new Date().getFullYear();
+        
+        if (value === '') {
+            // Permitir campo vacío
+            setData(name, value);
+        } else if (isNaN(anio)) {
+            alert('Por favor ingrese un año válido.');
+        } else if (anio < 1800 || anio > anioActual) {
+            alert(`Por favor ingrese un año entre 1800 y ${anioActual}.`);
+        } else {
+            setData(name, value);
+        }
+    };
+
     return (
         <DashboardLayout userName={userName} title="Perfil de Empresa">
             <h1 className="text-4xl font-bold mt-3">Perfil de Empresa</h1>
@@ -666,7 +728,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         <input
                                             type="text"
                                             value={data.nombre_comercial}
-                                            onChange={e => setData('nombre_comercial', e.target.value)}
+                                            onChange={handleChange}
+                                            name="nombre_comercial"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             required
                                         />
@@ -681,7 +744,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         <input
                                             type="text"
                                             value={data.nombre_legal}
-                                            onChange={e => setData('nombre_legal', e.target.value)}
+                                            onChange={handleChange}
+                                            name="nombre_legal"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             required
                                         />
@@ -695,7 +759,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         </label>
                                         <textarea
                                             value={data.descripcion_es}
-                                            onChange={e => setData('descripcion_es', e.target.value)}
+                                            onChange={handleChange}
+                                            name="descripcion_es"
                                             rows={3}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             required
@@ -710,7 +775,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         </label>
                                         <textarea
                                             value={data.descripcion_en}
-                                            onChange={e => setData('descripcion_en', e.target.value)}
+                                            onChange={handleChange}
+                                            name="descripcion_en"
                                             rows={3}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                         />
@@ -726,6 +792,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             value={data.anio_fundacion}
                                             onChange={e => setData('anio_fundacion', e.target.value)}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            maxLength={4}
                                             required
                                         />
                                         <InputError message={errors.anio_fundacion} />
@@ -739,7 +806,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         <input
                                             type="url"
                                             value={data.sitio_web}
-                                            onChange={e => setData('sitio_web', e.target.value)}
+                                            onChange={handleURLChange}
+                                            name="sitio_web"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             required
                                         />
@@ -756,7 +824,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 </label>
                                                 <select
                                                     value={data.provincia}
-                                                    onChange={e => setData('provincia', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="provincia"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 >
                                                     <option value="">Selecciona una provincia</option>
@@ -775,7 +844,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 </label>
                                                 <select
                                                     value={data.canton}
-                                                    onChange={e => setData('canton', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="canton"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                     disabled={!data.provincia}
                                                 >
@@ -795,7 +865,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 </label>
                                                 <select
                                                     value={data.distrito}
-                                                    onChange={e => setData('distrito', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="distrito"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                     disabled={!data.canton}
                                                 >
@@ -822,7 +893,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="url"
                                                     value={data.facebook}
-                                                    onChange={e => setData('facebook', e.target.value)}
+                                                    onChange={handleURLChange}
+                                                    name="facebook"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                                 <InputError message={errors.facebook} />
@@ -835,7 +907,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="url"
                                                     value={data.linkedin}
-                                                    onChange={e => setData('linkedin', e.target.value)}
+                                                    onChange={handleURLChange}
+                                                    name="linkedin"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                                 <InputError message={errors.linkedin} />
@@ -848,7 +921,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="url"
                                                     value={data.instagram}
-                                                    onChange={e => setData('instagram', e.target.value)}
+                                                    onChange={handleURLChange}
+                                                    name="instagram"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                                 <InputError message={errors.instagram} />
@@ -861,7 +935,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="url"
                                                     value={data.otra_red_social}
-                                                    onChange={e => setData('otra_red_social', e.target.value)}
+                                                    onChange={handleURLChange}
+                                                    name="otra_red_social"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                                 <InputError message={errors.otra_red_social} />
@@ -877,7 +952,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         <input
                                             type="text"
                                             value={data.sector}
-                                            onChange={e => setData('sector', e.target.value)}
+                                            onChange={handleChange}
+                                            name="sector"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             required
                                         />
@@ -891,7 +967,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         </label>
                                         <select
                                             value={data.tamano_empresa}
-                                            onChange={e => setData('tamano_empresa', e.target.value)}
+                                            onChange={handleChange}
+                                            name="tamano_empresa"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                         >
                                             <option value="">Selecciona un tamaño</option>
@@ -913,7 +990,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="number"
                                                     value={data.cantidad_hombres}
-                                                    onChange={e => setData('cantidad_hombres', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="cantidad_hombres"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                     min="0"
                                                 />
@@ -923,7 +1001,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="number"
                                                     value={data.cantidad_mujeres}
-                                                    onChange={e => setData('cantidad_mujeres', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="cantidad_mujeres"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                     min="0"
                                                 />
@@ -933,7 +1012,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="number"
                                                     value={data.cantidad_otros}
-                                                    onChange={e => setData('cantidad_otros', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="cantidad_otros"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                     min="0"
                                                 />
@@ -968,7 +1048,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         <input
                                             type="text"
                                             value={data.actividad_comercial}
-                                            onChange={e => setData('actividad_comercial', e.target.value)}
+                                            onChange={handleChange}
+                                            name="actividad_comercial"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             required
                                         />
@@ -983,7 +1064,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         <input
                                             type="tel"
                                             value={data.telefono_1}
-                                            onChange={e => setData('telefono_1', e.target.value)}
+                                            onChange={handleChange}
+                                            name="telefono_1"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                         />
                                         <InputError message={errors.telefono_1} />
@@ -996,7 +1078,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         <input
                                             type="tel"
                                             value={data.telefono_2}
-                                            onChange={e => setData('telefono_2', e.target.value)}
+                                            onChange={handleChange}
+                                            name="telefono_2"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                         />
                                         <InputError message={errors.telefono_2} />
@@ -1014,7 +1097,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     name="es_exportadora"
                                                     value="true"
                                                     checked={data.es_exportadora === true}
-                                                    onChange={e => setData('es_exportadora', true)}
+                                                    onChange={handleChange}
                                                     className="form-radio text-green-600 focus:ring-green-500"
                                                 />
                                                 <span className="ml-2">Sí</span>
@@ -1025,7 +1108,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     name="es_exportadora"
                                                     value="false"
                                                     checked={data.es_exportadora === false}
-                                                    onChange={e => setData('es_exportadora', false)}
+                                                    onChange={handleChange}
                                                     className="form-radio text-green-600 focus:ring-green-500"
                                                 />
                                                 <span className="ml-2">No</span>
@@ -1041,7 +1124,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         </label>
                                         <select
                                             value={data.paises_exportacion}
-                                            onChange={e => setData('paises_exportacion', e.target.value)}
+                                            onChange={handleChange}
+                                            name="paises_exportacion"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                         >
                                             <option value="">Seleccione países</option>
@@ -1058,7 +1142,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         <input
                                             type="text"
                                             value={data.producto_servicio}
-                                            onChange={e => setData('producto_servicio', e.target.value)}
+                                            onChange={handleChange}
+                                            name="producto_servicio"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             placeholder="Producto o servicio"
                                         />
@@ -1072,7 +1157,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         </label>
                                         <select
                                             value={data.rango_exportaciones}
-                                            onChange={e => setData('rango_exportaciones', e.target.value)}
+                                            onChange={handleChange}
+                                            name="rango_exportaciones"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                         >
                                             <option value="">Seleccione un rango</option>
@@ -1092,7 +1178,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         </label>
                                         <textarea
                                             value={data.planes_expansion}
-                                            onChange={e => setData('planes_expansion', e.target.value)}
+                                            onChange={handleChange}
+                                            name="planes_expansion"
                                             rows={4}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             placeholder="Respuesta"
@@ -1441,7 +1528,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         </label>
                                         <textarea
                                             value={data.razon_licenciamiento_es}
-                                            onChange={e => setData('razon_licenciamiento_es', e.target.value)}
+                                            onChange={handleChange}
+                                            name="razon_licenciamiento_es"
                                             rows={4}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             placeholder="Respuesta"
@@ -1456,7 +1544,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         </label>
                                         <textarea
                                             value={data.razon_licenciamiento_en}
-                                            onChange={e => setData('razon_licenciamiento_en', e.target.value)}
+                                            onChange={handleChange}
+                                            name="razon_licenciamiento_en"
                                             rows={4}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             placeholder="Answer"
@@ -1471,7 +1560,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         </label>
                                         <textarea
                                             value={data.proceso_licenciamiento}
-                                            onChange={e => setData('proceso_licenciamiento', e.target.value)}
+                                            onChange={handleChange}
+                                            name="proceso_licenciamiento"
                                             rows={4}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             placeholder="Respuesta"
@@ -1492,7 +1582,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                         name="recomienda_marca_pais"
                                                         value="1"
                                                         checked={data.recomienda_marca_pais === true}
-                                                        onChange={e => setData('recomienda_marca_pais', true)}
+                                                        onChange={handleChange}
                                                         className="form-radio text-green-600 focus:ring-green-500"
                                                     />
                                                     <span className="ml-2">Sí</span>
@@ -1503,7 +1593,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                         name="recomienda_marca_pais"
                                                         value="0"
                                                         checked={data.recomienda_marca_pais === false}
-                                                        onChange={e => setData('recomienda_marca_pais', false)}
+                                                        onChange={handleChange}
                                                         className="form-radio text-green-600 focus:ring-green-500"
                                                     />
                                                     <span className="ml-2">No</span>
@@ -1517,7 +1607,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             </label>
                                             <textarea
                                                 value={data.observaciones}
-                                                onChange={e => setData('observaciones', e.target.value)}
+                                                onChange={handleChange}
+                                                name="observaciones"
                                                 rows={4}
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 placeholder="Respuesta"
@@ -1580,7 +1671,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <input
                                                 type="text"
                                                 value={data.mercadeo_nombre}
-                                                onChange={e => setData('mercadeo_nombre', e.target.value)}
+                                                onChange={handleChange}
+                                                name="mercadeo_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
                                         </div>
@@ -1589,7 +1681,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <input
                                                 type="email"
                                                 value={data.mercadeo_email}
-                                                onChange={e => setData('mercadeo_email', e.target.value)}
+                                                onChange={handleChange}
+                                                name="mercadeo_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
                                         </div>
@@ -1598,7 +1691,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <input
                                                 type="text"
                                                 value={data.mercadeo_puesto}
-                                                onChange={e => setData('mercadeo_puesto', e.target.value)}
+                                                onChange={handleChange}
+                                                name="mercadeo_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
                                         </div>
@@ -1608,7 +1702,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="tel"
                                                     value={data.mercadeo_telefono}
-                                                    onChange={e => setData('mercadeo_telefono', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="mercadeo_telefono"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                             </div>
@@ -1617,7 +1712,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="tel"
                                                     value={data.mercadeo_celular}
-                                                    onChange={e => setData('mercadeo_celular', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="mercadeo_celular"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                             </div>
@@ -1634,7 +1730,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <input
                                                 type="text"
                                                 value={data.micrositio_nombre}
-                                                onChange={e => setData('micrositio_nombre', e.target.value)}
+                                                onChange={handleChange}
+                                                name="micrositio_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
                                         </div>
@@ -1643,7 +1740,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <input
                                                 type="email"
                                                 value={data.micrositio_email}
-                                                onChange={e => setData('micrositio_email', e.target.value)}
+                                                onChange={handleChange}
+                                                name="micrositio_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
                                         </div>
@@ -1652,7 +1750,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <input
                                                 type="text"
                                                 value={data.micrositio_puesto}
-                                                onChange={e => setData('micrositio_puesto', e.target.value)}
+                                                onChange={handleChange}
+                                                name="micrositio_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
                                         </div>
@@ -1662,7 +1761,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="tel"
                                                     value={data.micrositio_telefono}
-                                                    onChange={e => setData('micrositio_telefono', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="micrositio_telefono"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                             </div>
@@ -1671,7 +1771,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="tel"
                                                     value={data.micrositio_celular}
-                                                    onChange={e => setData('micrositio_celular', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="micrositio_celular"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                             </div>
@@ -1688,7 +1789,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <input
                                                 type="text"
                                                 value={data.vocero_nombre}
-                                                onChange={e => setData('vocero_nombre', e.target.value)}
+                                                onChange={handleChange}
+                                                name="vocero_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
                                         </div>
@@ -1697,7 +1799,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <input
                                                 type="email"
                                                 value={data.vocero_email}
-                                                onChange={e => setData('vocero_email', e.target.value)}
+                                                onChange={handleChange}
+                                                name="vocero_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
                                         </div>
@@ -1706,7 +1809,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <input
                                                 type="text"
                                                 value={data.vocero_puesto}
-                                                onChange={e => setData('vocero_puesto', e.target.value)}
+                                                onChange={handleChange}
+                                                name="vocero_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
                                         </div>
@@ -1716,7 +1820,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="tel"
                                                     value={data.vocero_telefono}
-                                                    onChange={e => setData('vocero_telefono', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="vocero_telefono"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                             </div>
@@ -1725,7 +1830,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="tel"
                                                     value={data.vocero_celular}
-                                                    onChange={e => setData('vocero_celular', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="vocero_celular"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                             </div>
@@ -1742,7 +1848,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <input
                                                 type="text"
                                                 value={data.representante_nombre}
-                                                onChange={e => setData('representante_nombre', e.target.value)}
+                                                onChange={handleChange}
+                                                name="representante_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
                                         </div>
@@ -1751,7 +1858,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <input
                                                 type="email"
                                                 value={data.representante_email}
-                                                onChange={e => setData('representante_email', e.target.value)}
+                                                onChange={handleChange}
+                                                name="representante_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
                                         </div>
@@ -1760,7 +1868,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <input
                                                 type="text"
                                                 value={data.representante_puesto}
-                                                onChange={e => setData('representante_puesto', e.target.value)}
+                                                onChange={handleChange}
+                                                name="representante_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
                                         </div>
@@ -1770,7 +1879,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="tel"
                                                     value={data.representante_telefono}
-                                                    onChange={e => setData('representante_telefono', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="representante_telefono"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                             </div>
@@ -1779,7 +1889,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <input
                                                     type="tel"
                                                     value={data.representante_celular}
-                                                    onChange={e => setData('representante_celular', e.target.value)}
+                                                    onChange={handleChange}
+                                                    name="representante_celular"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                             </div>
@@ -1854,11 +1965,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     <input
                                                         type="text"
                                                         value={producto.nombre || ''}
-                                                        onChange={e => {
-                                                            const newProductos = [...data.productos];
-                                                            newProductos[index].nombre = e.target.value;
-                                                            setData('productos', newProductos);
-                                                        }}
+                                                        onChange={handleChange}
+                                                        name={`productos[${index}].nombre`}
                                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                         placeholder=""
                                                     />
@@ -1871,11 +1979,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     </label>
                                                     <textarea
                                                         value={producto.descripcion || ''}
-                                                        onChange={e => {
-                                                            const newProductos = [...data.productos];
-                                                            newProductos[index].descripcion = e.target.value;
-                                                            setData('productos', newProductos);
-                                                        }}
+                                                        onChange={handleChange}
+                                                        name={`productos[${index}].descripcion`}
                                                         rows={6}
                                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                         placeholder="Lorem Ipsum"

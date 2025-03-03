@@ -1,4 +1,4 @@
-export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide }) {
+export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide, autoeval_ended, availableToModifyAutoeval }) {
     const handleChange = (e) => {
         const selectedValue = e.target.value;
         console.log('Seleccionado para indicador', code, ':', selectedValue);
@@ -61,7 +61,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                         value="1"
                         checked={isHomologated ? true : stringValue === "1"}
                         onChange={handleChange}
-                        disabled={isHomologated}
+                        disabled={isHomologated || !availableToModifyAutoeval}
                         className={`w-4 h-4 ${isHomologated 
                             ? 'text-blue-600 border-blue-300 cursor-not-allowed' 
                             : 'text-green-600 border-gray-300'} focus:ring-green-500`}
@@ -76,7 +76,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                         value="0"
                         checked={!isHomologated && stringValue === "0"}
                         onChange={handleChange}
-                        disabled={isHomologated}
+                        disabled={isHomologated || !availableToModifyAutoeval}
                         className={`w-4 h-4 ${isHomologated 
                             ? 'text-gray-400 border-gray-300 cursor-not-allowed' 
                             : 'text-green-600 border-gray-300'} focus:ring-green-500`}
