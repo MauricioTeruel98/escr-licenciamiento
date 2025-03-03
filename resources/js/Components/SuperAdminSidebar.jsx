@@ -1,7 +1,8 @@
-import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { Link, usePage } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 
 export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }) {
+    const { url } = usePage();
     const [isEvaluacionOpen, setIsEvaluacionOpen] = useState(false);
     const [isUsuariosOpen, setIsUsuariosOpen] = useState(false);
 
@@ -13,6 +14,28 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
     const usuariosItems = navigation.filter(item =>
         ['Usuarios', 'Empresas'].includes(item.name)
     );
+
+    // Verificar si la URL actual corresponde a alguna página dentro de los dropdowns
+    useEffect(() => {
+        // Verificar si la URL actual corresponde a alguna página de administración de evaluación
+        const isInEvaluacionSection = evaluacionItems.some(item => 
+            url.includes(item.href) || item.active
+        );
+        
+        // Verificar si la URL actual corresponde a alguna página de administración de usuarios
+        const isInUsuariosSection = usuariosItems.some(item => 
+            url.includes(item.href) || item.active
+        );
+        
+        // Actualizar el estado de los dropdowns
+        if (isInEvaluacionSection) {
+            setIsEvaluacionOpen(true);
+        }
+        
+        if (isInUsuariosSection) {
+            setIsUsuariosOpen(true);
+        }
+    }, [url, evaluacionItems, usuariosItems]);
 
     return (
         <>

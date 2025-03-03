@@ -60,7 +60,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
         try {
             setLoading(true);
-            
+
             // Obtener solo las respuestas de la subcategoría actual
             const currentSubcategoryAnswers = {};
             subcategories[currentSubcategoryIndex].indicators.forEach(indicator => {
@@ -75,11 +75,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             const formData = new FormData();
             formData.append('isPartialSave', 'true');
             formData.append('value_id', value_id);
-            
+
             Object.entries(currentSubcategoryAnswers).forEach(([questionId, answerData]) => {
                 formData.append(`answers[${questionId}][value]`, answerData.value);
                 formData.append(`answers[${questionId}][description]`, answerData.description || '');
-                
+
                 if (answerData.files && answerData.files.length > 0) {
                     answerData.files.forEach(file => {
                         if (file instanceof File) {
@@ -112,7 +112,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 if (currentSubcategoryIndex < subcategories.length - 1) {
                     setCurrentSubcategoryIndex(prev => prev + 1);
                     window.scrollTo(0, 0);
-                        } else {
+                } else {
                     // Si es la última subcategoría, avanzar a la siguiente categoría
                     if (currentCategoryIndex < categories.length - 1) {
                         setCurrentCategoryIndex(currentCategoryIndex + 1);
@@ -172,11 +172,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     evaluator_comment: evaluator_comment || prev[questionId]?.evaluator_comment || ''
                 }
             };
-            
+
             setTimeout(() => {
                 setCurrentProgress(calculateProgress());
             }, 0);
-            
+
             return newAnswers;
         });
     };
@@ -201,10 +201,10 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
     const areCurrentSubcategoryQuestionsAnswered = () => {
         const currentSubcategory = subcategories[currentSubcategoryIndex];
-        return currentSubcategory.indicators.every(indicator => 
+        return currentSubcategory.indicators.every(indicator =>
             indicator.evaluation_questions.every(question =>
                 answers[question.id]?.value !== undefined &&
-                answers[question.id]?.description?.trim() !== '' 
+                answers[question.id]?.description?.trim() !== ''
             )
         );
     };
@@ -234,7 +234,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             const formData = new FormData();
             formData.append('isPartialSave', 'false');
             formData.append('value_id', value_id);
-            
+
             // Obtener solo las respuestas de la última subcategoría
             const lastSubcategoryAnswers = {};
             subcategories[currentSubcategoryIndex].indicators.forEach(indicator => {
@@ -248,7 +248,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             Object.entries(lastSubcategoryAnswers).forEach(([questionId, answerData]) => {
                 formData.append(`answers[${questionId}][value]`, answerData.value);
                 formData.append(`answers[${questionId}][description]`, answerData.description || '');
-                
+
                 if (answerData.files && answerData.files.length > 0) {
                     answerData.files.forEach(file => {
                         if (file instanceof File) {
@@ -277,7 +277,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     message: 'Respuestas guardadas correctamente'
                 });
                 setShowConfirmModal(false);
-                
+
                 if (response.data.savedAnswers) {
                     setAnswers(response.data.savedAnswers);
                 }
@@ -362,8 +362,8 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             </div>
                             {/* Barra de progreso */}
                             <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
-                                <div 
-                                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-500" 
+                                <div
+                                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
                                     style={{ width: `${currentProgress}%` }}
                                 ></div>
                             </div>
@@ -532,7 +532,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 <span className="text-gray-900">No</span>
                                                             </label>
                                                         </div>
-                                                        
+
                                                         <div className="mt-4">
                                                             <label className="block text-sm font-medium text-gray-700">
                                                                 Comentario del evaluador
@@ -595,11 +595,10 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                 <button
                                     onClick={isLastSubcategory ? handleFinish : handleContinue}
                                     disabled={(isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()) || loading}
-                                    className={`inline-flex items-center px-4 py-2 rounded-md ${
-                                        (isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()) || loading
+                                    className={`inline-flex items-center px-4 py-2 rounded-md ${(isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()) || loading
                                             ? 'bg-gray-400 cursor-not-allowed'
                                             : 'bg-green-600 hover:bg-green-700'
-                                    } text-white`}
+                                        } text-white`}
                                 >
                                     {loading ? (
                                         <>

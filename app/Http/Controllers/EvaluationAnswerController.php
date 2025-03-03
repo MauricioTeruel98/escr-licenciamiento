@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -150,18 +151,20 @@ class EvaluationAnswerController extends Controller
 
             // Enviar notificación al completar la evaluación
             if ($isLastValue) {
-                $adminUser = User::where('role', 'admin')->first();
+                $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
                 $superAdminUser = User::where('role', 'super_admin')->first();
 
                 $companyName = $user->company->name; // Obtener el nombre de la empresa
 
-                $user->notify(new EvaluationCompletedNotification($user, $companyName));
+                //$user->notify(new EvaluationCompletedNotification($user, $companyName));
                 if ($adminUser) {
                     $adminUser->notify(new EvaluationCompletedNotification($user, $companyName));
                 }
                 if ($superAdminUser) {
                     $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $companyName));
                 }
+
+                $company = Company::find($user->company_id);
 
                 // Actualizar la columna estado_eval en la tabla companies
                 $company->update(['estado_eval' => 'evaluacion-completada']);
