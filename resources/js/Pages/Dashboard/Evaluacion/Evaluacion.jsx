@@ -35,6 +35,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     const [notification, setNotification] = useState(null);
     const [loading, setLoading] = useState(false);
     const [currentProgress, setCurrentProgress] = useState(progress);
+    const [validationErrors, setValidationErrors] = useState({});
 
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
@@ -50,6 +51,31 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     };
 
     const handleContinue = async () => {
+        // Validar campos antes de continuar
+        const errors = {};
+        let hasErrors = false;
+        
+        // Verificar las preguntas de la subcategoría actual
+        subcategories[currentSubcategoryIndex].indicators.forEach(indicator => {
+            indicator.evaluation_questions.forEach(question => {
+                // Verificar descripción
+                if (!answers[question.id]?.description?.trim()) {
+                    errors[`description-${question.id}`] = 'La descripción es obligatoria';
+                    hasErrors = true;
+                }
+            });
+        });
+        
+        setValidationErrors(errors);
+        
+        if (hasErrors) {
+            setNotification({
+                type: 'error',
+                message: 'Debes completar todos los campos requeridos antes de continuar'
+            });
+            return;
+        }
+
         if (!areCurrentSubcategoryQuestionsAnswered()) {
             setNotification({
                 type: 'error',
@@ -149,10 +175,33 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             subcategory.indicators.forEach(indicator => {
                 indicator.evaluation_questions.forEach(question => {
                     totalQuestions++;
-                    if (answers[question.id]?.value !== undefined &&
-                        answers[question.id]?.description?.trim() !== '' &&
-                        (answers[question.id]?.files?.length > 0)) {
-                        answeredQuestions++;
+                    
+                    if (isEvaluador) {
+                        // Para evaluadores, verificar si se ha tomado una decisión (aprobado o no)
+                        const hasApprovalDecision = approvals[question.id] !== undefined;
+                        
+                        // Verificar que haya un comentario del evaluador (opcional)
+                        const hasEvaluatorComment = answers[question.id]?.evaluator_comment?.trim() !== '' && 
+                                                  answers[question.id]?.evaluator_comment !== undefined;
+                        
+                        // Para evaluadores, solo necesitamos que haya tomado una decisión
+                        if (hasApprovalDecision) {
+                            answeredQuestions++;
+                        }
+                    } else {
+                        // Para empresas, verificar que el valor esté definido
+                        const hasValue = answers[question.id]?.value !== undefined;
+                        
+                        // Verificar que la descripción no esté vacía después de quitar espacios
+                        const hasDescription = answers[question.id]?.description?.trim() !== '' && 
+                                              answers[question.id]?.description !== undefined;
+                        
+                        // Verificar que haya al menos un archivo (si es requerido)
+                        const hasFiles = answers[question.id]?.files?.length > 0;
+                        
+                        if (hasValue && hasDescription && hasFiles) {
+                            answeredQuestions++;
+                        }
                     }
                 });
             });
@@ -181,6 +230,24 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         });
     };
 
+    const handleApproval = (questionId, value) => {
+        setApprovals(prev => {
+            const newApprovals = {
+                ...prev,
+                [questionId]: value
+            };
+            
+            // Actualizar el progreso cuando cambia la aprobación (para evaluadores)
+            if (isEvaluador) {
+                setTimeout(() => {
+                    setCurrentProgress(calculateProgress());
+                }, 0);
+            }
+            
+            return newApprovals;
+        });
+    };
+
     const areAllQuestionsAnswered = () => {
         let totalQuestions = 0;
         let answeredQuestions = 0;
@@ -202,10 +269,16 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     const areCurrentSubcategoryQuestionsAnswered = () => {
         const currentSubcategory = subcategories[currentSubcategoryIndex];
         return currentSubcategory.indicators.every(indicator =>
-            indicator.evaluation_questions.every(question =>
-                answers[question.id]?.value !== undefined &&
-                answers[question.id]?.description?.trim() !== ''
-            )
+            indicator.evaluation_questions.every(question => {
+                // Verificar que el valor esté definido
+                const hasValue = answers[question.id]?.value !== undefined;
+                
+                // Verificar que la descripción no esté vacía después de quitar espacios
+                const hasDescription = answers[question.id]?.description?.trim() !== '' && 
+                                      answers[question.id]?.description !== undefined;
+                
+                return hasValue && hasDescription;
+            })
         );
     };
 
@@ -219,13 +292,6 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }
 
         setShowConfirmModal(true);
-    };
-
-    const handleApproval = (questionId, value) => {
-        setApprovals(prev => ({
-            ...prev,
-            [questionId]: value
-        }));
     };
 
     const handleConfirmSubmit = async () => {
@@ -444,17 +510,35 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                         <textarea
                                                             rows={4}
                                                             value={answers[question.id]?.description || ''}
-                                                            onChange={(e) => handleAnswer(
-                                                                question.id,
-                                                                answers[question.id]?.value,
-                                                                e.target.value,
-                                                                answers[question.id]?.files
-                                                            )}
+                                                            onChange={(e) => {
+                                                                handleAnswer(
+                                                                    question.id,
+                                                                    answers[question.id]?.value,
+                                                                    e.target.value,
+                                                                    answers[question.id]?.files
+                                                                );
+                                                                
+                                                                // Limpiar error de validación al escribir
+                                                                if (e.target.value.trim() !== '') {
+                                                                    setValidationErrors(prev => {
+                                                                        const newErrors = {...prev};
+                                                                        delete newErrors[`description-${question.id}`];
+                                                                        return newErrors;
+                                                                    });
+                                                                }
+                                                            }}
                                                             disabled={isEvaluador}
                                                             maxLength={240}
-                                                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none disabled:bg-gray-100 disabled:text-gray-500"
+                                                            className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none disabled:bg-gray-100 disabled:text-gray-500 ${
+                                                                validationErrors[`description-${question.id}`] ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                                                            }`}
                                                             placeholder="Escriba aquí..."
                                                         />
+                                                        {validationErrors[`description-${question.id}`] && (
+                                                            <p className="mt-1 text-sm text-red-600">
+                                                                {validationErrors[`description-${question.id}`]}
+                                                            </p>
+                                                        )}
                                                     </div>
 
                                                     {/* FileManager con archivos existentes */}

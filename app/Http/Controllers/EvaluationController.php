@@ -34,13 +34,25 @@ class EvaluationController extends Controller
                 foreach ($indicator->evaluationQuestions as $question) {
                     $totalQuestions++;
                     
-                    // Verificar si existe una respuesta para esta pregunta
-                    $hasAnswer = IndicatorAnswerEvaluation::where('company_id', $company_id)
-                        ->where('evaluation_question_id', $question->id)
-                        ->exists();
-                        
-                    if ($hasAnswer) {
-                        $answeredQuestions++;
+                    if ($isEvaluador) {
+                        // Para evaluadores, verificar si existe una evaluación para esta pregunta
+                        $hasEvaluation = EvaluatorAssessment::where('company_id', $company_id)
+                            ->where('evaluation_question_id', $question->id)
+                            ->whereNotNull('approved') // Asegurarse de que se haya tomado una decisión (aprobado o no)
+                            ->exists();
+                            
+                        if ($hasEvaluation) {
+                            $answeredQuestions++;
+                        }
+                    } else {
+                        // Para empresas, verificar si existe una respuesta para esta pregunta
+                        $hasAnswer = IndicatorAnswerEvaluation::where('company_id', $company_id)
+                            ->where('evaluation_question_id', $question->id)
+                            ->exists();
+                            
+                        if ($hasAnswer) {
+                            $answeredQuestions++;
+                        }
                     }
                 }
             }
