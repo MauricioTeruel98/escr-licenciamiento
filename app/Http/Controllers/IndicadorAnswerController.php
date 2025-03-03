@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\AutoEvaluationComplete;
 use App\Models\IndicatorAnswer;
 use App\Models\AutoEvaluationResult;
 use App\Models\AutoEvaluationSubcategoryResult;
@@ -197,8 +198,12 @@ class IndicadorAnswerController extends Controller
                 // Guardar PDF
                 $pdf->save($fullPath);
 
-                // Enviar email con PDF
-                Mail::to($user->email)->send(new AutoEvaluationResults($fullPath, $user->company));
+                // Enviar email con PDF al usuario administrador de la empresa
+                $admin = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
+                Mail::to($admin->email)->send(new AutoEvaluationResults($fullPath, $user->company));
+
+                $superadminuser = User::where('role', 'super_admin')->first();
+                Mail::to($superadminuser->email)->send(new AutoEvaluationComplete($fullPath, $user->company));
 
                 // Actualizar la columna autoeval_ended en la tabla companies
                 $company->update(['autoeval_ended' => true]);
