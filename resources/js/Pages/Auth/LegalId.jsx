@@ -11,21 +11,24 @@ export default function LegalId() {
     const [validationErrors, setValidationErrors] = useState({});
 
     const validateLegalId = (legalId) => {
-        // Solo permitir letras y números (sin espacios ni caracteres especiales)
-        const legalIdRegex = /^[a-zA-Z0-9]+$/;
+        // Solo permitir números y limitar a 10 dígitos
+        const legalIdRegex = /^\d{1,12}$/;
         return legalIdRegex.test(legalId);
     };
 
     const handleLegalIdChange = (e) => {
-        // Filtrar espacios y caracteres especiales
-        const value = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
+        // Filtrar cualquier carácter que no sea número
+        const value = e.target.value.replace(/\D/g, '');
         
-        setData('legal_id', value);
+        // Limitar a 10 dígitos
+        const truncatedValue = value.slice(0, 12);
         
-        if (value && !validateLegalId(value)) {
+        setData('legal_id', truncatedValue);
+        
+        if (truncatedValue && !validateLegalId(truncatedValue)) {
             setValidationErrors({
                 ...validationErrors,
-                legal_id: 'La cédula jurídica solo puede contener letras y números, sin espacios ni caracteres especiales.'
+                legal_id: 'La cédula jurídica solo puede contener números y tener hasta 10 dígitos.'
             });
         } else {
             const newErrors = {...validationErrors};
@@ -71,8 +74,9 @@ export default function LegalId() {
                             value={data.legal_id}
                             onChange={handleLegalIdChange}
                             className="w-full rounded-lg border border-gray-300 p-2"
-                            placeholder="010101010101"
+                            placeholder="0000000"
                             required
+                            maxLength={10}
                         />
                         <InputError message={errors.legal_id || validationErrors.legal_id} className="mt-2" />
                         
