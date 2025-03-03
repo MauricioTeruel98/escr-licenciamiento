@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\InfoAdicionalEmpresa;
 use App\Models\CompanyProducts;
 use Illuminate\Http\Request;
@@ -172,6 +173,13 @@ class CompanyProfileController extends Controller
                     ];
                 }, $certificaciones);
             }
+
+            $company = Company::where('id', $companyId)->first();
+
+            // Actualizar la columna estado_eval en la tabla companies
+            $company->update(['estado_eval' => 'evaluacion-pendiente']);
+
+            $company->save();
 
             return response()->json([
                 'success' => true,

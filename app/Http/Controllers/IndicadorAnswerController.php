@@ -203,6 +203,11 @@ class IndicadorAnswerController extends Controller
                 // Actualizar la columna autoeval_ended en la tabla companies
                 $company->update(['autoeval_ended' => true]);
 
+                // Actualizar la columna estado_eval en la tabla companies
+                $company->update(['estado_eval' => 'auto-evaluacion-completed']);
+
+                $company->save();
+
                 return response()->json([
                     'success' => true,
                     'message' => '¡Autoevaluación completada! Se ha enviado un PDF a su correo con los resultados.',

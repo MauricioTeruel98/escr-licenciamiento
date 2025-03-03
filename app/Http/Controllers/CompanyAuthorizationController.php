@@ -21,6 +21,10 @@ class CompanyAuthorizationController extends Controller
         }
 
         $company->authorized = true;
+
+        // Actualizar la columna estado_eval en la tabla companies
+        $company->update(['estado_eval' => 'evaluacion']);
+
         $company->save();
 
         return response()->json(['message' => 'Empresa autorizada exitosamente']);

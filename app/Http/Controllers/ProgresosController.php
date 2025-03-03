@@ -13,7 +13,7 @@ class ProgresosController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $query = Company::query()
-            ->select('id', 'name as nombre', 'authorized')
+            ->select('id', 'name as nombre', 'authorized', 'estado_eval')
             ->withCount(['indicatorAnswers', 'indicatorAnswersEvaluation'])
             ->with('autoEvaluationResult');
 
@@ -24,19 +24,16 @@ class ProgresosController extends Controller
         $companies = $query->paginate($perPage);
 
         return response()->json($companies->through(function ($company) {
-            // Determinar el estado y progreso
-            $status = 'No aplica';
+            // Determinar el progreso basado en el estado
             $progress = 0;
 
             if ($company->autoEvaluationResult) {
-                if ($company->autoEvaluationResult->form_sended) {
-                    $status = 'Evaluación';
+                if (in_array($company->estado_eval, ['evaluacion', 'evaluacion-completada'])) {
                     // Calcular progreso de evaluación
                     $progress = $company->indicator_answers_evaluation_count > 0 
                         ? min(100, ($company->indicator_answers_evaluation_count / 20) * 100) 
                         : 0;
                 } else {
-                    $status = 'Auto-evaluación';
                     // Calcular progreso de auto-evaluación
                     $progress = $company->indicator_answers_count > 0 
                         ? min(100, ($company->indicator_answers_count / 12) * 100) 
@@ -47,7 +44,7 @@ class ProgresosController extends Controller
             return [
                 'id' => $company->id,
                 'nombre' => $company->nombre,
-                'estado' => $status,
+                'estado' => $company->formatted_state,
                 'progreso' => $progress,
                 'authorized' => $company->authorized,
                 'form_sended' => $company->autoEvaluationResult ? 

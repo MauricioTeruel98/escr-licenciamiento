@@ -162,6 +162,11 @@ class EvaluationAnswerController extends Controller
                 if ($superAdminUser) {
                     $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $companyName));
                 }
+
+                // Actualizar la columna estado_eval en la tabla companies
+                $company->update(['estado_eval' => 'evaluacion-completada']);
+
+                $company->save();
             }
 
             return response()->json([

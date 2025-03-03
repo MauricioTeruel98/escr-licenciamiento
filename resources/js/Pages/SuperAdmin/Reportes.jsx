@@ -25,15 +25,35 @@ export default function Reportes() {
         { 
             key: 'estado', 
             label: 'Estado',
-            render: (item) => (
-                <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${
-                    item.estado === 'Auto-evaluación' 
-                        ? 'text-yellow-800 border-yellow-200 bg-yellow-50' 
-                        : 'text-green-800 border-green-200 bg-green-50'
-                }`}>
-                    {item.estado}
-                </span>
-            )
+            render: (item) => {
+                let colorClass = '';
+                
+                switch (item.estado) {
+                    case 'Auto-evaluación':
+                        colorClass = 'text-yellow-800 border-yellow-200 bg-yellow-50';
+                        break;
+                    case 'Auto-evaluación Completada':
+                        colorClass = 'text-blue-800 border-blue-200 bg-blue-50';
+                        break;
+                    case 'Evaluación Pendiente':
+                        colorClass = 'text-orange-800 border-orange-200 bg-orange-50';
+                        break;
+                    case 'Evaluación':
+                        colorClass = 'text-green-800 border-green-200 bg-green-50';
+                        break;
+                    case 'Evaluación Completada':
+                        colorClass = 'text-indigo-800 border-indigo-200 bg-indigo-50';
+                        break;
+                    default:
+                        colorClass = 'text-gray-800 border-gray-200 bg-gray-50';
+                }
+                
+                return (
+                    <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${colorClass}`}>
+                        {item.estado}
+                    </span>
+                );
+            }
         },
         {
             key: 'actions',

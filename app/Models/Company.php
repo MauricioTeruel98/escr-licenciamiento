@@ -20,7 +20,8 @@ class Company extends Model
         'mobile',
         'is_exporter',
         'authorized',
-        'autoeval_ended'
+        'autoeval_ended',
+        'estado_eval'
     ];
 
     protected $casts = [
@@ -79,5 +80,26 @@ class Company extends Model
     public function indicatorAnswersEvaluation()
     {
         return $this->hasMany(\App\Models\IndicatorAnswerEvaluation::class);
+    }
+
+    /**
+     * Obtiene el estado formateado para mostrar en la interfaz
+     */
+    public function getFormattedStateAttribute()
+    {
+        switch ($this->estado_eval) {
+            case 'auto-evaluacion':
+                return 'Auto-evaluación';
+            case 'auto-evaluacion-completed':
+                return 'Auto-evaluación Completada';
+            case 'evaluacion-pendiente':
+                return 'Evaluación Pendiente';
+            case 'evaluacion':
+                return 'Evaluación';
+            case 'evaluacion-completada':
+                return 'Evaluación Completada';
+            default:
+                return 'No aplica';
+        }
     }
 } 

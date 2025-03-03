@@ -13,7 +13,7 @@ class ReportController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $query = Company::query()
-            ->select('id', 'name')
+            ->select('id', 'name', 'estado_eval')
             ->with(['autoEvaluationResult' => function($query) {
                 $query->select('id', 'company_id', 'status');
             }]);
@@ -28,9 +28,7 @@ class ReportController extends Controller
             return [
                 'id' => $company->id,
                 'nombre' => $company->name,
-                'estado' => $company->autoEvaluationResult?->status === 'completed' 
-                    ? 'Evaluación'
-                    : 'Auto-evaluación'
+                'estado' => $company->formatted_state
             ];
         }));
     }
