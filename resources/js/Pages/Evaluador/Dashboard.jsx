@@ -88,7 +88,7 @@ export default function EvaluadorDashboard({ auth }) {
 
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6">
                         <h1 className="text-2xl font-semibold text-gray-900">
-                            ¡Bienvenido, {auth.user.name}!
+                            ¡Bienvenido/a, {auth.user.name}!
                         </h1>
                         <p className="mt-1 text-sm text-gray-600">
                             Panel de control para evaluadores

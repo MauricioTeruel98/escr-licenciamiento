@@ -85,7 +85,7 @@ export default function SuperAdminDashboard({ auth }) {
                             Panel de Control Super Admin
                         </h1>
                         <p className="mt-2 text-gray-600">
-                            Bienvenido al panel de administración principal
+                            Bienvenido/a al panel de administración principal
                         </p>
                     </div>
 

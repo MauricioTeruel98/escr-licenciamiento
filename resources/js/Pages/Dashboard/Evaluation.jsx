@@ -184,7 +184,7 @@ export default function Evaluation({
                         autoEvaluationResult && autoEvaluationResult.application_sended == 1 && (
                             <div className="space-y-4">
                                 <div className="">
-                                    <p className="text-3xl font-bold">¡Bienvenido {userName}!</p>
+                                    <p className="text-3xl font-bold">¡Bienvenido/a {userName}!</p>
                                 </div>
                                 <h1 className="text-4xl font-bold">
                                     Evaluación de {companyName}
@@ -213,7 +213,7 @@ export default function Evaluation({
                             <>
                                 <div className="space-y-4 md:w-2/3">
                                     <div className="">
-                                        <p className="text-3xl font-bold">¡Bienvenido {userName}!</p>
+                                        <p className="text-3xl font-bold">¡Bienvenido/a {userName}!</p>
                                     </div>
 
                                     {/* Status Banner */}
