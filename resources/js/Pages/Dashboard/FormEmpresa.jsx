@@ -1580,7 +1580,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     <input
                                                         type="radio"
                                                         name="recomienda_marca_pais"
-                                                        value="1"
+                                                        value="true"
                                                         checked={data.recomienda_marca_pais === true}
                                                         onChange={handleChange}
                                                         className="form-radio text-green-600 focus:ring-green-500"
@@ -1591,7 +1591,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     <input
                                                         type="radio"
                                                         name="recomienda_marca_pais"
-                                                        value="0"
+                                                        value="false"
                                                         checked={data.recomienda_marca_pais === false}
                                                         onChange={handleChange}
                                                         className="form-radio text-green-600 focus:ring-green-500"

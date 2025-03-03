@@ -111,6 +111,17 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 // Avanzar a la siguiente subcategoría
                 if (currentSubcategoryIndex < subcategories.length - 1) {
                     setCurrentSubcategoryIndex(prev => prev + 1);
+                    window.scrollTo(0, 0);
+                        } else {
+                    // Si es la última subcategoría, avanzar a la siguiente categoría
+                    if (currentCategoryIndex < categories.length - 1) {
+                        setCurrentCategoryIndex(currentCategoryIndex + 1);
+                        setCurrentSubcategoryIndex(0);
+                        window.scrollTo(0, 0);
+                    } else {
+                        // Si es la última categoría y subcategoría, finalizar
+                        handleFinish();
+                    }
                 }
             }
         } catch (error) {
@@ -325,7 +336,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
                             </span>
                         </div>
-                        <h1 className="text-4xl font-bold mt-3">Proceso de Evaluación</h1>
+                        <h1 className="text-4xl font-bold mt-3">{valueData.name}</h1>
                         <p className="text-gray-500 mt-2">
                             Complete cada paso del proceso de evaluación para continuar.
                         </p>
@@ -440,7 +451,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 answers[question.id]?.files
                                                             )}
                                                             disabled={isEvaluador}
-                                                            maxLength={100}
+                                                            maxLength={240}
                                                             className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none disabled:bg-gray-100 disabled:text-gray-500"
                                                             placeholder="Escriba aquí..."
                                                         />
