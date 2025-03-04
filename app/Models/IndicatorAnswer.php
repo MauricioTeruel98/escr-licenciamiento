@@ -12,7 +12,8 @@ class IndicatorAnswer extends Model
         'company_id',
         'indicator_id',
         'answer',
-        'is_binding'
+        'is_binding',
+        'justification'
     ];
 
     protected $casts = [

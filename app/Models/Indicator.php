@@ -17,7 +17,8 @@ class Indicator extends Model
         'requisito_id',
         'evaluation_questions',
         'guide',
-        'is_active'
+        'is_active',
+        'is_binary'
     ];
 
     protected $guarded = ['homologation_id'];
@@ -25,7 +26,8 @@ class Indicator extends Model
     protected $casts = [
         'binding' => 'boolean',
         'is_active' => 'boolean',
-        'evaluation_questions' => 'array'
+        'evaluation_questions' => 'array',
+        'is_binary' => 'boolean'
     ];
 
     public function homologation(): BelongsTo

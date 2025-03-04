@@ -22,8 +22,10 @@ export default function IndicatorModal({
         value_id: '',
         subcategory_id: '',
         evaluation_questions: [],
+        evaluation_questions_binary: [],
         guide: '',
-        is_active: true
+        is_active: true,
+        is_binary: true
     };
 
     const [formData, setFormData] = useState(initialFormData);
@@ -41,6 +43,7 @@ export default function IndicatorModal({
                     ...indicator,
                     homologation_ids: indicator.homologations.map((homologation) => homologation.id),
                     evaluation_questions: indicator.evaluation_questions.map((question) => question.question),
+                    evaluation_questions_binary: indicator.evaluation_questions.map((question) => question.is_binary || false),
                     value_id: indicator.value_id,
                     subcategory_id: indicator.subcategory?.id || '',
                 });
@@ -116,14 +119,16 @@ export default function IndicatorModal({
     const addQuestion = () => {
         setFormData(prev => ({
             ...prev,
-            evaluation_questions: [...prev.evaluation_questions, '']
+            evaluation_questions: [...prev.evaluation_questions, ''],
+            evaluation_questions_binary: [...prev.evaluation_questions_binary, false]
         }));
     };
 
     const removeQuestion = (index) => {
         setFormData(prev => ({
             ...prev,
-            evaluation_questions: prev.evaluation_questions.filter((_, i) => i !== index)
+            evaluation_questions: prev.evaluation_questions.filter((_, i) => i !== index),
+            evaluation_questions_binary: prev.evaluation_questions_binary.filter((_, i) => i !== index)
         }));
     };
 
@@ -134,6 +139,17 @@ export default function IndicatorModal({
             return {
                 ...prevData,
                 evaluation_questions: evaluationQuestions,
+            };
+        });
+    };
+
+    const updateQuestionBinary = (index, value) => {
+        setFormData((prevData) => {
+            const evaluationQuestionsBinary = [...prevData.evaluation_questions_binary];
+            evaluationQuestionsBinary[index] = value;
+            return {
+                ...prevData,
+                evaluation_questions_binary: evaluationQuestionsBinary,
             };
         });
     };
@@ -233,6 +249,21 @@ export default function IndicatorModal({
                                         />
                                         <p className="mt-1 text-sm text-gray-500">
                                             Indica si este indicador es vinculante para la evaluación
+                                        </p>
+                                    </div>
+
+                                    {/* Es por SI o NO? */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Es por SI o NO?
+                                        </label>
+                                        <Switch
+                                            checked={formData.is_binary}
+                                            onChange={(value) => setFormData({ ...formData, is_binary: value })}
+                                            label={formData.is_binary ? 'Sí' : 'No'}
+                                        />
+                                        <p className="mt-1 text-sm text-gray-500">
+                                            Indica si este indicador es por SI o NO
                                         </p>
                                     </div>
 
@@ -336,22 +367,36 @@ export default function IndicatorModal({
                                             Preguntas de evaluación (opcional)
                                         </label>
                                         {formData.evaluation_questions.map((question, index) => (
-                                            <div key={index} className="flex items-center space-x-2 mb-2">
-                                                <input
-                                                    type="text"
-                                                    value={question}
-                                                    onChange={(e) => updateQuestion(index, e.target.value)}
-                                                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
-                                                />
-                                                {formData.evaluation_questions.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeQuestion(index)}
-                                                        className="text-red-600 hover:text-red-700"
-                                                    >
-                                                        <Trash className="h-4 w-4" />
-                                                    </button>
-                                                )}
+                                            <div key={index} className="flex items-center space-x-2 mb-4">
+                                                <div className="flex-grow">
+                                                    <input
+                                                        type="text"
+                                                        value={question}
+                                                        onChange={(e) => updateQuestion(index, e.target.value)}
+                                                        className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
+                                                    />
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <div className="flex items-center">
+                                                        <label className="mr-2 text-sm text-gray-700">
+                                                            ¿Es SI/NO?
+                                                        </label>
+                                                        <Switch
+                                                            checked={formData.evaluation_questions_binary[index] || false}
+                                                            onChange={(value) => updateQuestionBinary(index, value)}
+                                                            label={formData.evaluation_questions_binary[index] ? 'Sí' : 'No'}
+                                                        />
+                                                    </div>
+                                                    {formData.evaluation_questions.length > 1 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeQuestion(index)}
+                                                            className="text-red-600 hover:text-red-700"
+                                                        >
+                                                            <Trash className="h-4 w-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         ))}
                                         <button

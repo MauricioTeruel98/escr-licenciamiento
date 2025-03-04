@@ -43,7 +43,8 @@ class IndicatorController extends Controller
             'evaluation_questions.*' => 'string',
             'guide' => 'nullable|string',
             'is_active' => 'boolean',
-            'requisito_id' => 'required|exists:requisitos,id'
+            'requisito_id' => 'required|exists:requisitos,id',
+            'is_binary' => 'required|boolean'
         ]);
 
         $indicator = Indicator::create([
@@ -56,12 +57,17 @@ class IndicatorController extends Controller
             'guide' => $request->guide,
             'is_active' => $request->is_active ?? true,
             'requisito_id' => $request->requisito_id,
+            'is_binary' => $request->is_binary
         ]);
 
         $indicator->homologations()->attach($request->homologation_ids);
 
-        foreach ($request->input('evaluation_questions', []) as $question) {
-            $indicator->evaluationQuestions()->create(['question' => $question]);
+        foreach ($request->input('evaluation_questions', []) as $index => $question) {
+            $is_binary = $request->input('evaluation_questions_binary.' . $index, false);
+            $indicator->evaluationQuestions()->create([
+                'question' => $question,
+                'is_binary' => $is_binary
+            ]);
         }
 
         $indicator->load(['homologations', 'value', 'subcategory']);
@@ -86,7 +92,8 @@ class IndicatorController extends Controller
             'evaluation_questions.*' => 'string',
             'guide' => 'nullable|string',
             'is_active' => 'boolean',
-            'requisito_id' => 'required|exists:requisitos,id'
+            'requisito_id' => 'required|exists:requisitos,id',
+            'is_binary' => 'required|boolean'
         ]);
 
         $indicator->update([
@@ -99,13 +106,18 @@ class IndicatorController extends Controller
             'guide' => $request->guide,
             'is_active' => $request->is_active ?? true,
             'requisito_id' => $request->requisito_id,
+            'is_binary' => $request->is_binary
         ]);
 
         $indicator->homologations()->sync($request->homologation_ids);
 
         $indicator->evaluationQuestions()->delete();
-        foreach ($request->input('evaluation_questions', []) as $question) {
-            $indicator->evaluationQuestions()->create(['question' => $question]);
+        foreach ($request->input('evaluation_questions', []) as $index => $question) {
+            $is_binary = $request->input('evaluation_questions_binary.' . $index, false);
+            $indicator->evaluationQuestions()->create([
+                'question' => $question,
+                'is_binary' => $is_binary
+            ]);
         }
 
         $indicator->load(['homologations', 'value', 'subcategory']);
