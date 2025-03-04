@@ -247,4 +247,40 @@ class UserController extends Controller
             return response()->json(['error' => 'Error al obtener usuarios pendientes'], 500);
         }
     }
+
+    /**
+     * Verifica si un correo electrónico ya existe en la base de datos
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkEmailExists(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email',
+                'userId' => 'nullable|integer'
+            ]);
+
+            $query = User::where('email', $request->email);
+            
+            // Si se proporciona un ID de usuario, excluirlo de la búsqueda
+            // (para el caso de edición donde el usuario puede mantener su propio email)
+            if ($request->userId) {
+                $query->where('id', '!=', $request->userId);
+            }
+
+            $exists = $query->exists();
+
+            return response()->json([
+                'exists' => $exists
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error checking email existence: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Error al verificar el correo electrónico',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 } 

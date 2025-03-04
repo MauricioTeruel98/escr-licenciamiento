@@ -17,6 +17,7 @@ Route::middleware(['auth:sanctum', 'web'])->group(function () {
     Route::put('/users/company/{user}', [UserController::class, 'update']);
     Route::delete('/users/company/{user}', [UserController::class, 'destroy']);
     Route::get('/active-values', [ValueController::class, 'getActiveValues']);
+    Route::post('/check-email-exists', [UserController::class, 'checkEmailExists']);
 });
 
 // Route::patch('companies/{company}/authorize', [CompanyAuthorizationController::class, 'authorizeCompany'])

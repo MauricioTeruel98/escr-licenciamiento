@@ -62,6 +62,8 @@ export default function UsersManagement() {
         telefono: ''
     });
     const [validationErrors, setValidationErrors] = useState({});
+    const [editValidationErrors, setEditValidationErrors] = useState({});
+    const [emailCheckInProgress, setEmailCheckInProgress] = useState(false);
 
     // Agregamos estados para el modal
     const [modalOpen, setModalOpen] = useState(false);
@@ -224,6 +226,23 @@ export default function UsersManagement() {
         });
     };
 
+    // Función para verificar si un correo ya existe
+    const checkEmailExists = async (email, userId = null) => {
+        try {
+            setEmailCheckInProgress(true);
+            const response = await axios.post('/api/check-email-exists', { 
+                email,
+                userId // Si es null, se está creando un usuario nuevo
+            });
+            setEmailCheckInProgress(false);
+            return response.data.exists;
+        } catch (error) {
+            console.error('Error al verificar email:', error);
+            setEmailCheckInProgress(false);
+            return false;
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         
@@ -245,6 +264,18 @@ export default function UsersManagement() {
         
         if (hasErrors) {
             setToastMessage('Por favor corrija los errores en el formulario');
+            setShowToast(true);
+            return;
+        }
+        
+        // Verificar si el correo ya existe
+        const emailExists = await checkEmailExists(nuevoUsuario.correo.trim());
+        if (emailExists) {
+            setValidationErrors(prev => ({
+                ...prev,
+                correo: 'Este correo electrónico ya está registrado'
+            }));
+            setToastMessage('El correo electrónico ya está en uso');
             setShowToast(true);
             return;
         }
@@ -272,6 +303,10 @@ export default function UsersManagement() {
                 puesto: '',
                 telefono: ''
             });
+            
+            // Limpiar los errores de validación después de guardar correctamente
+            setValidationErrors({});
+            
             cargarUsuarios();
             
             // Mostrar mensaje con la contraseña generada
@@ -320,8 +355,22 @@ export default function UsersManagement() {
             }
         });
         
+        setEditValidationErrors(newErrors);
+        
         if (hasErrors) {
             setToastMessage('Por favor corrija los errores en el formulario');
+            setShowToast(true);
+            return;
+        }
+        
+        // Verificar si el correo ya existe (excluyendo el usuario actual)
+        const emailExists = await checkEmailExists(usuario.correo.trim(), usuario.id);
+        if (emailExists) {
+            setEditValidationErrors(prev => ({
+                ...prev,
+                correo: 'Este correo electrónico ya está registrado'
+            }));
+            setToastMessage('El correo electrónico ya está en uso');
             setShowToast(true);
             return;
         }
@@ -346,6 +395,9 @@ export default function UsersManagement() {
             setUsuarios(usuarios.map(usuario =>
                 usuario.id === id ? { ...trimmedData, editando: false } : usuario
             ));
+            
+            // Limpiar los errores de validación después de guardar correctamente
+            setEditValidationErrors({});
             
             setToastMessage('Usuario actualizado exitosamente');
             setShowToast(true);
@@ -426,13 +478,37 @@ export default function UsersManagement() {
             if (value.length > 255) {
                 return;
             }
+            
+            // Verificar formato de correo
+            const error = validateField(field, value);
+            
+            // Si el formato es válido, verificar si ya existe (con debounce)
+            if (!error && value.includes('@') && value.includes('.')) {
+                clearTimeout(window.emailCheckTimeout);
+                window.emailCheckTimeout = setTimeout(async () => {
+                    const usuario = usuarios.find(u => u.id === id);
+                    const emailExists = await checkEmailExists(value.trim(), usuario.id);
+                    if (emailExists) {
+                        setEditValidationErrors(prev => ({
+                            ...prev,
+                            correo: 'Este correo electrónico ya está registrado'
+                        }));
+                    } else {
+                        // Limpiar el error si el correo es válido
+                        setEditValidationErrors(prev => ({
+                            ...prev,
+                            correo: null
+                        }));
+                    }
+                }, 500);
+            }
         }
         
         // Validar el campo
         const error = validateField(field, processedValue);
         
         // Actualizar errores de validación
-        setValidationErrors(prev => ({
+        setEditValidationErrors(prev => ({
             ...prev,
             [field]: error
         }));
@@ -507,6 +583,29 @@ export default function UsersManagement() {
             if (value.length > 255) {
                 return;
             }
+            
+            // Verificar formato de correo
+            const error = validateField(name, value);
+            
+            // Si el formato es válido, verificar si ya existe (con debounce)
+            if (!error && value.includes('@') && value.includes('.')) {
+                clearTimeout(window.emailCheckTimeout);
+                window.emailCheckTimeout = setTimeout(async () => {
+                    const emailExists = await checkEmailExists(value.trim());
+                    if (emailExists) {
+                        setValidationErrors(prev => ({
+                            ...prev,
+                            correo: 'Este correo electrónico ya está registrado'
+                        }));
+                    } else {
+                        // Limpiar el error si el correo es válido
+                        setValidationErrors(prev => ({
+                            ...prev,
+                            correo: null
+                        }));
+                    }
+                }, 500);
+            }
         }
         
         // Validar el campo
@@ -525,9 +624,20 @@ export default function UsersManagement() {
     };
 
     const handleEdit = (id) => {
+        // Limpiar los errores de validación de edición al comenzar a editar
+        setEditValidationErrors({});
         setUsuarios(usuarios.map(usuario =>
             usuario.id === id ? { ...usuario, editando: true } : usuario
         ));
+    };
+
+    // Agregar una función para cancelar la edición
+    const handleCancelEdit = (id) => {
+        // Limpiar los errores de validación
+        setEditValidationErrors({});
+        
+        // Recargar los datos originales del usuario
+        cargarUsuarios();
     };
 
     const Pagination = () => {
@@ -688,13 +798,16 @@ export default function UsersManagement() {
                                     name="correo"
                                     value={nuevoUsuario.correo}
                                     onChange={handleInputChange}
-                                    className="w-full rounded-md border border-gray-300 p-2"
+                                    className={`w-full rounded-md border ${validationErrors.correo ? 'border-red-500' : 'border-gray-300'} p-2`}
                                     required
                                 />
                                 <p className="text-xs text-gray-500 mt-1">Formato válido: ejemplo@dominio.com</p>
                                 {validationErrors.correo && (
                                     <p className="text-sm text-red-600 mt-1">{validationErrors.correo}</p>
                                 )}
+                                {/* {emailCheckInProgress && (
+                                    <p className="text-xs text-blue-600 mt-1">Verificando disponibilidad...</p>
+                                )} */}
                             </div>
 
                             <div>
@@ -821,11 +934,11 @@ export default function UsersManagement() {
                                             value={usuario.name}
                                             onChange={(e) => handleChange(usuario.id, 'name', e.target.value)}
                                             disabled={!usuario.editando}
-                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
+                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : editValidationErrors.name ? 'border-red-500 bg-white' : 'bg-white'}`}
                                         />
                                         {usuario.editando && <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 50 caracteres.</p>}
-                                        {usuario.editando && validationErrors.name && (
-                                            <p className="text-sm text-red-600 mt-1">{validationErrors.name}</p>
+                                        {usuario.editando && editValidationErrors.name && (
+                                            <p className="text-sm text-red-600 mt-1">{editValidationErrors.name}</p>
                                         )}
                                     </div>
 
@@ -839,11 +952,11 @@ export default function UsersManagement() {
                                             value={usuario.lastname}
                                             onChange={(e) => handleChange(usuario.id, 'lastname', e.target.value)}
                                             disabled={!usuario.editando}
-                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
+                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : editValidationErrors.lastname ? 'border-red-500 bg-white' : 'bg-white'}`}
                                         />
                                         {usuario.editando && <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 50 caracteres.</p>}
-                                        {usuario.editando && validationErrors.lastname && (
-                                            <p className="text-sm text-red-600 mt-1">{validationErrors.lastname}</p>
+                                        {usuario.editando && editValidationErrors.lastname && (
+                                            <p className="text-sm text-red-600 mt-1">{editValidationErrors.lastname}</p>
                                         )}
                                     </div>
 
@@ -857,11 +970,11 @@ export default function UsersManagement() {
                                             value={usuario.correo}
                                             onChange={(e) => handleChange(usuario.id, 'correo', e.target.value)}
                                             disabled={!usuario.editando}
-                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
+                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : editValidationErrors.correo ? 'border-red-500 bg-white' : 'bg-white'}`}
                                         />
                                         {usuario.editando && <p className="text-xs text-gray-500 mt-1">Formato válido: ejemplo@dominio.com</p>}
-                                        {usuario.editando && validationErrors.correo && (
-                                            <p className="text-sm text-red-600 mt-1">{validationErrors.correo}</p>
+                                        {usuario.editando && editValidationErrors.correo && (
+                                            <p className="text-sm text-red-600 mt-1">{editValidationErrors.correo}</p>
                                         )}
                                     </div>
 
@@ -875,11 +988,11 @@ export default function UsersManagement() {
                                             value={usuario.puesto}
                                             onChange={(e) => handleChange(usuario.id, 'puesto', e.target.value)}
                                             disabled={!usuario.editando}
-                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : 'bg-white'}`}
+                                            className={`w-full p-2 border rounded-md ${!usuario.editando ? 'bg-gray-50 text-gray-700' : editValidationErrors.puesto ? 'border-red-500 bg-white' : 'bg-white'}`}
                                         />
                                         {usuario.editando && <p className="text-xs text-gray-500 mt-1">Solo letras y espacios. Máx. 50 caracteres.</p>}
-                                        {usuario.editando && validationErrors.puesto && (
-                                            <p className="text-sm text-red-600 mt-1">{validationErrors.puesto}</p>
+                                        {usuario.editando && editValidationErrors.puesto && (
+                                            <p className="text-sm text-red-600 mt-1">{editValidationErrors.puesto}</p>
                                         )}
                                     </div>
                                 </div>
@@ -892,6 +1005,12 @@ export default function UsersManagement() {
                                                 className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-800 transition-colors"
                                             >
                                                 Guardar Cambios
+                                            </button>
+                                            <button
+                                                onClick={() => handleCancelEdit(usuario.id)}
+                                                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
+                                            >
+                                                Cancelar
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(usuario.id)}

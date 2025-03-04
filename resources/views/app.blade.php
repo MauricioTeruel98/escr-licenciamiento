@@ -89,11 +89,11 @@
         p,
         span,
         div {
-            font-family: "Montserrat", sans-serif !important;
+            font-family: "Gotham", sans-serif !important;
         }
 
         h1 {
-            font-family: "Montserrat", serif !important;
+            font-family: "Gotham", serif !important;
             font-weight: 800;
         }
 
