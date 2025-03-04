@@ -9,6 +9,7 @@ import axios from 'axios';
 export default function Indicadores({ valueData, userName, user, savedAnswers, currentScore: initialScore, certifications, homologatedIndicators, company, availableToModifyAutoeval }) {
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [answers, setAnswers] = useState({});
+    const [justifications, setJustifications] = useState({});
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [notification, setNotification] = useState(null);
     const [bindingWarning, setBindingWarning] = useState(false);
@@ -73,14 +74,32 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
         }
     };
 
+    const handleJustificationChange = (indicatorId, text, currentAnswer) => {
+        if (!indicatorId) {
+            console.error('ID del indicador no válido');
+            return;
+        }
+
+        // Guardar la justificación
+        const newJustifications = {
+            ...justifications,
+            [indicatorId]: text
+        };
+        setJustifications(newJustifications);
+    };
+
     useEffect(() => {
         if (savedAnswers || homologatedIndicators) {
             const formattedAnswers = {};
+            const formattedJustifications = {};
             
             // Procesar respuestas guardadas
             if (savedAnswers) {
                 savedAnswers.forEach(answer => {
                     formattedAnswers[answer.indicator_id] = answer.answer;
+                    if (answer.justification) {
+                        formattedJustifications[answer.indicator_id] = answer.justification;
+                    }
                 });
             }
 
@@ -92,6 +111,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
             });
 
             setAnswers(formattedAnswers);
+            setJustifications(formattedJustifications);
 
             const initialCalculatedScore = calculateCurrentScore(formattedAnswers);
             setCurrentScore(initialCalculatedScore);
@@ -118,6 +138,29 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     };
 
     const handleContinue = () => {
+        // Verificar si hay indicadores no binarios con respuesta "Sí" pero sin justificación
+        const currentIndicators = subcategories[currentSubcategoryIndex].indicators;
+        const missingJustifications = currentIndicators.filter(indicator => {
+            // Solo verificar indicadores no binarios
+            if (indicator.is_binary) return false;
+            
+            // Solo verificar indicadores con respuesta "Sí"
+            const answer = answers[indicator.id];
+            if (answer !== "1") return false;
+            
+            // Verificar si tiene justificación
+            const justification = justifications[indicator.id];
+            return !justification || justification.trim() === '';
+        });
+
+        if (missingJustifications.length > 0) {
+            setNotification({
+                type: 'error',
+                message: 'Por favor, complete la justificación para todas las preguntas con respuesta "Sí" antes de continuar.'
+            });
+            return;
+        }
+
         if (currentSubcategoryIndex < subcategories.length - 1) {
             setCurrentSubcategoryIndex(prev => prev + 1);
         }
@@ -138,6 +181,35 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
             return;
         }
 
+        // Verificar si hay indicadores no binarios con respuesta "Sí" pero sin justificación
+        const missingJustifications = [];
+        
+        // Revisar todas las subcategorías
+        subcategories.forEach(subcategory => {
+            subcategory.indicators.forEach(indicator => {
+                // Solo verificar indicadores no binarios
+                if (!indicator.is_binary) {
+                    // Solo verificar indicadores con respuesta "Sí"
+                    const answer = answers[indicator.id];
+                    if (answer === "1") {
+                        // Verificar si tiene justificación
+                        const justification = justifications[indicator.id];
+                        if (!justification || justification.trim() === '') {
+                            missingJustifications.push(indicator);
+                        }
+                    }
+                }
+            });
+        });
+
+        if (missingJustifications.length > 0) {
+            setNotification({
+                type: 'error',
+                message: `Por favor, complete la justificación para todas las preguntas con respuesta "Sí" antes de finalizar. Faltan ${missingJustifications.length} justificaciones.`
+            });
+            return;
+        }
+
         setShowConfirmModal(true);
     };
 
@@ -145,7 +217,8 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
         setLoading(true);
         const formData = {
             value_id: valueData.id,
-            answers: answers
+            answers: answers,
+            justifications: justifications
         };
 
         axios.post(route('indicadores.store-answers'), formData)
@@ -386,6 +459,8 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                                                 autoeval_ended={company.autoeval_ended}
                                                 availableToModifyAutoeval={availableToModifyAutoeval}
                                                 isBinary={indicator.is_binary}
+                                                justification={justifications[indicator.id] || ''}
+                                                onJustificationChange={(text) => handleJustificationChange(indicator.id, text, answers[indicator.id])}
                                             />
                                         </div>
                                         {indicator.binding && (

@@ -1,8 +1,15 @@
-export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide, autoeval_ended, availableToModifyAutoeval, isBinary }) {
+export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide, autoeval_ended, availableToModifyAutoeval, isBinary, justification = '', onJustificationChange }) {
     const handleChange = (e) => {
         const selectedValue = e.target.value;
         console.log('Seleccionado para indicador', code, ':', selectedValue);
         onAnswer(selectedValue);
+    };
+
+    const handleJustificationChange = (e) => {
+        const text = e.target.value;
+        if (onJustificationChange) {
+            onJustificationChange(text, value);
+        }
     };
 
     // Convertimos el value a string para la comparación
@@ -10,6 +17,9 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
     
     // Si está homologado, deshabilitar los inputs y mostrar como respondido
     const isHomologated = !!homologation;
+
+    // Verificar si el usuario ha respondido "Sí" (para habilitar el campo de justificación)
+    const wantsToAnswer = stringValue === "1";
 
     return (
         <div className={`bg-white rounded-lg space-y-4 ${isHomologated ? 'bg-blue-50/50 ring-1 ring-blue-100 p-3' : ''}`}>
@@ -52,11 +62,21 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                 )}
             </div>
 
+            {/* Pregunta si desea responder */}
+            {!isBinary && (
+                <div className="mt-2">
+                    <div className="divider" style={{ marginBottom: '5px', marginTop: '5px' }}></div>
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                        ¿Desea responder esta pregunta?
+                    </p>
+                </div>
+            )}
+
             {/* Opciones de respuesta */}
-            <div className="flex gap-4 mt-4">
+            <div className="flex gap-4 mt-2">
                 <label className={`flex items-center gap-2 ${isHomologated ? 'cursor-not-allowed' : ''}`}>
                     <input
-                        type="radio"
+                        type="radio" 
                         name={`indicator-${code}`}
                         value="1"
                         checked={isHomologated ? true : stringValue === "1"}
@@ -90,6 +110,37 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                     </span>
                 )}
             </div>
+
+            {/* Campo de justificación para preguntas no binarias */}
+            {!isBinary && (
+                <div className="mt-3">
+                    <label htmlFor={`justification-${code}`} className="block text-sm font-medium text-gray-700 mb-1">
+                        Escriba su respuesta aquí
+                        {wantsToAnswer && <span className="text-red-500 ml-1">*</span>}
+                    </label>
+                    <textarea
+                        id={`justification-${code}`}
+                        name={`justification-${code}`}
+                        rows="3"
+                        value={justification}
+                        onChange={handleJustificationChange}
+                        disabled={isHomologated || !availableToModifyAutoeval || !wantsToAnswer}
+                        className={`block w-full rounded-md shadow-sm sm:text-sm ${
+                            isHomologated || !wantsToAnswer 
+                            ? 'bg-gray-100 cursor-not-allowed border-gray-300 focus:border-green-500 focus:ring-green-500' 
+                            : wantsToAnswer && !justification 
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
+                              : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                        }`}
+                        placeholder={wantsToAnswer ? "Respuesta..." : "Respuesta..."}
+                    ></textarea>
+                    {wantsToAnswer && !justification && !isHomologated && (
+                        <p className="mt-1 text-sm text-red-600 font-medium">
+                            Este campo es obligatorio cuando la respuesta es "Sí".
+                        </p>
+                    )}
+                </div>
+            )}
         </div>
     );
 } 

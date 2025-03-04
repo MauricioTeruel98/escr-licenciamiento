@@ -38,14 +38,17 @@ class IndicadorAnswerController extends Controller
                 return response()->json(['message' => 'No se recibieron respuestas válidas'], 422);
             }
 
-            // Obtener los indicadores para verificar cuáles son vinculantes
+            // Obtener los indicadores para verificar cuáles son vinculantes y binarios
             $indicators = Indicator::whereIn('id', array_keys($request->answers))
-                ->select('id', 'binding')
+                ->select('id', 'binding', 'is_binary')
                 ->get()
                 ->keyBy('id');
 
             // Guardar respuestas individuales
             foreach ($request->answers as $indicatorId => $answer) {
+                // Obtener la justificación si existe
+                $justification = isset($request->justifications[$indicatorId]) ? $request->justifications[$indicatorId] : null;
+                
                 // Verificar si ya existe una respuesta para este indicador en esta empresa
                 $existingAnswer = IndicatorAnswer::where('company_id', $user->company_id)
                     ->where('indicator_id', $indicatorId)
@@ -55,6 +58,7 @@ class IndicadorAnswerController extends Controller
                     // Actualizar la respuesta existente
                     $existingAnswer->update([
                         'answer' => $answer,
+                        'justification' => $justification,
                         'user_id' => $user->id, // Actualizar al último usuario que modificó
                         'is_binding' => $indicators[$indicatorId]->binding ?? false,
                         'updated_at' => now()
@@ -66,6 +70,7 @@ class IndicadorAnswerController extends Controller
                         'company_id' => $user->company_id,
                         'indicator_id' => $indicatorId,
                         'answer' => $answer,
+                        'justification' => $justification,
                         'is_binding' => $indicators[$indicatorId]->binding ?? false
                     ]);
                 }
