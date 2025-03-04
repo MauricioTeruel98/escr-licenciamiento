@@ -41,4 +41,14 @@ class Certification extends Model
     {
         return $this->belongsTo(AvailableCertification::class, 'nombre', 'nombre');
     }
+
+    /**
+     * Verifica si la certificación está vencida
+     * 
+     * @return bool
+     */
+    public function isExpired()
+    {
+        return $this->fecha_expiracion < now()->startOfDay();
+    }
 }

@@ -1,4 +1,4 @@
-export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide, autoeval_ended, availableToModifyAutoeval, isBinary, justification = '', onJustificationChange, isExporter = true }) {
+export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide, autoeval_ended, availableToModifyAutoeval, isBinary, justification = '', onJustificationChange, isExporter = true, wasHomologated = false }) {
     const handleChange = (e) => {
         const selectedValue = e.target.value;
         onAnswer(selectedValue);
@@ -24,7 +24,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
     const isDisabled = isHomologated || !availableToModifyAutoeval || !isExporter;
 
     return (
-        <div className={`bg-white rounded-lg space-y-4 ${isHomologated ? 'bg-blue-50/50 ring-1 ring-blue-100 p-3' : !isExporter ? 'bg-red-50/50 ring-1 ring-red-100 p-3' : ''}`}>
+        <div className={`bg-white rounded-lg space-y-4 ${isHomologated ? 'bg-blue-50/50 ring-1 ring-blue-100 p-3' : !isExporter ? 'bg-red-50/50 ring-1 ring-red-100 p-3' : wasHomologated ? 'bg-yellow-50/50 ring-1 ring-yellow-100 p-3' : ''}`}>
             {/* Cabecera del indicador */}
             <div className="space-y-2">
                 <div className="inline-block">
@@ -50,6 +50,21 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                                     <path d="M13.5 3H12H8C6.34315 3 5 4.34315 5 6V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8.625M13.5 3L19 8.625M13.5 3V7.625C13.5 8.17728 13.9477 8.625 14.5 8.625H19" />
                                 </svg>
                                 Homologado por {homologation}
+                            </span>
+                        )}
+                        {wasHomologated && !homologation && (
+                            <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-yellow-600/10 ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" 
+                                     className="h-4 w-4 mr-1" 
+                                     viewBox="0 0 24 24" 
+                                     fill="none" 
+                                     stroke="currentColor" 
+                                     strokeWidth="2" 
+                                     strokeLinecap="round" 
+                                     strokeLinejoin="round">
+                                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                Certificación vencida - Ya no está homologado
                             </span>
                         )}
                         {!isExporter && (

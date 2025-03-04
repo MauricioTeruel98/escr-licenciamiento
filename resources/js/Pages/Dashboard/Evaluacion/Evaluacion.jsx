@@ -550,6 +550,8 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }
     }, [answers, approvals, isEvaluador]);
 
+    console.log(auth.user)
+
     return (
         <DashboardLayout userName={userName} title="Evaluación">
             <div className="space-y-8">

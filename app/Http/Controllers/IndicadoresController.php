@@ -10,18 +10,18 @@ use App\Models\IndicatorAnswer;
 use App\Models\IndicatorHomologation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class IndicadoresController extends Controller
 {
     public function index($id)
     {
-        $user = auth()->user()->load('company');
+        $user = Auth::user();
+        $company = Company::find($user->company_id);
         $value = Value::with(['subcategories.indicators'])->findOrFail($id);
 
         // Obtener las certificaciones de la empresa
-        $certifications = $user->company->certifications;
-
-        $company = Company::find($user->company_id);
+        $certifications = $company->certifications;
 
         $autoevaluationResult = AutoEvaluationResult::where('company_id', $user->company_id)->first();
 
@@ -43,8 +43,21 @@ class IndicadoresController extends Controller
             $availableToModifyAutoeval = false;
         }
 
-        // Obtener los IDs de las certificaciones disponibles asociadas
-        $homologationIds = $certifications->pluck('homologation_id')->filter();
+        // Filtrar certificaciones para excluir las vencidas
+        $validCertifications = $certifications->filter(function($certification) {
+            return !$certification->isExpired();
+        });
+
+        // Obtener certificaciones vencidas
+        $expiredCertifications = $certifications->filter(function($certification) {
+            return $certification->isExpired();
+        });
+
+        // Obtener los IDs de las certificaciones disponibles asociadas (solo de las no vencidas)
+        $homologationIds = $validCertifications->pluck('homologation_id')->filter();
+
+        // Obtener los IDs de las certificaciones vencidas
+        $expiredHomologationIds = $expiredCertifications->pluck('homologation_id')->filter();
 
         // Obtener los indicadores homologados
         $homologatedIndicators = IndicatorHomologation::whereIn('homologation_id', $homologationIds)
@@ -64,6 +77,15 @@ class IndicadoresController extends Controller
                 ];
             });
 
+        // Obtener los indicadores que estaban homologados pero ya no lo están debido a certificaciones vencidas
+        $previouslyHomologatedIndicators = IndicatorHomologation::whereIn('homologation_id', $expiredHomologationIds)
+            ->with(['indicator'])
+            ->get()
+            ->pluck('indicator.id')
+            ->unique()
+            ->values()
+            ->all();
+
         // Obtener las respuestas guardadas del usuario
         $savedAnswers = IndicatorAnswer::where('company_id', $user->company_id)
             ->whereIn('indicator_id', $value->subcategories->flatMap->indicators->pluck('id'))
@@ -82,8 +104,9 @@ class IndicadoresController extends Controller
             'currentScore' => $currentScore,
             'certifications' => $certifications,
             'homologatedIndicators' => $homologatedIndicators,
+            'previouslyHomologatedIndicators' => $previouslyHomologatedIndicators,
             'company' => $company,
-            'availableToModifyAutoeval' => $availableToModifyAutoeval
+            'availableToModifyAutoeval' => $availableToModifyAutoeval,
         ]);
     }
 }

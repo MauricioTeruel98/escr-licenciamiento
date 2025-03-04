@@ -6,8 +6,8 @@ import IndicatorIndex from '@/Components/IndicatorIndex';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
 
-export default function Indicadores({ valueData, userName, user, savedAnswers, currentScore: initialScore, certifications, homologatedIndicators, company, availableToModifyAutoeval }) {
-    const {auth} = usePage().props;
+export default function Indicadores({ valueData, userName, user, savedAnswers, currentScore: initialScore, certifications, homologatedIndicators, previouslyHomologatedIndicators = [], company, availableToModifyAutoeval }) {
+    const { auth } = usePage().props;
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [answers, setAnswers] = useState({});
     const [justifications, setJustifications] = useState({});
@@ -19,7 +19,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     const [loading, setLoading] = useState(false);
     
     // Verificar si la empresa es exportadora
-    const isExporter = auth.user.company?.is_exporter === true;
+    const isExporter = company?.is_exporter === true;
 
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
@@ -434,6 +434,9 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                                 const homologation = Object.values(homologatedIndicators).find(cert => 
                                     cert.indicators.some(i => i.id === indicator.id)
                                 );
+                                
+                                // Verificar si el indicador estaba homologado pero ya no lo está
+                                const wasHomologated = previouslyHomologatedIndicators.includes(indicator.id);
 
                                 return (
                                     <div key={indicator.id}>
@@ -450,8 +453,9 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                                                 availableToModifyAutoeval={availableToModifyAutoeval && isExporter}
                                                 isBinary={indicator.is_binary}
                                                 justification={justifications[indicator.id] || ''}
-                                                onJustificationChange={(text) => handleJustificationChange(indicator.id, text, answers[indicator.id])}
+                                                onJustificationChange={(text, currentAnswer) => handleJustificationChange(indicator.id, text, currentAnswer)}
                                                 isExporter={isExporter}
+                                                wasHomologated={wasHomologated}
                                             />
                                         </div>
                                         {indicator.binding && (
