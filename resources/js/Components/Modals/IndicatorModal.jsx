@@ -255,7 +255,7 @@ export default function IndicatorModal({
 
                                     {/* Es por SI o NO? */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                        <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                                             Es por SI o NO?
                                             <span className="ml-2 inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
                                                 Por defecto: Sí
