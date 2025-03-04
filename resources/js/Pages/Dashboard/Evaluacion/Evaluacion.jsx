@@ -473,36 +473,33 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                 </h3>
 
                                                 {/* Opciones Si/No */}
-                                                {
-                                                    question.is_binary && (
-                                                        <div className="flex gap-4">
-                                                            <label className="flex items-center gap-2">
-                                                                <input
-                                                                    type="radio"
-                                                                    name={`question-${question.id}`}
-                                                                    value="1"
-                                                                    checked={answers[question.id]?.value === "1"}
-                                                                    onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                                    disabled={isEvaluador}
-                                                                    className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
-                                                                />
-                                                                <span className="text-gray-900">Sí</span>
-                                                            </label>
+                                                <div className="flex gap-4">
+                                                    <label className="flex items-center gap-2">
+                                                        <input
+                                                            type="radio"
+                                                            name={`question-${question.id}`}
+                                                            value="1"
+                                                            checked={answers[question.id]?.value === "1"}
+                                                            onChange={(e) => handleAnswer(question.id, e.target.value)}
+                                                            disabled={isEvaluador}
+                                                            className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                                                        />
+                                                        <span className="text-gray-900">Sí</span>
+                                                    </label>
 
-                                                            <label className="flex items-center gap-2">
-                                                                <input
-                                                                    type="radio"
-                                                                    name={`question-${question.id}`}
-                                                                    value="0"
-                                                                    checked={answers[question.id]?.value === "0"}
-                                                                    onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                                    disabled={isEvaluador}
-                                                                    className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
-                                                                />
-                                                                <span className="text-gray-900">No</span>
-                                                            </label>
-                                                        </div>
-                                                    )}
+                                                    <label className="flex items-center gap-2">
+                                                        <input
+                                                            type="radio"
+                                                            name={`question-${question.id}`}
+                                                            value="0"
+                                                            checked={answers[question.id]?.value === "0"}
+                                                            onChange={(e) => handleAnswer(question.id, e.target.value)}
+                                                            disabled={isEvaluador}
+                                                            className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                                                        />
+                                                        <span className="text-gray-900">No</span>
+                                                    </label>
+                                                </div>
 
                                                 {/* Descripción */}
                                                 <div className='flex flex-col md:flex-row md:items-start gap-4'>
