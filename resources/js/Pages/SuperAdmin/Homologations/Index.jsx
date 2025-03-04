@@ -47,16 +47,16 @@ export default function HomologationsIndex() {
             label: 'Tipo',
             render: (item) => TIPOS[item.tipo] || item.tipo
         },
-        { 
-            key: 'categoria', 
-            label: 'Categoría',
-            render: (item) => CATEGORIAS[item.categoria] || item.categoria
-        },
-        { 
-            key: 'descripcion', 
-            label: 'Descripción',
-            render: (item) => item.descripcion || 'Sin descripción'
-        },
+        // { 
+        //     key: 'categoria', 
+        //     label: 'Categoría',
+        //     render: (item) => CATEGORIAS[item.categoria] || item.categoria
+        // },
+        // { 
+        //     key: 'descripcion', 
+        //     label: 'Descripción',
+        //     render: (item) => item.descripcion || 'Sin descripción'
+        // },
         {
             key: 'activo',
             label: 'Estado',

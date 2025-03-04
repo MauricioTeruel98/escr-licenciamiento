@@ -78,7 +78,7 @@ export default function HomologationModal({ isOpen, onClose, onSubmit, certifica
                                 </div>
 
                                 {/* Descripción */}
-                                <div>
+                                {/* <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Descripción
                                     </label>
@@ -88,7 +88,7 @@ export default function HomologationModal({ isOpen, onClose, onSubmit, certifica
                                         className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
                                         rows="3"
                                     />
-                                </div>
+                                </div> */}
 
                                 {/* Tipo */}
                                 <div>
@@ -116,7 +116,7 @@ export default function HomologationModal({ isOpen, onClose, onSubmit, certifica
                                 </div>
 
                                 {/* Categoría */}
-                                <div>
+                                {/* <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Categoría
                                     </label>
@@ -139,7 +139,7 @@ export default function HomologationModal({ isOpen, onClose, onSubmit, certifica
                                             </option>
                                         ))}
                                     </select>
-                                </div>
+                                </div> */}
 
                                 {/* Estado */}
                                 <div className="flex items-center">

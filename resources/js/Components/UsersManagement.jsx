@@ -85,6 +85,16 @@ export default function UsersManagement() {
     const validateField = (field, value) => {
         let error = null;
         
+        // Verificar caracteres peligrosos para SQL injection en todos los campos
+        if (value && /['";\\=]/.test(value)) {
+            return `El campo contiene caracteres no permitidos`;
+        }
+        
+        // Verificar espacios al inicio en todos los campos
+        if (value && value.startsWith(' ')) {
+            return `No se permiten espacios al inicio del campo`;
+        }
+        
         // Validación para nombre y apellidos
         if (field === 'name' || field === 'lastname') {
             // Verificar si está vacío
@@ -241,7 +251,7 @@ export default function UsersManagement() {
             return;
         }
         
-        // Eliminar espacios al inicio y final antes de enviar
+        // Eliminar espacios al inicio y final de todos los campos antes de enviar
         const trimmedData = { ...nuevoUsuario };
         Object.keys(trimmedData).forEach(key => {
             if (typeof trimmedData[key] === 'string') {
@@ -318,10 +328,10 @@ export default function UsersManagement() {
             return;
         }
         
-        // Eliminar espacios al inicio y final antes de enviar
+        // Eliminar espacios al inicio y final de todos los campos antes de enviar
         const trimmedData = { ...usuario };
         Object.keys(trimmedData).forEach(key => {
-            if (typeof trimmedData[key] === 'string') {
+            if (typeof trimmedData[key] === 'string' && key !== 'id' && key !== 'status' && key !== 'editando') {
                 trimmedData[key] = trimmedData[key].trim();
             }
         });
@@ -334,9 +344,11 @@ export default function UsersManagement() {
                 puesto: trimmedData.puesto,
                 phone: trimmedData.telefono
             });
-            setUsuarios(usuarios.map(u =>
-                u.id === id ? { ...trimmedData, editando: false } : u
+            
+            setUsuarios(usuarios.map(usuario =>
+                usuario.id === id ? { ...trimmedData, editando: false } : usuario
             ));
+            
             setToastMessage('Usuario actualizado exitosamente');
             setShowToast(true);
         } catch (error) {
@@ -344,15 +356,18 @@ export default function UsersManagement() {
             
             // Manejo específico de errores
             let errorMessage = 'Error al actualizar usuario';
-
+            
             if (error.response) {
+                // El servidor respondió con un estado de error
                 if (error.response.data.messages) {
+                    // Error de validación
                     errorMessage = Object.values(error.response.data.messages)[0][0];
                 } else if (error.response.data.message) {
+                    // Error general del servidor con mensaje
                     errorMessage = error.response.data.message;
                 }
             }
-
+            
             setToastMessage(errorMessage);
             setShowToast(true);
         }
@@ -364,6 +379,16 @@ export default function UsersManagement() {
     };
 
     const handleChange = (id, field, value) => {
+        // No permitir espacios al inicio
+        if (value.startsWith(' ')) {
+            return;
+        }
+        
+        // No permitir caracteres peligrosos para SQL injection
+        if (/['";\\=]/.test(value)) {
+            return;
+        }
+        
         // Validar caracteres según el tipo de campo
         let processedValue = value;
         
@@ -396,7 +421,7 @@ export default function UsersManagement() {
         if (field === 'correo') {
             // Permitir caracteres válidos para email
             const lastChar = value.charAt(value.length - 1);
-            if (!/^[a-zA-Z0-9@._-]$/.test(lastChar) && lastChar !== '') {
+            if (!/^[a-zA-Z0-9@._\-]$/.test(lastChar) && lastChar !== '') {
                 return;
             }
             
@@ -437,6 +462,16 @@ export default function UsersManagement() {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         
+        // No permitir espacios al inicio
+        if (value.startsWith(' ')) {
+            return;
+        }
+        
+        // No permitir caracteres peligrosos para SQL injection
+        if (/['";\\=]/.test(value)) {
+            return;
+        }
+        
         // Validar caracteres según el tipo de campo
         if (name === 'name' || name === 'lastname' || name === 'puesto') {
             // Solo permitir letras y espacios
@@ -467,7 +502,7 @@ export default function UsersManagement() {
         if (name === 'correo') {
             // Permitir caracteres válidos para email
             const lastChar = value.charAt(value.length - 1);
-            if (!/^[a-zA-Z0-9@._+\-]$/.test(lastChar) && lastChar !== '') {
+            if (!/^[a-zA-Z0-9@._\-]$/.test(lastChar) && lastChar !== '') {
                 return;
             }
             

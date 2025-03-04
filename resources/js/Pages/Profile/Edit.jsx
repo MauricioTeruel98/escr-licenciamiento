@@ -29,6 +29,16 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
     const validateField = (field, value) => {
         let error = null;
         
+        // Verificar caracteres peligrosos para SQL injection en todos los campos
+        if (value && /['";\\=]/.test(value)) {
+            return `El campo contiene caracteres no permitidos`;
+        }
+        
+        // Verificar espacios al inicio en todos los campos
+        if (value && value.startsWith(' ')) {
+            return `No se permiten espacios al inicio del campo`;
+        }
+        
         // Validación para nombre y apellido
         if (field === 'name' || field === 'lastname') {
             // Verificar si está vacío
@@ -50,6 +60,10 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
             // Verificar si está vacío
             if (!value || value.trim() === '') {
                 error = 'La cédula es obligatoria';
+            }
+            // Verificar si contiene caracteres no válidos
+            else if (!/^[0-9a-zA-Z\-]+$/.test(value)) {
+                error = 'La cédula solo debe contener números, letras y guiones';
             }
             // Verificar longitud máxima
             else if (value.length > 20) {
@@ -75,6 +89,16 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
     const handleChange = (e) => {
         const { name, value } = e.target;
         
+        // No permitir espacios al inicio
+        if (value.startsWith(' ')) {
+            return;
+        }
+        
+        // No permitir caracteres peligrosos para SQL injection
+        if (/['";\\=]/.test(value)) {
+            return;
+        }
+        
         // Validar caracteres según el tipo de campo
         if (name === 'name' || name === 'lastname') {
             // Solo permitir letras y espacios
@@ -91,6 +115,12 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
         }
         
         if (name === 'id_number') {
+            // Solo permitir números, letras y guiones para cédula
+            const lastChar = value.charAt(value.length - 1);
+            if (!/^[0-9a-zA-Z\-]$/.test(lastChar) && lastChar !== '') {
+                return;
+            }
+            
             if (value.length > 20) {
                 return;
             }
@@ -144,17 +174,13 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
             return;
         }
         
-        // Eliminar espacios al inicio y final antes de enviar
+        // Eliminar espacios al inicio y final de todos los campos antes de enviar
         const trimmedData = { ...data };
         Object.keys(trimmedData).forEach(key => {
-            if (typeof trimmedData[key] === 'string' && key !== 'name' && key !== 'lastname') {
+            if (typeof trimmedData[key] === 'string') {
                 trimmedData[key] = trimmedData[key].trim();
             }
         });
-        
-        // Eliminar espacios al final de nombre y apellido
-        if (trimmedData.name) trimmedData.name = trimmedData.name.replace(/\s+$/, '');
-        if (trimmedData.lastname) trimmedData.lastname = trimmedData.lastname.replace(/\s+$/, '');
         
         patch(route('profile.update'), {
             data: trimmedData,
