@@ -7,17 +7,8 @@ import Toast from '@/Components/ToastAdmin';
 import { TrashIcon } from '@heroicons/react/20/solid';
 import DeleteModal from '@/Components/Modals/DeleteModal';
 
-/**
- * Mejoras implementadas:
- * 1. Validación de campos con mensajes de error mostrados directamente en los campos correspondientes
- * 2. Eliminación de alertas intrusivas y reemplazo por mensajes de error inline
- * 3. Manejo de errores del backend mostrándolos en los campos correspondientes
- * 4. Limpieza de errores cuando los campos son corregidos
- * 5. Mantenimiento del toast solo para mensajes generales de éxito o error no específicos de un campo
- */
-
 export default function CompanyProfile({ userName, infoAdicional }) {
-    const { data, setData, post, processing, errors: backendErrors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         nombre_comercial: infoAdicional?.nombre_comercial || '',
         nombre_legal: infoAdicional?.nombre_legal || '',
         descripcion_es: infoAdicional?.descripcion_es || '',
@@ -89,10 +80,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     });
 
     const [loading, setLoading] = useState(false);
-    const [clientErrors, setErrors] = useState({});
-    
-    // Combinar errores del backend y del cliente para mostrarlos en los campos
-    const errors = { ...backendErrors, ...clientErrors };
 
     // Estado inicial para las imágenes existentes
     const [imagenes, setImagenes] = useState({
@@ -495,37 +482,21 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     message: '¡Datos guardados exitosamente!',
                     type: 'success'
                 });
-                // Limpiar errores del cliente si la operación fue exitosa
-                setErrors({});
             } else {
-                // Si hay errores en la respuesta, mostrarlos en los campos correspondientes
-                if (response.data.errors) {
-                    // Guardar los errores del backend en el estado de errores del cliente
-                    setErrors(response.data.errors);
-                } else {
-                    setToast({
-                        show: true,
-                        message: 'Error al guardar los datos',
-                        type: 'error'
-                    });
-                }
+                setToast({
+                    show: true,
+                    message: 'Error al guardar los datos',
+                    type: 'error'
+                });
             }
             setLoading(false);
         } catch (error) {
             console.error('Error en la petición:', error);
-            
-            // Capturar errores de validación del backend
-            if (error.response && error.response.status === 422 && error.response.data.errors) {
-                // Establecer los errores en el estado para que se muestren en los campos
-                setErrors(error.response.data.errors);
-            } else {
-                // Para otros tipos de errores, mostrar un mensaje general
-                setToast({
-                    show: true,
-                    message: 'Error al guardar los datos. Por favor, intente nuevamente.',
-                    type: 'error'
-                });
-            }
+            setToast({
+                show: true,
+                message: 'Error al guardar los datos: ' + (error.response?.data?.message || error.message),
+                type: 'error'
+            });
             setLoading(false);
         }
     };
@@ -709,18 +680,10 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         const regexTexto = /["'\\/]/g; // Comillas simples, dobles, barras y barras invertidas
         const regexURL = /["'\\]/g; // Comillas simples, dobles y barras invertidas
 
-        // En lugar de devolver false, filtrar los caracteres no permitidos
         if (tipo === 'url') {
-            if (regexURL.test(valorSinEspaciosInicio)) {
-                return valorSinEspaciosInicio.replace(regexURL, '');
-            }
-        } else {
-            if (regexTexto.test(valorSinEspaciosInicio)) {
-                return valorSinEspaciosInicio.replace(regexTexto, '');
-            }
+            return !regexURL.test(valorSinEspaciosInicio) ? valorSinEspaciosInicio : false;
         }
-        
-        return valorSinEspaciosInicio;
+        return !regexTexto.test(valorSinEspaciosInicio) ? valorSinEspaciosInicio : false;
     };
 
     // Función para manejar cambios en campos de texto
@@ -744,21 +707,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 
                 // Validar el valor según el tipo de campo y eliminar espacios al inicio
                 const valorValidado = validarCampo(value);
-                
-                // Verificar si se filtraron caracteres no permitidos
-                if (valorValidado !== value.trimStart()) {
-                    // Establecer un error para este campo
-                    setErrors(prevErrors => ({
-                        ...prevErrors,
-                        [`productos.${index}.${field}`]: 'Se han eliminado caracteres no permitidos.'
-                    }));
-                } else {
-                    // Limpiar el error si el valor es válido
-                    setErrors(prevErrors => {
-                        const newErrors = { ...prevErrors };
-                        delete newErrors[`productos.${index}.${field}`];
-                        return newErrors;
-                    });
+                if (valorValidado === false) {
+                    alert('El campo contiene caracteres no permitidos.');
+                    return;
                 }
                 
                 // Crear una copia del array de productos
@@ -780,21 +731,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         
         // Para otros campos que no son de productos
         const valorValidado = validarCampo(value);
-        
-        // Verificar si se filtraron caracteres no permitidos
-        if (valorValidado !== value.trimStart()) {
-            // Establecer un error para este campo
-            setErrors(prevErrors => ({
-                ...prevErrors,
-                [name]: 'Se han eliminado caracteres no permitidos.'
-            }));
-        } else {
-            // Limpiar el error si el valor es válido
-            setErrors(prevErrors => {
-                const newErrors = { ...prevErrors };
-                delete newErrors[name];
-                return newErrors;
-            });
+        if (valorValidado === false) {
+            alert('El campo contiene caracteres no permitidos.');
+            return;
         }
         
         // Actualizar el estado con el valor válido (sin espacios al inicio)
@@ -807,21 +746,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         
         // Validar URL y eliminar espacios al inicio
         const valorValidado = validarCampo(value, 'url');
-        
-        // Verificar si se filtraron caracteres no permitidos
-        if (valorValidado !== value.trimStart()) {
-            // Establecer un error para este campo
-            setErrors(prevErrors => ({
-                ...prevErrors,
-                [name]: 'Se han eliminado caracteres no permitidos en la URL.'
-            }));
-        } else {
-            // Limpiar el error si el valor es válido
-            setErrors(prevErrors => {
-                const newErrors = { ...prevErrors };
-                delete newErrors[name];
-                return newErrors;
-            });
+        if (valorValidado === false) {
+            alert('El campo URL contiene caracteres no permitidos.');
+            return;
         }
         
         // Actualizar el estado con el valor válido (sin espacios al inicio)
@@ -834,52 +761,21 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         
         // Eliminar espacios al inicio
         const valorSinEspacios = value.trimStart();
+        const anio = parseInt(valorSinEspacios);
         
-        // Permitir campo vacío
-        if (valorSinEspacios === '') {
-            setData(name, valorSinEspacios);
-            // Limpiar el error si existe
-            setErrors(prevErrors => {
-                const newErrors = { ...prevErrors };
-                delete newErrors[name];
-                return newErrors;
-            });
-            return;
-        }
-        
-        // Filtrar caracteres no numéricos
-        const valorNumerico = valorSinEspacios.replace(/[^\d]/g, '');
-        
-        // Si se filtraron caracteres, mostrar un error
-        if (valorNumerico !== valorSinEspacios) {
-            setErrors(prevErrors => ({
-                ...prevErrors,
-                [name]: 'Por favor ingrese solo números.'
-            }));
-            setData(name, valorNumerico);
-            return;
-        }
-        
-        const anio = parseInt(valorNumerico);
+        // Validar que sea un número y esté en un rango razonable (1800 hasta el año actual)
         const anioActual = new Date().getFullYear();
         
-        // Validar que el año esté en un rango razonable
-        if (anio < 1800 || anio > anioActual) {
-            setErrors(prevErrors => ({
-                ...prevErrors,
-                [name]: `Por favor ingrese un año entre 1800 y ${anioActual}.`
-            }));
+        if (valorSinEspacios === '') {
+            // Permitir campo vacío
+            setData(name, valorSinEspacios);
+        } else if (isNaN(anio)) {
+            alert('Por favor ingrese un año válido.');
+        } else if (anio < 1800 || anio > anioActual) {
+            alert(`Por favor ingrese un año entre 1800 y ${anioActual}.`);
         } else {
-            // Limpiar el error si el valor es válido
-            setErrors(prevErrors => {
-                const newErrors = { ...prevErrors };
-                delete newErrors[name];
-                return newErrors;
-            });
+            setData(name, valorSinEspacios);
         }
-        
-        // Actualizar el estado con el valor numérico
-        setData(name, valorNumerico);
     };
 
     return (
@@ -978,8 +874,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         <input
                                             type="number"
                                             value={data.anio_fundacion}
-                                            onChange={handleAnioFundacionChange}
-                                            name="anio_fundacion"
+                                            onChange={e => setData('anio_fundacion', e.target.value)}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             maxLength={4}
                                             required
@@ -1864,7 +1759,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 name="mercadeo_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
-                                            <InputError message={errors.mercadeo_nombre} />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">Correo Electrónico</label>
@@ -1875,7 +1769,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 name="mercadeo_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
-                                            <InputError message={errors.mercadeo_email} />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">Puesto</label>
@@ -1886,7 +1779,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 name="mercadeo_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
-                                            <InputError message={errors.mercadeo_puesto} />
                                         </div>
                                         <div className="grid grid-cols-2 gap-6">
                                             <div>
@@ -1898,7 +1790,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     name="mercadeo_telefono"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
-                                                <InputError message={errors.mercadeo_telefono} />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">Celular</label>
@@ -1909,7 +1800,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     name="mercadeo_celular"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
-                                                <InputError message={errors.mercadeo_celular} />
                                             </div>
                                         </div>
                                     </div>
@@ -1928,7 +1818,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 name="micrositio_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
-                                            <InputError message={errors.micrositio_nombre} />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">Correo Electrónico</label>
@@ -1939,7 +1828,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 name="micrositio_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
-                                            <InputError message={errors.micrositio_email} />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">Puesto</label>
@@ -1950,7 +1838,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 name="micrositio_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
-                                            <InputError message={errors.micrositio_puesto} />
                                         </div>
                                         <div className="grid grid-cols-2 gap-6">
                                             <div>
@@ -1962,7 +1849,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     name="micrositio_telefono"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
-                                                <InputError message={errors.micrositio_telefono} />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">Celular</label>
@@ -1973,7 +1859,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     name="micrositio_celular"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
-                                                <InputError message={errors.micrositio_celular} />
                                             </div>
                                         </div>
                                     </div>
@@ -1992,7 +1877,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 name="vocero_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
-                                            <InputError message={errors.vocero_nombre} />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">Correo Electrónico</label>
@@ -2003,7 +1887,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 name="vocero_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
-                                            <InputError message={errors.vocero_email} />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">Puesto</label>
@@ -2014,7 +1897,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 name="vocero_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
-                                            <InputError message={errors.vocero_puesto} />
                                         </div>
                                         <div className="grid grid-cols-2 gap-6">
                                             <div>
@@ -2026,7 +1908,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     name="vocero_telefono"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
-                                                <InputError message={errors.vocero_telefono} />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">Celular</label>
@@ -2037,7 +1918,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     name="vocero_celular"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
-                                                <InputError message={errors.vocero_celular} />
                                             </div>
                                         </div>
                                     </div>
@@ -2056,7 +1936,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 name="representante_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
-                                            <InputError message={errors.representante_nombre} />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">Correo Electrónico</label>
@@ -2067,7 +1946,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 name="representante_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
-                                            <InputError message={errors.representante_email} />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">Puesto</label>
@@ -2078,7 +1956,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 name="representante_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             />
-                                            <InputError message={errors.representante_puesto} />
                                         </div>
                                         <div className="grid grid-cols-2 gap-6">
                                             <div>
@@ -2090,7 +1967,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     name="representante_telefono"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
-                                                <InputError message={errors.representante_telefono} />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">Celular</label>
@@ -2101,7 +1977,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     name="representante_celular"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
-                                                <InputError message={errors.representante_celular} />
                                             </div>
                                         </div>
                                     </div>
@@ -2179,7 +2054,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                         placeholder=""
                                                     />
-                                                    <InputError message={errors[`productos.${index}.nombre`]} />
                                                 </div>
 
                                                 {/* Descripción */}
@@ -2195,7 +2069,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                         placeholder="Lorem Ipsum"
                                                     />
-                                                    <InputError message={errors[`productos.${index}.descripcion`]} />
                                                 </div>
                                             </div>
 
@@ -2224,6 +2097,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                             onChange={(e) => handleImagenChange(e, 'producto', index)}
                                                         />
                                                     </label>
+
+                                                    {console.log(producto)}
 
                                                     {/* Mostrar imagen existente */}
                                                     {producto.imagen && (
