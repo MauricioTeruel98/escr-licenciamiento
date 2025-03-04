@@ -198,7 +198,7 @@ export default function Certifications({ certifications: initialCertifications, 
                 fechaExpiracion: null,
                 organismoCertificador: ""
             });
-            
+
             showNotification('success', response.data.message);
         } catch (error) {
             showNotification('error', error.response?.data?.error || 'Error al crear la certificación');
@@ -285,7 +285,7 @@ export default function Certifications({ certifications: initialCertifications, 
                     Certificaciones
                 </h1>
                 <p className="text-gray-600">
-                    Si su empresa cuenta con certificaciones previas, puede optar por homologarlas.
+                    Registre sus certificaciones en nuestro plataforma para su homologaciòn con la marca paìs.
                 </p>
 
                 <div className="md:grid md:grid-cols-3 gap-8">
@@ -311,11 +311,10 @@ export default function Certifications({ certifications: initialCertifications, 
                                         value={searchTerm}
                                         onChange={handleSearchChange}
                                         onFocus={() => setIsDropdownOpen(true)}
-                                        className={`pl-10 pr-8 py-2 w-full border-none rounded-md shadow-sm focus:border-green-500 focus:ring-green-500 ${
-                                            nombreCertificacion && !availableCertifications.includes(nombreCertificacion) 
-                                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                                            : ''
-                                        }`}
+                                        className={`pl-10 pr-8 py-2 w-full border-none rounded-md shadow-sm focus:border-green-500 focus:ring-green-500 ${nombreCertificacion && !availableCertifications.includes(nombreCertificacion)
+                                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                                                : ''
+                                            }`}
                                         required
                                     />
                                     {searchTerm && (
@@ -475,7 +474,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                                             <div className="flex items-center mt-5">
                                                                 <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-blue-600/20">
                                                                     {cert.indicadores} Indicadores homologados.
-                                                                    
+
                                                                 </span>
                                                             </div>
                                                         </div>
