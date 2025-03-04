@@ -4,9 +4,10 @@ import FileManager from '@/Components/FileManager';
 import Toast from '@/Components/Toast';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 
 export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, progress, totalSteps, value_id }) {
+    const { auth } = usePage().props;
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [approvals, setApprovals] = useState(() => {
         const initialApprovals = {};
@@ -34,7 +35,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [notification, setNotification] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [currentProgress, setCurrentProgress] = useState(progress);
+    const [currentProgress, setCurrentProgress] = useState(0);
     const [validationErrors, setValidationErrors] = useState({});
 
     const subcategories = valueData.subcategories;
@@ -48,7 +49,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
     const handleStepClick = (index) => {
         setCurrentSubcategoryIndex(index);
-        
+
         // Establecer automáticamente el valor "1" (Sí) para preguntas con is_binary = false
         if (!isEvaluador) {
             const newAnswers = { ...answers };
@@ -89,7 +90,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 if (question.is_binary === false || question.is_binary === 0) {
                     return;
                 }
-                
+
                 // Verificar descripción
                 if (!answers[question.id]?.description?.trim()) {
                     errors[`description-${question.id}`] = 'La descripción es obligatoria';
@@ -212,10 +213,6 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                         // Para evaluadores, verificar si se ha tomado una decisión (aprobado o no)
                         const hasApprovalDecision = approvals[question.id] !== undefined;
 
-                        // Verificar que haya un comentario del evaluador (opcional)
-                        const hasEvaluatorComment = answers[question.id]?.evaluator_comment?.trim() !== '' &&
-                            answers[question.id]?.evaluator_comment !== undefined;
-
                         // Para evaluadores, solo necesitamos que haya tomado una decisión
                         if (hasApprovalDecision) {
                             answeredQuestions++;
@@ -226,7 +223,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             answeredQuestions++;
                             return;
                         }
-                        
+
                         // Para empresas, verificar que el valor esté definido
                         const hasValue = answers[question.id]?.value !== undefined;
 
@@ -234,10 +231,12 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                         const hasDescription = answers[question.id]?.description?.trim() !== '' &&
                             answers[question.id]?.description !== undefined;
 
-                        // Verificar que haya al menos un archivo (si es requerido)
+                        // Verificar que haya al menos un archivo
                         const hasFiles = answers[question.id]?.files?.length > 0;
 
-                        if (hasValue && hasDescription && hasFiles) {
+                        // Una pregunta se considera respondida si tiene valor y descripción
+                        // Los archivos son opcionales en algunos casos
+                        if (hasValue && hasDescription) {
                             answeredQuestions++;
                         }
                     }
@@ -245,6 +244,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             });
         });
 
+        // Calcular el porcentaje y redondear al entero más cercano
         return totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
     };
 
@@ -260,10 +260,6 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 }
             };
 
-            setTimeout(() => {
-                setCurrentProgress(calculateProgress());
-            }, 0);
-
             return newAnswers;
         });
     };
@@ -274,13 +270,6 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 ...prev,
                 [questionId]: value
             };
-
-            // Actualizar el progreso cuando cambia la aprobación (para evaluadores)
-            if (isEvaluador) {
-                setTimeout(() => {
-                    setCurrentProgress(calculateProgress());
-                }, 0);
-            }
 
             return newApprovals;
         });
@@ -294,8 +283,30 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             subcategory.indicators.forEach(indicator => {
                 indicator.evaluation_questions.forEach(question => {
                     totalQuestions++;
-                    if (answers[question.id]?.value !== undefined) {
-                        answeredQuestions++;
+
+                    if (isEvaluador) {
+                        // Para evaluadores, verificar si se ha tomado una decisión (aprobado o no)
+                        if (approvals[question.id] !== undefined) {
+                            answeredQuestions++;
+                        }
+                    } else {
+                        // Si la pregunta no es binaria, considerarla como respondida automáticamente
+                        if (question.is_binary === false || question.is_binary === 0) {
+                            answeredQuestions++;
+                            return;
+                        }
+
+                        // Para empresas, verificar que el valor esté definido
+                        const hasValue = answers[question.id]?.value !== undefined;
+
+                        // Verificar que la descripción no esté vacía después de quitar espacios
+                        const hasDescription = answers[question.id]?.description?.trim() !== '' &&
+                            answers[question.id]?.description !== undefined;
+
+                        // Una pregunta se considera respondida si tiene valor y descripción
+                        if (hasValue && hasDescription) {
+                            answeredQuestions++;
+                        }
                     }
                 });
             });
@@ -306,23 +317,34 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
     const areCurrentSubcategoryQuestionsAnswered = () => {
         const currentSubcategory = subcategories[currentSubcategoryIndex];
-        return currentSubcategory.indicators.every(indicator =>
-            indicator.evaluation_questions.every(question => {
-                // Si la pregunta no es binaria, considerarla como respondida automáticamente
-                if (question.is_binary === false || question.is_binary === 0) {
-                    return true;
-                }
-                
-                // Verificar que el valor esté definido
-                const hasValue = answers[question.id]?.value !== undefined;
 
-                // Verificar que la descripción no esté vacía después de quitar espacios
-                const hasDescription = answers[question.id]?.description?.trim() !== '' &&
-                    answers[question.id]?.description !== undefined;
+        if (isEvaluador) {
+            // Para evaluadores, verificar si todas las preguntas de la subcategoría actual tienen una decisión
+            return currentSubcategory.indicators.every(indicator =>
+                indicator.evaluation_questions.every(question =>
+                    approvals[question.id] !== undefined
+                )
+            );
+        } else {
+            // Para empresas
+            return currentSubcategory.indicators.every(indicator =>
+                indicator.evaluation_questions.every(question => {
+                    // Si la pregunta no es binaria, considerarla como respondida automáticamente
+                    if (question.is_binary === false || question.is_binary === 0) {
+                        return true;
+                    }
 
-                return hasValue && hasDescription;
-            })
-        );
+                    // Verificar que el valor esté definido
+                    const hasValue = answers[question.id]?.value !== undefined;
+
+                    // Verificar que la descripción no esté vacía después de quitar espacios
+                    const hasDescription = answers[question.id]?.description?.trim() !== '' &&
+                        answers[question.id]?.description !== undefined;
+
+                    return hasValue && hasDescription;
+                })
+            );
+        }
     };
 
     const handleFinish = () => {
@@ -463,6 +485,13 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }
     }, [valueData, isEvaluador]);
 
+    // Nuevo efecto para actualizar el progreso cuando cambian las respuestas o aprobaciones
+    useEffect(() => {
+        // Calcular y actualizar el progreso
+        const newProgress = calculateProgress();
+        setCurrentProgress(newProgress);
+    }, [answers, approvals]);
+
     return (
         <DashboardLayout userName={userName} title="Evaluación">
             <div className="space-y-8">
@@ -481,33 +510,68 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                         </p>
                     </div>
 
-                    <div className="lg:w-1/2 mt-5 lg:mt-0">
-                        <div>
-                            <div className="flex">
-                                <div className="w-1/2 rounded-l-xl px-6 p-4 bg-blue-100/50 text-blue-700">
-                                    <h2 className="text-lg font-semibold mb-2 text-blue-700">
-                                        Progreso actual
-                                    </h2>
-                                    <p className="text-2xl font-bold text-blue-500">
-                                        {currentProgress}%
-                                    </p>
-                                </div>
-                                <div className="w-1/2 rounded-e-xl bg-blue-800 px-6 p-4">
-                                    <h2 className="text-lg text-blue-200 font-semibold mb-2">Total pasos</h2>
-                                    <p className="text-2xl text-blue-200 font-bold">
-                                        {totalSteps}
-                                    </p>
+                    {
+                        auth.user.role !== 'evaluador' && (
+
+                            <div className="lg:w-1/2 mt-5 lg:mt-0">
+                                <div>
+                                    <div className="flex">
+                                        <div className="w-1/2 rounded-l-xl px-6 p-4 bg-blue-100/50 text-blue-700">
+                                            <h2 className="text-lg font-semibold mb-2 text-blue-700">
+                                                Progreso actual
+                                            </h2>
+                                            <p className="text-2xl font-bold text-blue-500">
+                                                {currentProgress}%
+                                            </p>
+                                        </div>
+                                        <div className="w-1/2 rounded-e-xl bg-blue-800 px-6 p-4">
+                                            <h2 className="text-lg text-blue-200 font-semibold mb-2">Total pasos</h2>
+                                            <p className="text-2xl text-blue-200 font-bold">
+                                                {totalSteps}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {/* Barra de progreso */}
+                                    <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
+                                        <div
+                                            className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                                            style={{ width: `${currentProgress}%` }}
+                                        ></div>
+                                    </div>
                                 </div>
                             </div>
-                            {/* Barra de progreso */}
-                            <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
-                                <div
-                                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
-                                    style={{ width: `${currentProgress}%` }}
-                                ></div>
+                        )
+                    }
+
+                    {auth.user.role === 'evaluador' && (
+                        <div className="lg:w-1/2 mt-5 lg:mt-0">
+                            <div>
+                                <div className="flex">
+                                    <div className="w-1/2 rounded-l-xl px-6 p-4 bg-blue-100/50 text-blue-700">
+                                        <h2 className="text-lg font-semibold mb-2 text-blue-700">
+                                            Progreso actual
+                                        </h2>
+                                        <p className="text-2xl font-bold text-blue-500">
+                                            {currentProgress}%
+                                        </p>
+                                    </div>
+                                    <div className="w-1/2 rounded-e-xl bg-blue-800 px-6 p-4">
+                                        <h2 className="text-lg text-blue-200 font-semibold mb-2">Total pasos</h2>
+                                        <p className="text-2xl text-blue-200 font-bold">
+                                            {totalSteps}
+                                        </p>
+                                    </div>
+                                </div>
+                                {/* Barra de progreso */}
+                                <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
+                                    <div
+                                        className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                                        style={{ width: `${currentProgress}%` }}
+                                    ></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Contenido Principal */}
