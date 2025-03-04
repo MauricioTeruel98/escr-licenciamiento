@@ -1,4 +1,4 @@
-export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide, autoeval_ended, availableToModifyAutoeval, isBinary, justification = '', onJustificationChange }) {
+export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide, autoeval_ended, availableToModifyAutoeval, isBinary, justification = '', onJustificationChange, isExporter = true }) {
     const handleChange = (e) => {
         const selectedValue = e.target.value;
         onAnswer(selectedValue);
@@ -20,8 +20,11 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
     // Verificar si el usuario ha respondido "Sí" (para habilitar el campo de justificación)
     const wantsToAnswer = stringValue === "1";
 
+    // Determinar si los inputs deben estar deshabilitados
+    const isDisabled = isHomologated || !availableToModifyAutoeval || !isExporter;
+
     return (
-        <div className={`bg-white rounded-lg space-y-4 ${isHomologated ? 'bg-blue-50/50 ring-1 ring-blue-100 p-3' : ''}`}>
+        <div className={`bg-white rounded-lg space-y-4 ${isHomologated ? 'bg-blue-50/50 ring-1 ring-blue-100 p-3' : !isExporter ? 'bg-red-50/50 ring-1 ring-red-100 p-3' : ''}`}>
             {/* Cabecera del indicador */}
             <div className="space-y-2">
                 <div className="inline-block">
@@ -49,6 +52,21 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                                 Homologado por {homologation}
                             </span>
                         )}
+                        {!isExporter && (
+                            <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" 
+                                     className="h-4 w-4 mr-1" 
+                                     viewBox="0 0 24 24" 
+                                     fill="none" 
+                                     stroke="currentColor" 
+                                     strokeWidth="2" 
+                                     strokeLinecap="round" 
+                                     strokeLinejoin="round">
+                                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                Requiere ser exportador
+                            </span>
+                        )}
                     </div>
                 </div>
                 <h3 className="text-gray-900 font-medium leading-6">
@@ -73,39 +91,45 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
 
             {/* Opciones de respuesta */}
             <div className="flex gap-4 mt-2">
-                <label className={`flex items-center gap-2 ${isHomologated ? 'cursor-not-allowed' : ''}`}>
+                <label className={`flex items-center gap-2 ${isDisabled ? 'cursor-not-allowed' : ''}`}>
                     <input
                         type="radio" 
                         name={`indicator-${code}`}
                         value="1"
                         checked={isHomologated ? true : stringValue === "1"}
                         onChange={handleChange}
-                        disabled={isHomologated || !availableToModifyAutoeval}
-                        className={`w-4 h-4 ${isHomologated 
-                            ? 'text-blue-600 border-blue-300 cursor-not-allowed' 
+                        disabled={isDisabled}
+                        className={`w-4 h-4 ${isDisabled 
+                            ? 'text-gray-400 border-gray-300 cursor-not-allowed' 
                             : 'text-green-600 border-gray-300'} focus:ring-green-500`}
                     />
-                    <span className={`${isHomologated ? 'text-blue-900' : 'text-gray-900'}`}>Sí</span>
+                    <span className={`${isDisabled ? 'text-gray-400' : 'text-gray-900'}`}>Sí</span>
                 </label>
 
-                <label className={`flex items-center gap-2 ${isHomologated ? 'cursor-not-allowed' : ''}`}>
+                <label className={`flex items-center gap-2 ${isDisabled ? 'cursor-not-allowed' : ''}`}>
                     <input
                         type="radio"
                         name={`indicator-${code}`}
                         value="0"
                         checked={!isHomologated && stringValue === "0"}
                         onChange={handleChange}
-                        disabled={isHomologated || !availableToModifyAutoeval}
-                        className={`w-4 h-4 ${isHomologated 
+                        disabled={isDisabled}
+                        className={`w-4 h-4 ${isDisabled 
                             ? 'text-gray-400 border-gray-300 cursor-not-allowed' 
                             : 'text-green-600 border-gray-300'} focus:ring-green-500`}
                     />
-                    <span className={`${isHomologated ? 'text-gray-400' : 'text-gray-900'}`}>No</span>
+                    <span className={`${isDisabled ? 'text-gray-400' : 'text-gray-900'}`}>No</span>
                 </label>
                 
                 {isHomologated && (
                     <span className="text-sm text-blue-600 italic ml-2">
                         Respuesta automática por homologación
+                    </span>
+                )}
+                
+                {!isExporter && (
+                    <span className="text-sm text-red-600 italic ml-2">
+                        Requiere ser empresa exportadora
                     </span>
                 )}
             </div>
@@ -123,9 +147,9 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                         rows="3"
                         value={justification}
                         onChange={handleJustificationChange}
-                        disabled={isHomologated || !availableToModifyAutoeval || !wantsToAnswer}
+                        disabled={isDisabled || !wantsToAnswer}
                         className={`block w-full rounded-md shadow-sm sm:text-sm ${
-                            isHomologated || !wantsToAnswer 
+                            isDisabled || !wantsToAnswer 
                             ? 'bg-gray-100 cursor-not-allowed border-gray-300 focus:border-green-500 focus:ring-green-500' 
                             : wantsToAnswer && !justification 
                               ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
@@ -133,7 +157,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                         }`}
                         placeholder={wantsToAnswer ? "Respuesta..." : "Respuesta..."}
                     ></textarea>
-                    {wantsToAnswer && !justification && !isHomologated && (
+                    {wantsToAnswer && !justification && !isHomologated && isExporter && (
                         <p className="mt-1 text-sm text-red-600 font-medium">
                             Este campo es obligatorio cuando la respuesta es "Sí".
                         </p>

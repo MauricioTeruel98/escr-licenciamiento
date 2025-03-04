@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import StepIndicator from '@/Components/StepIndicator';
 import IndicatorIndex from '@/Components/IndicatorIndex';
@@ -7,6 +7,7 @@ import Toast from '@/Components/Toast';
 import axios from 'axios';
 
 export default function Indicadores({ valueData, userName, user, savedAnswers, currentScore: initialScore, certifications, homologatedIndicators, company, availableToModifyAutoeval }) {
+    const {auth} = usePage().props;
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [answers, setAnswers] = useState({});
     const [justifications, setJustifications] = useState({});
@@ -16,6 +17,9 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     const [currentScore, setCurrentScore] = useState(initialScore);
     const [autoEvaluationItems, setAutoEvaluationItems] = useState(null);
     const [loading, setLoading] = useState(false);
+    
+    // Verificar si la empresa es exportadora
+    const isExporter = auth.user.company?.is_exporter === true;
 
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
@@ -52,6 +56,15 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     };
 
     const handleAnswer = (indicatorId, answer, isBinding) => {
+        // Si la empresa no es exportadora, no permitir cambios
+        if (!isExporter) {
+            setNotification({
+                type: 'error',
+                message: 'Su empresa debe ser exportadora para poder realizar la auto evaluación.'
+            });
+            return;
+        }
+
         if (!indicatorId) {
             console.error('ID del indicador no válido');
             return;
@@ -72,6 +85,15 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     };
 
     const handleJustificationChange = (indicatorId, text, currentAnswer) => {
+        // Si la empresa no es exportadora, no permitir cambios
+        if (!isExporter) {
+            setNotification({
+                type: 'error',
+                message: 'Su empresa debe ser exportadora para poder realizar la auto evaluación.'
+            });
+            return;
+        }
+
         if (!indicatorId) {
             console.error('ID del indicador no válido');
             return;
@@ -147,6 +169,15 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     };
 
     const handleFinish = () => {
+        // Si la empresa no es exportadora, no permitir finalizar
+        if (!isExporter) {
+            setNotification({
+                type: 'error',
+                message: 'Su empresa debe ser exportadora para poder realizar la auto evaluación.'
+            });
+            return;
+        }
+
         if (Object.keys(answers).length === 0) {
             setNotification({
                 type: 'error',
@@ -256,6 +287,22 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     return (
         <DashboardLayout userName={userName} title="Indicadores">
             <div className="space-y-8">
+                {!isExporter && (
+                    <div className="bg-red-50 border-l-4 border-red-400 p-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-red-700">
+                                    <strong>Atención:</strong> Su empresa debe ser exportadora para poder realizar la auto evaluación. Por favor, actualice la información de su empresa en su perfil.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 {/* {bindingWarning && (
                     <div className="bg-red-50 border-l-4 border-red-400 p-4">
                         <div className="flex">
@@ -400,10 +447,11 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                                                 homologation={homologation ? homologation.certification_name : null}
                                                 guide={indicator.guide}
                                                 autoeval_ended={company.autoeval_ended}
-                                                availableToModifyAutoeval={availableToModifyAutoeval}
+                                                availableToModifyAutoeval={availableToModifyAutoeval && isExporter}
                                                 isBinary={indicator.is_binary}
                                                 justification={justifications[indicator.id] || ''}
                                                 onJustificationChange={(text) => handleJustificationChange(indicator.id, text, answers[indicator.id])}
+                                                isExporter={isExporter}
                                             />
                                         </div>
                                         {indicator.binding && (

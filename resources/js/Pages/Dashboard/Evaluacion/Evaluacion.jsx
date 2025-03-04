@@ -38,6 +38,9 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     const [currentProgress, setCurrentProgress] = useState(0);
     const [evaluatorProgress, setEvaluatorProgress] = useState(0);
     const [validationErrors, setValidationErrors] = useState({});
+    
+    // Verificar si la empresa es exportadora
+    const isExporter = auth.user.company?.is_exporter === true;
 
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
@@ -266,30 +269,38 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     };
 
     const handleAnswer = (questionId, value, description = '', files = [], evaluator_comment = '') => {
-        setAnswers(prev => {
-            const newAnswers = {
-                ...prev,
-                [questionId]: {
-                    value: value || prev[questionId]?.value,
-                    description: description || prev[questionId]?.description,
-                    files: files || prev[questionId]?.files || [],
-                    evaluator_comment: evaluator_comment || prev[questionId]?.evaluator_comment || ''
-                }
-            };
+        // Si la empresa no es exportadora y no es evaluador, no permitir cambios
+        if (!isExporter && !isEvaluador) {
+            setNotification({
+                type: 'error',
+                message: 'Su empresa debe ser exportadora para poder realizar la evaluación.'
+            });
+            return;
+        }
 
-            return newAnswers;
-        });
+        const newAnswers = { ...answers };
+        newAnswers[questionId] = {
+            value,
+            description,
+            files,
+            evaluator_comment
+        };
+        setAnswers(newAnswers);
     };
 
     const handleApproval = (questionId, value) => {
-        setApprovals(prev => {
-            const newApprovals = {
-                ...prev,
-                [questionId]: value
-            };
+        // Si la empresa no es exportadora y no es evaluador, no permitir cambios
+        if (!isExporter && !isEvaluador) {
+            setNotification({
+                type: 'error',
+                message: 'Su empresa debe ser exportadora para poder realizar la evaluación.'
+            });
+            return;
+        }
 
-            return newApprovals;
-        });
+        const newApprovals = { ...approvals };
+        newApprovals[questionId] = value;
+        setApprovals(newApprovals);
     };
 
     const areAllQuestionsAnswered = () => {
@@ -380,10 +391,19 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     };
 
     const handleFinish = () => {
+        // Si la empresa no es exportadora y no es evaluador, no permitir finalizar
+        if (!isExporter && !isEvaluador) {
+            setNotification({
+                type: 'error',
+                message: 'Su empresa debe ser exportadora para poder realizar la evaluación.'
+            });
+            return;
+        }
+
         if (!areAllQuestionsAnswered()) {
             setNotification({
                 type: 'error',
-                message: 'Por favor, responde todas las preguntas antes de finalizar.'
+                message: 'Debes completar todas las preguntas antes de finalizar.'
             });
             return;
         }
@@ -533,6 +553,22 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     return (
         <DashboardLayout userName={userName} title="Evaluación">
             <div className="space-y-8">
+                {!isExporter && !isEvaluador && (
+                    <div className="bg-red-50 border-l-4 border-red-400 p-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-red-700">
+                                    <strong>Atención:</strong> Su empresa debe ser exportadora para poder realizar la evaluación. Por favor, actualice la información de su empresa en su perfil.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 {/* Encabezado y Métricas */}
                 <div className="lg:flex justify-between items-center gap-8">
                     <div className="lg:w-1/2">
@@ -655,7 +691,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 value="1"
                                                                 checked={answers[question.id]?.value === "1"}
                                                                 onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                                disabled={isEvaluador}
+                                                                disabled={isEvaluador || (!isExporter && !isEvaluador)}
                                                                 className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                             />
                                                             <span className="text-gray-900">Sí</span>
@@ -668,7 +704,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 value="0"
                                                                 checked={answers[question.id]?.value === "0"}
                                                                 onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                                disabled={isEvaluador}
+                                                                disabled={isEvaluador || (!isExporter && !isEvaluador)}
                                                                 className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                             />
                                                             <span className="text-gray-900">No</span>
@@ -702,7 +738,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     });
                                                                 }
                                                             }}
-                                                            disabled={isEvaluador}
+                                                            disabled={isEvaluador || (!isExporter && !isEvaluador)}
                                                             maxLength={240}
                                                             className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none disabled:bg-gray-100 disabled:text-gray-500 ${validationErrors[`description-${question.id}`] ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
                                                                 }`}
@@ -732,7 +768,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 fileType: 'Tipo de archivo no permitido. Solo se permiten archivos jpg, jpeg, png, pdf, excel y word.'
                                                             }}
                                                             onFileSelect={(file) => {
-                                                                if (!isEvaluador) {
+                                                                if (!isEvaluador && isExporter) {
                                                                     const currentFiles = answers[question.id]?.files || [];
                                                                     handleAnswer(
                                                                         question.id,
@@ -743,7 +779,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 }
                                                             }}
                                                             onFileRemove={async (fileToRemove) => {
-                                                                if (!isEvaluador) {
+                                                                if (!isEvaluador && isExporter) {
                                                                     const currentFiles = answers[question.id]?.files || [];
                                                                     const updatedFiles = currentFiles.filter(f =>
                                                                         f.path ? f.path !== fileToRemove.path : f !== fileToRemove
@@ -757,7 +793,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     );
                                                                 }
                                                             }}
-                                                            readOnly={isEvaluador}
+                                                            readOnly={isEvaluador || (!isExporter && !isEvaluador)}
                                                         />
                                                     </div>
                                                 </div>
