@@ -191,8 +191,6 @@ export default function Edit({ auth, mustVerifyEmail, status, userName }) {
         });
     };
 
-    console.log(auth.user);
-
     return (
         <DashboardLayout userName={userName} title="Perfil">
             <Head title="Perfil" />

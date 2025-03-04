@@ -17,9 +17,6 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     const [autoEvaluationItems, setAutoEvaluationItems] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    console.log(user);
-    console.log(certifications);
-    console.log(homologatedIndicators);
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
 
@@ -255,8 +252,6 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
             answers[indicator.id] !== undefined
         );
     };
-
-    console.log(availableToModifyAutoeval);
 
     return (
         <DashboardLayout userName={userName} title="Indicadores">

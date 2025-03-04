@@ -98,7 +98,7 @@ export default function Reportes() {
 
     const handleReporteClick = (empresa) => {
         // Implementar la lógica para descargar o ver el reporte
-        console.log('Descargar reporte de:', empresa.nombre);
+        
     };
 
     return (

@@ -399,7 +399,6 @@ export default function Certifications({ certifications: initialCertifications, 
                                                     setSearchTerm(cert.nombre);
                                                     setSelectedCertification(cert);
                                                     setIsDropdownOpen(false);
-                                                    console.log('Certificación seleccionada:', cert);
                                                 }}
                                             >
                                                 {cert.nombre}

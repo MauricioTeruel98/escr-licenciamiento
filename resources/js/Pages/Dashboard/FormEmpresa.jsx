@@ -426,10 +426,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
         const formData = new FormData();
 
-        // Debug log
-        console.log('Imágenes a enviar:', imagenes);
-        console.log('Datos a enviar:', data);
-
         // Agregar logo si existe
         if (imagenes.logo instanceof File) {
             formData.append('logo', imagenes.logo);
@@ -476,11 +472,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 formData.append(key, data[key] || '');
             }
         });
-
-        // Debug log del FormData
-        for (let pair of formData.entries()) {
-            console.log(pair[0], pair[1]);
-        }
 
         try {
             const response = await axios.post(route('company.profile.store'), formData, {

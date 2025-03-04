@@ -168,9 +168,7 @@ export default function UsersManagement() {
 
     const cargarUsuarios = async (page = 1) => {
         try {
-            console.log('Intentando cargar usuarios...');
             const response = await axios.get(`/api/users/company?page=${page}`);
-            console.log('Respuesta:', response.data);
 
             const usuariosFormateados = response.data.data
                 .filter(user => user.role !== 'super_admin') // Filtro adicional en el frontend

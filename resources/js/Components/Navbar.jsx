@@ -54,8 +54,6 @@ export default function Navbar({ userName, onMenuClick }) {
             .substring(0, 2);
     };
 
-    console.log(getInitials(auth.user.name));
-
     return (
         <div className="navbar bg-white border-b fixed top-0 w-full z-50">
             <div className="flex-1">

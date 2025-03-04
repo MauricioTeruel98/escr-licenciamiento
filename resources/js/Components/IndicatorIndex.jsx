@@ -1,7 +1,6 @@
 export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide, autoeval_ended, availableToModifyAutoeval, isBinary, justification = '', onJustificationChange }) {
     const handleChange = (e) => {
         const selectedValue = e.target.value;
-        console.log('Seleccionado para indicador', code, ':', selectedValue);
         onAnswer(selectedValue);
     };
 

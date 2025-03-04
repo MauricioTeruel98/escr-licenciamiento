@@ -134,8 +134,6 @@ export default function IndicatorsIndex() {
         loadRelatedData();
     }, []);
 
-    console.log(indicators);
-
     const loadIndicators = async (page = 1, perPage = 10, search = '') => {
         try {
             const response = await axios.get('/api/indicators', {
