@@ -86,8 +86,33 @@ export default function Certifications({ certifications: initialCertifications, 
         cert.nombre.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Agregar funciones de validación para los campos
+    const validarInput = (value, tipo) => {
+        // Eliminar espacios al inicio para todos los campos
+        let valorLimpio = value.trimStart();
+        
+        switch (tipo) {
+            case 'nombre':
+                // No permitir comillas simples o dobles, barras o barras invertidas
+                valorLimpio = valorLimpio.replace(/['"\\\/]/g, '');
+                break;
+            case 'fecha':
+                // Solo permitir números y barras
+                valorLimpio = valorLimpio.replace(/[^0-9\/]/g, '');
+                break;
+            case 'organismo':
+                // Solo permitir letras y números
+                valorLimpio = valorLimpio.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '');
+                break;
+            default:
+                break;
+        }
+        
+        return valorLimpio;
+    };
+
     const handleSearchChange = (e) => {
-        const value = e.target.value;
+        const value = validarInput(e.target.value, 'nombre');
         setSearchTerm(value);
         setIsDropdownOpen(true);
     };
@@ -238,6 +263,20 @@ export default function Certifications({ certifications: initialCertifications, 
             validarFechaExpiracion(value, id);
         }
 
+        // Si el campo no es una fecha (que ya se maneja con el DatePicker)
+        // aplicamos la validación correspondiente
+        if (typeof value === 'string') {
+            let tipo = '';
+            if (field.includes('fecha')) {
+                tipo = 'fecha';
+            } else if (field === 'organismo_certificador') {
+                tipo = 'organismo';
+            } else {
+                tipo = 'nombre';
+            }
+            value = validarInput(value, tipo);
+        }
+
         setCertificaciones(certificaciones.map(cert =>
             cert.id === id ? { ...cert, [field]: value } : cert
         ));
@@ -269,6 +308,28 @@ export default function Certifications({ certifications: initialCertifications, 
         setCertificaciones(certificaciones.map(cert =>
             cert.id === id ? { ...cert, editando: true } : cert
         ));
+    };
+
+    // Agregar función para cancelar la edición
+    const handleCancelEdit = (id) => {
+        // Obtener la certificación original de initialCertifications
+        const certOriginal = initialCertifications.find(c => c.id === id);
+        
+        // Restaurar los valores originales y desactivar el modo de edición
+        setCertificaciones(certificaciones.map(cert =>
+            cert.id === id ? {
+                ...cert,
+                fecha_obtencion: certOriginal ? new Date(certOriginal.fecha_obtencion) : cert.fecha_obtencion,
+                fecha_expiracion: certOriginal ? new Date(certOriginal.fecha_expiracion) : cert.fecha_expiracion,
+                editando: false
+            } : cert
+        ));
+        
+        // Limpiar cualquier error asociado a esta certificación
+        setFechaErrores(prev => ({
+            ...prev,
+            [id]: ""
+        }));
     };
 
     const estaExpirado = (fecha) => {
@@ -368,6 +429,9 @@ export default function Certifications({ certifications: initialCertifications, 
                                         ...nuevaCertificacion,
                                         fechaObtencion: date
                                     })}
+                                    // onChangeRaw={(e) => {
+                                    //     e.target.value = validarInput(e.target.value, 'fecha');
+                                    // }}
                                     locale={es}
                                     dateFormat="dd/MM/yyyy"
                                     className="w-full px-3 py-2 border rounded-md border-gray-300"
@@ -396,6 +460,9 @@ export default function Certifications({ certifications: initialCertifications, 
                                         });
                                         validarFechaExpiracion(date);
                                     }}
+                                    // onChangeRaw={(e) => {
+                                    //     e.target.value = validarInput(e.target.value, 'fecha');
+                                    // }}
                                     locale={es}
                                     dateFormat="dd/MM/yyyy"
                                     className={`w-full px-3 py-2 border rounded-md ${fechaError
@@ -428,7 +495,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                     value={nuevaCertificacion.organismoCertificador}
                                     onChange={(e) => setNuevaCertificacion({
                                         ...nuevaCertificacion,
-                                        organismoCertificador: e.target.value
+                                        organismoCertificador: validarInput(e.target.value, 'organismo')
                                     })}
                                     className="w-full px-3 py-2 border rounded-md border-gray-300"
                                     required
@@ -495,6 +562,9 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                         <DatePicker
                                                                             selected={cert.fecha_obtencion}
                                                                             onChange={(date) => handleChange(cert.id, 'fecha_obtencion', date)}
+                                                                            onChangeRaw={(e) => {
+                                                                                e.target.value = validarInput(e.target.value, 'fecha');
+                                                                            }}
                                                                             locale={es}
                                                                             dateFormat="dd/MM/yyyy"
                                                                             className="w-full px-3 py-2 border rounded-md border-gray-300"
@@ -514,6 +584,9 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                         <DatePicker
                                                                             selected={cert.fecha_expiracion}
                                                                             onChange={(date) => handleChange(cert.id, 'fecha_expiracion', date)}
+                                                                            onChangeRaw={(e) => {
+                                                                                e.target.value = validarInput(e.target.value, 'fecha');
+                                                                            }}
                                                                             locale={es}
                                                                             dateFormat="dd/MM/yyyy"
                                                                             className={`w-full px-3 py-2 border rounded-md ${fechaErrores[cert.id]
@@ -581,6 +654,12 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                         className="text-red-600 hover:text-red-700"
                                                                     >
                                                                         <Trash2 className="h-5 w-5" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleCancelEdit(cert.id)}
+                                                                        className="px-4 py-1 text-sm border border-gray-200 rounded-md hover:bg-gray-50"
+                                                                    >
+                                                                        Cancelar
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleSave(cert.id)}
