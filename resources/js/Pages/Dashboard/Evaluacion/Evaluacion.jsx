@@ -48,6 +48,33 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
     const handleStepClick = (index) => {
         setCurrentSubcategoryIndex(index);
+        
+        // Establecer automáticamente el valor "1" (Sí) para preguntas con is_binary = false
+        if (!isEvaluador) {
+            const newAnswers = { ...answers };
+            let hasChanges = false;
+
+            const subcategory = subcategories[index];
+            subcategory.indicators.forEach(indicator => {
+                indicator.evaluation_questions.forEach(question => {
+                    if (question.is_binary === false || question.is_binary === 0) {
+                        // Si la pregunta no es binaria, establecer automáticamente "Sí" y una descripción predeterminada
+                        if (!newAnswers[question.id] || !newAnswers[question.id]?.description) {
+                            newAnswers[question.id] = {
+                                value: "1", // Establecer "Sí" como valor predeterminado
+                                description: newAnswers[question.id]?.description || '',
+                                files: newAnswers[question.id]?.files || []
+                            };
+                            hasChanges = true;
+                        }
+                    }
+                });
+            });
+
+            if (hasChanges) {
+                setAnswers(newAnswers);
+            }
+        }
     };
 
     const handleContinue = async () => {
@@ -58,6 +85,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         // Verificar las preguntas de la subcategoría actual
         subcategories[currentSubcategoryIndex].indicators.forEach(indicator => {
             indicator.evaluation_questions.forEach(question => {
+                // No validar descripción para preguntas no binarias
+                if (question.is_binary === false || question.is_binary === 0) {
+                    return;
+                }
+                
                 // Verificar descripción
                 if (!answers[question.id]?.description?.trim()) {
                     errors[`description-${question.id}`] = 'La descripción es obligatoria';
@@ -189,6 +221,12 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             answeredQuestions++;
                         }
                     } else {
+                        // Si la pregunta no es binaria, considerarla como respondida automáticamente
+                        if (question.is_binary === false || question.is_binary === 0) {
+                            answeredQuestions++;
+                            return;
+                        }
+                        
                         // Para empresas, verificar que el valor esté definido
                         const hasValue = answers[question.id]?.value !== undefined;
 
@@ -270,6 +308,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         const currentSubcategory = subcategories[currentSubcategoryIndex];
         return currentSubcategory.indicators.every(indicator =>
             indicator.evaluation_questions.every(question => {
+                // Si la pregunta no es binaria, considerarla como respondida automáticamente
+                if (question.is_binary === false || question.is_binary === 0) {
+                    return true;
+                }
+                
                 // Verificar que el valor esté definido
                 const hasValue = answers[question.id]?.value !== undefined;
 
@@ -390,6 +433,36 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }
     };
 
+    // Efecto para establecer automáticamente el valor "1" (Sí) para preguntas con is_binary = false
+    useEffect(() => {
+        if (!isEvaluador) {
+            const newAnswers = { ...answers };
+            let hasChanges = false;
+
+            valueData.subcategories.forEach(subcategory => {
+                subcategory.indicators.forEach(indicator => {
+                    indicator.evaluation_questions.forEach(question => {
+                        if (question.is_binary === false || question.is_binary === 0) {
+                            // Si la pregunta no es binaria, establecer automáticamente "Sí" y una descripción predeterminada
+                            if (!newAnswers[question.id] || !newAnswers[question.id]?.description) {
+                                newAnswers[question.id] = {
+                                    value: "1", // Establecer "Sí" como valor predeterminado
+                                    description: newAnswers[question.id]?.description || '',
+                                    files: newAnswers[question.id]?.files || []
+                                };
+                                hasChanges = true;
+                            }
+                        }
+                    });
+                });
+            });
+
+            if (hasChanges) {
+                setAnswers(newAnswers);
+            }
+        }
+    }, [valueData, isEvaluador]);
+
     return (
         <DashboardLayout userName={userName} title="Evaluación">
             <div className="space-y-8">
@@ -472,34 +545,36 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                     {question.question}
                                                 </h3>
 
-                                                {/* Opciones Si/No */}
-                                                <div className="flex gap-4">
-                                                    <label className="flex items-center gap-2">
-                                                        <input
-                                                            type="radio"
-                                                            name={`question-${question.id}`}
-                                                            value="1"
-                                                            checked={answers[question.id]?.value === "1"}
-                                                            onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                            disabled={isEvaluador}
-                                                            className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
-                                                        />
-                                                        <span className="text-gray-900">Sí</span>
-                                                    </label>
+                                                {/* Opciones Si/No - Solo mostrar si is_binary es true */}
+                                                {(question.is_binary === true || question.is_binary === 1) && (
+                                                    <div className="flex gap-4">
+                                                        <label className="flex items-center gap-2">
+                                                            <input
+                                                                type="radio"
+                                                                name={`question-${question.id}`}
+                                                                value="1"
+                                                                checked={answers[question.id]?.value === "1"}
+                                                                onChange={(e) => handleAnswer(question.id, e.target.value)}
+                                                                disabled={isEvaluador}
+                                                                className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                                                            />
+                                                            <span className="text-gray-900">Sí</span>
+                                                        </label>
 
-                                                    <label className="flex items-center gap-2">
-                                                        <input
-                                                            type="radio"
-                                                            name={`question-${question.id}`}
-                                                            value="0"
-                                                            checked={answers[question.id]?.value === "0"}
-                                                            onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                            disabled={isEvaluador}
-                                                            className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
-                                                        />
-                                                        <span className="text-gray-900">No</span>
-                                                    </label>
-                                                </div>
+                                                        <label className="flex items-center gap-2">
+                                                            <input
+                                                                type="radio"
+                                                                name={`question-${question.id}`}
+                                                                value="0"
+                                                                checked={answers[question.id]?.value === "0"}
+                                                                onChange={(e) => handleAnswer(question.id, e.target.value)}
+                                                                disabled={isEvaluador}
+                                                                className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                                                            />
+                                                            <span className="text-gray-900">No</span>
+                                                        </label>
+                                                    </div>
+                                                )}
 
                                                 {/* Descripción */}
                                                 <div className='flex flex-col md:flex-row md:items-start gap-4'>
