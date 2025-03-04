@@ -54,7 +54,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         // Validar campos antes de continuar
         const errors = {};
         let hasErrors = false;
-        
+
         // Verificar las preguntas de la subcategoría actual
         subcategories[currentSubcategoryIndex].indicators.forEach(indicator => {
             indicator.evaluation_questions.forEach(question => {
@@ -65,9 +65,9 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 }
             });
         });
-        
+
         setValidationErrors(errors);
-        
+
         if (hasErrors) {
             setNotification({
                 type: 'error',
@@ -175,15 +175,15 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             subcategory.indicators.forEach(indicator => {
                 indicator.evaluation_questions.forEach(question => {
                     totalQuestions++;
-                    
+
                     if (isEvaluador) {
                         // Para evaluadores, verificar si se ha tomado una decisión (aprobado o no)
                         const hasApprovalDecision = approvals[question.id] !== undefined;
-                        
+
                         // Verificar que haya un comentario del evaluador (opcional)
-                        const hasEvaluatorComment = answers[question.id]?.evaluator_comment?.trim() !== '' && 
-                                                  answers[question.id]?.evaluator_comment !== undefined;
-                        
+                        const hasEvaluatorComment = answers[question.id]?.evaluator_comment?.trim() !== '' &&
+                            answers[question.id]?.evaluator_comment !== undefined;
+
                         // Para evaluadores, solo necesitamos que haya tomado una decisión
                         if (hasApprovalDecision) {
                             answeredQuestions++;
@@ -191,14 +191,14 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     } else {
                         // Para empresas, verificar que el valor esté definido
                         const hasValue = answers[question.id]?.value !== undefined;
-                        
+
                         // Verificar que la descripción no esté vacía después de quitar espacios
-                        const hasDescription = answers[question.id]?.description?.trim() !== '' && 
-                                              answers[question.id]?.description !== undefined;
-                        
+                        const hasDescription = answers[question.id]?.description?.trim() !== '' &&
+                            answers[question.id]?.description !== undefined;
+
                         // Verificar que haya al menos un archivo (si es requerido)
                         const hasFiles = answers[question.id]?.files?.length > 0;
-                        
+
                         if (hasValue && hasDescription && hasFiles) {
                             answeredQuestions++;
                         }
@@ -236,14 +236,14 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 ...prev,
                 [questionId]: value
             };
-            
+
             // Actualizar el progreso cuando cambia la aprobación (para evaluadores)
             if (isEvaluador) {
                 setTimeout(() => {
                     setCurrentProgress(calculateProgress());
                 }, 0);
             }
-            
+
             return newApprovals;
         });
     };
@@ -272,11 +272,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             indicator.evaluation_questions.every(question => {
                 // Verificar que el valor esté definido
                 const hasValue = answers[question.id]?.value !== undefined;
-                
+
                 // Verificar que la descripción no esté vacía después de quitar espacios
-                const hasDescription = answers[question.id]?.description?.trim() !== '' && 
-                                      answers[question.id]?.description !== undefined;
-                
+                const hasDescription = answers[question.id]?.description?.trim() !== '' &&
+                    answers[question.id]?.description !== undefined;
+
                 return hasValue && hasDescription;
             })
         );
@@ -473,33 +473,36 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                 </h3>
 
                                                 {/* Opciones Si/No */}
-                                                <div className="flex gap-4">
-                                                    <label className="flex items-center gap-2">
-                                                        <input
-                                                            type="radio"
-                                                            name={`question-${question.id}`}
-                                                            value="1"
-                                                            checked={answers[question.id]?.value === "1"}
-                                                            onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                            disabled={isEvaluador}
-                                                            className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
-                                                        />
-                                                        <span className="text-gray-900">Sí</span>
-                                                    </label>
+                                                {
+                                                    question.is_binary && (
+                                                        <div className="flex gap-4">
+                                                            <label className="flex items-center gap-2">
+                                                                <input
+                                                                    type="radio"
+                                                                    name={`question-${question.id}`}
+                                                                    value="1"
+                                                                    checked={answers[question.id]?.value === "1"}
+                                                                    onChange={(e) => handleAnswer(question.id, e.target.value)}
+                                                                    disabled={isEvaluador}
+                                                                    className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                                                                />
+                                                                <span className="text-gray-900">Sí</span>
+                                                            </label>
 
-                                                    <label className="flex items-center gap-2">
-                                                        <input
-                                                            type="radio"
-                                                            name={`question-${question.id}`}
-                                                            value="0"
-                                                            checked={answers[question.id]?.value === "0"}
-                                                            onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                            disabled={isEvaluador}
-                                                            className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
-                                                        />
-                                                        <span className="text-gray-900">No</span>
-                                                    </label>
-                                                </div>
+                                                            <label className="flex items-center gap-2">
+                                                                <input
+                                                                    type="radio"
+                                                                    name={`question-${question.id}`}
+                                                                    value="0"
+                                                                    checked={answers[question.id]?.value === "0"}
+                                                                    onChange={(e) => handleAnswer(question.id, e.target.value)}
+                                                                    disabled={isEvaluador}
+                                                                    className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                                                                />
+                                                                <span className="text-gray-900">No</span>
+                                                            </label>
+                                                        </div>
+                                                    )}
 
                                                 {/* Descripción */}
                                                 <div className='flex flex-col md:flex-row md:items-start gap-4'>
@@ -517,11 +520,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     e.target.value,
                                                                     answers[question.id]?.files
                                                                 );
-                                                                
+
                                                                 // Limpiar error de validación al escribir
                                                                 if (e.target.value.trim() !== '') {
                                                                     setValidationErrors(prev => {
-                                                                        const newErrors = {...prev};
+                                                                        const newErrors = { ...prev };
                                                                         delete newErrors[`description-${question.id}`];
                                                                         return newErrors;
                                                                     });
@@ -529,9 +532,8 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                             }}
                                                             disabled={isEvaluador}
                                                             maxLength={240}
-                                                            className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none disabled:bg-gray-100 disabled:text-gray-500 ${
-                                                                validationErrors[`description-${question.id}`] ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
-                                                            }`}
+                                                            className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none disabled:bg-gray-100 disabled:text-gray-500 ${validationErrors[`description-${question.id}`] ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                                                                }`}
                                                             placeholder="Escriba aquí..."
                                                         />
                                                         {validationErrors[`description-${question.id}`] && (
@@ -680,8 +682,8 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                     onClick={isLastSubcategory ? handleFinish : handleContinue}
                                     disabled={(isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()) || loading}
                                     className={`inline-flex items-center px-4 py-2 rounded-md ${(isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()) || loading
-                                            ? 'bg-gray-400 cursor-not-allowed'
-                                            : 'bg-green-600 hover:bg-green-700'
+                                        ? 'bg-gray-400 cursor-not-allowed'
+                                        : 'bg-green-600 hover:bg-green-700'
                                         } text-white`}
                                 >
                                     {loading ? (

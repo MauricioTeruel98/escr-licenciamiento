@@ -38,16 +38,16 @@ export default function Register() {
     const handleNameChange = (e) => {
         // Filtrar caracteres no permitidos (solo letras, espacios y acentos)
         const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-        
+
         setData('name', value);
-        
+
         if (value && !validateName(value)) {
             setValidationErrors({
                 ...validationErrors,
                 name: 'El nombre solo puede contener letras y espacios.'
             });
         } else {
-            const newErrors = {...validationErrors};
+            const newErrors = { ...validationErrors };
             delete newErrors.name;
             setValidationErrors(newErrors);
         }
@@ -56,16 +56,16 @@ export default function Register() {
     const handleLastnameChange = (e) => {
         // Filtrar caracteres no permitidos (solo letras, espacios y acentos)
         const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-        
+
         setData('lastname', value);
-        
+
         if (value && !validateName(value)) {
             setValidationErrors({
                 ...validationErrors,
                 lastname: 'El apellido solo puede contener letras y espacios.'
             });
         } else {
-            const newErrors = {...validationErrors};
+            const newErrors = { ...validationErrors };
             delete newErrors.lastname;
             setValidationErrors(newErrors);
         }
@@ -74,16 +74,16 @@ export default function Register() {
     const handleEmailChange = (e) => {
         // Filtrar espacios y caracteres especiales no permitidos
         const value = e.target.value.replace(/[^a-zA-Z0-9._@+\-]/g, '');
-        
+
         setData('email', value);
-        
+
         if (value && !validateEmail(value)) {
             setValidationErrors({
                 ...validationErrors,
                 email: 'El correo no puede contener espacios ni caracteres especiales excepto guiones, arroba, punto y signo más.'
             });
         } else {
-            const newErrors = {...validationErrors};
+            const newErrors = { ...validationErrors };
             delete newErrors.email;
             setValidationErrors(newErrors);
         }
@@ -92,16 +92,16 @@ export default function Register() {
     const handlePasswordChange = (e) => {
         // Filtrar espacios y comillas
         const value = e.target.value.replace(/[\s'"]/g, '');
-        
+
         setData('password', value);
-        
+
         if (value && !validatePassword(value)) {
             setValidationErrors({
                 ...validationErrors,
                 password: 'La contraseña no puede contener espacios, comillas simples o dobles.'
             });
         } else {
-            const newErrors = {...validationErrors};
+            const newErrors = { ...validationErrors };
             delete newErrors.password;
             setValidationErrors(newErrors);
         }
@@ -110,16 +110,16 @@ export default function Register() {
     const handleConfirmPasswordChange = (e) => {
         // Filtrar espacios y comillas
         const value = e.target.value.replace(/[\s'"]/g, '');
-        
+
         setData('password_confirmation', value);
-        
+
         if (value && !validatePassword(value)) {
             setValidationErrors({
                 ...validationErrors,
                 password_confirmation: 'La contraseña no puede contener espacios, comillas simples o dobles.'
             });
         } else {
-            const newErrors = {...validationErrors};
+            const newErrors = { ...validationErrors };
             delete newErrors.password_confirmation;
             setValidationErrors(newErrors);
         }
@@ -127,28 +127,28 @@ export default function Register() {
 
     const submit = (e) => {
         e.preventDefault();
-        
+
         // Validar todos los campos antes de enviar
         if (data.name && !validateName(data.name)) {
             return;
         }
-        
+
         if (data.lastname && !validateName(data.lastname)) {
             return;
         }
-        
+
         if (data.email && !validateEmail(data.email)) {
             return;
         }
-        
+
         if (data.password && !validatePassword(data.password)) {
             return;
         }
-        
+
         if (data.password_confirmation && !validatePassword(data.password_confirmation)) {
             return;
         }
-        
+
         if (!data.terms_accepted) {
             setValidationErrors({
                 ...validationErrors,
@@ -156,7 +156,7 @@ export default function Register() {
             });
             return;
         }
-        
+
         post(route('register'), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
@@ -291,7 +291,11 @@ export default function Register() {
                             </div>
                             <div className="ml-3 text-sm">
                                 <label htmlFor="terms_accepted" className="font-light text-gray-600">
-                                    Acepto los <a href="#" className="text-green-700 hover:underline">términos y condiciones</a> del sitio web
+                                    Acepto los <a
+                                        href="/assets/pdfs/Consentimiento informado.pdf"
+                                        target="_blank"
+                                        rel="noopener noreferrer" className="text-green-700 hover:underline"
+                                    >términos y condiciones</a> del sitio web
                                     <span className="text-red-500">*</span>
                                 </label>
                             </div>

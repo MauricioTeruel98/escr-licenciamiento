@@ -138,29 +138,6 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     };
 
     const handleContinue = () => {
-        // Verificar si hay indicadores no binarios con respuesta "Sí" pero sin justificación
-        const currentIndicators = subcategories[currentSubcategoryIndex].indicators;
-        const missingJustifications = currentIndicators.filter(indicator => {
-            // Solo verificar indicadores no binarios
-            if (indicator.is_binary) return false;
-            
-            // Solo verificar indicadores con respuesta "Sí"
-            const answer = answers[indicator.id];
-            if (answer !== "1") return false;
-            
-            // Verificar si tiene justificación
-            const justification = justifications[indicator.id];
-            return !justification || justification.trim() === '';
-        });
-
-        if (missingJustifications.length > 0) {
-            setNotification({
-                type: 'error',
-                message: 'Por favor, complete la justificación para todas las preguntas con respuesta "Sí" antes de continuar.'
-            });
-            return;
-        }
-
         if (currentSubcategoryIndex < subcategories.length - 1) {
             setCurrentSubcategoryIndex(prev => prev + 1);
         }
@@ -177,35 +154,6 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
             setNotification({
                 type: 'error',
                 message: 'Por favor, responde al menos una pregunta antes de continuar.'
-            });
-            return;
-        }
-
-        // Verificar si hay indicadores no binarios con respuesta "Sí" pero sin justificación
-        const missingJustifications = [];
-        
-        // Revisar todas las subcategorías
-        subcategories.forEach(subcategory => {
-            subcategory.indicators.forEach(indicator => {
-                // Solo verificar indicadores no binarios
-                if (!indicator.is_binary) {
-                    // Solo verificar indicadores con respuesta "Sí"
-                    const answer = answers[indicator.id];
-                    if (answer === "1") {
-                        // Verificar si tiene justificación
-                        const justification = justifications[indicator.id];
-                        if (!justification || justification.trim() === '') {
-                            missingJustifications.push(indicator);
-                        }
-                    }
-                }
-            });
-        });
-
-        if (missingJustifications.length > 0) {
-            setNotification({
-                type: 'error',
-                message: `Por favor, complete la justificación para todas las preguntas con respuesta "Sí" antes de finalizar. Faltan ${missingJustifications.length} justificaciones.`
             });
             return;
         }
