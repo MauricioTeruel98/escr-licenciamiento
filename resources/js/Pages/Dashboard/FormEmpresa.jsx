@@ -725,6 +725,12 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             return;
         }
         
+        // Si es el campo de países, usar la función específica
+        if (name === 'paises_exportacion' && e.target.multiple) {
+            handlePaisesChange(e);
+            return;
+        }
+        
         // Verificar si es un campo de productos (nombre o descripción)
         if (name.includes('productos[')) {
             // Extraer el índice y el campo del nombre
@@ -881,6 +887,46 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         
         // Actualizar el estado con el valor numérico
         setData(name, valorNumerico);
+    };
+
+    const [paises, setPaises] = useState([]);
+    
+    // Cargar la lista de países al montar el componente
+    useEffect(() => {
+        const fetchPaises = async () => {
+            try {
+                const response = await fetch('/storage/paises.json');
+                const data = await response.json();
+                setPaises(data.countries);
+            } catch (error) {
+                console.error('Error al cargar la lista de países:', error);
+            }
+        };
+        
+        fetchPaises();
+    }, []);
+    
+    // Función para manejar la selección múltiple de países
+    const handlePaisesChange = (e) => {
+        const options = e.target.options;
+        const selectedValues = [];
+        
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].selected) {
+                selectedValues.push(options[i].value);
+            }
+        }
+        
+        setData('paises_exportacion', selectedValues.join(','));
+    };
+
+    // Función para renderizar las opciones de países
+    const renderPaisesOptions = () => {
+        return paises.map(pais => (
+            <option key={pais.name} value={pais.es_name}>
+                {pais.es_name}
+            </option>
+        ));
     };
 
     return (
@@ -1313,14 +1359,18 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             ¿A qué países?
                                         </label>
                                         <select
-                                            value={data.paises_exportacion}
-                                            onChange={handleChange}
+                                            value={data.paises_exportacion ? data.paises_exportacion.split(',') : []}
+                                            onChange={handlePaisesChange}
                                             name="paises_exportacion"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            multiple
+                                            size="5"
                                         >
-                                            <option value="">Seleccione países</option>
-                                            {/* Aquí puedes agregar las opciones de países */}
+                                            {renderPaisesOptions()}
                                         </select>
+                                        <p className="mt-1 text-xs text-gray-500">
+                                            Mantenga presionada la tecla Ctrl (o Cmd en Mac) para seleccionar múltiples países.
+                                        </p>
                                         <InputError message={errors.paises_exportacion} />
                                     </div>
 

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class CompanyProfileController extends Controller
 {
@@ -21,7 +22,7 @@ class CompanyProfileController extends Controller
             
             DB::beginTransaction();
 
-            $companyId = auth()->user()->company_id;
+            $companyId = Auth::user()->company_id;
             
             // Log para depuración
             Log::info('Iniciando proceso de guardado', [
@@ -157,7 +158,7 @@ class CompanyProfileController extends Controller
                         'path' => $path,
                         'url' => asset('storage/' . $path),
                         'size' => Storage::disk('public')->size($path),
-                        'type' => Storage::disk('public')->mimeType($path)
+                        'type' => $this->getFileType(Storage::disk('public')->path($path))
                     ];
                 }, $fotografias);
             }
@@ -169,7 +170,7 @@ class CompanyProfileController extends Controller
                         'path' => $path,
                         'url' => asset('storage/' . $path),
                         'size' => Storage::disk('public')->size($path),
-                        'type' => Storage::disk('public')->mimeType($path)
+                        'type' => $this->getFileType(Storage::disk('public')->path($path))
                     ];
                 }, $certificaciones);
             }
@@ -213,7 +214,7 @@ class CompanyProfileController extends Controller
     public function deleteFile(Request $request)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             $path = $request->path;
             $type = $request->type; // 'logo', 'fotografias', 'certificaciones'
 
@@ -298,7 +299,7 @@ class CompanyProfileController extends Controller
     public function destroyProduct(Request $request, $productId)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             $product = CompanyProducts::where('id', $productId)
                 ->where('company_id', $user->company_id)
                 ->first();
