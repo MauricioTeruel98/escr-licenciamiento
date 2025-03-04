@@ -27,6 +27,8 @@ class IndicadoresController extends Controller
 
         $autoevaluationResultFormSended = false;
         $autoevaluationResultApplicationSended = false;
+        
+        $rolSuperAdmin = $user->role == 'super_admin';
 
         if($autoevaluationResult) {
             $autoevaluationResultFormSended = $autoevaluationResult->form_sended;
@@ -37,7 +39,7 @@ class IndicadoresController extends Controller
 
         $availableToModifyAutoeval = true;
 
-        if ($autoevaluationResultFormSended && $autoevaluationResultApplicationSended && $autoevalEnded) {
+        if ($autoevaluationResultFormSended && $autoevaluationResultApplicationSended && $autoevalEnded && !$rolSuperAdmin) {
             $availableToModifyAutoeval = false;
         }
 
