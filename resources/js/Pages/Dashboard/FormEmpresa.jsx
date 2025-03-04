@@ -805,27 +805,37 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     const handleURLChange = (e) => {
         const { name, value } = e.target;
         
-        // Validar URL y eliminar espacios al inicio
-        const valorValidado = validarCampo(value, 'url');
+        // Eliminar espacios al inicio y caracteres no permitidos
+        let valorLimpio = value.trimStart().replace(/["'\\]/g, '');
         
-        // Verificar si se filtraron caracteres no permitidos
-        if (valorValidado !== value.trimStart()) {
+        // Verificar si la URL tiene el protocolo, si no, agregar https://
+        if (valorLimpio && !valorLimpio.match(/^https?:\/\//i)) {
+            // Solo agregar el protocolo si el usuario ha escrito algo más que solo www.
+            if (valorLimpio.length > 4) {
+                valorLimpio = 'https://' + valorLimpio;
+            }
+        }
+        
+        // Verificar si se filtraron caracteres no permitidos o se modificó el valor
+        if (valorLimpio !== value) {
             // Establecer un error para este campo
             setErrors(prevErrors => ({
                 ...prevErrors,
-                [name]: 'Se han eliminado caracteres no permitidos en la URL.'
+                [name]: 'Se ha modificado el formato de la URL para cumplir con los estándares.'
             }));
-        } else {
-            // Limpiar el error si el valor es válido
-            setErrors(prevErrors => {
-                const newErrors = { ...prevErrors };
-                delete newErrors[name];
-                return newErrors;
-            });
+            
+            // Limpiar el error después de 3 segundos
+            setTimeout(() => {
+                setErrors(prevErrors => {
+                    const newErrors = { ...prevErrors };
+                    delete newErrors[name];
+                    return newErrors;
+                });
+            }, 3000);
         }
         
-        // Actualizar el estado con el valor válido (sin espacios al inicio)
-        setData(name, valorValidado);
+        // Actualizar el estado con el valor limpio y formateado
+        setData(name, valorLimpio);
     };
     
     // Función específica para manejar el año de fundación
