@@ -46,6 +46,7 @@ export default function IndicatorModal({
                     evaluation_questions_binary: indicator.evaluation_questions.map((question) => question.is_binary || false),
                     value_id: indicator.value_id,
                     subcategory_id: indicator.subcategory?.id || '',
+                    is_binary: indicator.is_binary !== undefined ? indicator.is_binary : true
                 });
                 loadRequisitos(indicator.subcategory_id);
             } else {
@@ -120,7 +121,7 @@ export default function IndicatorModal({
         setFormData(prev => ({
             ...prev,
             evaluation_questions: [...prev.evaluation_questions, ''],
-            evaluation_questions_binary: [...prev.evaluation_questions_binary, false]
+            evaluation_questions_binary: [...prev.evaluation_questions_binary, true]
         }));
     };
 
@@ -254,8 +255,11 @@ export default function IndicatorModal({
 
                                     {/* Es por SI o NO? */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                                             Es por SI o NO?
+                                            <span className="ml-2 inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                                                Por defecto: Sí
+                                            </span>
                                         </label>
                                         <Switch
                                             checked={formData.is_binary}
@@ -263,7 +267,8 @@ export default function IndicatorModal({
                                             label={formData.is_binary ? 'Sí' : 'No'}
                                         />
                                         <p className="mt-1 text-sm text-gray-500">
-                                            Indica si este indicador es por SI o NO
+                                            Indica si este indicador es por SI o NO. Si está activado, se mostrarán botones de SI/NO. 
+                                            Si está desactivado, se mostrará un campo de texto para justificación.
                                         </p>
                                     </div>
 
@@ -378,8 +383,11 @@ export default function IndicatorModal({
                                                 </div>
                                                 <div className="flex items-center space-x-2">
                                                     <div className="flex items-center">
-                                                        <label className="mr-2 text-sm text-gray-700">
+                                                        <label className="mr-2 text-sm text-gray-700 flex items-center">
                                                             ¿Es SI/NO?
+                                                            <span className="ml-1 inline-flex items-center rounded-md bg-green-50 px-1 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                                                                Por defecto
+                                                            </span>
                                                         </label>
                                                         <Switch
                                                             checked={formData.evaluation_questions_binary[index] || false}

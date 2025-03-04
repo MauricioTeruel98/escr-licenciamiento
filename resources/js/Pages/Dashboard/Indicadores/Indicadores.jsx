@@ -385,6 +385,7 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                                                 guide={indicator.guide}
                                                 autoeval_ended={company.autoeval_ended}
                                                 availableToModifyAutoeval={availableToModifyAutoeval}
+                                                isBinary={indicator.is_binary}
                                             />
                                         </div>
                                         {indicator.binding && (
