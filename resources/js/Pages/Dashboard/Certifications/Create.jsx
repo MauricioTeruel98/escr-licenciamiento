@@ -640,8 +640,11 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                 <div className="flex justify-end gap-2">
                                                                     <button
                                                                         onClick={() => handleEdit(cert.id)}
-                                                                        className="px-4 py-1 text-sm border border-gray-200 rounded-md hover:bg-gray-50"
+                                                                        className="px-4 py-1 text-sm bg-blue-50 border border-blue-300 rounded-md hover:bg-blue-100 flex items-center"
                                                                     >
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                        </svg>
                                                                         Editar
                                                                     </button>
                                                                 </div>
@@ -657,16 +660,21 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleCancelEdit(cert.id)}
-                                                                        className="px-4 py-1 text-sm border border-gray-200 rounded-md hover:bg-gray-50"
+                                                                        className="px-4 py-1 text-sm bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 flex items-center"
                                                                     >
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                        </svg>
                                                                         Cancelar
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleSave(cert.id)}
-                                                                        className={`px-4 py-1 text-sm border border-gray-200 rounded-md hover:bg-gray-50 ${fechaErrores[cert.id] ? 'opacity-50 cursor-not-allowed' : ''
-                                                                            }`}
+                                                                        className={`px-4 py-1 text-sm bg-green-600 text-white border border-green-700 rounded-md hover:bg-green-700 flex items-center ${fechaErrores[cert.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                                         disabled={fechaErrores[cert.id]}
                                                                     >
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                        </svg>
                                                                         Aceptar
                                                                     </button>
                                                                 </div>
