@@ -346,7 +346,7 @@ export default function Evaluation({
                         <h2 className="card-title">Estos son los pasos para licenciarse</h2>
                     </div>
                     <div className="card-body">
-                        <div className='flex flex-col md:flex-row items-center justify-between w-full px-8 gap-4'>
+                        <div className='flex flex-col md:flex-row items-start justify-between w-full px-8 gap-4'>
                             <div className='flex flex-col items-center gap-2 text-green-700'>
                                 <img src="/assets/img/icons-home/check.png" alt="Check" />
                                 <h2 className='w-[80%] text-center'>Evaluación</h2>
