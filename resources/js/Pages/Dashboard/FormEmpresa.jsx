@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import InputError from '@/Components/InputError';
 import axios from 'axios';
 import Toast from '@/Components/ToastAdmin';
 import { TrashIcon } from '@heroicons/react/20/solid';
+import DeleteModal from '@/Components/Modals/DeleteModal';
 
 export default function CompanyProfile({ userName, infoAdicional }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -610,12 +611,41 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         }
     };
 
-    const eliminarProducto = async (productId) => {
+    // Agregar estados para el modal de confirmación de eliminación
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [productoToDelete, setProductoToDelete] = useState(null);
+    
+    // Modificar la función para manejar el inicio del proceso de eliminación
+    const handleDeleteProducto = (producto, index) => {
+        if (producto.id) {
+            // Si el producto ya existe en la base de datos, mostrar modal de confirmación
+            setProductoToDelete({ producto, index });
+            setDeleteModalOpen(true);
+        } else {
+            // Si el producto es nuevo y no está guardado, eliminarlo directamente
+            eliminarProductoNuevo(index);
+        }
+    };
+    
+    // Función para eliminar productos nuevos (no guardados en la base de datos)
+    const eliminarProductoNuevo = (index) => {
+        setData('productos', data.productos.filter((_, i) => i !== index));
+        setToast({
+            show: true,
+            message: 'Producto eliminado correctamente',
+            type: 'success'
+        });
+    };
+    
+    // Función para confirmar la eliminación de un producto existente
+    const confirmarEliminarProducto = async () => {
+        if (!productoToDelete) return;
+        
         try {
-            const response = await axios.delete(route('company.product.destroy', { productId }));
+            const response = await axios.delete(route('company.product.destroy', { productId: productoToDelete.producto.id }));
 
             if (response.data.success) {
-                setData('productos', data.productos.filter(p => p.id !== productId));
+                setData('productos', data.productos.filter(p => p.id !== productoToDelete.producto.id));
                 setToast({
                     show: true,
                     message: 'Producto eliminado correctamente',
@@ -629,18 +659,31 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 message: 'Error al eliminar el producto',
                 type: 'error'
             });
+        } finally {
+            // Cerrar el modal y limpiar el estado
+            setDeleteModalOpen(false);
+            setProductoToDelete(null);
         }
+    };
+    
+    // Reemplazar la función eliminarProducto existente
+    const eliminarProducto = async (productId) => {
+        // Esta función ya no se usa directamente, se mantiene por compatibilidad
+        console.warn('La función eliminarProducto está obsoleta. Use handleDeleteProducto en su lugar.');
     };
 
     // Función para validar campos
     const validarCampo = (valor, tipo = 'texto') => {
+        // Eliminar espacios al inicio para todos los campos
+        const valorSinEspaciosInicio = valor.trimStart();
+        
         const regexTexto = /["'\\/]/g; // Comillas simples, dobles, barras y barras invertidas
         const regexURL = /["'\\]/g; // Comillas simples, dobles y barras invertidas
 
         if (tipo === 'url') {
-            return !regexURL.test(valor);
+            return !regexURL.test(valorSinEspaciosInicio) ? valorSinEspaciosInicio : false;
         }
-        return !regexTexto.test(valor);
+        return !regexTexto.test(valorSinEspaciosInicio) ? valorSinEspaciosInicio : false;
     };
 
     // Función para manejar cambios en campos de texto
@@ -654,43 +697,84 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             return;
         }
         
-        if (!validarCampo(value)) {
+        // Verificar si es un campo de productos (nombre o descripción)
+        if (name.includes('productos[')) {
+            // Extraer el índice y el campo del nombre
+            const matches = name.match(/productos\[(\d+)\]\.(\w+)/);
+            if (matches && matches.length === 3) {
+                const index = parseInt(matches[1]);
+                const field = matches[2];
+                
+                // Validar el valor según el tipo de campo y eliminar espacios al inicio
+                const valorValidado = validarCampo(value);
+                if (valorValidado === false) {
+                    alert('El campo contiene caracteres no permitidos.');
+                    return;
+                }
+                
+                // Crear una copia del array de productos
+                const nuevosProductos = [...data.productos];
+                
+                // Actualizar el campo específico del producto
+                if (nuevosProductos[index]) {
+                    nuevosProductos[index] = {
+                        ...nuevosProductos[index],
+                        [field]: valorValidado
+                    };
+                    
+                    // Actualizar el estado con los productos modificados
+                    setData('productos', nuevosProductos);
+                }
+                return;
+            }
+        }
+        
+        // Para otros campos que no son de productos
+        const valorValidado = validarCampo(value);
+        if (valorValidado === false) {
             alert('El campo contiene caracteres no permitidos.');
             return;
         }
         
-        // Actualizar el estado con el valor válido
-        setData(name, value);
+        // Actualizar el estado con el valor válido (sin espacios al inicio)
+        setData(name, valorValidado);
     };
 
     // Función para manejar cambios en campos de URL
     const handleURLChange = (e) => {
         const { name, value } = e.target;
-        if (!validarCampo(value, 'url')) {
+        
+        // Validar URL y eliminar espacios al inicio
+        const valorValidado = validarCampo(value, 'url');
+        if (valorValidado === false) {
             alert('El campo URL contiene caracteres no permitidos.');
             return;
         }
-        // Actualizar el estado con el valor válido
-        setData(name, value);
+        
+        // Actualizar el estado con el valor válido (sin espacios al inicio)
+        setData(name, valorValidado);
     };
     
     // Función específica para manejar el año de fundación
     const handleAnioFundacionChange = (e) => {
         const { name, value } = e.target;
-        const anio = parseInt(value);
+        
+        // Eliminar espacios al inicio
+        const valorSinEspacios = value.trimStart();
+        const anio = parseInt(valorSinEspacios);
         
         // Validar que sea un número y esté en un rango razonable (1800 hasta el año actual)
         const anioActual = new Date().getFullYear();
         
-        if (value === '') {
+        if (valorSinEspacios === '') {
             // Permitir campo vacío
-            setData(name, value);
+            setData(name, valorSinEspacios);
         } else if (isNaN(anio)) {
             alert('Por favor ingrese un año válido.');
         } else if (anio < 1800 || anio > anioActual) {
             alert(`Por favor ingrese un año entre 1800 y ${anioActual}.`);
         } else {
-            setData(name, value);
+            setData(name, valorSinEspacios);
         }
     };
 
@@ -1948,7 +2032,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <h3 className="text-lg font-medium text-gray-900">Producto {index + 1}</h3>
                                             <button
                                                 type="button"
-                                                onClick={() => eliminarProducto(producto.id)}
+                                                onClick={() => handleDeleteProducto(producto, index)}
                                                 className="bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
                                                 title="Eliminar Producto"
                                             >
@@ -2118,6 +2202,18 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     onClose={() => setToast({ ...toast, show: false })}
                 />
             )}
+            
+            {/* Agregar el modal de confirmación al final del componente */}
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                onClose={() => {
+                    setDeleteModalOpen(false);
+                    setProductoToDelete(null);
+                }}
+                onConfirm={confirmarEliminarProducto}
+                title="Eliminar Producto"
+                description={`¿Está seguro de que desea eliminar el producto "${productoToDelete?.producto?.nombre || 'seleccionado'}"? Esta acción no se puede deshacer.`}
+            />
         </DashboardLayout>
     );
 }
