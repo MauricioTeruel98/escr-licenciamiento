@@ -195,6 +195,25 @@ export default function Certifications({ certifications: initialCertifications, 
             return;
         }
 
+        // Verificar si ya existe una certificación con el mismo nombre
+        const certificacionExistente = certificaciones.find(
+            cert => cert.nombre.toLowerCase() === selectedCertification.nombre.toLowerCase()
+        );
+        
+        if (certificacionExistente) {
+            showNotification('error', 'Ya existe una certificación con este nombre para su empresa');
+            // Resaltar el campo de nombre de certificación
+            const inputElement = document.getElementById('nombreCertificacion');
+            if (inputElement) {
+                inputElement.focus();
+                inputElement.classList.add('border-red-500');
+                setTimeout(() => {
+                    inputElement.classList.remove('border-red-500');
+                }, 3000);
+            }
+            return;
+        }
+
         if (!validarFechaExpiracion(nuevaCertificacion.fechaExpiracion)) return;
 
         setLoading(true); // Iniciar el estado de carga
@@ -226,7 +245,20 @@ export default function Certifications({ certifications: initialCertifications, 
 
             showNotification('success', response.data.message);
         } catch (error) {
-            showNotification('error', error.response?.data?.error || 'Error al crear la certificación');
+            if (error.response?.status === 422 && error.response?.data?.error?.includes('Ya existe una certificación')) {
+                showNotification('error', 'Ya existe una certificación con este nombre para su empresa');
+                // Resaltar el campo de nombre de certificación
+                const inputElement = document.getElementById('nombreCertificacion');
+                if (inputElement) {
+                    inputElement.focus();
+                    inputElement.classList.add('border-red-500');
+                    setTimeout(() => {
+                        inputElement.classList.remove('border-red-500');
+                    }, 3000);
+                }
+            } else {
+                showNotification('error', error.response?.data?.error || 'Error al crear la certificación');
+            }
         } finally {
             setLoading(false); // Finalizar el estado de carga
         }
@@ -368,6 +400,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                     </div>
                                     <input
                                         type="text"
+                                        id="nombreCertificacion"
                                         placeholder="Seleccione una certificación"
                                         value={searchTerm}
                                         onChange={handleSearchChange}

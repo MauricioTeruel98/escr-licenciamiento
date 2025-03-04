@@ -8,6 +8,8 @@ use App\Models\IndicatorHomologation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class CertificationController extends Controller
 {
@@ -15,7 +17,7 @@ class CertificationController extends Controller
 
     public function create()
     {
-        $certifications = auth()->user()->company->certifications()
+        $certifications = Auth::user()->company->certifications()
             ->orderBy('created_at', 'desc')
             ->get();
             
@@ -45,16 +47,27 @@ class CertificationController extends Controller
         ]);
 
         try {
+            // Verificar si ya existe una certificación con el mismo nombre para esta empresa
+            $existingCertification = Auth::user()->company->certifications()
+                ->where('nombre', $validated['nombre'])
+                ->first();
+            
+            if ($existingCertification) {
+                return response()->json([
+                    'error' => 'Ya existe una certificación con este nombre para su empresa'
+                ], 422);
+            }
+            
             // Agregar logs para depuración
-            \Log::info('Datos validados:', $validated);
+            Log::info('Datos validados:', $validated);
             
             // Obtener el número de indicadores homologados para esta certificación
             $indicadoresCount = IndicatorHomologation::where('homologation_id', $validated['homologation_id'])
                 ->count();
             
-            \Log::info('Número de indicadores encontrados:', ['count' => $indicadoresCount]);
+            Log::info('Número de indicadores encontrados:', ['count' => $indicadoresCount]);
 
-            $certification = auth()->user()->company->certifications()->create([
+            $certification = Auth::user()->company->certifications()->create([
                 'nombre' => $validated['nombre'],
                 'homologation_id' => $validated['homologation_id'],
                 'fecha_obtencion' => $validated['fecha_obtencion'],
@@ -71,7 +84,7 @@ class CertificationController extends Controller
             ]);
         } catch (\Exception $e) {
             // Agregar log del error específico
-            \Log::error('Error al crear certificación:', [
+            Log::error('Error al crear certificación:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
