@@ -366,10 +366,10 @@ export default function IndicatorModal({
                                         />
                                     </div>
 
-                                    {/* Preguntas de evaluación (opcional) */}
+                                    {/* Preguntas de evaluación */}
                                     <div className="sm:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Preguntas de evaluación (opcional)
+                                            Preguntas de evaluación
                                         </label>
                                         {formData.evaluation_questions.map((question, index) => (
                                             <div key={index} className="flex items-center space-x-2 mb-4">
