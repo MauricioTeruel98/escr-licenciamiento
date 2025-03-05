@@ -29,7 +29,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         otra_red_social: infoAdicional?.otra_red_social || '',
         sector: infoAdicional?.sector || '',
         tamano_empresa: infoAdicional?.tamano_empresa || '',
-        anio_fundacion: infoAdicional?.anio_fundacion || '',
+        anio_fundacion: infoAdicional?.anio_fundacion || '', 
         cantidad_hombres: infoAdicional?.cantidad_hombres || '',
         cantidad_mujeres: infoAdicional?.cantidad_mujeres || '',
         cantidad_otros: infoAdicional?.cantidad_otros || '',

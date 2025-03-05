@@ -32,7 +32,28 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
     };
 
     const handleInputChange = (e, field) => {
-        if (field === 'website') {
+        const value = e.target.value;
+        
+        // Validaciones específicas para cada campo
+        if (field === 'name') {
+            // Solo permitir letras, números, espacios y punto para el nombre de la empresa
+            const regex = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ0-9\s.]*$/;
+            if (value === '' || regex.test(value)) {
+                setData(field, value);
+            }
+        } else if (field === 'commercial_activity') {
+            // Solo permitir letras, números y espacios para la actividad comercial
+            const regex = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ0-9\s]*$/;
+            if (value === '' || regex.test(value)) {
+                setData(field, value);
+            }
+        } else if (field === 'phone' || field === 'mobile') {
+            // Solo permitir números y guiones para teléfonos
+            const regex = /^[0-9-]*$/;
+            if (value === '' || regex.test(value)) {
+                setData(field, value);
+            }
+        } else if (field === 'website') {
             // Para URLs permitimos barras y barras invertidas, solo eliminamos espacios al inicio y comillas
             let cleanedValue = e.target.value.replace(/^[\s]+|['\"]/g, '');
             
@@ -71,7 +92,19 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
         const cleanedData = {};
         Object.keys(data).forEach(key => {
             if (typeof data[key] === 'string') {
-                if (key === 'website') {
+                if (key === 'name') {
+                    // Solo permitir letras, números, espacios y punto para el nombre de la empresa
+                    const regex = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ0-9\s.]*$/;
+                    cleanedData[key] = regex.test(data[key]) ? data[key] : '';
+                } else if (key === 'commercial_activity') {
+                    // Solo permitir letras, números y espacios para la actividad comercial
+                    const regex = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ0-9\s]*$/;
+                    cleanedData[key] = regex.test(data[key]) ? data[key] : '';
+                } else if (key === 'phone' || key === 'mobile') {
+                    // Solo permitir números y guiones para teléfonos
+                    const regex = /^[0-9-]*$/;
+                    cleanedData[key] = regex.test(data[key]) ? data[key] : '';
+                } else if (key === 'website') {
                     // Para URLs solo eliminamos espacios al inicio y comillas
                     let cleanedValue = data[key].replace(/^[\s]+|['\"]/g, '');
                     

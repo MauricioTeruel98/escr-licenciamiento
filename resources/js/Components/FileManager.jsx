@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function FileManager({
     onFileSelect,
@@ -13,16 +13,27 @@ export default function FileManager({
     errorMessages = {
         maxFiles: 'Solo se permite subir 1 archivo',
         maxSize: 'El archivo excede el tamaño máximo permitido (2MB)',
-        fileType: 'Tipo de archivo no permitido'
+        fileType: 'Tipo de archivo no permitido',
+        required: 'Debe subir al menos un archivo'
     },
     indicatorId,
     onSuccess,
     onError,
-    readOnly = false
+    readOnly = false,
+    required = true
 }) {
     const [isDragging, setIsDragging] = useState(false);
     const [error, setError] = useState('');
     const fileInputRef = useRef(null);
+
+    // Verificar si hay archivos al montar el componente
+    useEffect(() => {
+        if (required && files.length === 0 && !readOnly) {
+            setError(errorMessages.required || 'Debe subir al menos un archivo');
+        } else {
+            setError('');
+        }
+    }, [files.length, required, readOnly, errorMessages]);
 
     const handleDragEnter = (e) => {
         e.preventDefault();
@@ -34,6 +45,14 @@ export default function FileManager({
         e.preventDefault();
         e.stopPropagation();
         setIsDragging(false);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isDragging) {
+            setIsDragging(true);
+        }
     };
 
     const validateFile = (file) => {
@@ -64,7 +83,10 @@ export default function FileManager({
     };
 
     const processFiles = (fileList) => {
-        setError('');
+        // Limpiar error de "campo requerido" si se están subiendo archivos
+        if (required && fileList.length > 0) {
+            setError('');
+        }
 
         // Validar número máximo de archivos
         if (files.length + fileList.length > maxFiles) {
@@ -124,30 +146,15 @@ export default function FileManager({
     };
 
     const handleFileRemove = async (fileToRemove) => {
-        try {
-            // Si el archivo tiene una ruta en el servidor (archivo existente)
-            if (fileToRemove.path) {
-                const response = await axios.delete(route('evaluacion.delete-file'), {
-                    data: {
-                        indicator_id: indicatorId,
-                        file_path: fileToRemove.path
-                    }
-                });
+        if (readOnly) return;
 
-                if (response.data.success) {
-                    onFileRemove(fileToRemove);
-                    if (typeof onSuccess === 'function') {
-                        onSuccess('Archivo eliminado correctamente');
-                    }
-                }
-            } else {
-                // Para archivos que aún no se han subido
-                onFileRemove(fileToRemove);
-            }
-        } catch (error) {
-            console.error('Error al eliminar archivo:', error);
-            if (typeof onError === 'function') {
-                onError(error.response?.data?.message || 'Error al eliminar el archivo');
+        // Llamar a la función de eliminación proporcionada por el componente padre
+        if (onFileRemove) {
+            await onFileRemove(fileToRemove);
+            
+            // Si se eliminó el último archivo y el campo es requerido, mostrar error
+            if (required && files.length <= 1) {
+                setError(errorMessages.required || 'Debe subir al menos un archivo');
             }
         }
     };
@@ -156,18 +163,19 @@ export default function FileManager({
         <div className={className}>
             {/* Área de arrastre */}
             <div
-                className={`relative border border-gray-300 rounded-lg transition-colors bg-white`}
+                className={`border-2 ${isDragging ? 'border-green-500 bg-green-50' : 'border-dashed border-gray-300'} rounded-lg p-4 ${className}`}
+                onDragOver={handleDragOver}
                 onDragEnter={handleDragEnter}
-                onDragOver={handleDragEnter}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
             >
+                {/* Input de archivo oculto */}
                 {!readOnly && (
                     <input
-                        ref={fileInputRef}
                         type="file"
-                        multiple
+                        ref={fileInputRef}
                         className="hidden"
+                        multiple={maxFiles > 1}
                         accept={acceptedTypes}
                         onChange={handleFileInput}
                     />
@@ -185,6 +193,7 @@ export default function FileManager({
                                 >
                                     {buttonText}
                                 </button>
+                                {required && <span className="text-red-500 ml-1">*</span>}
                             </p>
                             <p className="text-gray-500 text-xs mt-1">
                                 Máximo {maxFiles} {maxFiles === 1 ? 'archivo' : 'archivos'} de {formatFileSize(maxSize)} - Formatos: jpg, jpeg, png, pdf, excel, word

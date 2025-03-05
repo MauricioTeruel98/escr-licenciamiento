@@ -96,15 +96,22 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 if (question.is_binary === false || question.is_binary === 0) {
                     return;
                 }
-
+                
                 // Verificar descripción
                 if (!answers[question.id]?.description?.trim()) {
                     errors[`description-${question.id}`] = 'La descripción es obligatoria';
                     hasErrors = true;
                 }
+                
+                // Verificar si hay archivos
+                const hasFiles = answers[question.id]?.files && answers[question.id]?.files.length > 0;
+                if (!hasFiles) {
+                    errors[`files-${question.id}`] = 'Debe subir al menos un archivo como evidencia';
+                    hasErrors = true;
+                }
             });
         });
-
+        
         setValidationErrors(errors);
 
         if (hasErrors) {
@@ -114,7 +121,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             });
             return;
         }
-
+        
         if (!areCurrentSubcategoryQuestionsAnswered()) {
             setNotification({
                 type: 'error',
@@ -125,7 +132,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
         try {
             setLoading(true);
-
+            
             // Guardar respuestas por indicador para la subcategoría actual
             let hasError = false;
             
@@ -143,7 +150,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     type: 'success',
                     message: 'Respuestas guardadas correctamente'
                 });
-
+                
                 // Avanzar a la siguiente subcategoría
                 if (currentSubcategoryIndex < subcategories.length - 1) {
                     setCurrentSubcategoryIndex(prev => prev + 1);
@@ -259,6 +266,20 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             evaluator_comment
         };
         setAnswers(newAnswers);
+
+        // Validar si hay archivos
+        if (files.length === 0) {
+            setValidationErrors(prev => ({
+                ...prev,
+                [`files-${questionId}`]: 'Debe subir al menos un archivo como evidencia'
+            }));
+        } else {
+            setValidationErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[`files-${questionId}`];
+                return newErrors;
+            });
+        }
     };
 
     const handleApproval = (questionId, value) => {
@@ -272,7 +293,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }
 
         const newApprovals = { ...approvals };
-        newApprovals[questionId] = value;
+        newApprovals[question.id] = value;
         setApprovals(newApprovals);
     };
 
@@ -319,8 +340,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                         const hasDescription = answers[question.id]?.description?.trim() !== '' &&
                             answers[question.id]?.description !== undefined;
 
-                        // Una pregunta se considera respondida si tiene valor y descripción
-                        if (hasValue && hasDescription) {
+                        // Verificar que haya al menos un archivo subido
+                        const hasFiles = answers[question.id]?.files && answers[question.id]?.files.length > 0;
+
+                        // Una pregunta se considera respondida si tiene valor, descripción y al menos un archivo
+                        if (hasValue && hasDescription && hasFiles) {
                             answeredQuestions++;
                         }
                     });
@@ -356,8 +380,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     // Verificar que la descripción no esté vacía después de quitar espacios
                     const hasDescription = answers[question.id]?.description?.trim() !== '' &&
                         answers[question.id]?.description !== undefined;
+                    
+                    // Verificar que haya al menos un archivo subido
+                    const hasFiles = answers[question.id]?.files && answers[question.id]?.files.length > 0;
 
-                    return hasValue && hasDescription;
+                    return hasValue && hasDescription && hasFiles;
                 })
             );
         }
@@ -369,6 +396,38 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             setNotification({
                 type: 'error',
                 message: 'Su empresa debe ser exportadora para poder realizar la evaluación.'
+            });
+            return;
+        }
+
+        // Verificar si hay preguntas sin archivos
+        let hasQuestionsWithoutFiles = false;
+        const errors = {};
+        
+        valueData.subcategories.forEach(subcategory => {
+            subcategory.indicators.forEach(indicator => {
+                indicator.evaluation_questions.forEach(question => {
+                    // Si la pregunta no es binaria, omitirla
+                    if (question.is_binary === false || question.is_binary === 0) {
+                        return;
+                    }
+                    
+                    // Verificar si hay archivos
+                    const hasFiles = answers[question.id]?.files && answers[question.id]?.files.length > 0;
+                    
+                    if (!hasFiles) {
+                        hasQuestionsWithoutFiles = true;
+                        errors[`files-${question.id}`] = 'Debe subir al menos un archivo como evidencia';
+                    }
+                });
+            });
+        });
+        
+        if (hasQuestionsWithoutFiles) {
+            setValidationErrors(errors);
+            setNotification({
+                type: 'error',
+                message: 'Debe subir al menos un archivo como evidencia para cada pregunta'
             });
             return;
         }
@@ -814,6 +873,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                             }}
                                                             readOnly={isEvaluador || (!isExporter && !isEvaluador) || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
                                                         />
+                                                        {validationErrors[`files-${question.id}`] && (
+                                                            <p className="mt-1 text-sm text-red-600">
+                                                                {validationErrors[`files-${question.id}`]}
+                                                            </p>
+                                                        )}
                                                     </div>
                                                 </div>
 
