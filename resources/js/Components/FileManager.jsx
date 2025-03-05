@@ -17,7 +17,8 @@ export default function FileManager({
     },
     indicatorId,
     onSuccess,
-    onError
+    onError,
+    readOnly = false
 }) {
     const [isDragging, setIsDragging] = useState(false);
     const [error, setError] = useState('');
@@ -67,8 +68,8 @@ export default function FileManager({
 
         // Validar número máximo de archivos
         if (files.length + fileList.length > maxFiles) {
-            const mensaje = maxFiles === 1 
-                ? 'Solo se permite subir 1 archivo. Por favor, elimine el archivo existente antes de subir uno nuevo.' 
+            const mensaje = maxFiles === 1
+                ? 'Solo se permite subir 1 archivo. Por favor, elimine el archivo existente antes de subir uno nuevo.'
                 : `Solo se permiten subir ${maxFiles} archivos. Ya tiene ${files.length} archivo(s) subido(s).`;
             setError(mensaje);
             return;
@@ -161,37 +162,42 @@ export default function FileManager({
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
             >
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    className="hidden"
-                    accept={acceptedTypes}
-                    onChange={handleFileInput}
-                />
+                {!readOnly && (
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        className="hidden"
+                        accept={acceptedTypes}
+                        onChange={handleFileInput}
+                    />
+                )}
 
-                <div className="text-center py-4">
-                    <p className="text-gray-600 text-sm">
-                        {dragDropText}{' '}
-                        <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="text-green-600 hover:text-green-700 font-medium focus:outline-none"
-                        >
-                            {buttonText}
-                        </button>
-                    </p>
-                    <p className="text-gray-500 text-xs mt-1">
-                        Máximo {maxFiles} {maxFiles === 1 ? 'archivo' : 'archivos'} de {formatFileSize(maxSize)} - Formatos: jpg, jpeg, png, pdf, excel, word
-                    </p>
-                    {error && (
-                        <div className="text-red-500 text-sm mt-2">
-                            {error.split('\n').map((line, index) => (
-                                <p key={index}>{line}</p>
-                            ))}
+                {
+                    !readOnly && (
+                        <div className="text-center py-4">
+                            <p className="text-gray-600 text-sm">
+                                {dragDropText}{' '}
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="text-green-600 hover:text-green-700 font-medium focus:outline-none"
+                                >
+                                    {buttonText}
+                                </button>
+                            </p>
+                            <p className="text-gray-500 text-xs mt-1">
+                                Máximo {maxFiles} {maxFiles === 1 ? 'archivo' : 'archivos'} de {formatFileSize(maxSize)} - Formatos: jpg, jpeg, png, pdf, excel, word
+                            </p>
+                            {error && (
+                                <div className="text-red-500 text-sm mt-2">
+                                    {error.split('\n').map((line, index) => (
+                                        <p key={index}>{line}</p>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
-                </div>
             </div>
 
             {/* Lista de archivos */}
@@ -210,14 +216,16 @@ export default function FileManager({
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => handleFileRemove(file)}
-                                className="p-1 hover:bg-gray-500 rounded"
-                            >
-                                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+                            {!readOnly && (
+                                <button
+                                    onClick={() => handleFileRemove(file)}
+                                    className="p-1 hover:bg-gray-500 rounded"
+                                >
+                                    <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            )}
                             {file.path && (
                                 <a
                                     href={`/storage/${file.path}`}

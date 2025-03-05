@@ -8,16 +8,17 @@ use App\Models\User;
 use App\Models\Indicator;
 use App\Models\IndicatorAnswer;
 use App\Models\AutoEvaluationValorResult;
+use App\Models\Company;
 use App\Models\Value;
 use App\Models\EvaluatorAssessment;
 use App\Models\IndicatorAnswerEvaluation;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Auth;
 class EvaluationController extends Controller
 {
     public function index($value_id)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $company_id = $user->company_id;
         $isEvaluador = $user->role === 'evaluador';
 
@@ -122,6 +123,8 @@ class EvaluationController extends Controller
             }
         }
 
+        $company = Company::find($company_id);
+
         return Inertia::render('Dashboard/Evaluacion/Evaluacion', [
             'valueData' => $valueData,
             'userName' => $user->name,
@@ -129,7 +132,8 @@ class EvaluationController extends Controller
             'isEvaluador' => $isEvaluador,
             'progress' => $progress,
             'totalSteps' => $valueData->subcategories->count(),
-            'value_id' => $value_id
+            'value_id' => $value_id,
+            'company' => $company
         ]);
     }
 
@@ -158,7 +162,7 @@ class EvaluationController extends Controller
     public function sendApplication()
     {
         //Cambiar user_id por company_id
-        $user = auth()->user();
+        $user = Auth::user();
         $companyId = $user->company_id;
 
         DB::table('auto_evaluation_result')

@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { router, usePage } from '@inertiajs/react';
 
-export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, progress, totalSteps, value_id }) {
+export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, progress, totalSteps, value_id, company }) {
     const { auth } = usePage().props;
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [approvals, setApprovals] = useState(() => {
@@ -81,6 +81,8 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             }
         }
     };
+
+    console.log(company)
 
     const handleContinue = async () => {
         // Validar campos antes de continuar
@@ -567,8 +569,6 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }
     }, [answers, approvals, isEvaluador]);
 
-    console.log(auth.user)
-
     return (
         <DashboardLayout userName={userName} title="Evaluación">
             <div className="space-y-8">
@@ -710,7 +710,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 value="1"
                                                                 checked={answers[question.id]?.value === "1"}
                                                                 onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                                disabled={isEvaluador || (!isExporter && !isEvaluador)}
+                                                                disabled={isEvaluador || (!isExporter && !isEvaluador) || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
                                                                 className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                             />
                                                             <span className="text-gray-900">Sí</span>
@@ -723,7 +723,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 value="0"
                                                                 checked={answers[question.id]?.value === "0"}
                                                                 onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                                disabled={isEvaluador || (!isExporter && !isEvaluador)}
+                                                                disabled={isEvaluador || (!isExporter && !isEvaluador) || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
                                                                 className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                             />
                                                             <span className="text-gray-900">No</span>
@@ -757,7 +757,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     });
                                                                 }
                                                             }}
-                                                            disabled={isEvaluador || (!isExporter && !isEvaluador)}
+                                                            disabled={isEvaluador || (!isExporter && !isEvaluador) || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
                                                             maxLength={240}
                                                             className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none disabled:bg-gray-100 disabled:text-gray-500 ${validationErrors[`description-${question.id}`] ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
                                                                 }`}
@@ -812,7 +812,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     );
                                                                 }
                                                             }}
-                                                            readOnly={isEvaluador || (!isExporter && !isEvaluador)}
+                                                            readOnly={isEvaluador || (!isExporter && !isEvaluador) || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
                                                         />
                                                     </div>
                                                 </div>
