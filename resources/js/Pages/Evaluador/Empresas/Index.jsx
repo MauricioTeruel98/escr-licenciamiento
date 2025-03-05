@@ -34,8 +34,46 @@ export default function EmpresasEvaluadorIndex() {
             key: 'name',
             label: 'Nombre',
             render: (item) => (
-                <div className="font-medium text-gray-900">{item.name}</div>
+                <div className="font-medium text-gray-900">{item.name}{console.log(item)}</div>
             )
+        },
+        {
+            key: 'estado',
+            label: 'Estado',
+            render: (item) => {
+                let colorClass = '';
+                let textItem = '';
+                switch (item.estado_eval) {
+                    case 'auto-evaluacion':
+                        colorClass = 'text-yellow-800 border-yellow-200 bg-yellow-50';
+                        textItem = 'Auto-evaluación';
+                        break;
+                    case 'auto-evaluacion-completada':
+                        colorClass = 'text-blue-800 border-blue-200 bg-blue-50';
+                        textItem = 'Auto-evaluación Completada';
+                        break;
+                    case 'evaluacion-pendiente':
+                        colorClass = 'text-orange-800 border-orange-200 bg-orange-50';
+                        textItem = 'Evaluación Pendiente';
+                        break;
+                    case 'evaluacion':
+                        colorClass = 'text-green-800 border-green-200 bg-green-50';
+                        textItem = 'Evaluación';
+                        break;
+                    case 'evaluacion-completada':
+                        colorClass = 'text-indigo-800 border-indigo-200 bg-indigo-50';
+                        textItem = 'Evaluación Completada';
+                        break;
+                    default:
+                        colorClass = 'text-gray-800 border-gray-200 bg-gray-50';
+                }
+
+                return (
+                    <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${colorClass}`}>
+                        {textItem}
+                    </span>
+                );
+            }
         },
         {
             key: 'actions',
@@ -169,12 +207,12 @@ export default function EmpresasEvaluadorIndex() {
                 type: 'info',
                 message: 'Cambiando a la empresa seleccionada...'
             });
-            
+
             // Cambiar a la empresa seleccionada
             await axios.post('/api/evaluador/switch-company', {
                 company_id: company.id
             });
-            
+
             // Redirigir al dashboard del evaluador usando router.visit
             router.visit(route('evaluador.dashboard'));
         } catch (error) {

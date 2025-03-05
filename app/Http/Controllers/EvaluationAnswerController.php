@@ -50,7 +50,7 @@ class EvaluationAnswerController extends Controller
                 // Si es evaluador, guardar la evaluación
                 if ($user->role === 'evaluador') {
                     $evaluationQuestion = \App\Models\EvaluationQuestion::findOrFail($questionId);
-                    
+
                     // Guardar o actualizar la evaluación
                     EvaluatorAssessment::updateOrCreate(
                         [
@@ -132,11 +132,11 @@ class EvaluationAnswerController extends Controller
                 $savedAnswers[$questionId] = [
                     'value' => $answer->answer,
                     'description' => $answer->description,
-                    'files' => array_map(function($path) {
+                    'files' => array_map(function ($path) {
                         return [
                             'name' => basename($path),
                             'path' => $path,
-                            'size' => file_exists(storage_path('app/public/' . $path)) ? 
+                            'size' => file_exists(storage_path('app/public/' . $path)) ?
                                 filesize(storage_path('app/public/' . $path)) : 0,
                             'type' => mime_content_type(storage_path('app/public/' . $path)) ?? 'application/octet-stream'
                         ];
@@ -155,6 +155,7 @@ class EvaluationAnswerController extends Controller
             if ($isLastValue) {
                 $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
                 $superAdminUser = User::where('role', 'super_admin')->first();
+
 
                 $companyName = $user->company->name; // Obtener el nombre de la empresa
 
@@ -176,13 +177,12 @@ class EvaluationAnswerController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $user->role === 'evaluador' ? 
-                    '¡Evaluación guardada exitosamente!' : 
+                'message' => $user->role === 'evaluador' ?
+                    '¡Evaluación guardada exitosamente!' :
                     $message,
                 'savedAnswers' => $savedAnswers,
                 'isPartialSave' => $isPartialSave
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al guardar:', [
@@ -269,7 +269,6 @@ class EvaluationAnswerController extends Controller
                 'success' => true,
                 'evaluations' => $evaluations
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error al obtener evaluaciones:', [
                 'error' => $e->getMessage(),
@@ -316,7 +315,7 @@ class EvaluationAnswerController extends Controller
                 // Si es evaluador, guardar la evaluación
                 if ($user->role === 'evaluador') {
                     $evaluationQuestion = \App\Models\EvaluationQuestion::findOrFail($questionId);
-                    
+
                     // Guardar o actualizar la evaluación
                     EvaluatorAssessment::updateOrCreate(
                         [
@@ -398,11 +397,11 @@ class EvaluationAnswerController extends Controller
                 $savedAnswers[$questionId] = [
                     'value' => $answer->answer,
                     'description' => $answer->description,
-                    'files' => array_map(function($path) {
+                    'files' => array_map(function ($path) {
                         return [
                             'name' => basename($path),
                             'path' => $path,
-                            'size' => file_exists(storage_path('app/public/' . $path)) ? 
+                            'size' => file_exists(storage_path('app/public/' . $path)) ?
                                 filesize(storage_path('app/public/' . $path)) : 0,
                             'type' => mime_content_type(storage_path('app/public/' . $path)) ?? 'application/octet-stream'
                         ];
@@ -410,12 +409,41 @@ class EvaluationAnswerController extends Controller
                 ];
             }
 
+            // Verificar si este es el último valor
+            $isLastValue = Value::where('is_active', true)
+                ->orderBy('id', 'desc')
+                ->first()->id == $request->value_id;
+
+            // Enviar notificación al completar la evaluación
+            if ($isLastValue) {
+                $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
+                $superAdminUser = User::where('role', 'super_admin')->first();
+
+
+                $companyName = $user->company->name; // Obtener el nombre de la empresa
+
+                //$user->notify(new EvaluationCompletedNotification($user, $companyName));
+                if ($adminUser) {
+                    $adminUser->notify(new EvaluationCompletedNotification($user, $companyName));
+                }
+                if ($superAdminUser) {
+                    $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $companyName));
+                }
+
+                $company = Company::find($user->company_id);
+
+                // Actualizar la columna estado_eval en la tabla companies
+                $company->update(['estado_eval' => 'evaluacion-completada']);
+
+                $company->save();
+            }
+
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => $user->role === 'evaluador' ? 
-                    '¡Evaluación guardada exitosamente!' : 
+                'message' => $user->role === 'evaluador' ?
+                    '¡Evaluación guardada exitosamente!' :
                     $message,
                 'savedAnswers' => $savedAnswers,
                 'indicator_id' => $indicatorId
@@ -440,7 +468,9 @@ class EvaluationAnswerController extends Controller
     {
         $allowedTypes = [
             // Imágenes
-            'image/jpeg', 'image/jpg', 'image/png',
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
             // PDF
             'application/pdf',
             // Excel
@@ -450,13 +480,13 @@ class EvaluationAnswerController extends Controller
             'application/msword',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ];
-        
+
         // Tamaño máximo: 2MB
         $maxSize = 2 * 1024 * 1024;
-        
+
         // Número máximo de archivos por pregunta
         $maxFiles = 3;
-        
+
         $errorMessages = [];
 
         if ($request->has('answers') && is_array($request->answers)) {
@@ -467,14 +497,14 @@ class EvaluationAnswerController extends Controller
                         $errorMessages[] = "Solo se permite subir hasta {$maxFiles} archivos por pregunta.";
                         continue;
                     }
-                    
+
                     foreach ($answerData['files'] as $index => $file) {
                         if ($file instanceof \Illuminate\Http\UploadedFile) {
                             // Validar tipo de archivo
                             if (!in_array($file->getMimeType(), $allowedTypes)) {
                                 $errorMessages[] = "El archivo '{$file->getClientOriginalName()}' no es de un tipo permitido. Solo se permiten archivos jpg, jpeg, png, pdf, excel y word.";
                             }
-                            
+
                             // Validar tamaño de archivo
                             if ($file->getSize() > $maxSize) {
                                 $errorMessages[] = "El archivo '{$file->getClientOriginalName()}' excede el tamaño máximo permitido de 2MB.";

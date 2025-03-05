@@ -1,7 +1,7 @@
 import { useState, useEffect, Fragment } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import EvaluadorLayout from '@/Layouts/EvaluadorLayout';
-import { Building2, ClipboardList, Users, AlertTriangle, XCircle } from 'lucide-react';
+import { Building2, ClipboardList, Users, AlertTriangle, XCircle, CheckCircle } from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import { Combobox, Transition } from '@headlessui/react';
@@ -13,6 +13,7 @@ export default function EvaluadorDashboard({ auth }) {
     const [selectedCompany, setSelectedCompany] = useState(null);
     const [activeCompany, setActiveCompany] = useState(null);
     const [isCompanyAuthorized, setIsCompanyAuthorized] = useState(false);
+    const [companyStatusEval, setCompanyStatusEval] = useState(null);
     const [query, setQuery] = useState('');
 
     useEffect(() => {
@@ -43,6 +44,7 @@ export default function EvaluadorDashboard({ auth }) {
             const response = await axios.get('/api/evaluador/active-company');
             setActiveCompany(response.data);
             setIsCompanyAuthorized(response.data?.authorized === 1);
+            setCompanyStatusEval(response.data?.estado_eval);
         } catch (error) {
             console.error('Error al cargar empresa activa:', error);
         }
@@ -106,6 +108,57 @@ export default function EvaluadorDashboard({ auth }) {
                                         <p className="text-sm text-green-700">Evaluando actualmente:</p>
                                         <h2 className="text-lg font-semibold text-green-900">{activeCompany.name}</h2>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Mensaje de advertencia cuando la empresa no está autorizada */}
+                    {companyStatusEval === 'evaluacion-pendiente' && (
+                        <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                                <div className="mt-0.5">
+                                    <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-md font-semibold text-yellow-800">La empresa tiene la evaluación pendiente</h3>
+                                    <p className="text-sm text-yellow-700 mt-1">
+                                        La empresa tiene la evaluación pendiente, por lo que no se podrá acceder a las opciones de evaluación hasta que la empresa termine la evaluación.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Mensaje de advertencia cuando la empresa no está autorizada */}
+                    {companyStatusEval === 'evaluacion' && (
+                        <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                                <div className="mt-0.5">
+                                    <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-md font-semibold text-yellow-800">La empresa está realizando la evaluación</h3>
+                                    <p className="text-sm text-yellow-700 mt-1">
+                                        La empresa está realizando la evaluación, por lo que no se podrá acceder a las opciones de evaluación hasta que la empresa termine la evaluación.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Mensaje de advertencia cuando la empresa no está autorizada */}
+                    {companyStatusEval === 'evaluacion-completada' && (
+                        <div className="mb-8 bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                                <div className="mt-0.5">
+                                    <CheckCircle className="h-5 w-5 text-green-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-md font-semibold text-green-800">La empresa ha completado la evaluación</h3>
+                                    <p className="text-sm text-green-700 mt-1">
+                                        La empresa ha completado la evaluación y está lista para ser evaluada.
+                                    </p>
                                 </div>
                             </div>
                         </div>

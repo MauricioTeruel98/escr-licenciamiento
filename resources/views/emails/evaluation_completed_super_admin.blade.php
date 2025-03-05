@@ -44,7 +44,7 @@
         </div>
         
         <div class="content">
-            <p>Hola {{ $user->name }},</p>
+            <p>Hola</p>
             
             <p>La empresa <strong>{{ $companyName }}</strong> ha completado su evaluación y está lista para ser revisada.</p>
             
