@@ -309,6 +309,10 @@ Route::get('/download-indicators-pdf', [PDFController::class, 'downloadIndicator
     ->name('download.indicators.pdf')
     ->middleware(['auth']);
 
+Route::get('/download-company-documentation', [PDFController::class, 'downloadCompanyDocumentation'])
+    ->name('download.company.documentation')
+    ->middleware(['auth']);
+
 // Rutas para gestión de usuarios por compañía
 Route::middleware(['auth'])->group(function () {
     Route::get('/api/users/company', [UserManagementController::class, 'index']);

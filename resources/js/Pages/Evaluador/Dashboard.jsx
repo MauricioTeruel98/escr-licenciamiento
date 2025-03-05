@@ -207,9 +207,9 @@ export default function EvaluadorDashboard({ auth }) {
                             <div className="bg-white rounded-lg shadow p-6">
                                 <h3 className="text-xl font-bold mb-2">Descargar documentación</h3>
                                 <div className="mt-6">
-                                    <Link href={''} className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors">
-                                        Ver Perfil
-                                    </Link>
+                                    <a href={route('download.company.documentation')} className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors" target="_blank" rel="noopener noreferrer">
+                                        Descargar
+                                    </a>
                                 </div>
                             </div>
                         </div>
