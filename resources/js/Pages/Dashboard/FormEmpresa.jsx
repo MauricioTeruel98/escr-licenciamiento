@@ -334,6 +334,16 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             return;
         }
         
+        // Validar tamaño máximo de 2 MB
+        const maxSizeInBytes = 2 * 1024 * 1024; // 2 MB en bytes
+        const oversizedFiles = files.filter(file => file.size > maxSizeInBytes);
+        
+        if (oversizedFiles.length > 0) {
+            alert('El tamaño máximo permitido por imagen es de 2 MB.');
+            e.target.value = null; // Limpiar el input
+            return;
+        }
+        
         // Definir límites por tipo de archivo
         const maxFiles = {
             logo: 1,
@@ -1833,10 +1843,14 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                         </svg>
                                                     </button>
-                                                    <span className="text-sm">{cert.name}</span>
+                                                    <span className="text-sm">{cert.name || (cert instanceof File ? cert.name : 'Certificación')}</span>
                                                 </div>
                                                 <div className="flex items-center">
-                                                    <span className="text-sm mr-2">{Math.round((cert.size || 0) / 1024)} KB</span>
+                                                    <span className="text-sm mr-2">
+                                                        {cert instanceof File 
+                                                            ? Math.round(cert.size / 1024) 
+                                                            : Math.round((cert.size || 0) / 1024)} KB
+                                                    </span>
                                                     {cert.url && (
                                                         <button
                                                             type="button"
@@ -1850,8 +1864,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     )}
                                                     {/* Agregar vista previa de la imagen */}
                                                     <img
-                                                        src={cert.url}
-                                                        alt={cert.name}
+                                                        src={cert instanceof File ? URL.createObjectURL(cert) : cert.url}
+                                                        alt={cert.name || (cert instanceof File ? cert.name : 'Certificación')}
                                                         className="w-10 h-10 object-cover ml-2 rounded"
                                                     />
                                                 </div>
@@ -2463,7 +2477,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                             <div className="flex items-center">
                                                                 <span className="text-sm mr-2">{Math.round(imagenes.productos[index].size / 1024)} KB</span>
                                                                 <img
-                                                                    src={imagenes.productos[index]}
+                                                                    src={URL.createObjectURL(imagenes.productos[index])}
                                                                     alt={`Producto ${index + 1}`}
                                                                     className="w-10 h-10 object-cover rounded"
                                                                 />

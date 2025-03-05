@@ -470,11 +470,13 @@ class CompanyProfileController extends Controller
     /**
      * Valida que los archivos subidos sean de los tipos permitidos (jpg, jpeg, png)
      * y que no excedan la cantidad máxima permitida por tipo
+     * y que no excedan el tamaño máximo de 2 MB
      */
     private function validateFileTypes(Request $request)
     {
         $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         $errorMessages = [];
+        $maxSizeInBytes = 2 * 1024 * 1024; // 2 MB en bytes
 
         // Límites de archivos por tipo
         $maxFiles = [
@@ -491,6 +493,11 @@ class CompanyProfileController extends Controller
                 $errorMessages[] = 'El logo debe ser un archivo de tipo: jpg, jpeg o png.';
             }
             
+            // Validar tamaño del logo
+            if ($logo->getSize() > $maxSizeInBytes) {
+                $errorMessages[] = 'El logo no debe exceder los 2 MB de tamaño.';
+            }
+            
             // El logo ya está limitado a 1 por la estructura del formulario
         }
 
@@ -503,10 +510,15 @@ class CompanyProfileController extends Controller
                 $errorMessages[] = "Solo puede subir un máximo de {$maxFiles['fotografias']} fotografías.";
             }
             
-            // Validar tipos de archivo
+            // Validar tipos de archivo y tamaño
             foreach ($fotografias as $index => $foto) {
                 if (!in_array($foto->getMimeType(), $allowedTypes)) {
                     $errorMessages[] = "La fotografía #{$index} debe ser un archivo de tipo: jpg, jpeg o png.";
+                }
+                
+                // Validar tamaño
+                if ($foto->getSize() > $maxSizeInBytes) {
+                    $errorMessages[] = "La fotografía #{$index} no debe exceder los 2 MB de tamaño.";
                 }
             }
         }
@@ -520,10 +532,15 @@ class CompanyProfileController extends Controller
                 $errorMessages[] = "Solo puede subir un máximo de {$maxFiles['certificaciones']} certificaciones.";
             }
             
-            // Validar tipos de archivo
+            // Validar tipos de archivo y tamaño
             foreach ($certificaciones as $index => $cert) {
                 if (!in_array($cert->getMimeType(), $allowedTypes)) {
                     $errorMessages[] = "La certificación #{$index} debe ser un archivo de tipo: jpg, jpeg o png.";
+                }
+                
+                // Validar tamaño
+                if ($cert->getSize() > $maxSizeInBytes) {
+                    $errorMessages[] = "La certificación #{$index} no debe exceder los 2 MB de tamaño.";
                 }
             }
         }
@@ -536,6 +553,11 @@ class CompanyProfileController extends Controller
                     $imagen = $request->file($imagenKey);
                     if (!in_array($imagen->getMimeType(), $allowedTypes)) {
                         $errorMessages[] = "La imagen del producto '{$producto['nombre']}' debe ser un archivo de tipo: jpg, jpeg o png.";
+                    }
+                    
+                    // Validar tamaño
+                    if ($imagen->getSize() > $maxSizeInBytes) {
+                        $errorMessages[] = "La imagen del producto '{$producto['nombre']}' no debe exceder los 2 MB de tamaño.";
                     }
                     
                     // Cada producto solo puede tener 1 imagen, lo cual ya está controlado por la estructura del formulario
