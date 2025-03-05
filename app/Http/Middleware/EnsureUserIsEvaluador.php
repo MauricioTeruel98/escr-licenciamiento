@@ -14,7 +14,7 @@ class EnsureUserIsEvaluador
                 return response()->json(['error' => 'No autorizado'], 403);
             }
             
-            return redirect()->route('dashboard')
+            return redirect()->route('evaluador.dashboard')
                 ->with('error', 'No tienes permisos para acceder al panel de evaluador.');
         }
 

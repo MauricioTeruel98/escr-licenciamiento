@@ -54,7 +54,7 @@ export default function EvaluadorDashboard({ auth }) {
                 company_id: companyId
             });
             if (companyId) {
-                window.location.href = '/dashboard';
+                window.location.href = route('evaluador.dashboard');
             } else {
                 setActiveCompany(null);
                 window.location.reload();

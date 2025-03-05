@@ -158,7 +158,7 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
                     </li>
 
                     {/* Reportes */}
-                    <li className="mb-1">
+                    {/* <li className="mb-1">
                         <Link
                             href={route('evaluador.reportes')}
                             className={`
@@ -176,7 +176,7 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
                                 Reportes
                             </div>
                         </Link>
-                    </li>
+                    </li> */}
                 </ul>
             </div>
         </>

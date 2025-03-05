@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import SuperAdminLayout from '@/Layouts/SuperAdminLayout';
 import TableList from '@/Components/TableList';
 import { PlusCircle, Pencil, Trash2, Eye } from 'lucide-react';
@@ -29,41 +30,39 @@ export default function EmpresasEvaluadorIndex() {
     const [infoModalOpen, setInfoModalOpen] = useState(false);
 
     const columns = [
-        { key: 'legal_id', label: 'Cedula' },
-        { key: 'name', label: 'Nombre' },
-        { key: 'sector', label: 'Sector' },
-        { key: 'provincia', label: 'Provincia' },
-        { 
-            key: 'is_exporter', 
-            label: 'Exportador',
+        {
+            key: 'name',
+            label: 'Nombre',
             render: (item) => (
-                <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${
-                    item.is_exporter 
-                        ? 'text-green-800 border-green-200 bg-green-50' 
-                        : 'text-gray-800 border-gray-200 bg-gray-50'
-                }`}>
-                    {item.is_exporter ? 'Sí' : 'No'}
-                </span>
+                <div className="font-medium text-gray-900">{item.name}</div>
             )
         },
         {
-            key: 'users_count',
-            label: 'Usuarios',
-            render: (item) => item.users_count || 0
-        },
-        {
             key: 'actions',
-            label: 'Acciones',
+            label: '',
             render: (item) => (
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => handleViewInfo(item)}
-                        className="text-gray-600 hover:text-gray-800 flex items-center gap-1"
-                        title="Ver información"
-                    >
-                        <Eye className="h-5 w-5" />
-                        Ver
-                    </button>
+                <div className="flex items-center justify-end gap-5">
+                    <div className="flex items-center justify-end">
+                        <button
+                            onClick={() => handleViewQuestions(item)}
+                            className="text-gray-600 hover:text-gray-800 flex items-center gap-1"
+                            title="Ver preguntas"
+                        >
+                            <Eye className="h-5 w-5" />
+                            Evaluar
+                        </button>
+                    </div>
+                    <div className="flex items-center justify-end">
+                        <button
+                            onClick={() => handleReporteClick(item)}
+                            className="text-green-700 hover:text-green-800 flex items-center gap-1"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                            </svg>
+                            Reporte
+                        </button>
+                    </div>
                 </div>
             )
         }
@@ -164,6 +163,34 @@ export default function EmpresasEvaluadorIndex() {
         setInfoModalOpen(true);
     };
 
+    const handleViewQuestions = async (company) => {
+        try {
+            setNotification({
+                type: 'info',
+                message: 'Cambiando a la empresa seleccionada...'
+            });
+            
+            // Cambiar a la empresa seleccionada
+            await axios.post('/api/evaluador/switch-company', {
+                company_id: company.id
+            });
+            
+            // Redirigir al dashboard del evaluador usando router.visit
+            router.visit(route('evaluador.dashboard'));
+        } catch (error) {
+            console.error('Error al cambiar de empresa:', error);
+            setNotification({
+                type: 'error',
+                message: 'Error al cambiar de empresa: ' + (error.response?.data?.message || 'Error desconocido')
+            });
+        }
+    };
+
+    const handleReporteClick = (company) => {
+        // Redirigir a la página de reportes con el ID de la empresa usando router.visit
+        router.visit(`/evaluador/reportes?company_id=${company.id}`);
+    };
+
     return (
         <EvaluadorLayout>
             <Head title="Gestión de Empresas" />
@@ -171,15 +198,8 @@ export default function EmpresasEvaluadorIndex() {
             <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <div className="px-4 sm:px-0 flex justify-between items-center">
                     <h1 className="text-2xl font-semibold text-gray-900">
-                        Gestión de Empresas
+                        Empresas
                     </h1>
-                    <button
-                        onClick={handleCreate}
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                    >
-                        <PlusCircle className="h-5 w-5 mr-2" />
-                        Nueva Empresa
-                    </button>
                 </div>
 
                 <div className="mt-8">
@@ -188,8 +208,8 @@ export default function EmpresasEvaluadorIndex() {
                         columns={columns}
                         data={companies}
                         pagination={pagination}
-                        onPageChange={(page) => setPagination({...pagination, currentPage: page})}
-                        onPerPageChange={(perPage) => setPagination({...pagination, perPage, currentPage: 1})}
+                        onPageChange={(page) => setPagination({ ...pagination, currentPage: page })}
+                        onPerPageChange={(perPage) => setPagination({ ...pagination, perPage, currentPage: 1 })}
                         onBulkDelete={handleBulkDelete}
                     />
                 </div>
