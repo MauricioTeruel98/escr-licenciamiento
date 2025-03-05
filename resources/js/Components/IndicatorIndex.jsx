@@ -99,7 +99,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                 <div className="mt-2">
                     <div className="divider" style={{ marginBottom: '5px', marginTop: '5px' }}></div>
                     <p className="text-sm font-medium text-gray-700 mb-2">
-                        ¿Desea responder esta pregunta?
+                        ¿Responder esta pregunta?
                     </p>
                 </div>
             )}

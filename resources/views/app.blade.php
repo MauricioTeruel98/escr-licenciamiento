@@ -85,11 +85,14 @@
         h3,
         h4,
         h5,
-        h6,
+        h6 {
+            font-family: "Gotham", sans-serif !important;
+        }
+
         p,
         span,
         div {
-            font-family: "Gotham", sans-serif !important;
+            font-family: "Montserrat", sans-serif !important;
         }
 
         h1 {
