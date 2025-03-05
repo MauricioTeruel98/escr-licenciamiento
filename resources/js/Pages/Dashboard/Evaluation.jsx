@@ -174,10 +174,6 @@ export default function Evaluation({
     const isExporter = auth.user.company?.is_exporter === true;
     const isEvaluador = auth.user.role === 'evaluador';
 
-    const formSended = autoEvaluationResult.form_sended;
-
-    console.log(formSended);
-
     return (
         <DashboardLayout userName={userName} title={`Autoevaluación de ${companyName}`}>
             <div className="space-y-8">
@@ -222,7 +218,7 @@ export default function Evaluation({
                                     <Link href={route('form.empresa')}
                                         className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75"
                                     >
-                                        {formSended ? 'Editar Formulario de Empresa' : 'Completar Formulario de Empresa'}
+                                        Completar Formulario de Empresa
                                     </Link>
                                 </div>
                             </div>

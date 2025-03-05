@@ -118,7 +118,7 @@
 
         .signature-table {
             width: 100%;
-            margin-top: 60px;
+            margin-top: 180px;
             border: none;
             background-color: #f4f4f9;
         }
@@ -674,7 +674,7 @@
             <td>
                 <div class="signature-line">
                     <p><strong>EVALUADOR</strong></p>
-                    <p>(Nombre, firma y número de carné)</p>
+                    <p>(Nombre, firma y número de cédula)</p>
                 </div>
             </td>
         </tr>
