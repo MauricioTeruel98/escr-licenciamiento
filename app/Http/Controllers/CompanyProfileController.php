@@ -38,13 +38,16 @@ class CompanyProfileController extends Controller
             Storage::disk('public')->makeDirectory("empresas/{$companyId}/productos");
             
             // Procesar datos básicos
-            $allData = $request->except(['logo', 'fotografias', 'certificaciones', 'productos']);
+            $allData = $request->except(['logo', 'fotografias', 'certificaciones', 'productos', 'logo_existente', 'fotografias_existentes', 'certificaciones_existentes']);
             
             // Convertir valores booleanos a 1 o 0
             $allData['es_exportadora'] = filter_var($allData['es_exportadora'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
             $allData['recomienda_marca_pais'] = filter_var($allData['recomienda_marca_pais'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
             
             $allData['company_id'] = $companyId;
+
+            // Obtener información adicional existente
+            $infoExistente = InfoAdicionalEmpresa::where('company_id', $companyId)->first();
 
             // Procesar logo
             if ($request->hasFile('logo')) {
@@ -56,10 +59,34 @@ class CompanyProfileController extends Controller
                 );
                 $allData['logo_path'] = $logoPath;
                 Log::info('Logo guardado', ['path' => $logoPath]);
+            } else if ($request->has('logo_existente')) {
+                // Mantener el logo existente
+                $allData['logo_path'] = $request->logo_existente;
+                Log::info('Manteniendo logo existente', ['path' => $request->logo_existente]);
+            } else if ($infoExistente && $infoExistente->logo_path) {
+                // Si no se envió ningún logo pero existe uno en la base de datos, mantenerlo
+                $allData['logo_path'] = $infoExistente->logo_path;
             }
 
             // Procesar fotografías
             $fotografiasPaths = [];
+            
+            // Primero, agregar las fotografías existentes si se enviaron
+            if ($request->has('fotografias_existentes')) {
+                $existingPhotos = json_decode($request->fotografias_existentes, true);
+                if (is_array($existingPhotos)) {
+                    $fotografiasPaths = array_merge($fotografiasPaths, $existingPhotos);
+                }
+                Log::info('Fotografías existentes', ['paths' => $existingPhotos]);
+            } else if ($infoExistente && $infoExistente->fotografias_paths) {
+                // Si no se enviaron fotografías existentes pero existen en la base de datos, mantenerlas
+                $existingPhotos = json_decode($infoExistente->fotografias_paths, true);
+                if (is_array($existingPhotos)) {
+                    $fotografiasPaths = array_merge($fotografiasPaths, $existingPhotos);
+                }
+            }
+            
+            // Luego, agregar las nuevas fotografías
             if ($request->hasFile('fotografias')) {
                 foreach ($request->file('fotografias') as $foto) {
                     $path = $foto->storeAs(
@@ -69,12 +96,32 @@ class CompanyProfileController extends Controller
                     );
                     $fotografiasPaths[] = $path;
                 }
+                Log::info('Nuevas fotografías guardadas', ['paths' => $fotografiasPaths]);
+            }
+            
+            if (!empty($fotografiasPaths)) {
                 $allData['fotografias_paths'] = json_encode($fotografiasPaths);
-                Log::info('Fotografías guardadas', ['paths' => $fotografiasPaths]);
             }
 
             // Procesar certificaciones
             $certificacionesPaths = [];
+            
+            // Primero, agregar las certificaciones existentes si se enviaron
+            if ($request->has('certificaciones_existentes')) {
+                $existingCerts = json_decode($request->certificaciones_existentes, true);
+                if (is_array($existingCerts)) {
+                    $certificacionesPaths = array_merge($certificacionesPaths, $existingCerts);
+                }
+                Log::info('Certificaciones existentes', ['paths' => $existingCerts]);
+            } else if ($infoExistente && $infoExistente->certificaciones_paths) {
+                // Si no se enviaron certificaciones existentes pero existen en la base de datos, mantenerlas
+                $existingCerts = json_decode($infoExistente->certificaciones_paths, true);
+                if (is_array($existingCerts)) {
+                    $certificacionesPaths = array_merge($certificacionesPaths, $existingCerts);
+                }
+            }
+            
+            // Luego, agregar las nuevas certificaciones
             if ($request->hasFile('certificaciones')) {
                 foreach ($request->file('certificaciones') as $cert) {
                     $path = $cert->storeAs(
@@ -84,8 +131,11 @@ class CompanyProfileController extends Controller
                     );
                     $certificacionesPaths[] = $path;
                 }
+                Log::info('Nuevas certificaciones guardadas', ['paths' => $certificacionesPaths]);
+            }
+            
+            if (!empty($certificacionesPaths)) {
                 $allData['certificaciones_paths'] = json_encode($certificacionesPaths);
-                Log::info('Certificaciones guardadas', ['paths' => $certificacionesPaths]);
             }
 
             // Guardar información de la empresa
@@ -125,13 +175,24 @@ class CompanyProfileController extends Controller
                             'producto_index' => $index,
                             'path' => $imagenPath
                         ]);
+                    } else if (isset($producto['imagen_existente'])) {
+                        // Mantener la imagen existente si se envió
+                        $productoData['imagen'] = $producto['imagen_existente'];
+                        Log::info('Manteniendo imagen existente de producto', [
+                            'producto_index' => $index,
+                            'path' => $producto['imagen_existente']
+                        ]);
                     } else {
-                        // Mantener la imagen existente si no se sube una nueva
+                        // Buscar si existe un producto con el mismo nombre y mantener su imagen
                         $existingProduct = CompanyProducts::where('info_adicional_empresa_id', $infoAdicional->id)
                             ->where('nombre', $producto['nombre'])
                             ->first();
-                        if ($existingProduct) {
+                        if ($existingProduct && $existingProduct->imagen) {
                             $productoData['imagen'] = $existingProduct->imagen;
+                            Log::info('Recuperando imagen existente de producto de la base de datos', [
+                                'producto_index' => $index,
+                                'path' => $existingProduct->imagen
+                            ]);
                         }
                     }
 

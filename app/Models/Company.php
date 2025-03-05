@@ -15,6 +15,8 @@ class Company extends Model
         'website',
         'sector',
         'provincia',
+        'canton',
+        'distrito',
         'commercial_activity',
         'phone',
         'mobile',

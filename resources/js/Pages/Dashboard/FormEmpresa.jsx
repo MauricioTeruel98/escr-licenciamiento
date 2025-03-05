@@ -105,11 +105,23 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     // Cargar datos iniciales
     useEffect(() => {
         if (infoAdicional) {
+            // Inicializar imágenes
+            const productosImagenes = [];
+            
+            // Si hay productos con imágenes, inicializar el array de imágenes de productos
+            if (infoAdicional.productos && infoAdicional.productos.length > 0) {
+                infoAdicional.productos.forEach((producto, index) => {
+                    if (producto.imagen) {
+                        productosImagenes[index] = producto.imagen;
+                    }
+                });
+            }
+            
             setImagenes({
                 logo: infoAdicional.logo || null,
                 fotografias: infoAdicional.fotografias_urls || [],
                 certificaciones: infoAdicional.certificaciones_urls || [],
-                productos: []
+                productos: productosImagenes
             });
         }
     }, [infoAdicional]);
@@ -390,6 +402,22 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 newProductos[productoIndex] = files[0];
                 return { ...prev, productos: newProductos };
             });
+            
+            // También actualizar la referencia en el estado de data para mantener la consistencia
+            setData(prevData => {
+                const newProductos = [...prevData.productos];
+                if (newProductos[productoIndex]) {
+                    // Marcar que este producto tiene una nueva imagen
+                    newProductos[productoIndex] = {
+                        ...newProductos[productoIndex],
+                        imagen_cambiada: true
+                    };
+                }
+                return {
+                    ...prevData,
+                    productos: newProductos
+                };
+            });
         } else {
             setImagenes(prev => ({ ...prev, [tipo]: [...(prev[tipo] || []), ...files] }));
         }
@@ -429,24 +457,49 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         // Agregar logo si existe
         if (imagenes.logo instanceof File) {
             formData.append('logo', imagenes.logo);
+        } else if (imagenes.logo) {
+            // Si hay un logo existente, enviar su ruta
+            formData.append('logo_existente', imagenes.logo);
         }
 
         // Agregar fotografías
         if (imagenes.fotografias && imagenes.fotografias.length > 0) {
+            // Separar fotografías existentes de las nuevas
+            const existingPhotos = [];
+            
             imagenes.fotografias.forEach((foto, index) => {
                 if (foto instanceof File) {
                     formData.append(`fotografias[]`, foto);
+                } else if (foto) {
+                    // Si es una foto existente (URL o path), guardar su ruta
+                    existingPhotos.push(foto.path || foto);
                 }
             });
+            
+            // Enviar las rutas de las fotografías existentes
+            if (existingPhotos.length > 0) {
+                formData.append('fotografias_existentes', JSON.stringify(existingPhotos));
+            }
         }
 
         // Agregar certificaciones
         if (imagenes.certificaciones && imagenes.certificaciones.length > 0) {
+            // Separar certificaciones existentes de las nuevas
+            const existingCerts = [];
+            
             imagenes.certificaciones.forEach((cert, index) => {
                 if (cert instanceof File) {
                     formData.append(`certificaciones[]`, cert);
+                } else if (cert) {
+                    // Si es una certificación existente (URL o path), guardar su ruta
+                    existingCerts.push(cert.path || cert);
                 }
             });
+            
+            // Enviar las rutas de las certificaciones existentes
+            if (existingCerts.length > 0) {
+                formData.append('certificaciones_existentes', JSON.stringify(existingCerts));
+            }
         }
 
         // Agregar productos
@@ -461,7 +514,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     formData.append(`productos[${index}][imagen]`, imagenes.productos[index]);
                 } else if (producto.imagen) {
                     // Mantener la imagen existente si no se sube una nueva
-                    formData.append(`productos[${index}][imagen]`, producto.imagen);
+                    formData.append(`productos[${index}][imagen_existente]`, producto.imagen);
                 }
             });
         }
