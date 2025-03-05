@@ -81,7 +81,8 @@
             overflow: hidden;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
@@ -125,6 +126,98 @@
             border: 1px solid #e5e7eb;
             margin-top: 10px;
         }
+
+        .indicator-section {
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+        }
+
+        .indicator-section h4 {
+            color: #157f3d;
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 5px;
+        }
+
+        .approved {
+            color: #157f3d;
+            font-weight: bold;
+        }
+
+        .not-approved {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .comment {
+            font-style: italic;
+            color: #4b5563;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        .evaluation-info {
+            background-color: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 20px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .auto-evaluation-section {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 15px;
+        }
+
+        .auto-evaluation-section h5 {
+            color: #4b5563;
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 5px;
+        }
+
+        h5 {
+            font-size: 1.1em;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: #157f3d;
+        }
+
+        .question-box {
+            margin-bottom: 10px;
+        }
+
+        .answer-box {
+            margin-left: 20px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .justification {
+            font-style: italic;
+            color: #4b5563;
+            display: block;
+            margin-top: 5px;
+            padding: 5px;
+            background-color: #f3f4f6;
+            border-radius: 4px;
+        }
     </style>
 </head>
 
@@ -133,6 +226,12 @@
         <img src="/public/assets/img/logo_esc_white.png" alt="Logo">
         <h1>Informe de Evaluación del Protocolo Marca País</h1>
     </header>
+
+    <div class="evaluation-info">
+        <p><strong>Fecha de evaluación:</strong> {{ $date }}</p>
+        <p><strong>Evaluador:</strong> {{ $evaluador->name }} {{ $evaluador->lastname }}</p>
+        <p><strong>Correo electrónico:</strong> {{ $evaluador->email }}</p>
+    </div>
 
     <h2>Datos de la organización</h2>
     <p><strong>Nombre comercial:</strong> {{ $company->infoAdicional->nombre_comercial ?? 'N/A' }}</p>
@@ -145,7 +244,9 @@
     <p><strong>Países de exportación:</strong> {{ $company->infoAdicional->paises_exportacion ?? 'N/A' }}</p>
     <p><strong>Productos/servicios:</strong> {{ $company->infoAdicional->producto_servicio ?? 'N/A' }}</p>
     <p><strong>Rango de exportaciones:</strong> {{ $company->infoAdicional->rango_exportaciones ?? 'N/A' }}</p>
-    <p><strong>Total de empleados:</strong> {{ $company->infoAdicional->cantidad_hombres + $company->infoAdicional->cantidad_mujeres + $company->infoAdicional->cantidad_otros }}</p>
+    <p><strong>Total de empleados:</strong>
+        {{ $company->infoAdicional->cantidad_hombres + $company->infoAdicional->cantidad_mujeres + $company->infoAdicional->cantidad_otros }}
+    </p>
     <p><strong>Distribución de empleados:</strong></p>
     <p>- Hombres: {{ $company->infoAdicional->cantidad_hombres ?? 0 }}</p>
     <p>- Mujeres: {{ $company->infoAdicional->cantidad_mujeres ?? 0 }}</p>
@@ -168,7 +269,7 @@
             <th>Calificación mínima</th>
             <th>Calificación obtenida</th>
         </tr>
-        @foreach($values as $value)
+        @foreach ($values as $value)
             <tr>
                 <td>{{ $value->name }}</td>
                 <td>{{ $value->minimum_score }}%</td>
@@ -186,7 +287,7 @@
             <th>Teléfono</th>
             <th>Rol</th>
         </tr>
-        @foreach($company->users as $user)
+        @foreach ($company->users as $user)
             <tr>
                 <td>{{ $user->name }}</td>
                 <td>{{ $user->lastname }}</td>
@@ -205,7 +306,7 @@
             <th>Fecha de vencimiento</th>
             <th>Organismo certificador</th>
         </tr>
-        @foreach($company->certifications as $certification)
+        @foreach ($company->certifications as $certification)
             <tr>
                 <td>{{ $certification->nombre }}</td>
                 <td>{{ $certification->fecha_obtencion->format('d/m/Y') }}</td>
@@ -231,36 +332,60 @@
     <p></p> --}}
 
     <h2>Datos de contacto</h2>
-    <h3>Contacto para recibir Notificaciones de Marca País</h3>
-    <p><strong>Nombre del contacto:</strong></p>
-    <p><strong>Posición dentro de la organización:</strong></p>
-    <p><strong>Correo electrónico:</strong></p>
-    <p><strong>Teléfono:</strong> <strong>Celular:</strong></p>
+    @if ($company->infoAdicional->vocero_nombre)
+        <h3>Contacto para recibir Notificaciones de Marca País</h3>
+        <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->representante_nombre ?? 'N/A' }}</p>
+        <p><strong>Posición dentro de la organización:</strong>
+            {{ $company->infoAdicional->representante_puesto ?? 'N/A' }}</p>
+        <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->representante_email ?? 'N/A' }}</p>
+        <p><strong>Teléfono:</strong> {{ $company->infoAdicional->representante_telefono ?? 'N/A' }}
+            <strong>Celular:</strong> {{ $company->infoAdicional->representante_celular ?? 'N/A' }}
+        </p>
+    @endif
 
-    <h3>Contacto asignado para el proceso de licenciamiento de la Marca País</h3>
-    <p><strong>Nombre del contacto:</strong></p>
-    <p><strong>Posición dentro de la organización:</strong></p>
-    <p><strong>Correo electrónico:</strong></p>
-    <p><strong>Teléfono:</strong> <strong>Celular:</strong></p>
+    @if ($company->infoAdicional->vocero_nombre)
+        <h3>Contacto asignado para el proceso de licenciamiento de la Marca País</h3>
+        <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->vocero_nombre ?? 'N/A' }}</p>
+        <p><strong>Posición dentro de la organización:</strong> {{ $company->infoAdicional->vocero_puesto ?? 'N/A' }}
+        </p>
+        <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->vocero_email ?? 'N/A' }}</p>
+        <p><strong>Teléfono:</strong> {{ $company->infoAdicional->vocero_telefono ?? 'N/A' }} <strong>Celular:</strong>
+            {{ $company->infoAdicional->vocero_celular ?? 'N/A' }}</p>
+    @endif
 
-    <h3>Contacto de su área de Mercadeo</h3>
-    <p><strong>Nombre del contacto:</strong></p>
-    <p><strong>Posición dentro de la organización:</strong></p>
-    <p><strong>Correo electrónico:</strong></p>
-    <p><strong>Teléfono:</strong> <strong>Celular:</strong></p>
+    @if ($company->infoAdicional->mercadeo_nombre)
+        <h3>Contacto de su área de Mercadeo</h3>
+        <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->mercadeo_nombre ?? 'N/A' }}</p>
+        <p><strong>Posición dentro de la organización:</strong> {{ $company->infoAdicional->mercadeo_puesto ?? 'N/A' }}
+        </p>
+        <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->mercadeo_email ?? 'N/A' }}</p>
+        <p><strong>Teléfono:</strong> {{ $company->infoAdicional->mercadeo_telefono ?? 'N/A' }} <strong>Celular:</strong>
+            {{ $company->infoAdicional->mercadeo_celular ?? 'N/A' }}</p>
+    @endif
 
-    <h3>Contacto Micrositio en web esencial</h3>
-    <p><strong>Nombre del contacto:</strong></p>
-    <p><strong>Posición dentro de la organización:</strong></p>
-    <p><strong>Correo electrónico:</strong></p>
-    <p><strong>Teléfono:</strong> <strong>Celular:</strong></p>
+    @if ($company->infoAdicional->micrositio_nombre)
+        <h3>Contacto Micrositio en web esencial</h3>
+        <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->micrositio_nombre ?? 'N/A' }}</p>
+        <p><strong>Posición dentro de la organización:</strong>
+            {{ $company->infoAdicional->micrositio_puesto ?? 'N/A' }}
+        </p>
+        <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->micrositio_email ?? 'N/A' }}</p>
+        <p><strong>Teléfono:</strong> {{ $company->infoAdicional->micrositio_telefono ?? 'N/A' }}
+            <strong>Celular:</strong>
+            {{ $company->infoAdicional->micrositio_celular ?? 'N/A' }}</p>
+    @endif
 
-    <h3>Contacto del Representante Legal o Gerente General</h3>
-    <p><strong>Nombre del contacto:</strong></p>
-    <p><strong>Posición dentro de la organización:</strong></p>
-    <p><strong>Cédula:</strong></p>
-    <p><strong>Correo electrónico:</strong></p>
-    <p><strong>Teléfono:</strong> <strong>Celular:</strong></p>
+    @if ($company->infoAdicional->representante_nombre)
+        <h3>Contacto del Representante Legal o Gerente General</h3>
+        <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->representante_nombre ?? 'N/A' }}</p>
+        <p><strong>Posición dentro de la organización:</strong>
+            {{ $company->infoAdicional->representante_puesto ?? 'N/A' }}</p>
+        <p><strong>Cédula:</strong> {{ $company->infoAdicional->cedula_juridica ?? 'N/A' }}</p>
+        <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->representante_email ?? 'N/A' }}</p>
+        <p><strong>Teléfono:</strong> {{ $company->infoAdicional->representante_telefono ?? 'N/A' }}
+            <strong>Celular:</strong> {{ $company->infoAdicional->representante_celular ?? 'N/A' }}
+        </p>
+    @endif
 
     <h2>Datos del equipo evaluador</h2>
     <table>
@@ -270,23 +395,145 @@
             <th>Cédula</th>
             <th>Correo electrónico</th>
             <th>Teléfono</th>
-            <th>Celular</th>
         </tr>
         <tr>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td>{{ $evaluador->name }} {{ $evaluador->lastname }}</td>
+            <td>{{ $evaluador->cedula }}</td>
+            <td>{{ $evaluador->email }}</td>
+            <td>{{ $evaluador->phone }}</td>
         </tr>
     </table>
 
     <h2>Descripción y justificación de cumplimiento del protocolo</h2>
     <p><strong>Indicadores de marca país esencial COSTA RICA</strong></p>
     <p>Todo cumplimiento o incumplimiento de indicador debe ser justificado de acuerdo a los requisitos generales.</p>
+    
+    @foreach ($values as $value)
+        <h3>{{ $value->name }}</h3>
+        <div class="score">
+            <p><strong>Calificación obtenida:</strong> {{ $finalScores[$value->id]->nota ?? 0 }}%</p>
+            <p><strong>Calificación mínima requerida:</strong> {{ $value->minimum_score }}%</p>
+            <p><strong>Estado:</strong> 
+                @if(($finalScores[$value->id]->nota ?? 0) >= $value->minimum_score)
+                    <span class="approved">Aprobado</span>
+                @else
+                    <span class="not-approved">No aprobado</span>
+                @endif
+            </p>
+        </div>
+        
+        @if (isset($indicatorsByValue[$value->id]))
+            @foreach ($indicatorsByValue[$value->id] as $indicator)
+                <div class="indicator-section">
+                    <h4>{{ $indicator->name }}</h4>
+                    
+                    <!-- Pregunta de autoevaluación -->
+                    <div class="auto-evaluation-section">
+                        <h5>Autoevaluación</h5>
+                        @if($indicator->self_evaluation_question)
+                            <div class="question-box">
+                                <p><strong>Pregunta:</strong> {{ $indicator->self_evaluation_question }}</p>
+                            </div>
+                            
+                            @if(isset($autoEvaluationAnswers[$indicator->id]))
+                                @foreach($autoEvaluationAnswers[$indicator->id] as $autoAnswer)
+                                    <div class="answer-box">
+                                        <p><strong>Respuesta:</strong> 
+                                            <span class="{{ $autoAnswer->answer == 1 ? 'approved' : 'not-approved' }}">
+                                                @if($indicator->is_binary)
+                                                    {{ $autoAnswer->answer == 1 ? 'Sí' : 'No' }}
+                                                @else
+                                                    {{ $autoAnswer->answer }}
+                                                @endif
+                                            </span>
+                                        </p>
+                                        @if($autoAnswer->justification)
+                                            <p><strong>Justificación:</strong> <span class="justification">{{ $autoAnswer->justification }}</span></p>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            @else
+                                <div class="answer-box">
+                                    <p><em>No se encontró respuesta de autoevaluación para este indicador.</em></p>
+                                </div>
+                            @endif
+                        @else
+                            <div class="answer-box">
+                                <p><em>Este indicador no tiene pregunta de autoevaluación definida.</em></p>
+                            </div>
+                        @endif
+                    </div>
+                    
+                    <h5>Evaluación</h5>
+                    <table>
+                        <tr>
+                            <th>Pregunta</th>
+                            <th>Respuesta de la empresa</th>
+                            <th>Aprobado</th>
+                            <th>Comentario del evaluador</th>
+                        </tr>
+                        @foreach ($indicator->evaluationQuestions as $question)
+                            <tr>
+                                <td>{{ $question->question }}</td>
+                                <td>
+                                    @if (isset($companyAnswers[$indicator->id]))
+                                        @foreach ($companyAnswers[$indicator->id] as $answer)
+                                            @if ($answer->evaluation_question_id == $question->id)
+                                                <p><strong>Respuesta:</strong> {{ $answer->answer == 1 ? 'Sí' : 'No' }}</p>
+                                                <p><strong>Descripción:</strong> {{ $answer->description }}</p>
+                                                @if ($answer->file_path)
+                                                    <p><strong>Archivos adjuntos:</strong> Sí</p>
+                                                @endif
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        <p>Sin respuesta</p>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if (isset($evaluatorAssessments[$indicator->id]))
+                                        @foreach ($evaluatorAssessments[$indicator->id] as $assessment)
+                                            @if ($assessment->evaluation_question_id == $question->id)
+                                                @if ($assessment->approved)
+                                                    <span class="approved">Sí</span>
+                                                @else
+                                                    <span class="not-approved">No</span>
+                                                @endif
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        <span>No evaluado</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if (isset($evaluatorAssessments[$indicator->id]))
+                                        @foreach ($evaluatorAssessments[$indicator->id] as $assessment)
+                                            @if ($assessment->evaluation_question_id == $question->id)
+                                                <span class="comment">{{ $assessment->comment }}</span>
+                                            @endif
+                                        @endforeach
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </table>
+                </div>
+            @endforeach
+        @else
+            <p>No hay indicadores para este valor.</p>
+        @endif
 
-    @foreach($values as $value)
+        <div class="page-break"></div>
+    @endforeach
+
+
+    {{-- 
+    <h2>Descripción y justificación de cumplimiento del protocolo</h2>
+    <p><strong>Indicadores de marca país esencial COSTA RICA</strong></p>
+    <p>Todo cumplimiento o incumplimiento de indicador debe ser justificado de acuerdo a los requisitos generales.</p>
+
+    @foreach ($values as $value)
         <h3>{{ $value->name }}</h3>
         <div class="score">
             <p><strong>Puntuación obtenida:</strong> {{ $finalScores[$value->id]->nota ?? 0 }}/100</p>
@@ -299,36 +546,36 @@
                 <th>Requisito</th>
                 <th>Indicador</th>
                 <th>Cumplimiento</th>
-                {{-- <th>Justificación</th> --}}
+                <th>Justificación</th>
             </tr>
-            @foreach($value->subcategories as $subcategory)
-                @foreach($subcategory->indicators as $indicator)
+            @foreach ($value->subcategories as $subcategory)
+                @foreach ($subcategory->indicators as $indicator)
                     <tr>
                         <td>{{ $subcategory->name }}</td>
                         <td>{{ $indicator->requisito->name ?? 'N/A' }}</td>
                         <td>
                             {{ $indicator->name }}
-                            @if($indicator->binding)
+                            @if ($indicator->binding)
                                 <span class="binding">(Vinculante)</span>
                             @endif
                         </td>
                         <td>
-                            @if(isset($answers[$value->id]))
-                                {{ $answers[$value->id]->firstWhere('indicator_id', $indicator->id)->answer === "1" ? 'Sí' : 'No' }}
+                            @if (isset($answers[$value->id]))
+                                {{ $answers[$value->id]->firstWhere('indicator_id', $indicator->id)->answer === '1' ? 'Sí' : 'No' }}
                             @else
                                 No respondida
                             @endif
                         </td>
-                        {{-- <td>{{ $indicator->self_evaluation_question }}</td> --}}
+                        <td>{{ $indicator->self_evaluation_question }}</td>
                     </tr>
                 @endforeach
             @endforeach
         </table>
 
-        @if(!$loop->last)
+        @if (!$loop->last)
             <div class="page-break"></div>
         @endif
-    @endforeach
+    @endforeach --}}
 
     <h3>Disposiciones finales</h3>
     <ol>
@@ -396,6 +643,27 @@
         </tr>
     </table>
 
+    <div class="page-break"></div>
+
+    <h2>Firma del evaluador</h2>
+    <table class="signature-table">
+        <tr>
+            <td>
+                <div class="signature-line"></div>
+                <p>{{ $evaluador->name }} {{ $evaluador->lastname }}</p>
+                <p>Evaluador</p>
+            </td>
+            <td>
+                <div class="signature-line"></div>
+                <p>Fecha: {{ $date }}</p>
+            </td>
+        </tr>
+    </table>
+
+    <div style="margin-top: 50px;">
+        <p class="text-center">Este informe ha sido generado automáticamente por el sistema de evaluación del Protocolo Marca País.</p>
+        <p class="text-center">© {{ date('Y') }} - Todos los derechos reservados</p>
+    </div>
 </body>
 
 </html>

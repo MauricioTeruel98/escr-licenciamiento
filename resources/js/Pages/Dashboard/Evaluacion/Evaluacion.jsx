@@ -433,7 +433,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             message: '¡Has completado todos los valores!'
                         });
                         // Opcional: redirigir a una página de resumen o dashboard
-                        router.visit(route('dashboard'));
+                        if (isEvaluador) {
+                            router.visit(route('evaluador.dashboard'));
+                        } else {
+                            router.visit(route('dashboard'));
+                        }
                     }
                 } catch (error) {
                     console.error('Error al obtener siguiente valor:', error);
