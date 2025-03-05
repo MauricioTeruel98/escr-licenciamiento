@@ -28,8 +28,19 @@
             font-weight: bold;
         }
 
+        @font-face {
+            font-family: 'Gotham';
+            src: url('{{ storage_path('fonts/gotham/GothamMedium.ttf') }}') format('truetype');
+            font-weight: normal;
+        }
+
+        @page {
+            margin: 0mm;
+            /* Ajusta el valor según lo necesites */
+        }
+
         body {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Gotham', sans-serif;
             background-color: #f4f4f9;
             color: #333;
             margin: 0;
@@ -90,13 +101,26 @@
         .text-white {
             color: white;
         }
+
+        header {
+            background-image: url('/public/assets/img/Header_pdf.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        header h1 {
+            width: 60%;
+            color: #157f3d;
+        }
+        
     </style>
 </head>
 <body>
-    <div class="header">
-        <img src="/public/assets/img/logo_esc_white.png" alt="Logo">
-        <h1 class="text-white">Lista de Indicadores</h1>
-    </div>
+    <header class="header">
+        <img src="/public/assets/img/logo_esc.png" alt="Logo">
+        <h1>Lista de Indicadores</h1>
+    </header>
 
     @foreach($values as $value)
         <div class="value-section">

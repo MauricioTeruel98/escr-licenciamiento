@@ -633,12 +633,12 @@ class EvaluationAnswerController extends Controller
                     
                     // Enviar email con PDF al usuario administrador de la empresa
                     if ($adminUser) {
-                        Mail::to($adminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));
+                        //Mail::to($adminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));
                     }
                     
                     // Enviar email con PDF al superadmin
                     if ($superAdminUser) {
-                        Mail::to($superAdminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));
+                        //Mail::to($superAdminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));
                     }
                     
                     // Actualizar la columna eval_ended en la tabla companies

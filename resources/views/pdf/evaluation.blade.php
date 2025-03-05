@@ -30,13 +30,31 @@
             font-weight: bold;
         }
 
+        @font-face {
+            font-family: 'Gotham';
+            src: url('{{ storage_path('fonts/gotham/GothamMedium.ttf') }}') format('truetype');
+            font-weight: normal;
+        }
+
+        @font-face {
+            font-family: 'Gotham';
+            src: url('{{ storage_path('fonts/gotham/GothamBold.ttf') }}') format('truetype');
+            font-weight: bold;
+        }
+
         body {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Gotham', sans-serif;
             background-color: #f4f4f9;
             color: #333;
             margin: 0;
-            padding: 20px;
+            padding: 25px;
         }
+
+        @page {
+            margin: 0mm;
+            /* Ajusta el valor según lo necesites */
+        }
+
 
         header {
             display: flex;
@@ -218,12 +236,24 @@
             background-color: #f3f4f6;
             border-radius: 4px;
         }
+
+        header {
+            background-image: url('/public/assets/img/Header_pdf.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        header h1 {
+            width: 60%;
+            color: #157f3d;
+        }
     </style>
 </head>
 
 <body>
     <header>
-        <img src="/public/assets/img/logo_esc_white.png" alt="Logo">
+        <img src="/public/assets/img/logo_esc.png" alt="Logo">
         <h1>Informe de Evaluación del Protocolo Marca País</h1>
     </header>
 
@@ -359,8 +389,10 @@
         <p><strong>Posición dentro de la organización:</strong> {{ $company->infoAdicional->mercadeo_puesto ?? 'N/A' }}
         </p>
         <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->mercadeo_email ?? 'N/A' }}</p>
-        <p><strong>Teléfono:</strong> {{ $company->infoAdicional->mercadeo_telefono ?? 'N/A' }} <strong>Celular:</strong>
-            {{ $company->infoAdicional->mercadeo_celular ?? 'N/A' }}</p>
+        <p><strong>Teléfono:</strong> {{ $company->infoAdicional->mercadeo_telefono ?? 'N/A' }}
+            <strong>Celular:</strong>
+            {{ $company->infoAdicional->mercadeo_celular ?? 'N/A' }}
+        </p>
     @endif
 
     @if ($company->infoAdicional->micrositio_nombre)
@@ -372,7 +404,8 @@
         <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->micrositio_email ?? 'N/A' }}</p>
         <p><strong>Teléfono:</strong> {{ $company->infoAdicional->micrositio_telefono ?? 'N/A' }}
             <strong>Celular:</strong>
-            {{ $company->infoAdicional->micrositio_celular ?? 'N/A' }}</p>
+            {{ $company->infoAdicional->micrositio_celular ?? 'N/A' }}
+        </p>
     @endif
 
     @if ($company->infoAdicional->representante_nombre)
@@ -408,48 +441,49 @@
     <h2>Descripción y justificación de cumplimiento del protocolo</h2>
     <p><strong>Indicadores de marca país esencial COSTA RICA</strong></p>
     <p>Todo cumplimiento o incumplimiento de indicador debe ser justificado de acuerdo a los requisitos generales.</p>
-    
+
     @foreach ($values as $value)
         <h3>{{ $value->name }}</h3>
         <div class="score">
             <p><strong>Calificación obtenida:</strong> {{ $finalScores[$value->id]->nota ?? 0 }}%</p>
             <p><strong>Calificación mínima requerida:</strong> {{ $value->minimum_score }}%</p>
-            <p><strong>Estado:</strong> 
-                @if(($finalScores[$value->id]->nota ?? 0) >= $value->minimum_score)
+            <p><strong>Estado:</strong>
+                @if (($finalScores[$value->id]->nota ?? 0) >= $value->minimum_score)
                     <span class="approved">Aprobado</span>
                 @else
                     <span class="not-approved">No aprobado</span>
                 @endif
             </p>
         </div>
-        
+
         @if (isset($indicatorsByValue[$value->id]))
             @foreach ($indicatorsByValue[$value->id] as $indicator)
                 <div class="indicator-section">
                     <h4>{{ $indicator->name }}</h4>
-                    
+
                     <!-- Pregunta de autoevaluación -->
                     <div class="auto-evaluation-section">
                         <h5>Autoevaluación</h5>
-                        @if($indicator->self_evaluation_question)
+                        @if ($indicator->self_evaluation_question)
                             <div class="question-box">
                                 <p><strong>Pregunta:</strong> {{ $indicator->self_evaluation_question }}</p>
                             </div>
-                            
-                            @if(isset($autoEvaluationAnswers[$indicator->id]))
-                                @foreach($autoEvaluationAnswers[$indicator->id] as $autoAnswer)
+
+                            @if (isset($autoEvaluationAnswers[$indicator->id]))
+                                @foreach ($autoEvaluationAnswers[$indicator->id] as $autoAnswer)
                                     <div class="answer-box">
-                                        <p><strong>Respuesta:</strong> 
+                                        <p><strong>Respuesta:</strong>
                                             <span class="{{ $autoAnswer->answer == 1 ? 'approved' : 'not-approved' }}">
-                                                @if($indicator->is_binary)
+                                                @if ($indicator->is_binary)
                                                     {{ $autoAnswer->answer == 1 ? 'Sí' : 'No' }}
                                                 @else
                                                     {{ $autoAnswer->answer }}
                                                 @endif
                                             </span>
                                         </p>
-                                        @if($autoAnswer->justification)
-                                            <p><strong>Justificación:</strong> <span class="justification">{{ $autoAnswer->justification }}</span></p>
+                                        @if ($autoAnswer->justification)
+                                            <p><strong>Justificación:</strong> <span
+                                                    class="justification">{{ $autoAnswer->justification }}</span></p>
                                         @endif
                                     </div>
                                 @endforeach
@@ -464,7 +498,7 @@
                             </div>
                         @endif
                     </div>
-                    
+
                     <h5>Evaluación</h5>
                     <table>
                         <tr>
@@ -480,7 +514,8 @@
                                     @if (isset($companyAnswers[$indicator->id]))
                                         @foreach ($companyAnswers[$indicator->id] as $answer)
                                             @if ($answer->evaluation_question_id == $question->id)
-                                                <p><strong>Respuesta:</strong> {{ $answer->answer == 1 ? 'Sí' : 'No' }}</p>
+                                                <p><strong>Respuesta:</strong> {{ $answer->answer == 1 ? 'Sí' : 'No' }}
+                                                </p>
                                                 <p><strong>Descripción:</strong> {{ $answer->description }}</p>
                                                 @if ($answer->file_path)
                                                     <p><strong>Archivos adjuntos:</strong> Sí</p>
@@ -625,6 +660,8 @@
     <p><strong>Quinto:</strong> Hago la presente declaración bajo advertencia de las penas por falso testimonio que
         contempla el Código Penal.</p>
 
+    <div class="page-break"></div>
+
     <h2>Firma</h2>
     <table class="signature-table">
         <tr>
@@ -643,25 +680,9 @@
         </tr>
     </table>
 
-    <div class="page-break"></div>
-
-    <h2>Firma del evaluador</h2>
-    <table class="signature-table">
-        <tr>
-            <td>
-                <div class="signature-line"></div>
-                <p>{{ $evaluador->name }} {{ $evaluador->lastname }}</p>
-                <p>Evaluador</p>
-            </td>
-            <td>
-                <div class="signature-line"></div>
-                <p>Fecha: {{ $date }}</p>
-            </td>
-        </tr>
-    </table>
-
     <div style="margin-top: 50px;">
-        <p class="text-center">Este informe ha sido generado automáticamente por el sistema de evaluación del Protocolo Marca País.</p>
+        <p class="text-center">Este informe ha sido generado automáticamente por el sistema de evaluación del Protocolo
+            Marca País.</p>
         <p class="text-center">© {{ date('Y') }} - Todos los derechos reservados</p>
     </div>
 </body>

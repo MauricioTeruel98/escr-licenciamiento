@@ -29,12 +29,30 @@
             font-weight: bold;
         }
 
+        @font-face {
+            font-family: 'Gotham';
+            src: url('{{ storage_path('fonts/gotham/GothamMedium.ttf') }}') format('truetype');
+            font-weight: normal;
+        }
+
+        @font-face {
+            font-family: 'Gotham';
+            src: url('{{ storage_path('fonts/gotham/GothamBold.ttf') }}') format('truetype');
+            font-weight: bold;
+        }
+
+
         body {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Gotham', sans-serif;
             background-color: #f4f4f9;
             color: #333;
             margin: 0;
             padding: 20px;
+        }
+
+        @page {
+            margin: 0mm;
+            /* Ajusta el valor según lo necesites */
         }
 
         .header {
@@ -118,13 +136,25 @@
         .page-break {
             page-break-after: always;
         }
+
+        header {
+            background-image: url('/public/assets/img/Header_pdf.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        header h1 {
+            width: 60%;
+            color: #157f3d;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <img src="/public/assets/img/logo_esc_white.png" alt="Logo">
+    <header class="header">
+        <img src="/public/assets/img/logo_esc.png" alt="Logo">
         <h1>Resultados de Autoevaluación</h1>
-    </div>
+    </header>
 
     <div class="company-info">
         <h2>{{ $company->name }}</h2>

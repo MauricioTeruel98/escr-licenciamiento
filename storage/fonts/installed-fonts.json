@@ -6,5 +6,9 @@
     "montserrat": {
         "normal": "C:\\xampp\\htdocs\\escr-licenciamiento\\storage\\fonts\/montserrat_normal_43a57bdb576c08d94b23dc51f31407bb",
         "bold": "montserrat_bold_954172a6ed9cb8d39426ea7e893c10f8"
+    },
+    "gotham": {
+        "normal": "C:\\xampp\\htdocs\\escr-licenciamiento\\storage\\fonts\/gotham_normal_418cd8e676317ddcc9aa3ddd59c4efe7",
+        "bold": "gotham_bold_5c698f3e0bfb23763ab106c384f16481"
     }
 }
