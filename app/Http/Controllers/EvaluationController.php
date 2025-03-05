@@ -14,6 +14,8 @@ use App\Models\EvaluatorAssessment;
 use App\Models\IndicatorAnswerEvaluation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
 class EvaluationController extends Controller
 {
     public function index($value_id)
@@ -22,8 +24,26 @@ class EvaluationController extends Controller
         $company_id = $user->company_id;
         $isEvaluador = $user->role === 'evaluador';
 
+        // Obtener los IDs de los indicadores donde la empresa respondió "sí"
+        $indicatorIds = IndicatorAnswer::where('company_id', $company_id)
+            ->where(function($query) {
+                $query->where('answer', '1')
+                      ->orWhere('answer', 'si')
+                      ->orWhere('answer', 'sí')
+                      ->orWhere('answer', 'yes')
+                      ->orWhere('answer', 1)
+                      ->orWhere('answer', true);
+            })
+            ->pluck('indicator_id')
+            ->toArray();
+
+        // Log para depuración
+        Log::info('Indicadores con respuesta "sí":', $indicatorIds);
+
         // Obtener el total de preguntas de evaluación por subcategoría
-        $valueData = Value::with(['subcategories.indicators.evaluationQuestions'])
+        $valueData = Value::with(['subcategories.indicators' => function($query) use ($indicatorIds) {
+                $query->whereIn('indicators.id', $indicatorIds);
+            }, 'subcategories.indicators.evaluationQuestions'])
             ->findOrFail($value_id);
 
         // Calcular el progreso
@@ -139,7 +159,26 @@ class EvaluationController extends Controller
 
     public function getIndicators()
     {
+        // Obtener el usuario autenticado y su empresa
+        $user = Auth::user();
+        $companyId = $user->company_id;
+
+        // Obtener los IDs de los indicadores donde la empresa respondió "sí"
+        $indicatorIds = IndicatorAnswer::where('company_id', $companyId)
+            ->where(function($query) {
+                $query->where('answer', '1')
+                      ->orWhere('answer', 'si')
+                      ->orWhere('answer', 'sí')
+                      ->orWhere('answer', 'yes')
+                      ->orWhere('answer', 1)
+                      ->orWhere('answer', true);
+            })
+            ->pluck('indicator_id')
+            ->toArray();
+
+        // Obtener solo los indicadores que la empresa respondió "sí" y que estén activos
         $indicators = Indicator::with(['evaluationQuestions'])
+            ->whereIn('id', $indicatorIds)
             ->where('is_active', true)
             ->get()
             ->map(function ($indicator) {

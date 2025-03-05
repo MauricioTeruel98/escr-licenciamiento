@@ -293,9 +293,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }
 
         const newApprovals = { ...approvals };
-        newApprovals[question.id] = value;
+        newApprovals[questionId] = value;
         setApprovals(newApprovals);
     };
+
+    console.log(valueData)
 
     const areAllQuestionsAnswered = () => {
         if (isEvaluador) {
