@@ -260,9 +260,20 @@ export default function EvaluadorDashboard({ auth }) {
                             <div className="bg-white rounded-lg shadow p-6">
                                 <h3 className="text-xl font-bold mb-2">Descargar documentación</h3>
                                 <div className="mt-6">
-                                    <a href={route('download.company.documentation')} className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors" target="_blank" rel="noopener noreferrer">
+                                    <a href={route('download.company.documentation')} className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors text-center" target="_blank" rel="noopener noreferrer">
                                         Descargar
                                     </a>
+                                    
+                                    {/* {activeCompany && companyStatusEval === 'evaluacion-completada' && (
+                                        <a 
+                                            href={route('download.evaluation.pdf', activeCompany.id)} 
+                                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center"
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                        >
+                                            Descargar PDF de evaluación
+                                        </a>
+                                    )} */}
                                 </div>
                             </div>
                         </div>

@@ -51,45 +51,8 @@ class PDFController extends Controller
 
             Log::info('Empresa encontrada: ' . $company->name);
 
-            // Verificar si la empresa ha completado la autoevaluación
-            if (!$company->autoeval_ended) {
-                Log::warning('La empresa no ha completado la autoevaluación');
-                return redirect()->back()->with('error', 'La empresa aún no ha completado la autoevaluación.');
-            }
-
-            Log::info('La empresa ha completado la autoevaluación');
-
-            // Ruta de la carpeta de autoevaluaciones de la empresa
-            $companySlug = Str::slug($company->name);
-            $companyPath = "autoevaluations/{$company->id}-{$companySlug}";
-            
-            Log::info('Ruta de la carpeta de autoevaluaciones: ' . $companyPath);
-            
-            // Verificar si existe la carpeta
-            if (!Storage::disk('public')->exists($companyPath)) {
-                Log::error('No existe la carpeta de autoevaluaciones: ' . $companyPath);
-                return redirect()->back()->with('error', 'No se encontraron documentos de autoevaluación.');
-            }
-
-            // Obtener el archivo PDF más reciente
-            $pdfFiles = Storage::disk('public')->files($companyPath);
-            
-            if (empty($pdfFiles)) {
-                Log::error('No se encontraron archivos PDF en la carpeta: ' . $companyPath);
-                return redirect()->back()->with('error', 'No se encontraron documentos de autoevaluación.');
-            }
-            
-            Log::info('Archivos PDF encontrados: ' . implode(', ', $pdfFiles));
-            
-            // Ordenar archivos por fecha de modificación (más reciente primero)
-            usort($pdfFiles, function($a, $b) {
-                return Storage::disk('public')->lastModified($b) - Storage::disk('public')->lastModified($a);
-            });
-            
-            $latestPdf = $pdfFiles[0];
-            Log::info('PDF más reciente: ' . $latestPdf);
-            
             // Crear un archivo Excel con la información de la empresa
+            $companySlug = Str::slug($company->name);
             $excelFileName = "informacion_empresa_{$company->id}_{$companySlug}.xlsx";
             $zipFileName = "documentacion_empresa_{$company->id}_{$companySlug}.zip";
             
@@ -189,15 +152,72 @@ class PDFController extends Controller
             if ($openResult === TRUE) {
                 Log::info('Archivo ZIP creado correctamente');
                 
-                // Agregar el PDF al ZIP
-                try {
-                    $pdfContent = Storage::disk('public')->get($latestPdf);
-                    $pdfFileName = basename($latestPdf);
-                    $zip->addFromString($pdfFileName, $pdfContent);
-                    Log::info('PDF agregado al ZIP: ' . $pdfFileName);
-                } catch (\Exception $e) {
-                    Log::error('Error al agregar PDF al ZIP: ' . $e->getMessage());
-                    return redirect()->back()->with('error', 'Error al agregar PDF al ZIP: ' . $e->getMessage());
+                // Verificar y agregar el PDF de autoevaluación si existe
+                $autoEvalPdfFound = false;
+                if ($company->autoeval_ended) {
+                    $autoEvalPath = "autoevaluations/{$company->id}-{$companySlug}";
+                    
+                    if (Storage::disk('public')->exists($autoEvalPath)) {
+                        $autoEvalFiles = Storage::disk('public')->files($autoEvalPath);
+                        
+                        if (!empty($autoEvalFiles)) {
+                            // Ordenar archivos por fecha de modificación (más reciente primero)
+                            usort($autoEvalFiles, function($a, $b) {
+                                return Storage::disk('public')->lastModified($b) - Storage::disk('public')->lastModified($a);
+                            });
+                            
+                            $latestAutoEvalPdf = $autoEvalFiles[0];
+                            
+                            try {
+                                $pdfContent = Storage::disk('public')->get($latestAutoEvalPdf);
+                                $pdfFileName = "autoevaluacion_{$company->id}_{$companySlug}.pdf";
+                                $zip->addFromString($pdfFileName, $pdfContent);
+                                Log::info('PDF de autoevaluación agregado al ZIP: ' . $pdfFileName);
+                                $autoEvalPdfFound = true;
+                            } catch (\Exception $e) {
+                                Log::error('Error al agregar PDF de autoevaluación al ZIP: ' . $e->getMessage());
+                                // Continuar con la ejecución aunque no se pueda agregar este archivo
+                            }
+                        } else {
+                            Log::warning('No se encontraron archivos PDF de autoevaluación en la carpeta: ' . $autoEvalPath);
+                        }
+                    } else {
+                        Log::warning('No existe la carpeta de autoevaluaciones: ' . $autoEvalPath);
+                    }
+                }
+                
+                // Verificar y agregar el PDF de evaluación si existe
+                $evalPdfFound = false;
+                if ($company->eval_ended || $company->estado_eval === 'evaluacion-completada' || $company->estado_eval === 'evaluado') {
+                    $evalPath = "evaluations/{$company->id}-{$companySlug}";
+                    
+                    if (Storage::disk('public')->exists($evalPath)) {
+                        $evalFiles = Storage::disk('public')->files($evalPath);
+                        
+                        if (!empty($evalFiles)) {
+                            // Ordenar archivos por fecha de modificación (más reciente primero)
+                            usort($evalFiles, function($a, $b) {
+                                return Storage::disk('public')->lastModified($b) - Storage::disk('public')->lastModified($a);
+                            });
+                            
+                            $latestEvalPdf = $evalFiles[0];
+                            
+                            try {
+                                $pdfContent = Storage::disk('public')->get($latestEvalPdf);
+                                $pdfFileName = "evaluacion_{$company->id}_{$companySlug}.pdf";
+                                $zip->addFromString($pdfFileName, $pdfContent);
+                                Log::info('PDF de evaluación agregado al ZIP: ' . $pdfFileName);
+                                $evalPdfFound = true;
+                            } catch (\Exception $e) {
+                                Log::error('Error al agregar PDF de evaluación al ZIP: ' . $e->getMessage());
+                                // Continuar con la ejecución aunque no se pueda agregar este archivo
+                            }
+                        } else {
+                            Log::warning('No se encontraron archivos PDF de evaluación en la carpeta: ' . $evalPath);
+                        }
+                    } else {
+                        Log::warning('No existe la carpeta de evaluaciones: ' . $evalPath);
+                    }
                 }
                 
                 // Agregar el Excel al ZIP
@@ -218,6 +238,12 @@ class PDFController extends Controller
                     Log::error('El archivo ZIP no existe después de crearlo: ' . $zipPath);
                     return redirect()->back()->with('error', 'No se pudo crear el archivo ZIP.');
                 }
+                
+                // Registrar qué archivos se incluyeron en el ZIP
+                $includedFiles = ['Excel de información de la empresa'];
+                if ($autoEvalPdfFound) $includedFiles[] = 'PDF de autoevaluación';
+                if ($evalPdfFound) $includedFiles[] = 'PDF de evaluación';
+                Log::info('Archivos incluidos en el ZIP: ' . implode(', ', $includedFiles));
                 
                 Log::info('Descargando archivo ZIP: ' . $zipPath);
                 
@@ -243,6 +269,101 @@ class PDFController extends Controller
             Log::error('Error en downloadCompanyDocumentation: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
             return redirect()->back()->with('error', 'Error al descargar la documentación: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Descarga el PDF de evaluación más reciente de una empresa
+     * 
+     * @param int|null $companyId ID de la empresa (opcional, si no se proporciona se usa la empresa del usuario autenticado)
+     * @return \Illuminate\Http\Response
+     */
+    public function downloadEvaluationPDF($companyId = null)
+    {
+        try {
+            Log::info('Iniciando descarga de PDF de evaluación');
+            
+            // Obtener el usuario autenticado
+            $user = Auth::user();
+            
+            // Si no se proporciona un ID de empresa, usar la del usuario autenticado
+            if (!$companyId) {
+                if (!$user || !$user->company_id) {
+                    Log::error('Usuario no autenticado o sin empresa asignada');
+                    return redirect()->back()->with('error', 'No se encontró información de la empresa.');
+                }
+                $companyId = $user->company_id;
+            }
+            
+            // Verificar si el usuario tiene permisos para acceder a esta empresa
+            if ($user->role !== 'super_admin' && $user->role !== 'evaluador' && $user->company_id != $companyId) {
+                Log::error('Usuario sin permisos para acceder a la empresa: ' . $companyId);
+                return redirect()->back()->with('error', 'No tiene permisos para acceder a esta información.');
+            }
+            
+            Log::info('Buscando empresa con ID: ' . $companyId);
+            
+            $company = Company::find($companyId);
+            
+            if (!$company) {
+                Log::error('No se encontró la empresa con ID: ' . $companyId);
+                return redirect()->back()->with('error', 'No se encontró información de la empresa.');
+            }
+            
+            Log::info('Empresa encontrada: ' . $company->name);
+            
+            // Verificar si la empresa ha completado la evaluación
+            if (!$company->eval_ended && $company->estado_eval !== 'evaluacion-completada' && $company->estado_eval !== 'evaluado') {
+                Log::warning('La empresa no ha completado la evaluación');
+                return redirect()->back()->with('error', 'La empresa aún no ha completado la evaluación.');
+            }
+            
+            // Ruta de la carpeta de evaluaciones de la empresa
+            $companySlug = Str::slug($company->name);
+            $evalPath = "evaluations/{$company->id}-{$companySlug}";
+            
+            Log::info('Ruta de la carpeta de evaluaciones: ' . $evalPath);
+            
+            // Verificar si existe la carpeta
+            if (!Storage::disk('public')->exists($evalPath)) {
+                Log::error('No existe la carpeta de evaluaciones: ' . $evalPath);
+                return redirect()->back()->with('error', 'No se encontraron documentos de evaluación.');
+            }
+            
+            // Obtener el archivo PDF más reciente
+            $pdfFiles = Storage::disk('public')->files($evalPath);
+            
+            if (empty($pdfFiles)) {
+                Log::error('No se encontraron archivos PDF en la carpeta: ' . $evalPath);
+                return redirect()->back()->with('error', 'No se encontraron documentos de evaluación.');
+            }
+            
+            Log::info('Archivos PDF encontrados: ' . implode(', ', $pdfFiles));
+            
+            // Ordenar archivos por fecha de modificación (más reciente primero)
+            usort($pdfFiles, function($a, $b) {
+                return Storage::disk('public')->lastModified($b) - Storage::disk('public')->lastModified($a);
+            });
+            
+            $latestPdf = $pdfFiles[0];
+            Log::info('PDF más reciente: ' . $latestPdf);
+            
+            // Nombre del archivo para la descarga
+            $downloadFileName = "evaluacion_{$company->id}_{$companySlug}.pdf";
+            
+            // Obtener la ruta completa del archivo
+            $fullPath = Storage::disk('public')->path($latestPdf);
+            
+            // Descargar el archivo
+            return response()->download($fullPath, $downloadFileName, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $downloadFileName . '"'
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error en downloadEvaluationPDF: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return redirect()->back()->with('error', 'Error al descargar el PDF de evaluación: ' . $e->getMessage());
         }
     }
 } 
