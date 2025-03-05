@@ -14,6 +14,7 @@ use App\Notifications\EvaluationCompletedNotification;
 use App\Notifications\EvaluationCompletedNotificationSuperAdmin;
 use App\Models\User;
 use App\Models\Value;
+use App\Models\EvaluationValueResult;
 use Illuminate\Support\Facades\Auth;
 
 class EvaluationAnswerController extends Controller
@@ -64,6 +65,27 @@ class EvaluationAnswerController extends Controller
                             'comment' => $answerData['evaluator_comment'] ?? null,
                         ]
                     );
+
+                    // Si es el último indicador del valor actual, calcular y guardar los resultados
+                    if (!$isPartialSave) {
+                        // Obtener el valor actual
+                        $valueId = $request->input('value_id');
+
+                        // Calcular la puntuación del valor
+                        $valueScore = $this->calculateValueScore($valueId, $user->company_id);
+
+                        // Guardar el resultado en la tabla evaluation_value_result
+                        \App\Models\EvaluationValueResult::updateOrCreate(
+                            [
+                                'company_id' => $user->company_id,
+                                'value_id' => $valueId,
+                            ],
+                            [
+                                'nota' => $valueScore,
+                                'fecha_evaluacion' => now()
+                            ]
+                        );
+                    }
 
                     // No continuar con el proceso de guardar respuestas si es evaluador
                     continue;
@@ -330,6 +352,24 @@ class EvaluationAnswerController extends Controller
                         ]
                     );
 
+                    // Obtener el valor actual
+                    $valueId = $request->input('value_id');
+
+                    // Calcular la puntuación del valor
+                    $valueScore = $this->calculateValueScore($valueId, $user->company_id);
+
+                    // Guardar el resultado en la tabla evaluation_value_result
+                    \App\Models\EvaluationValueResult::updateOrCreate(
+                        [
+                            'company_id' => $user->company_id,
+                            'value_id' => $valueId,
+                        ],
+                        [
+                            'nota' => $valueScore,
+                            'fecha_evaluacion' => now()
+                        ]
+                    );
+
                     // No continuar con el proceso de guardar respuestas si es evaluador
                     continue;
                 }
@@ -523,5 +563,40 @@ class EvaluationAnswerController extends Controller
         }
 
         return ['valid' => true];
+    }
+
+    /**
+     * Calcula la puntuación de un valor basado en las evaluaciones del evaluador
+     * 
+     * @param int $valueId ID del valor
+     * @param int $companyId ID de la empresa
+     * @return int Puntuación calculada (0-100)
+     */
+    private function calculateValueScore($valueId, $companyId)
+    {
+        // Obtener todos los indicadores asociados al valor
+        $indicators = \App\Models\Indicator::where('value_id', $valueId)
+            ->where('is_active', true)
+            ->pluck('id');
+
+        if ($indicators->isEmpty()) {
+            return 0;
+        }
+
+        // Obtener todas las evaluaciones para estos indicadores
+        $evaluations = EvaluatorAssessment::where('company_id', $companyId)
+            ->whereIn('indicator_id', $indicators)
+            ->get();
+
+        if ($evaluations->isEmpty()) {
+            return 0;
+        }
+
+        // Calcular el porcentaje de aprobación
+        $totalEvaluations = $evaluations->count();
+        $approvedEvaluations = $evaluations->where('approved', true)->count();
+
+        // Calcular y redondear el porcentaje
+        return round(($approvedEvaluations / $totalEvaluations) * 100);
     }
 }
