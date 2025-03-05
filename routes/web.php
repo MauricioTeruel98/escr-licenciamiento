@@ -260,6 +260,10 @@ Route::post('/evaluacion/store-answers', [EvaluationAnswerController::class, 'st
     ->name('evaluacion.store-answers')
     ->middleware(['auth']);
 
+Route::post('/evaluacion/store-answers-by-indicator', [EvaluationAnswerController::class, 'storeByIndicator'])
+    ->name('evaluacion.store-answers-by-indicator')
+    ->middleware(['auth']);
+
 Route::delete('/evaluacion/delete-file', [EvaluationAnswerController::class, 'deleteFile'])
     ->name('evaluacion.delete-file');
 

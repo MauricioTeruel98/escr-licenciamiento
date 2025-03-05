@@ -124,48 +124,19 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         try {
             setLoading(true);
 
-            // Obtener solo las respuestas de la subcategoría actual
-            const currentSubcategoryAnswers = {};
-            subcategories[currentSubcategoryIndex].indicators.forEach(indicator => {
-                indicator.evaluation_questions.forEach(question => {
-                    if (answers[question.id]) {
-                        currentSubcategoryAnswers[question.id] = answers[question.id];
-                    }
-                });
-            });
-
-            // Guardar las respuestas de la subcategoría actual
-            const formData = new FormData();
-            formData.append('isPartialSave', 'true');
-            formData.append('value_id', value_id);
-
-            Object.entries(currentSubcategoryAnswers).forEach(([questionId, answerData]) => {
-                formData.append(`answers[${questionId}][value]`, answerData.value);
-                formData.append(`answers[${questionId}][description]`, answerData.description || '');
-
-                if (answerData.files && answerData.files.length > 0) {
-                    answerData.files.forEach(file => {
-                        if (file instanceof File) {
-                            formData.append(`answers[${questionId}][files][]`, file);
-                        } else {
-                            formData.append(`answers[${questionId}][existing_files][]`, JSON.stringify(file));
-                        }
-                    });
+            // Guardar respuestas por indicador para la subcategoría actual
+            let hasError = false;
+            
+            for (const indicator of subcategories[currentSubcategoryIndex].indicators) {
+                // Configurar como guardado parcial
+                const result = await saveAnswersByIndicator(indicator, true);
+                if (!result.success) {
+                    hasError = true;
+                    break;
                 }
+            }
 
-                if (isEvaluador) {
-                    formData.append(`answers[${questionId}][approved]`, approvals[questionId] ? '1' : '0');
-                    formData.append(`answers[${questionId}][evaluator_comment]`, answerData.evaluator_comment || '');
-                }
-            });
-
-            const response = await axios.post(route('evaluacion.store-answers'), formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-
-            if (response.data.success) {
+            if (!hasError) {
                 setNotification({
                     type: 'success',
                     message: 'Respuestas guardadas correctamente'
@@ -414,57 +385,33 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     const handleConfirmSubmit = async () => {
         try {
             setLoading(true);
-            const formData = new FormData();
-            formData.append('isPartialSave', 'false');
-            formData.append('value_id', value_id);
-
-            // Obtener solo las respuestas de la última subcategoría
-            const lastSubcategoryAnswers = {};
-            subcategories[currentSubcategoryIndex].indicators.forEach(indicator => {
-                indicator.evaluation_questions.forEach(question => {
-                    if (answers[question.id]) {
-                        lastSubcategoryAnswers[question.id] = answers[question.id];
-                    }
+            
+            // Obtener todos los indicadores de todas las subcategorías
+            const allIndicators = [];
+            subcategories.forEach(subcategory => {
+                subcategory.indicators.forEach(indicator => {
+                    allIndicators.push(indicator);
                 });
             });
-
-            Object.entries(lastSubcategoryAnswers).forEach(([questionId, answerData]) => {
-                formData.append(`answers[${questionId}][value]`, answerData.value);
-                formData.append(`answers[${questionId}][description]`, answerData.description || '');
-
-                if (answerData.files && answerData.files.length > 0) {
-                    answerData.files.forEach(file => {
-                        if (file instanceof File) {
-                            formData.append(`answers[${questionId}][files][]`, file);
-                        } else {
-                            formData.append(`answers[${questionId}][existing_files][]`, JSON.stringify(file));
-                        }
-                    });
+            
+            // Guardar respuestas por indicador
+            let hasError = false;
+            
+            for (const indicator of allIndicators) {
+                const result = await saveAnswersByIndicator(indicator);
+                if (!result.success) {
+                    hasError = true;
+                    break;
                 }
-
-                if (isEvaluador) {
-                    formData.append(`answers[${questionId}][approved]`, approvals[questionId] ? '1' : '0');
-                    formData.append(`answers[${questionId}][evaluator_comment]`, answerData.evaluator_comment || '');
-                }
-            });
-
-            const response = await axios.post(route('evaluacion.store-answers'), formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-
-            if (response.data.success) {
+            }
+            
+            if (!hasError) {
                 setNotification({
                     type: 'success',
                     message: 'Respuestas guardadas correctamente'
                 });
                 setShowConfirmModal(false);
-
-                if (response.data.savedAnswers) {
-                    setAnswers(response.data.savedAnswers);
-                }
-
+                
                 // Obtener el siguiente valor disponible
                 try {
                     const valuesResponse = await axios.get('/api/active-values');
@@ -492,7 +439,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     console.error('Error al obtener siguiente valor:', error);
                     setNotification({
                         type: 'success',
-                        message: response.data.message
+                        message: 'Evaluación guardada correctamente'
                     });
                 }
             }
@@ -504,6 +451,72 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             });
         } finally {
             setLoading(false);
+        }
+    };
+    
+    // Modificar la función saveAnswersByIndicator para aceptar un parámetro isPartialSave
+    const saveAnswersByIndicator = async (indicator, isPartialSave = false) => {
+        try {
+            const formData = new FormData();
+            formData.append('isPartialSave', isPartialSave ? 'true' : 'false');
+            formData.append('value_id', value_id);
+            formData.append('indicator_id', indicator.id);
+            
+            // Obtener solo las respuestas del indicador actual
+            const indicatorAnswers = {};
+            indicator.evaluation_questions.forEach(question => {
+                if (answers[question.id]) {
+                    indicatorAnswers[question.id] = answers[question.id];
+                }
+            });
+            
+            // Si no hay respuestas para este indicador, omitirlo
+            if (Object.keys(indicatorAnswers).length === 0) {
+                return { success: true };
+            }
+            
+            Object.entries(indicatorAnswers).forEach(([questionId, answerData]) => {
+                formData.append(`answers[${questionId}][value]`, answerData.value);
+                formData.append(`answers[${questionId}][description]`, answerData.description || '');
+
+                if (answerData.files && answerData.files.length > 0) {
+                    answerData.files.forEach(file => {
+                        if (file instanceof File) {
+                            formData.append(`answers[${questionId}][files][]`, file);
+                        } else {
+                            formData.append(`answers[${questionId}][existing_files][]`, JSON.stringify(file));
+                        }
+                    });
+                }
+
+                if (isEvaluador) {
+                    formData.append(`answers[${questionId}][approved]`, approvals[questionId] ? '1' : '0');
+                    formData.append(`answers[${questionId}][evaluator_comment]`, answerData.evaluator_comment || '');
+                }
+            });
+            
+            const response = await axios.post(route('evaluacion.store-answers-by-indicator'), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            
+            if (response.data.success && response.data.savedAnswers) {
+                // Actualizar las respuestas guardadas
+                setAnswers(prevAnswers => ({
+                    ...prevAnswers,
+                    ...response.data.savedAnswers
+                }));
+            }
+            
+            return response.data;
+        } catch (error) {
+            console.error(`Error al guardar respuestas del indicador ${indicator.id}:`, error);
+            setNotification({
+                type: 'error',
+                message: error.response?.data?.message || `Error al guardar respuestas del indicador ${indicator.name}`
+            });
+            return { success: false, error };
         }
     };
 
