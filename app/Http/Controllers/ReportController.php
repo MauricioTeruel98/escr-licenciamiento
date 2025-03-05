@@ -14,6 +14,7 @@ class ReportController extends Controller
 
         $query = Company::query()
             ->select('id', 'name', 'estado_eval')
+            ->orderBy('id', 'desc')
             ->with(['autoEvaluationResult' => function($query) {
                 $query->select('id', 'company_id', 'status');
             }]);

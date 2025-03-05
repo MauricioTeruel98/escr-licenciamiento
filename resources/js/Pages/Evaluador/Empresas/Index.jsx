@@ -64,6 +64,10 @@ export default function EmpresasEvaluadorIndex() {
                         colorClass = 'text-indigo-800 border-indigo-200 bg-indigo-50';
                         textItem = 'Evaluación Completada';
                         break;
+                    case 'evaluado':
+                        colorClass = 'text-green-800 border-green-200 bg-green-50';
+                        textItem = 'Evaluado';
+                        break;
                     default:
                         colorClass = 'text-gray-800 border-gray-200 bg-gray-50';
                 }

@@ -14,6 +14,7 @@ class ProgresosController extends Controller
 
         $query = Company::query()
             ->select('id', 'name as nombre', 'authorized', 'estado_eval')
+            ->orderBy('id', 'desc')
             ->withCount(['indicatorAnswers', 'indicatorAnswersEvaluation'])
             ->with('autoEvaluationResult');
 

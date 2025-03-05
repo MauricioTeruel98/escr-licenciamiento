@@ -44,6 +44,9 @@ export default function Reportes() {
                     case 'Evaluación Completada':
                         colorClass = 'text-indigo-800 border-indigo-200 bg-indigo-50';
                         break;
+                    case 'Evaluado':
+                        colorClass = 'text-green-800 border-green-200 bg-green-50';
+                        break;
                     default:
                         colorClass = 'text-gray-800 border-gray-200 bg-gray-50';
                 }
