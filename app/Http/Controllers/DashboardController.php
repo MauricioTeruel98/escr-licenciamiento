@@ -11,6 +11,7 @@ use App\Models\IndicatorAnswer;
 use App\Models\AutoEvaluationValorResult;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -104,7 +105,7 @@ class DashboardController extends Controller
 
     public function showFormEmpresa(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $company = $user->company;
         $infoAdicional = $company->infoAdicional;
 
@@ -120,6 +121,62 @@ class DashboardController extends Controller
             'telefono_1' => $company->phone,
             'telefono_2' => $company->mobile,
         ];
+
+        // Cargar el archivo de lugares para obtener los IDs correspondientes a los nombres
+        $lugaresJson = Storage::disk('public')->get('lugares.json');
+        $lugares = json_decode($lugaresJson, true);
+        
+        // Buscar los IDs correspondientes a los nombres guardados en la base de datos
+        $provinciaId = '';
+        $cantonId = '';
+        $distritoId = '';
+        
+        if ($company->provincia) {
+            foreach ($lugares[0]['provincias'] as $provincia) {
+                if ($provincia['name'] === $company->provincia) {
+                    $provinciaId = $provincia['id'];
+                    
+                    if ($company->canton) {
+                        foreach ($provincia['cantones'] as $canton) {
+                            if ($canton['name'] === $company->canton) {
+                                $cantonId = $canton['id'];
+                                
+                                if ($company->distrito) {
+                                    foreach ($canton['distritos'] as $distrito) {
+                                        if ($distrito['name'] === $company->distrito) {
+                                            $distritoId = $distrito['id'];
+                                            break;
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        
+        // Agregar los IDs de ubicación a los datos de la empresa
+        $companyData['provincia_id'] = $provinciaId;
+        $companyData['canton_id'] = $cantonId;
+        $companyData['distrito_id'] = $distritoId;
+        
+        // Agregar los nombres de ubicación para referencia
+        $companyData['provincia_nombre'] = $company->provincia;
+        $companyData['canton_nombre'] = $company->canton;
+        $companyData['distrito_nombre'] = $company->distrito;
+        
+        // Log para depuración
+        Log::info('Datos de ubicación cargados', [
+            'provincia' => $company->provincia,
+            'canton' => $company->canton,
+            'distrito' => $company->distrito,
+            'provincia_id' => $provinciaId,
+            'canton_id' => $cantonId,
+            'distrito_id' => $distritoId
+        ]);
 
         // Si existe infoAdicional, combinar con los datos de la empresa
         if ($infoAdicional) {

@@ -38,7 +38,7 @@ class CompanyProfileController extends Controller
             Storage::disk('public')->makeDirectory("empresas/{$companyId}/productos");
             
             // Procesar datos básicos
-            $allData = $request->except(['logo', 'fotografias', 'certificaciones', 'productos', 'logo_existente', 'fotografias_existentes', 'certificaciones_existentes']);
+            $allData = $request->except(['logo', 'fotografias', 'certificaciones', 'productos', 'logo_existente', 'fotografias_existentes', 'certificaciones_existentes', 'provincia', 'canton', 'distrito']);
             
             // Convertir valores booleanos a 1 o 0
             $allData['es_exportadora'] = filter_var($allData['es_exportadora'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
@@ -48,6 +48,70 @@ class CompanyProfileController extends Controller
 
             // Obtener información adicional existente
             $infoExistente = InfoAdicionalEmpresa::where('company_id', $companyId)->first();
+
+            // Procesar datos de ubicación (provincia, cantón y distrito)
+            $companyData = [];
+            
+            // Obtener los nombres de provincia, cantón y distrito a partir de los IDs
+            if ($request->has('provincia') && !empty($request->provincia)) {
+                // Cargar el archivo de lugares
+                $lugaresJson = Storage::disk('public')->get('lugares.json');
+                $lugares = json_decode($lugaresJson, true);
+                
+                // Buscar la provincia seleccionada
+                $provinciaId = $request->provincia;
+                $provinciaName = null;
+                $cantonName = null;
+                $distritoName = null;
+                
+                foreach ($lugares[0]['provincias'] as $provincia) {
+                    if ($provincia['id'] === $provinciaId) {
+                        $provinciaName = $provincia['name'];
+                        
+                        // Buscar el cantón seleccionado
+                        if ($request->has('canton') && !empty($request->canton)) {
+                            $cantonId = $request->canton;
+                            
+                            foreach ($provincia['cantones'] as $canton) {
+                                if ($canton['id'] === $cantonId) {
+                                    $cantonName = $canton['name'];
+                                    
+                                    // Buscar el distrito seleccionado
+                                    if ($request->has('distrito') && !empty($request->distrito)) {
+                                        $distritoId = $request->distrito;
+                                        
+                                        foreach ($canton['distritos'] as $distrito) {
+                                            if ($distrito['id'] === $distritoId) {
+                                                $distritoName = $distrito['name'];
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+                
+                // Guardar los nombres en lugar de los IDs
+                $companyData['provincia'] = $provinciaName;
+                $companyData['canton'] = $cantonName;
+                $companyData['distrito'] = $distritoName;
+                
+                Log::info('Datos de ubicación procesados', [
+                    'provincia' => $provinciaName,
+                    'canton' => $cantonName,
+                    'distrito' => $distritoName
+                ]);
+            }
+            
+            // Actualizar la información de la empresa
+            if (!empty($companyData)) {
+                Company::where('id', $companyId)->update($companyData);
+                Log::info('Datos de ubicación actualizados en la tabla companies', $companyData);
+            }
 
             // Procesar logo
             if ($request->hasFile('logo')) {
@@ -242,6 +306,21 @@ class CompanyProfileController extends Controller
             $company->update(['estado_eval' => 'evaluacion-pendiente']);
 
             $company->save();
+
+            // Agregar los datos de ubicación a la respuesta
+            $responseData['provincia'] = $company->provincia;
+            $responseData['canton'] = $company->canton;
+            $responseData['distrito'] = $company->distrito;
+            
+            // Agregar los IDs de ubicación para referencia
+            $responseData['provincia_id'] = $companyData['provincia_id'] ?? '';
+            $responseData['canton_id'] = $companyData['canton_id'] ?? '';
+            $responseData['distrito_id'] = $companyData['distrito_id'] ?? '';
+            
+            // Agregar los nombres de ubicación para referencia
+            $responseData['provincia_nombre'] = $company->provincia;
+            $responseData['canton_nombre'] = $company->canton;
+            $responseData['distrito_nombre'] = $company->distrito;
 
             return response()->json([
                 'success' => true,

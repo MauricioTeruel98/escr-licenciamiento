@@ -38,9 +38,10 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         es_exportadora: infoAdicional?.es_exportadora || false,
         paises_exportacion: infoAdicional?.paises_exportacion || '',
 
-        provincia: infoAdicional?.provincia || '',
-        canton: infoAdicional?.canton || '',
-        distrito: infoAdicional?.distrito || '',
+        // Estos datos ahora vienen de la tabla companies
+        provincia: infoAdicional?.provincia_id || '',
+        canton: infoAdicional?.canton_id || '',
+        distrito: infoAdicional?.distrito_id || '',
 
         cedula_juridica: infoAdicional?.cedula_juridica || '',
         actividad_comercial: infoAdicional?.actividad_comercial || '',
@@ -526,6 +527,13 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             }
         });
 
+        // Agregar información de depuración para ubicación
+        console.log('Enviando datos de ubicación:', {
+            provincia: data.provincia,
+            canton: data.canton,
+            distrito: data.distrito
+        });
+
         try {
             const response = await axios.post(route('company.profile.store'), formData, {
                 headers: {
@@ -541,6 +549,13 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 });
                 // Limpiar errores del cliente si la operación fue exitosa
                 setErrors({});
+                
+                // Mostrar información sobre los datos de ubicación guardados
+                console.log('Datos de ubicación guardados:', {
+                    provincia: response.data.data.provincia_nombre || response.data.data.provincia,
+                    canton: response.data.data.canton_nombre || response.data.data.canton,
+                    distrito: response.data.data.distrito_nombre || response.data.data.distrito
+                });
             } else {
                 // Si hay errores en la respuesta, mostrarlos en los campos correspondientes
                 if (response.data.errors) {
@@ -609,6 +624,13 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     ...prev,
                     provincias: lugares.provincias
                 }));
+                
+                console.log('Datos de ubicación cargados:', {
+                    provincias: lugares.provincias.length,
+                    provinciaSeleccionada: data.provincia,
+                    cantonSeleccionado: data.canton,
+                    distritoSeleccionado: data.distrito
+                });
             } catch (error) {
                 console.error('Error al cargar lugares:', error);
             }
@@ -621,28 +643,97 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     useEffect(() => {
         if (data.provincia) {
             const provinciaSeleccionada = ubicaciones.provincias.find(p => p.id === data.provincia);
-            setUbicaciones(prev => ({
-                ...prev,
-                cantones: provinciaSeleccionada?.cantones || [],
-                distritos: [] // Resetear distritos
-            }));
-            setData('canton', ''); // Resetear cantón seleccionado
-            setData('distrito', ''); // Resetear distrito seleccionado
+            
+            if (provinciaSeleccionada) {
+                console.log('Provincia seleccionada:', {
+                    id: provinciaSeleccionada.id,
+                    name: provinciaSeleccionada.name,
+                    cantones: provinciaSeleccionada.cantones?.length || 0
+                });
+                
+                setUbicaciones(prev => ({
+                    ...prev,
+                    cantones: provinciaSeleccionada.cantones || [],
+                    // No resetear distritos si ya hay un cantón seleccionado que coincide con los nuevos cantones
+                    distritos: data.canton && provinciaSeleccionada.cantones.some(c => c.id === data.canton) 
+                        ? prev.distritos 
+                        : []
+                }));
+                
+                // Solo resetear cantón si no existe en la nueva lista de cantones
+                if (data.canton && !provinciaSeleccionada.cantones.some(c => c.id === data.canton)) {
+                    console.log('Reseteando cantón porque no existe en la nueva lista de cantones');
+                    setData('canton', '');
+                    setData('distrito', '');
+                }
+            }
         }
-    }, [data.provincia]);
+    }, [data.provincia, ubicaciones.provincias]);
 
     // Actualizar distritos cuando cambia el cantón
     useEffect(() => {
-        if (data.canton) {
+        if (data.canton && data.provincia) {
             const provinciaSeleccionada = ubicaciones.provincias.find(p => p.id === data.provincia);
             const cantonSeleccionado = provinciaSeleccionada?.cantones.find(c => c.id === data.canton);
-            setUbicaciones(prev => ({
-                ...prev,
-                distritos: cantonSeleccionado?.distritos || []
-            }));
-            setData('distrito', ''); // Resetear distrito seleccionado
+            
+            if (cantonSeleccionado) {
+                console.log('Cantón seleccionado:', {
+                    id: cantonSeleccionado.id,
+                    name: cantonSeleccionado.name,
+                    distritos: cantonSeleccionado.distritos?.length || 0
+                });
+                
+                setUbicaciones(prev => ({
+                    ...prev,
+                    distritos: cantonSeleccionado.distritos || []
+                }));
+                
+                // Solo resetear distrito si no existe en la nueva lista de distritos
+                if (data.distrito && !cantonSeleccionado.distritos.some(d => d.id === data.distrito)) {
+                    console.log('Reseteando distrito porque no existe en la nueva lista de distritos');
+                    setData('distrito', '');
+                }
+            }
         }
-    }, [data.canton]);
+    }, [data.canton, data.provincia, ubicaciones.provincias]);
+
+    // Efecto para cargar los cantones y distritos iniciales si ya hay valores seleccionados
+    useEffect(() => {
+        const initializeLocationData = async () => {
+            // Solo ejecutar si tenemos provincia y no tenemos cantones cargados
+            if (data.provincia && ubicaciones.provincias.length > 0 && ubicaciones.cantones.length === 0) {
+                console.log('Inicializando datos de ubicación con valores existentes:', {
+                    provincia: data.provincia,
+                    canton: data.canton,
+                    distrito: data.distrito
+                });
+                
+                const provinciaSeleccionada = ubicaciones.provincias.find(p => p.id === data.provincia);
+                
+                if (provinciaSeleccionada) {
+                    // Cargar cantones
+                    setUbicaciones(prev => ({
+                        ...prev,
+                        cantones: provinciaSeleccionada.cantones || []
+                    }));
+                    
+                    // Si también hay cantón seleccionado, cargar distritos
+                    if (data.canton) {
+                        const cantonSeleccionado = provinciaSeleccionada.cantones.find(c => c.id === data.canton);
+                        
+                        if (cantonSeleccionado) {
+                            setUbicaciones(prev => ({
+                                ...prev,
+                                distritos: cantonSeleccionado.distritos || []
+                            }));
+                        }
+                    }
+                }
+            }
+        };
+        
+        initializeLocationData();
+    }, [data.provincia, data.canton, ubicaciones.provincias]);
 
     const handleFileDownload = async (path) => {
         try {
