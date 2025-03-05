@@ -4,9 +4,7 @@ import { X } from 'lucide-react';
 export default function HomologationModal({ isOpen, onClose, onSubmit, certification = null }) {
     const initialFormData = {
         nombre: '',
-        descripcion: '',
         tipo: '',
-        categoria: '',
         activo: true
     };
 
@@ -17,9 +15,7 @@ export default function HomologationModal({ isOpen, onClose, onSubmit, certifica
             if (certification) {
                 setFormData({
                     nombre: certification.nombre,
-                    descripcion: certification.descripcion || '',
                     tipo: certification.tipo,
-                    categoria: certification.categoria,
                     activo: certification.activo
                 });
             } else {

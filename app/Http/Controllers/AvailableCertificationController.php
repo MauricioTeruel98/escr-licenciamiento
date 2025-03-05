@@ -25,9 +25,7 @@ class AvailableCertificationController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255|unique:available_certifications',
-            'descripcion' => 'nullable|string',
-            'tipo' => 'required|string|in:' . implode(',', array_keys(AvailableCertification::TIPOS)),
-            'categoria' => 'required|string|in:' . implode(',', array_keys(AvailableCertification::CATEGORIAS)),
+            'tipo' => 'nullable|string|in:' . implode(',', array_keys(AvailableCertification::TIPOS)),
             'activo' => 'boolean'
         ]);
 
@@ -43,9 +41,7 @@ class AvailableCertificationController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255|unique:available_certifications,nombre,' . $certification->id,
-            'descripcion' => 'nullable|string',
-            'tipo' => 'required|string|in:' . implode(',', array_keys(AvailableCertification::TIPOS)),
-            'categoria' => 'required|string|in:' . implode(',', array_keys(AvailableCertification::CATEGORIAS)),
+            'tipo' => 'nullable|string|in:' . implode(',', array_keys(AvailableCertification::TIPOS)),
             'activo' => 'boolean'
         ]);
 
