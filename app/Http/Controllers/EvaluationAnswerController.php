@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\EvaluationQuestion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -17,6 +18,7 @@ use App\Notifications\EvaluationCalificatedNotificationSuperAdmin;
 use App\Models\User;
 use App\Models\Value;
 use App\Models\EvaluationValueResult;
+use App\Models\IndicatorAnswer;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
@@ -275,17 +277,17 @@ class EvaluationAnswerController extends Controller
                 if (!$this->notificationsAlreadySent($user->company_id, $request->value_id)) {
                     $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
                     $superAdminUser = User::where('role', 'super_admin')->first();
-                    
+
                     if ($adminUser) {
                         $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
                     }
                     if ($superAdminUser) {
                         $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
                     }
-                    
+
                     // Registrar que se enviaron las notificaciones
                     $this->markNotificationsAsSent($user->company_id, $request->value_id);
-                    
+
                     $company->estado_eval = 'evaluacion-completada';
                     $company->save();
                 }
@@ -564,101 +566,22 @@ class EvaluationAnswerController extends Controller
                 ];
             }
 
-            // Verificar si este es el último valor
-            $isLastValue = Value::where('is_active', true)
-                ->orderBy('id', 'desc')
-                ->first()->id == $request->value_id;
+            // Obtener los IDs de los indicadores respondidos con "sí"
+            $indicatorIds = IndicatorAnswer::where('company_id', $user->company_id)
+                ->where(function ($query) {
+                    $query->whereIn('answer', ['1', 'si', 'sí', 'yes', 1, true]);
+                })
+                ->pluck('indicator_id'); // Obtener solo los IDs
+
+            // Contar las preguntas asociadas a esos indicadores
+            $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)->count();
+
+            $numeroDePreguntasQueRespondioLaEmpresa = IndicatorAnswerEvaluation::where('company_id', $user->company_id)->count();
+
+            $numeroDePreguntasQueClificoElEvaluador = EvaluatorAssessment::where('company_id', $user->company_id)->count();
 
             // Enviar notificación al completar la evaluación
-            if ($isLastValue) {
-                $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
-                $superAdminUser = User::where('role', 'super_admin')->first();
-
-                // Si el usuario es evaluador y es el último valor, generar PDF con los resultados
-                if ($user->role === 'evaluador') {
-                    // Obtener todos los valores
-                    $allValues = Value::where('is_active', true)->get();
-
-                    // Obtener la empresa evaluada
-                    $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
-
-                    // Obtener las puntuaciones finales
-                    $finalScores = EvaluationValueResult::where('company_id', $user->company_id)
-                        ->get()
-                        ->keyBy('value_id');
-
-                    // Obtener todas las evaluaciones del evaluador para esta empresa
-                    $evaluatorAssessments = EvaluatorAssessment::where('company_id', $user->company_id)
-                        ->with(['evaluationQuestion', 'indicator'])
-                        ->get()
-                        ->groupBy('indicator_id');
-
-                    // Obtener todas las respuestas de la empresa
-                    $companyAnswers = IndicatorAnswerEvaluation::where('company_id', $user->company_id)
-                        ->with(['evaluationQuestion', 'indicator'])
-                        ->get()
-                        ->groupBy('indicator_id');
-
-                    // Obtener todas las respuestas de autoevaluación
-                    $autoEvaluationAnswers = \App\Models\IndicatorAnswer::where('company_id', $user->company_id)
-                        ->with(['indicator'])
-                        ->get()
-                        ->groupBy('indicator_id');
-
-                    // Agrupar indicadores por valor
-                    $indicatorsByValue = Indicator::where('is_active', true)
-                        ->with(['subcategory.value', 'evaluationQuestions'])
-                        ->get()
-                        ->groupBy('subcategory.value.id');
-
-                    // Generar PDF con los resultados
-                    $pdf = Pdf::loadView('pdf/evaluation', [
-                        'values' => $allValues,
-                        'company' => $company,
-                        'evaluador' => $user,
-                        'date' => now()->format('d/m/Y'),
-                        'finalScores' => $finalScores,
-                        'evaluatorAssessments' => $evaluatorAssessments,
-                        'companyAnswers' => $companyAnswers,
-                        'autoEvaluationAnswers' => $autoEvaluationAnswers,
-                        'indicatorsByValue' => $indicatorsByValue
-                    ]);
-
-                    // Crear estructura de carpetas para la empresa
-                    $companySlug = Str::slug($company->name); // Convertir nombre de empresa a slug
-                    $basePath = storage_path('app/public/evaluations');
-                    $companyPath = "{$basePath}/{$company->id}-{$companySlug}";
-
-                    // Crear carpetas si no existen
-                    if (!file_exists($basePath)) {
-                        mkdir($basePath, 0755, true);
-                    }
-                    if (!file_exists($companyPath)) {
-                        mkdir($companyPath, 0755, true);
-                    }
-
-                    // Generar nombre de archivo con timestamp
-                    $fileName = "evaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
-                    $fullPath = "{$companyPath}/{$fileName}";
-
-                    // Guardar PDF
-                    $pdf->save($fullPath);
-
-                    // Enviar email con PDF al usuario administrador de la empresa
-                    if ($adminUser) {
-                        Mail::to($adminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));
-                    }
-
-                    // Enviar email con PDF al superadmin
-                    if ($superAdminUser) {
-                        Mail::to($superAdminUser->email)->send(new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company));
-                    }
-
-                    $company->estado_eval = 'evaluado';
-
-                    $company->save();
-                }
-
+            if ($numeroDePreguntasQueRespondioLaEmpresa == $numeroDePreguntasQueVaAResponderLaEmpresa && $user->role !== 'evaluador') {
                 $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
                 $superAdminUser = User::where('role', 'super_admin')->first();
 
@@ -672,13 +595,108 @@ class EvaluationAnswerController extends Controller
                     if ($superAdminUser) {
                         $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
                     }
-                    
+
                     // Registrar que se enviaron las notificaciones
                     $this->markNotificationsAsSent($user->company_id, $request->value_id);
-                    
-                    $company->estado_eval = 'evaluacion-completada';
-                    $company->save();
                 }
+
+                $company->estado_eval = 'evaluacion-completada';
+                $company->save();
+            }
+            // Si el usuario es evaluador y es el último valor, generar PDF con los resultados
+            if ($user->role === 'evaluador' && $numeroDePreguntasQueClificoElEvaluador == $numeroDePreguntasQueVaAResponderLaEmpresa) {
+
+                $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
+                $superAdminUser = User::where('role', 'super_admin')->first();
+
+                // Obtener todos los valores
+                $allValues = Value::where('is_active', true)->get();
+
+                // Obtener la empresa evaluada
+                $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
+
+                // Obtener las puntuaciones finales
+                $finalScores = EvaluationValueResult::where('company_id', $user->company_id)
+                    ->get()
+                    ->keyBy('value_id');
+
+                // Obtener todas las evaluaciones del evaluador para esta empresa
+                $evaluatorAssessments = EvaluatorAssessment::where('company_id', $user->company_id)
+                    ->with(['evaluationQuestion', 'indicator'])
+                    ->get()
+                    ->groupBy('indicator_id');
+
+                // Obtener todas las respuestas de la empresa
+                $companyAnswers = IndicatorAnswerEvaluation::where('company_id', $user->company_id)
+                    ->with(['evaluationQuestion', 'indicator'])
+                    ->get()
+                    ->groupBy('indicator_id');
+
+                // Obtener todas las respuestas de autoevaluación
+                $autoEvaluationAnswers = \App\Models\IndicatorAnswer::where('company_id', $user->company_id)
+                    ->with(['indicator'])
+                    ->get()
+                    ->groupBy('indicator_id');
+
+
+                // Agrupar indicadores por valor
+                $indicatorsByValue = Indicator::where('is_active', true)
+                    ->with(['subcategory.value', 'evaluationQuestions'])
+                    ->get()
+                    ->groupBy('subcategory.value.id');
+
+                // Generar PDF con los resultados
+                $pdf = Pdf::loadView('pdf/evaluation', [
+                    'values' => $allValues,
+                    'company' => $company,
+                    'evaluador' => $user,
+                    'date' => now()->format('d/m/Y'),
+                    'finalScores' => $finalScores,
+                    'evaluatorAssessments' => $evaluatorAssessments,
+                    'companyAnswers' => $companyAnswers,
+                    'autoEvaluationAnswers' => $autoEvaluationAnswers,
+                    'indicatorsByValue' => $indicatorsByValue
+                ]);
+
+                // Crear estructura de carpetas para la empresa
+                $companySlug = Str::slug($company->name); // Convertir nombre de empresa a slug
+                $basePath = storage_path('app/public/evaluations');
+                $companyPath = "{$basePath}/{$company->id}-{$companySlug}";
+
+                // Crear carpetas si no existen
+                if (!file_exists($basePath)) {
+                    mkdir($basePath, 0755, true);
+                }
+                if (!file_exists($companyPath)) {
+                    mkdir($companyPath, 0755, true);
+                }
+
+                // Generar nombre de archivo con timestamp
+                $fileName = "evaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
+                $fullPath = "{$companyPath}/{$fileName}";
+
+                // Guardar PDF
+                $pdf->save($fullPath);
+
+                if (!$this->notificationsAlreadySent($user->company_id, $request->value_id)) {
+                    // Enviar email con PDF al usuario administrador de la empresa
+                    if ($adminUser) {
+                        Mail::to($adminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));
+                    }
+
+                    // Enviar email con PDF al superadmin
+                    if ($superAdminUser) {
+                        Mail::to($superAdminUser->email)->send(new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company));
+                    }
+
+                    // Registrar que se enviaron las notificaciones
+                    $this->markNotificationsAsSent($user->company_id, $request->value_id);
+                }
+
+
+                $company->estado_eval = 'evaluado';
+
+                $company->save();
             }
 
             DB::commit();

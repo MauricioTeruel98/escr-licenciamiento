@@ -9,6 +9,7 @@ use App\Models\Indicator;
 use App\Models\IndicatorAnswer;
 use App\Models\AutoEvaluationValorResult;
 use App\Models\Company;
+use App\Models\EvaluationQuestion;
 use App\Models\Value;
 use App\Models\EvaluatorAssessment;
 use App\Models\IndicatorAnswerEvaluation;
@@ -26,13 +27,13 @@ class EvaluationController extends Controller
 
         // Obtener los IDs de los indicadores donde la empresa respondió "sí"
         $indicatorIds = IndicatorAnswer::where('company_id', $company_id)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('answer', '1')
-                      ->orWhere('answer', 'si')
-                      ->orWhere('answer', 'sí')
-                      ->orWhere('answer', 'yes')
-                      ->orWhere('answer', 1)
-                      ->orWhere('answer', true);
+                    ->orWhere('answer', 'si')
+                    ->orWhere('answer', 'sí')
+                    ->orWhere('answer', 'yes')
+                    ->orWhere('answer', 1)
+                    ->orWhere('answer', true);
             })
             ->pluck('indicator_id')
             ->toArray();
@@ -41,27 +42,27 @@ class EvaluationController extends Controller
         Log::info('Indicadores con respuesta "sí":', $indicatorIds);
 
         // Obtener el total de preguntas de evaluación por subcategoría
-        $valueData = Value::with(['subcategories.indicators' => function($query) use ($indicatorIds) {
-                $query->whereIn('indicators.id', $indicatorIds);
-            }, 'subcategories.indicators.evaluationQuestions'])
+        $valueData = Value::with(['subcategories.indicators' => function ($query) use ($indicatorIds) {
+            $query->whereIn('indicators.id', $indicatorIds);
+        }, 'subcategories.indicators.evaluationQuestions'])
             ->findOrFail($value_id);
 
         // Calcular el progreso
         $totalQuestions = 0;
         $answeredQuestions = 0;
-        
+
         foreach ($valueData->subcategories as $subcategory) {
             foreach ($subcategory->indicators as $indicator) {
                 foreach ($indicator->evaluationQuestions as $question) {
                     $totalQuestions++;
-                    
+
                     if ($isEvaluador) {
                         // Para evaluadores, verificar si existe una evaluación para esta pregunta
                         $hasEvaluation = EvaluatorAssessment::where('company_id', $company_id)
                             ->where('evaluation_question_id', $question->id)
                             ->whereNotNull('approved') // Asegurarse de que se haya tomado una decisión (aprobado o no)
                             ->exists();
-                            
+
                         if ($hasEvaluation) {
                             $answeredQuestions++;
                         }
@@ -70,7 +71,7 @@ class EvaluationController extends Controller
                         $hasAnswer = IndicatorAnswerEvaluation::where('company_id', $company_id)
                             ->where('evaluation_question_id', $question->id)
                             ->exists();
-                            
+
                         if ($hasAnswer) {
                             $answeredQuestions++;
                         }
@@ -165,13 +166,13 @@ class EvaluationController extends Controller
 
         // Obtener los IDs de los indicadores donde la empresa respondió "sí"
         $indicatorIds = IndicatorAnswer::where('company_id', $companyId)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('answer', '1')
-                      ->orWhere('answer', 'si')
-                      ->orWhere('answer', 'sí')
-                      ->orWhere('answer', 'yes')
-                      ->orWhere('answer', 1)
-                      ->orWhere('answer', true);
+                    ->orWhere('answer', 'si')
+                    ->orWhere('answer', 'sí')
+                    ->orWhere('answer', 'yes')
+                    ->orWhere('answer', 1)
+                    ->orWhere('answer', true);
             })
             ->pluck('indicator_id')
             ->toArray();
