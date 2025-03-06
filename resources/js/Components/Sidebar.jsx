@@ -8,6 +8,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     const [isEvaluationOpen, setIsEvaluationOpen] = useState(false);
     const [isEvaluacionOpen, setIsEvaluacionOpen] = useState(false);
     const [autoEvaluationItems, setAutoEvaluationItems] = useState([]);
+    const [isApto, setIsApto] = useState(false);
+    const [isAuthorized, setIsAuthorized] = useState(false);
+    const [statusChecked, setStatusChecked] = useState(false);
 
     useEffect(() => {
         if (url.startsWith('/indicadores/')) {
@@ -16,6 +19,41 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         if (url.startsWith('/evaluacion/')) {
             setIsEvaluacionOpen(true);
         }
+
+        // Verificar el estado de autoevaluación y autorización
+        const checkStatus = async () => {
+            try {
+                const response = await axios.get('/api/user-status');
+                const newIsApto = response.data.auto_evaluation_status === 'apto';
+                const newIsAuthorized = Boolean(response.data.company_authorized);
+                
+                setIsApto(newIsApto);
+                setIsAuthorized(newIsAuthorized);
+                setStatusChecked(true);
+                
+                console.log('Estado actualizado:', { 
+                    isApto: newIsApto, 
+                    isAuthorized: newIsAuthorized, 
+                    url: url 
+                });
+            } catch (error) {
+                console.error('Error al verificar estado:', error);
+                // Usar valores del auth como fallback solo si no se han establecido previamente
+                if (!statusChecked) {
+                    const fallbackIsApto = auth.user.auto_evaluation_status === 'apto';
+                    const fallbackIsAuthorized = Boolean(auth.user.company?.authorized);
+                    
+                    setIsApto(fallbackIsApto);
+                    setIsAuthorized(fallbackIsAuthorized);
+                    
+                    console.log('Usando valores fallback:', { 
+                        isApto: fallbackIsApto, 
+                        isAuthorized: fallbackIsAuthorized, 
+                        url: url 
+                    });
+                }
+            }
+        };
 
         const fetchValues = async () => {
             try {
@@ -32,6 +70,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             }
         };
 
+        checkStatus();
         fetchValues();
     }, [url]);
 
@@ -103,9 +142,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                         </ul>
                     </li>
 
-                    {/* Menú desplegable de Evaluación */}
-                    {auth.user.auto_evaluation_status === 'apto' && 
-                     Boolean(auth.user.company?.authorized) && (
+                    {/* Menú desplegable de Evaluación - Mostrar siempre que isApto y isAuthorized sean true */}
+                    {isApto && isAuthorized && (
                         <li className="mb-1">
                             <button
                                 onClick={() => setIsEvaluacionOpen(!isEvaluacionOpen)}

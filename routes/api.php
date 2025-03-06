@@ -18,6 +18,17 @@ Route::middleware(['auth:sanctum', 'web'])->group(function () {
     Route::delete('/users/company/{user}', [UserController::class, 'destroy']);
     Route::get('/active-values', [ValueController::class, 'getActiveValues']);
     Route::post('/check-email-exists', [UserController::class, 'checkEmailExists']);
+    
+    // Nueva ruta para obtener el estado del usuario
+    Route::get('/user-status', function (Request $request) {
+        $user = $request->user();
+        $company = $user->company;
+        
+        return [
+            'auto_evaluation_status' => $company ? $company->autoEvaluationStatus() : 'en_proceso',
+            'company_authorized' => $company ? $company->authorized : false
+        ];
+    });
 });
 
 // Ruta para obtener las provincias
