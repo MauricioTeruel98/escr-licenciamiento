@@ -282,10 +282,9 @@
     <p>- Mujeres: {{ $company->infoAdicional->cantidad_mujeres ?? 0 }}</p>
     <p>- Otros: {{ $company->infoAdicional->cantidad_otros ?? 0 }}</p>
     <p><strong>Dirección:</strong></p>
-    <p>- Provincia: {{ $company->infoAdicional->provincia ?? 'N/A' }}</p>
-    <p>- Cantón: {{ $company->infoAdicional->canton ?? 'N/A' }}</p>
-    <p>- Distrito: {{ $company->infoAdicional->distrito ?? 'N/A' }}</p>
-    <p>- Dirección: {{ $company->infoAdicional->direccion ?? 'N/A' }}</p>
+    <p>- Provincia: {{ $company->provincia ?? 'N/A' }}</p>
+    <p>- Cantón: {{ $company->canton ?? 'N/A' }}</p>
+    <p>- Distrito: {{ $company->distrito ?? 'N/A' }}</p>
     <p><strong>Redes sociales:</strong></p>
     <p>- Sitio web: <a href="{{ $company->infoAdicional->sitio_web }}">{{ $company->infoAdicional->sitio_web }}</a></p>
     <p>- Facebook: <a href="{{ $company->infoAdicional->facebook }}">{{ $company->infoAdicional->facebook }}</a></p>
