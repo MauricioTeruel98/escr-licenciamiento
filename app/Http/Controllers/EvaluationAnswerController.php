@@ -275,17 +275,17 @@ class EvaluationAnswerController extends Controller
                 if (!$this->notificationsAlreadySent($user->company_id, $request->value_id)) {
                     $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
                     $superAdminUser = User::where('role', 'super_admin')->first();
-
+                    
                     if ($adminUser) {
                         $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
                     }
                     if ($superAdminUser) {
                         $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
                     }
-
+                    
                     // Registrar que se enviaron las notificaciones
                     $this->markNotificationsAsSent($user->company_id, $request->value_id);
-
+                    
                     $company->estado_eval = 'evaluacion-completada';
                     $company->save();
                 }
@@ -464,22 +464,30 @@ class EvaluationAnswerController extends Controller
                         ]
                     );
 
+                    // Verificar si este es el último valor
+                    /*
+                    $isLastValue = Value::where('is_active', true)
+                        ->orderBy('id', 'desc')
+                        ->first()->id == $request->value_id;
+
+                    if ($isLastValue) {
+                        $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
+                        $superAdminUser = User::where('role', 'super_admin')->first();
+
+
+                        $companyName = $user->company->name; // Obtener el nombre de la empresa
+
+                        if ($adminUser) {
+                            $adminUser->notify(new EvaluationCalificatedNotification($user, $companyName));
+                        }
+                        if ($superAdminUser) {
+                            $superAdminUser->notify(new EvaluationCalificatedNotificationSuperAdmin($user, $companyName));
+                        }
+                    }*/
+
                     // No continuar con el proceso de guardar respuestas si es evaluador
                     continue;
                 }
-
-                $valueId = $request->input('value_id');
-                
-                \App\Models\EvaluationValueResultReference::updateOrCreate(
-                    [
-                        'company_id' => $user->company_id,
-                        'value_id' => $valueId,
-                    ],
-                    [
-                        'value_completed' => true,
-                        'fecha_completado' => now()
-                    ]
-                );
 
                 // Validar estructura de datos
                 if (!isset($answerData['value'])) {
@@ -664,10 +672,10 @@ class EvaluationAnswerController extends Controller
                     if ($superAdminUser) {
                         $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
                     }
-
+                    
                     // Registrar que se enviaron las notificaciones
                     $this->markNotificationsAsSent($user->company_id, $request->value_id);
-
+                    
                     $company->estado_eval = 'evaluacion-completada';
                     $company->save();
                 }
