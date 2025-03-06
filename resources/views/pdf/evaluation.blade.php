@@ -317,13 +317,15 @@
             <th>Rol</th>
         </tr>
         @foreach ($company->users as $user)
-            <tr>
-                <td>{{ $user->name }}</td>
-                <td>{{ $user->lastname }}</td>
-                <td>{{ $user->email }}</td>
-                <td>{{ $user->phone }}</td>
-                <td>{{ $user->role }}</td>
-            </tr>
+            @if ($user->role !== 'evaluador' && $user->role !== 'super_admin')
+                <tr>
+                    <td>{{ $user->name }}</td>
+                    <td>{{ $user->lastname }}</td>
+                    <td>{{ $user->email }}</td>
+                    <td>{{ $user->phone }}</td>
+                    <td>{{ $user->role }}</td>
+                </tr>
+            @endif
         @endforeach
     </table>
 

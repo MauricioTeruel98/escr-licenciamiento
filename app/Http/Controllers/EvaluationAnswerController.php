@@ -645,40 +645,41 @@ class EvaluationAnswerController extends Controller
                     ->get()
                     ->groupBy('subcategory.value.id');
 
-                // Generar PDF con los resultados
-                $pdf = Pdf::loadView('pdf/evaluation', [
-                    'values' => $allValues,
-                    'company' => $company,
-                    'evaluador' => $user,
-                    'date' => now()->format('d/m/Y'),
-                    'finalScores' => $finalScores,
-                    'evaluatorAssessments' => $evaluatorAssessments,
-                    'companyAnswers' => $companyAnswers,
-                    'autoEvaluationAnswers' => $autoEvaluationAnswers,
-                    'indicatorsByValue' => $indicatorsByValue
-                ]);
-
-                // Crear estructura de carpetas para la empresa
-                $companySlug = Str::slug($company->name); // Convertir nombre de empresa a slug
-                $basePath = storage_path('app/public/evaluations');
-                $companyPath = "{$basePath}/{$company->id}-{$companySlug}";
-
-                // Crear carpetas si no existen
-                if (!file_exists($basePath)) {
-                    mkdir($basePath, 0755, true);
-                }
-                if (!file_exists($companyPath)) {
-                    mkdir($companyPath, 0755, true);
-                }
-
-                // Generar nombre de archivo con timestamp
-                $fileName = "evaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
-                $fullPath = "{$companyPath}/{$fileName}";
-
-                // Guardar PDF
-                $pdf->save($fullPath);
-
                 if (!$this->notificationsAlreadySent($user->company_id, $request->value_id)) {
+
+                    // Generar PDF con los resultados
+                    $pdf = Pdf::loadView('pdf/evaluation', [
+                        'values' => $allValues,
+                        'company' => $company,
+                        'evaluador' => $user,
+                        'date' => now()->format('d/m/Y'),
+                        'finalScores' => $finalScores,
+                        'evaluatorAssessments' => $evaluatorAssessments,
+                        'companyAnswers' => $companyAnswers,
+                        'autoEvaluationAnswers' => $autoEvaluationAnswers,
+                        'indicatorsByValue' => $indicatorsByValue
+                    ]);
+
+                    // Crear estructura de carpetas para la empresa
+                    $companySlug = Str::slug($company->name); // Convertir nombre de empresa a slug
+                    $basePath = storage_path('app/public/evaluations');
+                    $companyPath = "{$basePath}/{$company->id}-{$companySlug}";
+
+                    // Crear carpetas si no existen
+                    if (!file_exists($basePath)) {
+                        mkdir($basePath, 0755, true);
+                    }
+                    if (!file_exists($companyPath)) {
+                        mkdir($companyPath, 0755, true);
+                    }
+
+                    // Generar nombre de archivo con timestamp
+                    $fileName = "evaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
+                    $fullPath = "{$companyPath}/{$fileName}";
+
+                    // Guardar PDF
+                    $pdf->save($fullPath);
+
                     // Enviar email con PDF al usuario administrador de la empresa
                     if ($adminUser) {
                         Mail::to($adminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));

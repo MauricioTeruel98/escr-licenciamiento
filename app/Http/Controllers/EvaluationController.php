@@ -146,6 +146,20 @@ class EvaluationController extends Controller
 
         $company = Company::find($company_id);
 
+        // Obtener los IDs de los indicadores respondidos con "sí"
+        $indicatorIds = IndicatorAnswer::where('company_id', $user->company_id)
+            ->where(function ($query) {
+                $query->whereIn('answer', ['1', 'si', 'sí', 'yes', 1, true]);
+            })
+            ->pluck('indicator_id'); // Obtener solo los IDs
+
+        // Contar las preguntas asociadas a esos indicadores
+        $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)->count();
+
+        $numeroDePreguntasQueRespondioLaEmpresa = IndicatorAnswerEvaluation::where('company_id', $user->company_id)->count();
+
+        $numeroDePreguntasQueClificoElEvaluador = EvaluatorAssessment::where('company_id', $user->company_id)->count();
+
         return Inertia::render('Dashboard/Evaluacion/Evaluacion', [
             'valueData' => $valueData,
             'userName' => $user->name,
@@ -154,7 +168,10 @@ class EvaluationController extends Controller
             'progress' => $progress,
             'totalSteps' => $valueData->subcategories->count(),
             'value_id' => $value_id,
-            'company' => $company
+            'company' => $company,
+            'numeroDePreguntasQueVaAResponderLaEmpresa' => $numeroDePreguntasQueVaAResponderLaEmpresa,
+            'numeroDePreguntasQueRespondioLaEmpresa' => $numeroDePreguntasQueRespondioLaEmpresa,
+            'numeroDePreguntasQueClificoElEvaluador' => $numeroDePreguntasQueClificoElEvaluador
         ]);
     }
 

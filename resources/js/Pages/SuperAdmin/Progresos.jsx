@@ -77,7 +77,7 @@ export default function Progresos() {
                 </div>
             )
         },
-        {
+        /*{
             key: 'progreso',
             label: 'Progreso',
             render: (item) => (
@@ -95,7 +95,7 @@ export default function Progresos() {
                     </div>
                 </div>
             )
-        },
+        },*/
         {
             key: 'actions',
             label: 'Acciones',
