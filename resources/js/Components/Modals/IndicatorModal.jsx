@@ -44,6 +44,7 @@ export default function IndicatorModal({
                     homologation_ids: indicator.homologations.map((homologation) => homologation.id),
                     evaluation_questions: indicator.evaluation_questions.map((question) => question.question),
                     evaluation_questions_binary: indicator.evaluation_questions.map((question) => question.is_binary || false),
+                    evaluation_question_ids: indicator.evaluation_questions.map((question) => question.id),
                     value_id: indicator.value_id,
                     subcategory_id: indicator.subcategory?.id || '',
                     is_binary: indicator.is_binary !== undefined ? indicator.is_binary : true
@@ -126,11 +127,26 @@ export default function IndicatorModal({
     };
 
     const removeQuestion = (index) => {
-        setFormData(prev => ({
-            ...prev,
-            evaluation_questions: prev.evaluation_questions.filter((_, i) => i !== index),
-            evaluation_questions_binary: prev.evaluation_questions_binary.filter((_, i) => i !== index)
-        }));
+        if (formData.evaluation_questions[index] && indicator?.evaluation_questions?.[index]?.id) {
+            const questionId = indicator.evaluation_questions[index].id;
+            axios.delete(`/api/indicators/${indicator.id}/questions/${questionId}`)
+                .then(() => {
+                    setFormData(prev => ({
+                        ...prev,
+                        evaluation_questions: prev.evaluation_questions.filter((_, i) => i !== index),
+                        evaluation_questions_binary: prev.evaluation_questions_binary.filter((_, i) => i !== index)
+                    }));
+                })
+                .catch(error => {
+                    console.error('Error al eliminar la pregunta:', error);
+                });
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                evaluation_questions: prev.evaluation_questions.filter((_, i) => i !== index),
+                evaluation_questions_binary: prev.evaluation_questions_binary.filter((_, i) => i !== index)
+            }));
+        }
     };
 
     const updateQuestion = (index, value) => {

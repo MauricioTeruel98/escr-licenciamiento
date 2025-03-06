@@ -16,11 +16,11 @@ class IndicatorController extends Controller
 
         if ($request->has('search')) {
             $searchTerm = $request->search;
-            $query->where(function($q) use ($searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', "%{$searchTerm}%")
-                  ->orWhereHas('homologations', function($q) use ($searchTerm) {
-                      $q->where('nombre', 'like', "%{$searchTerm}%");
-                  });
+                    ->orWhereHas('homologations', function ($q) use ($searchTerm) {
+                        $q->where('nombre', 'like', "%{$searchTerm}%");
+                    });
             });
         }
 
@@ -96,36 +96,70 @@ class IndicatorController extends Controller
             'is_binary' => 'required|boolean'
         ]);
 
+        // Actualizar los datos del indicador
         $indicator->update([
             'name' => $request->name,
             'binding' => $request->binding,
             'self_evaluation_question' => $request->self_evaluation_question,
             'value_id' => $request->value_id,
             'subcategory_id' => $request->subcategory_id,
-            'evaluation_questions' => $request->evaluation_questions,
             'guide' => $request->guide,
             'is_active' => $request->is_active ?? true,
             'requisito_id' => $request->requisito_id,
             'is_binary' => $request->is_binary
         ]);
 
+        // Sincronizar homologations
         $indicator->homologations()->sync($request->homologation_ids);
 
-        $indicator->evaluationQuestions()->delete();
+        // Obtener preguntas existentes
+        $existingQuestions = $indicator->evaluationQuestions()->pluck('question', 'id')->toArray();
+
+        // Recorrer las preguntas enviadas y actualizar o agregar nuevas
         foreach ($request->input('evaluation_questions', []) as $index => $question) {
             $is_binary = $request->input('evaluation_questions_binary.' . $index, false);
-            $indicator->evaluationQuestions()->create([
-                'question' => $question,
-                'is_binary' => $is_binary
-            ]);
+
+            // Buscar si la pregunta ya existe
+            $existingQuestionId = array_search($question, $existingQuestions);
+
+            if ($existingQuestionId !== false) {
+                // Si la pregunta ya existe, actualizarla
+                $indicator->evaluationQuestions()->where('id', $existingQuestionId)->update([
+                    'is_binary' => $is_binary
+                ]);
+            } else {
+                // Si la pregunta es nueva, crearla
+                $indicator->evaluationQuestions()->create([
+                    'question' => $question,
+                    'is_binary' => $is_binary
+                ]);
+            }
         }
 
+        // Recargar relaciones
         $indicator->load(['homologations', 'value', 'subcategory']);
 
         return response()->json([
             'message' => 'Indicador actualizado exitosamente',
             'indicator' => $indicator
         ]);
+    }
+
+    public function deleteEvaluationQuestion($indicatorId, $questionId)
+    {
+        try {
+            $indicator = Indicator::findOrFail($indicatorId);
+            $question = $indicator->evaluationQuestions()->findOrFail($questionId);
+            $question->delete();
+            
+            return response()->json([
+                'message' => 'Pregunta de evaluación eliminada exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al eliminar la pregunta: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy(Indicator $indicator)

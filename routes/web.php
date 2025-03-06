@@ -180,6 +180,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::post('/api/indicators', [IndicatorController::class, 'store']);
     Route::put('/api/indicators/{indicator}', [IndicatorController::class, 'update']);
     Route::delete('/api/indicators/{indicator}', [IndicatorController::class, 'destroy']);
+    Route::delete('/api/indicators/{indicator}/questions/{question}', [IndicatorController::class, 'deleteEvaluationQuestion']);
     Route::post('/api/indicators/bulk-delete', [IndicatorController::class, 'bulkDelete']);
     Route::get('/api/indicators/related-data', [IndicatorController::class, 'getRelatedData']);
 

@@ -239,7 +239,11 @@ export default function IndicatorsIndex() {
             setModalOpen(false);
         } catch (error) {
             console.error('Error al guardar indicador:', error);
-            showNotification('error', 'Error al guardar el indicador');
+            if (error.response && error.response.data && error.response.data.error) {
+                showNotification('error', error.response.data.error);
+            } else {
+                showNotification('error', 'Error al guardar el indicador');
+            }
         }
     };
 
