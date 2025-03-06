@@ -369,8 +369,9 @@ class CompanyProfileController extends Controller
 
             switch ($type) {
                 case 'logo':
-                    if ($infoAdicional->logo_path === $path) {
-                        Storage::disk('public')->delete($path);
+                    // Eliminar el logo sin importar la ruta exacta
+                    if ($infoAdicional->logo_path) {
+                        Storage::disk('public')->delete($infoAdicional->logo_path);
                         $infoAdicional->update(['logo_path' => null]);
                     }
                     break;
@@ -394,10 +395,7 @@ class CompanyProfileController extends Controller
                     break;
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Archivo eliminado correctamente'
-            ]);
+            return response()->json(['success' => true, 'message' => 'Archivo eliminado correctamente']);
 
         } catch (\Exception $e) {
             Log::error('Error al eliminar archivo:', [

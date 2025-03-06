@@ -130,9 +130,12 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     // Función para eliminar archivo existente
     const removeExistingImage = async (tipo, path, productoIndex = null) => {
         try {
+            // Para el logo, no es necesario modificar la ruta
+            const adjustedPath = tipo === 'logo' ? path : path.replace('/storage/', '');
+            
             const response = await axios.post(route('company.profile.delete-file'), {
-                tipo: tipo,
-                path: path.replace('/storage/', ''),
+                type: tipo,
+                path: adjustedPath,
                 productoIndex: productoIndex
             });
 
@@ -140,6 +143,11 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 setImagenes(prev => {
                     switch (tipo) {
                         case 'logo':
+                            // También actualizar el estado de data para reflejar que el logo ha sido eliminado
+                            setData(prevData => ({
+                                ...prevData,
+                                logo_existente: null
+                            }));
                             return { ...prev, logo: null };
                         case 'fotografias':
                             return {
@@ -244,9 +252,12 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
         if (tipo === 'logo') {
             if (files.length > 0) {
+                // Generar URL de vista previa para el logo
+                const fileWithPreview = files[0];
+                fileWithPreview.preview = URL.createObjectURL(files[0]);
                 setImagenes(prev => ({
                     ...prev,
-                    logo: files[0]
+                    logo: fileWithPreview
                 }));
             }
         } else if (tipo === 'fotografias') {
@@ -266,9 +277,15 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 alert(`Solo se han añadido ${filesToAdd.length} fotografías. El límite máximo es de ${maxFiles.fotografias} fotografías.`);
             }
             
+            // Generar URLs de vista previa para las fotografías
+            const filesWithPreviews = filesToAdd.map(file => {
+                file.preview = URL.createObjectURL(file);
+                return file;
+            });
+            
             setImagenes(prev => ({
                 ...prev,
-                fotografias: [...(prev.fotografias || []), ...filesToAdd]
+                fotografias: [...(prev.fotografias || []), ...filesWithPreviews]
             }));
         } else if (tipo === 'certificaciones') {
             // Verificar si se excede el límite de certificaciones
@@ -287,9 +304,15 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 alert(`Solo se han añadido ${filesToAdd.length} certificaciones. El límite máximo es de ${maxFiles.certificaciones} certificaciones.`);
             }
             
+            // Generar URLs de vista previa para las certificaciones
+            const filesWithPreviews = filesToAdd.map(file => {
+                file.preview = URL.createObjectURL(file);
+                return file;
+            });
+            
             setImagenes(prev => ({
                 ...prev,
-                certificaciones: [...(prev.certificaciones || []), ...filesToAdd]
+                certificaciones: [...(prev.certificaciones || []), ...filesWithPreviews]
             }));
         } else {
             // Para productos, solo se permite 1 imagen por producto
@@ -353,7 +376,10 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         };
         
         if (tipo === 'logo') {
-            setImagenes(prev => ({ ...prev, logo: files[0] }));
+            // Generar URL de vista previa para el logo
+            const fileWithPreview = files[0];
+            fileWithPreview.preview = URL.createObjectURL(files[0]);
+            setImagenes(prev => ({ ...prev, logo: fileWithPreview }));
         } else if (tipo === 'fotografias') {
             // Verificar si se excede el límite de fotografías
             const currentCount = (imagenes.fotografias || []).length;
@@ -372,9 +398,15 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 alert(`Solo se han añadido ${filesToAdd.length} fotografías. El límite máximo es de ${maxFiles.fotografias} fotografías.`);
             }
             
+            // Generar URLs de vista previa para las fotografías
+            const filesWithPreviews = filesToAdd.map(file => {
+                file.preview = URL.createObjectURL(file);
+                return file;
+            });
+            
             setImagenes(prev => ({
                 ...prev,
-                fotografias: [...(prev.fotografias || []), ...filesToAdd]
+                fotografias: [...(prev.fotografias || []), ...filesWithPreviews]
             }));
         } else if (tipo === 'certificaciones') {
             // Verificar si se excede el límite de certificaciones
@@ -383,7 +415,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             
             if (availableSlots <= 0) {
                 alert(`Ya has alcanzado el límite máximo de ${maxFiles.certificaciones} certificaciones.`);
-                e.target.value = null; // Limpiar el input
                 return;
             }
             
@@ -394,9 +425,15 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 alert(`Solo se han añadido ${filesToAdd.length} certificaciones. El límite máximo es de ${maxFiles.certificaciones} certificaciones.`);
             }
             
+            // Generar URLs de vista previa para las certificaciones
+            const filesWithPreviews = filesToAdd.map(file => {
+                file.preview = URL.createObjectURL(file);
+                return file;
+            });
+            
             setImagenes(prev => ({
                 ...prev,
-                certificaciones: [...(prev.certificaciones || []), ...filesToAdd]
+                certificaciones: [...(prev.certificaciones || []), ...filesWithPreviews]
             }));
         } else if (tipo === 'producto') {
             // Para productos, solo se permite 1 imagen por producto
@@ -1673,31 +1710,20 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                         </svg>
                                                     </button>
-                                                    <span className="text-sm">{foto.name}</span>
+                                                    <span className="text-sm">
+                                                        {foto.name || 'Fotografía'}
+                                                    </span>
                                                 </div>
-                                                <div className="flex items-center">
-                                                    {/* Añadir verificación de nulidad aquí */}
-                                                    <span className="text-sm mr-2">{foto.size ? Math.round(foto.size / 1024) : 0} KB</span>
-                                                    {foto.url && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleFileDownload(foto.path)}
-                                                            className="download-button"
-                                                        >
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                            </svg>
-                                                        </button>
-                                                    )}
-                                                    {/* Verificar si existe la URL antes de mostrar la imagen */}
-                                                    {foto.url && (
-                                                        <img
-                                                            src={foto.url}
-                                                            alt={foto.name}
-                                                            className="w-10 h-10 object-cover ml-2 rounded"
+                                                {/* Vista previa de la imagen */}
+                                                {(foto.preview || foto.path) && (
+                                                    <div className="w-12 h-12 overflow-hidden rounded-md ml-2">
+                                                        <img 
+                                                            src={foto.preview || (foto.path ? `/storage/${foto.path}` : '')} 
+                                                            alt="Vista previa" 
+                                                            className="w-full h-full object-cover"
                                                         />
-                                                    )}
-                                                </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -1730,7 +1756,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         </label>
 
                                         {/* Vista previa del logo existente */}
-                                        {infoAdicional?.logo_url && !imagenes.logo && (
+                                        {infoAdicional?.logo_url && !imagenes.logo && data.logo_existente !== null && (
                                             <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
                                                 <div className="flex items-center">
                                                     <button
@@ -1786,7 +1812,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <div className="flex items-center">
                                                     <span className="text-sm mr-2">{imagenes.logo ? Math.round(imagenes.logo.size / 1024) : 0} KB</span>
                                                     <img
-                                                        src={URL.createObjectURL(imagenes.logo)}
+                                                        src={imagenes.logo.preview || URL.createObjectURL(imagenes.logo)}
                                                         alt="Logo preview"
                                                         className="w-10 h-10 object-cover ml-2 rounded"
                                                     />
@@ -1862,12 +1888,16 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                             </svg>
                                                         </button>
                                                     )}
-                                                    {/* Agregar vista previa de la imagen */}
-                                                    <img
-                                                        src={cert instanceof File ? URL.createObjectURL(cert) : cert.url}
-                                                        alt={cert.name || (cert instanceof File ? cert.name : 'Certificación')}
-                                                        className="w-10 h-10 object-cover ml-2 rounded"
-                                                    />
+                                                    {/* Vista previa de la imagen */}
+                                                    {(cert.preview || cert.path) && (
+                                                        <div className="w-10 h-10 overflow-hidden rounded-md ml-2">
+                                                            <img 
+                                                                src={cert.preview || (cert.path ? `/storage/${cert.path}` : '')} 
+                                                                alt="Vista previa" 
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}

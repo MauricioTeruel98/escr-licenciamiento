@@ -81,7 +81,7 @@ export default function SuperAdminDashboard({ auth }) {
                 <div className="max-w-7xl mx-auto">
 
                     <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900">
+                        <h1 className="text-xl font-semibold text-gray-900">
                             Panel de Control Super Admin
                         </h1>
                         <p className="mt-2 text-gray-600">
