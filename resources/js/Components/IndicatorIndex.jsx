@@ -1,4 +1,4 @@
-export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide, autoeval_ended, availableToModifyAutoeval, isBinary, justification = '', onJustificationChange, isExporter = true, wasHomologated = false }) {
+export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide, autoeval_ended, availableToModifyAutoeval, isBinary, justification = '', onJustificationChange, isExporter = true, wasHomologated = false, autoEvalCompleted }) {
     const handleChange = (e) => {
         const selectedValue = e.target.value;
         onAnswer(selectedValue);
@@ -21,7 +21,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
     const wantsToAnswer = stringValue === "1";
 
     // Determinar si los inputs deben estar deshabilitados
-    const isDisabled = isHomologated || !availableToModifyAutoeval || !isExporter;
+    const isDisabled = isHomologated || !availableToModifyAutoeval || !isExporter || autoEvalCompleted;
 
     return (
         <div className={`bg-white rounded-lg space-y-4 ${isHomologated ? 'bg-blue-50/50 ring-1 ring-blue-100 p-3' : !isExporter ? 'bg-red-50/50 ring-1 ring-red-100 p-3' : wasHomologated ? 'bg-yellow-50/50 ring-1 ring-yellow-100 p-3' : ''}`}>

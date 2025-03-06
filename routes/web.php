@@ -105,6 +105,14 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
 
     Route::get('/form-empresa', [DashboardController::class, 'showFormEmpresa'])
         ->name('form.empresa');
+        
+    // Ruta para verificar el estado de la autoevaluación
+    Route::get('/api/check-autoevaluation-status', [IndicadorAnswerController::class, 'checkAutoEvaluationStatus'])
+        ->name('api.check-autoevaluation-status');
+        
+    // Ruta para guardar las respuestas de los indicadores
+    Route::post('/indicadores/store-answers', [IndicadorAnswerController::class, 'store'])
+        ->name('indicadores.store-answers');
 });
 
 Route::middleware(['auth', 'verified', EnsureUserHasCompany::class, EnsureCompanyIsAuthorized::class])->group(function () {

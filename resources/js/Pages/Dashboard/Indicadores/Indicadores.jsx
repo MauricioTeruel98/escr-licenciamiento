@@ -107,50 +107,53 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
         setJustifications(newJustifications);
     };
 
-    useEffect(() => {
-        if (savedAnswers || homologatedIndicators) {
-            const formattedAnswers = {};
-            const formattedJustifications = {};
-            
-            // Procesar respuestas guardadas
-            if (savedAnswers) {
-                savedAnswers.forEach(answer => {
-                    formattedAnswers[answer.indicator_id] = answer.answer;
-                    if (answer.justification) {
-                        formattedJustifications[answer.indicator_id] = answer.justification;
-                    }
-                });
-            }
-
-            // Marcar indicadores homologados como "Sí"
-            Object.values(homologatedIndicators).forEach(cert => {
-                cert.indicators.forEach(indicator => {
-                    formattedAnswers[indicator.id] = "1";
-                });
-            });
-
-            setAnswers(formattedAnswers);
-            setJustifications(formattedJustifications);
-
-            const initialCalculatedScore = calculateCurrentScore(formattedAnswers);
-            setCurrentScore(initialCalculatedScore);
-
-            checkBindingAnswers(formattedAnswers);
+    const fetchValues = async () => {
+        try {
+            const response = await axios.get('/api/active-values');
+            setAutoEvaluationItems(response.data);
+        } catch (error) {
+            console.error('Error al cargar valores:', error);
         }
-    }, [savedAnswers, homologatedIndicators]);
+    };
 
     useEffect(() => {
-        const fetchValues = async () => {
-            try {
-                const response = await axios.get('/api/active-values');
-                setAutoEvaluationItems(response.data);
-            } catch (error) {
-                console.error('Error al cargar valores:', error);
-            }
-        };
+        // Inicializar respuestas guardadas
+        if (savedAnswers) {
+            setAnswers(savedAnswers);
+            checkBindingAnswers(savedAnswers);
+            // No recalcular el score, usar el que viene del servidor
+            // calculateCurrentScore(savedAnswers);
+        }
 
+        // Establecer explícitamente el score inicial
+        setCurrentScore(initialScore);
+
+        // Cargar datos de autoevaluación
         fetchValues();
-    }, []);
+        
+        // Verificar el estado de la autoevaluación
+        checkAutoEvaluationStatus();
+    }, [initialScore]);
+
+    // Verificar el estado de la autoevaluación
+    const checkAutoEvaluationStatus = async () => {
+        try {
+            const response = await axios.get('/api/check-autoevaluation-status');
+            
+            if (response.data.success) {
+                // Si la autoevaluación está completa, mostrar notificación
+                if (response.data.autoeval_status.is_complete) {
+                    /*setNotification({
+                        type: 'success',
+                        message: response.data.message
+                    });*/
+                    console.log(response.data.message);
+                }
+            }
+        } catch (error) {
+            console.error('Error al verificar el estado de la autoevaluación:', error);
+        }
+    };
 
     const handleStepClick = (index) => {
         setCurrentSubcategoryIndex(index);
@@ -201,6 +204,11 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
             .then(async response => {
                 localStorage.removeItem(`answers_${valueData.id}`);
                 
+                // Actualizar el score con el valor devuelto por el servidor
+                if (response.data.finalScore !== undefined) {
+                    setCurrentScore(response.data.finalScore);
+                }
+                
                 // Obtener el siguiente valor disponible
                 try {
                     const valuesResponse = await axios.get('/api/active-values');
@@ -232,9 +240,6 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
                     });
                 }
 
-                if (response.data.finalScore !== undefined) {
-                    setCurrentScore(response.data.finalScore);
-                }
                 setShowConfirmModal(false);
                 setLoading(false);
             })
@@ -283,6 +288,8 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
             answers[indicator.id] !== undefined
         );
     };
+
+    const autoEvalCompleted = company.estado_eval === 'auto-evaluacion-completed';
 
     return (
         <DashboardLayout userName={userName} title="Indicadores">
@@ -456,6 +463,7 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                                                 onJustificationChange={(text, currentAnswer) => handleJustificationChange(indicator.id, text, currentAnswer)}
                                                 isExporter={isExporter}
                                                 wasHomologated={wasHomologated}
+                                                autoEvalCompleted={autoEvalCompleted}
                                             />
                                         </div>
                                         {indicator.binding && (

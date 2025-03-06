@@ -90,9 +90,16 @@ class IndicadoresController extends Controller
         $savedAnswers = IndicatorAnswer::where('company_id', $user->company_id)
             ->whereIn('indicator_id', $value->subcategories->flatMap->indicators->pluck('id'))
             ->get();
+            
+        // Formatear las respuestas para el componente React
+        $formattedAnswers = [];
+        foreach ($savedAnswers as $answer) {
+            $formattedAnswers[$answer->indicator_id] = $answer->answer;
+        }
 
         // Obtener la nota actual
         $currentScore = \App\Models\AutoEvaluationValorResult::where('company_id', $user->company_id)
+            ->where('value_id', $id)
             ->latest('fecha_evaluacion')
             ->first()?->nota ?? 0;
 
@@ -100,7 +107,7 @@ class IndicadoresController extends Controller
             'valueData' => $value,
             'userName' => $user->name,  
             'user' => $user,
-            'savedAnswers' => $savedAnswers,
+            'savedAnswers' => $formattedAnswers,
             'currentScore' => $currentScore,
             'certifications' => $certifications,
             'homologatedIndicators' => $homologatedIndicators,
