@@ -24,8 +24,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
     const roles = [
         { id: 'user', name: 'Usuario' },
         { id: 'admin', name: 'Administrador' },
-        { id: 'evaluador', name: 'Evaluador' },
-        { id: 'super_admin', name: 'Super Administrador' }
+        { id: 'evaluador', name: 'Evaluador' }
     ];
 
     useEffect(() => {
