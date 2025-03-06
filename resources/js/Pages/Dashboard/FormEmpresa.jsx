@@ -888,21 +888,48 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         // Eliminar espacios al inicio para todos los campos
         const valorSinEspaciosInicio = valor.trimStart();
         
-        const regexTexto = /["'\\/]/g; // Comillas simples, dobles, barras y barras invertidas
-        const regexURL = /["'\\]/g; // Comillas simples, dobles y barras invertidas
+        // Expresiones regulares para diferentes tipos de campos
+        const regexComunes = /["'\\;]/g; // Comillas simples, dobles, punto-coma y barras invertidas (prohibidos en todos los campos)
+        const regexSoloLetras = /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g; // Solo letras y espacios
+        const regexLetrasNumerosPunto = /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ0-9\s.]/g; // Letras, números y punto
+        const regexLetrasNumerosPuntoDoble = /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ0-9\s.:]/g; // Letras, números, punto y doble punto
+        const regexSoloNumeros = /[^0-9]/g; // Solo números
+        const regexURL = /["'\\;]/g; // Caracteres prohibidos en URLs
 
-        // En lugar de devolver false, filtrar los caracteres no permitidos
-        if (tipo === 'url') {
-            if (regexURL.test(valorSinEspaciosInicio)) {
+        // Aplicar validación según el tipo de campo
+        switch (tipo) {
+            case 'nombre_comercial':
+            case 'nombre_legal':
+                return valorSinEspaciosInicio.replace(regexComunes, '').replace(regexLetrasNumerosPunto, '');
+                
+            case 'descripcion':
+                return valorSinEspaciosInicio.replace(regexComunes, '').replace(regexLetrasNumerosPuntoDoble, '');
+                
+            case 'url':
                 return valorSinEspaciosInicio.replace(regexURL, '');
-            }
-        } else {
-            if (regexTexto.test(valorSinEspaciosInicio)) {
-                return valorSinEspaciosInicio.replace(regexTexto, '');
-            }
+                
+            case 'solo_letras':
+                return valorSinEspaciosInicio.replace(regexComunes, '').replace(regexSoloLetras, '');
+                
+            case 'solo_numeros':
+                return valorSinEspaciosInicio.replace(regexSoloNumeros, '');
+                
+            case 'numeros_sin_e':
+                // Primero eliminamos todos los caracteres que no son números
+                let resultado = valorSinEspaciosInicio.replace(regexSoloNumeros, '');
+                // Luego eliminamos específicamente la letra 'e' (que podría ser ingresada en campos numéricos)
+                resultado = resultado.replace(/e/gi, '');
+                return resultado;
+                
+            case 'email':
+                return valorSinEspaciosInicio.replace(regexComunes, '');
+                
+            case 'texto_con_puntos':
+                return valorSinEspaciosInicio.replace(regexComunes, '').replace(regexLetrasNumerosPuntoDoble, '');
+                
+            default: // 'texto' - validación básica
+                return valorSinEspaciosInicio.replace(regexComunes, '');
         }
-        
-        return valorSinEspaciosInicio;
     };
 
     // Función para manejar cambios en campos de texto
@@ -930,8 +957,16 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 const index = parseInt(matches[1]);
                 const field = matches[2];
                 
-                // Validar el valor según el tipo de campo y eliminar espacios al inicio
-                const valorValidado = validarCampo(value);
+                // Determinar el tipo de validación según el campo
+                let tipoValidacion = 'texto';
+                if (field === 'nombre') {
+                    tipoValidacion = 'solo_letras';
+                } else if (field === 'descripcion') {
+                    tipoValidacion = 'descripcion';
+                }
+                
+                // Validar el valor según el tipo de campo
+                const valorValidado = validarCampo(value, tipoValidacion);
                 
                 // Verificar si se filtraron caracteres no permitidos
                 if (valorValidado !== value.trimStart()) {
@@ -966,8 +1001,87 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             }
         }
         
-        // Para otros campos que no son de productos
-        const valorValidado = validarCampo(value);
+        // Determinar el tipo de validación según el campo
+        let tipoValidacion;
+        switch (name) {
+            // Campos que solo permiten letras, números y punto
+            case 'nombre_comercial':
+            case 'nombre_legal':
+                tipoValidacion = 'nombre_comercial';
+                break;
+                
+            // Campos que solo permiten letras, números, punto y doble punto
+            case 'descripcion_es':
+            case 'descripcion_en':
+            case 'razon_licenciamiento_es':
+            case 'razon_licenciamiento_en':
+            case 'proceso_licenciamiento':
+            case 'observaciones':
+            case 'planes_expansion':
+                tipoValidacion = 'descripcion';
+                break;
+                
+            // Campos que solo permiten letras
+            case 'sector':
+            case 'actividad_comercial':
+            case 'producto_servicio':
+            case 'mercadeo_nombre':
+            case 'mercadeo_puesto':
+            case 'micrositio_nombre':
+            case 'micrositio_puesto':
+            case 'vocero_nombre':
+            case 'vocero_puesto':
+            case 'representante_nombre':
+            case 'representante_puesto':
+                tipoValidacion = 'solo_letras';
+                break;
+                
+            // Campos que solo permiten números sin la letra e
+            case 'anio_fundacion':
+            case 'cantidad_hombres':
+            case 'cantidad_mujeres':
+            case 'cantidad_otros':
+                tipoValidacion = 'numeros_sin_e';
+                break;
+                
+            // Campos que solo permiten números
+            case 'telefono_1':
+            case 'telefono_2':
+            case 'mercadeo_telefono':
+            case 'mercadeo_celular':
+            case 'micrositio_telefono':
+            case 'micrositio_celular':
+            case 'vocero_telefono':
+            case 'vocero_celular':
+            case 'representante_telefono':
+            case 'representante_celular':
+                tipoValidacion = 'solo_numeros';
+                break;
+                
+            // Campos de email
+            case 'mercadeo_email':
+            case 'micrositio_email':
+            case 'vocero_email':
+            case 'representante_email':
+                tipoValidacion = 'email';
+                break;
+                
+            // Campos de URL
+            case 'sitio_web':
+            case 'facebook':
+            case 'linkedin':
+            case 'instagram':
+            case 'otra_red_social':
+                // Estos se manejan con handleURLChange, pero por si acaso
+                tipoValidacion = 'url';
+                break;
+                
+            default:
+                tipoValidacion = 'texto';
+        }
+        
+        // Validar el valor según el tipo de campo
+        const valorValidado = validarCampo(value, tipoValidacion);
         
         // Verificar si se filtraron caracteres no permitidos
         if (valorValidado !== value.trimStart()) {
@@ -976,16 +1090,18 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 ...prevErrors,
                 [name]: 'Se han eliminado caracteres no permitidos.'
             }));
-        } else {
-            // Limpiar el error si el valor es válido
-            setErrors(prevErrors => {
-                const newErrors = { ...prevErrors };
-                delete newErrors[name];
-                return newErrors;
-            });
+            
+            // Limpiar el error después de 3 segundos
+            setTimeout(() => {
+                setErrors(prevErrors => {
+                    const newErrors = { ...prevErrors };
+                    delete newErrors[name];
+                    return newErrors;
+                });
+            }, 3000);
         }
         
-        // Actualizar el estado con el valor válido (sin espacios al inicio)
+        // Actualizar el estado con el valor validado
         setData(name, valorValidado);
     };
 
@@ -994,7 +1110,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         const { name, value } = e.target;
         
         // Eliminar espacios al inicio y caracteres no permitidos
-        let valorLimpio = value.trimStart().replace(/["'\\]/g, '');
+        let valorLimpio = value.trimStart().replace(/["'\\;]/g, '');
         
         // Verificar si la URL tiene el protocolo, si no, agregar https://
         if (valorLimpio && !valorLimpio.match(/^https?:\/\//i)) {
@@ -1045,8 +1161,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             return;
         }
         
-        // Filtrar caracteres no numéricos
-        const valorNumerico = valorSinEspacios.replace(/[^\d]/g, '');
+        // Usar la función validarCampo con el tipo 'numeros_sin_e'
+        const valorNumerico = validarCampo(valorSinEspacios, 'numeros_sin_e');
         
         // Si se filtraron caracteres, mostrar un error
         if (valorNumerico !== valorSinEspacios) {
@@ -1054,29 +1170,17 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 ...prevErrors,
                 [name]: 'Por favor ingrese solo números.'
             }));
-            setData(name, valorNumerico);
-            return;
+            
+            // Limpiar el error después de 3 segundos
+            setTimeout(() => {
+                setErrors(prevErrors => {
+                    const newErrors = { ...prevErrors };
+                    delete newErrors[name];
+                    return newErrors;
+                });
+            }, 3000);
         }
         
-        const anio = parseInt(valorNumerico);
-        const anioActual = new Date().getFullYear();
-        
-        // Validar que el año esté en un rango razonable
-        if (anio < 1800 || anio > anioActual) {
-            setErrors(prevErrors => ({
-                ...prevErrors,
-                [name]: `Por favor ingrese un año entre 1800 y ${anioActual}.`
-            }));
-        } else {
-            // Limpiar el error si el valor es válido
-            setErrors(prevErrors => {
-                const newErrors = { ...prevErrors };
-                delete newErrors[name];
-                return newErrors;
-            });
-        }
-        
-        // Actualizar el estado con el valor numérico
         setData(name, valorNumerico);
     };
 
@@ -1413,7 +1517,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         <h3 className="text-lg font-medium text-gray-900 mb-4">¿Cuantas personas emplea?</h3>
                                         <div className="grid grid-cols-3 gap-4">
                                             <div>
-                                                <label className="block text-sm text-gray-600">Cantidad deHombres</label>
+                                                <label className="block text-sm text-gray-600">Cantidad de Hombres</label>
                                                 <input
                                                     type="number"
                                                     value={data.cantidad_hombres}
