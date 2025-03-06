@@ -248,6 +248,11 @@
             width: 60%;
             color: #157f3d;
         }
+
+        .paises-exportacion td {
+            border: 0;
+            background-color: #f4f4f9;
+        }
     </style>
 </head>
 
@@ -271,7 +276,33 @@
     <p><strong>Año de fundación:</strong> {{ $company->infoAdicional->anio_fundacion ?? 'N/A' }}</p>
     <p><strong>Proceso de licenciamiento:</strong> {{ $company->infoAdicional->proceso_licenciamiento ?? 'N/A' }}</p>
     <p><strong>Exporta actualmente:</strong> {{ $company->infoAdicional->es_exportadora ? 'Sí' : 'No' }}</p>
-    <p><strong>Países de exportación:</strong> {{ $company->infoAdicional->paises_exportacion ?? 'N/A' }}</p>
+    <p><strong>Países de exportación:</strong></p>
+    @if ($company->infoAdicional->paises_exportacion && $company->infoAdicional->paises_exportacion != 'N/A')
+        @php
+            $paises = array_map('trim', explode(',', $company->infoAdicional->paises_exportacion));
+            $columnas = 3;
+            $filas = ceil(count($paises) / $columnas);
+        @endphp
+
+        <table class="paises-exportacion" style="width: 100%; border-collapse: collapse;">
+            @for ($i = 0; $i < $filas; $i++)
+                <tr>
+                    @for ($j = 0; $j < $columnas; $j++)
+                        @php $index = $i + ($j * $filas); @endphp
+                        <td style="padding: 2px 10px; text-align: left;">
+                            @if (isset($paises[$index]))
+                                - {{ $paises[$index] }}
+                            @endif
+                        </td>
+                    @endfor
+                </tr>
+            @endfor
+        </table>
+    @else
+        <p style="margin-left: 20px;">N/A</p>
+    @endif
+
+
     <p><strong>Productos/servicios:</strong> {{ $company->infoAdicional->producto_servicio ?? 'N/A' }}</p>
     <p><strong>Rango de exportaciones:</strong> {{ $company->infoAdicional->rango_exportaciones ?? 'N/A' }}</p>
     <p><strong>Total de empleados:</strong>
@@ -286,9 +317,11 @@
     <p>- Cantón: {{ $company->canton ?? 'N/A' }}</p>
     <p>- Distrito: {{ $company->distrito ?? 'N/A' }}</p>
     <p><strong>Redes sociales:</strong></p>
-    <p>- Sitio web: <a href="{{ $company->infoAdicional->sitio_web }}">{{ $company->infoAdicional->sitio_web }}</a></p>
+    <p>- Sitio web: <a href="{{ $company->infoAdicional->sitio_web }}">{{ $company->infoAdicional->sitio_web }}</a>
+    </p>
     <p>- Facebook: <a href="{{ $company->infoAdicional->facebook }}">{{ $company->infoAdicional->facebook }}</a></p>
-    <p>- Instagram: <a href="{{ $company->infoAdicional->instagram }}">{{ $company->infoAdicional->instagram }}</a></p>
+    <p>- Instagram: <a href="{{ $company->infoAdicional->instagram }}">{{ $company->infoAdicional->instagram }}</a>
+    </p>
     <p>- LinkedIn: <a href="{{ $company->infoAdicional->linkedin }}">{{ $company->infoAdicional->linkedin }}</a></p>
 
     <h2>Resumen de evaluación</h2>
@@ -329,23 +362,25 @@
         @endforeach
     </table>
 
-    <h2>Certificaciones vigentes</h2>
-    <table>
-        <tr>
-            <th>Certificación</th>
-            <th>Fecha de obtención</th>
-            <th>Fecha de vencimiento</th>
-            <th>Organismo certificador</th>
-        </tr>
-        @foreach ($company->certifications as $certification)
+    @if ($company->certifications->isNotEmpty())
+        <h2>Certificaciones vigentes</h2>
+        <table>
             <tr>
-                <td>{{ $certification->nombre }}</td>
-                <td>{{ $certification->fecha_obtencion->format('d/m/Y') }}</td>
-                <td>{{ $certification->fecha_expiracion->format('d/m/Y') }}</td>
-                <td>{{ $certification->organismo_certificador }}</td>
+                <th>Certificación</th>
+                <th>Fecha de obtención</th>
+                <th>Fecha de vencimiento</th>
+                <th>Organismo certificador</th>
             </tr>
-        @endforeach
-    </table>
+            @foreach ($company->certifications as $certification)
+                <tr>
+                    <td>{{ $certification->nombre }}</td>
+                    <td>{{ $certification->fecha_obtencion->format('d/m/Y') }}</td>
+                    <td>{{ $certification->fecha_expiracion->format('d/m/Y') }}</td>
+                    <td>{{ $certification->organismo_certificador }}</td>
+                </tr>
+            @endforeach
+        </table>
+    @endif
 
     {{-- <h2>Datos complementarios: función central</h2>
     <p><strong>Organización multi-sitio:</strong> Sí [ ] No [ ]</p>
