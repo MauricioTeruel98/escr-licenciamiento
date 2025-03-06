@@ -17,6 +17,7 @@ export default function CompaniesIndex() {
     const [selectedCompany, setSelectedCompany] = useState(null);
     const [companyToDelete, setCompanyToDelete] = useState(null);
     const [notification, setNotification] = useState(null);
+    const [provincias, setProvincias] = useState([]);
     const [pagination, setPagination] = useState({
         currentPage: 1,
         lastPage: 1,
@@ -73,6 +74,7 @@ export default function CompaniesIndex() {
 
     useEffect(() => {
         fetchCompanies();
+        fetchProvincias();
     }, [pagination.currentPage, pagination.perPage]);
 
     const fetchCompanies = async () => {
@@ -95,6 +97,19 @@ export default function CompaniesIndex() {
             setNotification({
                 type: 'error',
                 message: 'Error al cargar las empresas'
+            });
+        }
+    };
+
+    const fetchProvincias = async () => {
+        try {
+            const response = await axios.get('/api/provincias');
+            setProvincias(response.data);
+        } catch (error) {
+            console.error('Error al cargar provincias:', error);
+            setNotification({
+                type: 'error',
+                message: 'Error al cargar las provincias'
             });
         }
     };
@@ -209,6 +224,7 @@ export default function CompaniesIndex() {
                     onClose={() => setModalOpen(false)}
                     onSubmit={handleSubmit}
                     company={selectedCompany}
+                    provincias={provincias}
                 />
 
                 <DeleteModal

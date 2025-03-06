@@ -20,6 +20,26 @@ Route::middleware(['auth:sanctum', 'web'])->group(function () {
     Route::post('/check-email-exists', [UserController::class, 'checkEmailExists']);
 });
 
+// Ruta para obtener las provincias
+Route::get('/provincias', function () {
+    // Cargar las provincias desde el archivo lugares.json
+    $lugaresJson = file_get_contents(storage_path('app/public/lugares.json'));
+    $lugares = json_decode($lugaresJson, true);
+    
+    // Extraer solo las provincias
+    $provincias = [];
+    if (isset($lugares[0]['provincias'])) {
+        foreach ($lugares[0]['provincias'] as $provincia) {
+            $provincias[] = [
+                'id' => $provincia['id'],
+                'name' => $provincia['name']
+            ];
+        }
+    }
+    
+    return $provincias;
+});
+
 // Route::patch('companies/{company}/authorize', [CompanyAuthorizationController::class, 'authorizeCompany'])
 //     ->middleware(['auth'])
 //     ->name('companies.authorize');

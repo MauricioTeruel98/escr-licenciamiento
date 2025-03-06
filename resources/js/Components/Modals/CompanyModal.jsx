@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-export default function CompanyModal({ isOpen, onClose, onSubmit, company = null }) {
+export default function CompanyModal({ isOpen, onClose, onSubmit, company = null, provincias = [] }) {
     const initialFormData = {
         legal_id: '',
         name: '',
         website: '',
         sector: '',
-        city: '',
+        provincia: '',
         commercial_activity: '',
         phone: '',
         mobile: '',
@@ -16,6 +16,9 @@ export default function CompanyModal({ isOpen, onClose, onSubmit, company = null
 
     const [formData, setFormData] = useState(initialFormData);
     const [errors, setErrors] = useState({});
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [filteredProvincias, setFilteredProvincias] = useState([]);
 
     useEffect(() => {
         if (isOpen) {
@@ -25,18 +28,32 @@ export default function CompanyModal({ isOpen, onClose, onSubmit, company = null
                     name: company.name,
                     website: company.website || '',
                     sector: company.sector,
-                    city: company.city,
+                    provincia: company.provincia || '',
                     commercial_activity: company.commercial_activity,
                     phone: company.phone || '',
                     mobile: company.mobile || '',
                     is_exporter: company.is_exporter
                 });
+                setSearchTerm(company.provincia || '');
             } else {
                 setFormData(initialFormData);
+                setSearchTerm('');
             }
             setErrors({});
         }
     }, [isOpen, company]);
+
+    // Efecto para filtrar provincias basado en el término de búsqueda
+    useEffect(() => {
+        if (searchTerm.trim() === '') {
+            setFilteredProvincias(provincias || []);
+        } else {
+            const filtered = (provincias || []).filter(provincia => 
+                provincia.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredProvincias(filtered);
+        }
+    }, [searchTerm, provincias]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -115,26 +132,69 @@ export default function CompanyModal({ isOpen, onClose, onSubmit, company = null
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Sector <span className="text-red-500">*</span>
                                         </label>
-                                        <input
-                                            type="text"
+                                        <select
                                             value={formData.sector}
                                             onChange={(e) => setFormData({...formData, sector: e.target.value})}
                                             className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
                                             required
-                                        />
+                                        >
+                                            <option value="">Escoger sector</option>
+                                            <option value="agricola">Agricola</option>
+                                            <option value="alimentos">Alimentos</option>
+                                            <option value="industria-especializada">Industria especializada</option>
+                                            <option value="servicios">Servicios</option>
+                                        </select>
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Ciudad <span className="text-red-500">*</span>
+                                            Provincia <span className="text-red-500">*</span>
                                         </label>
-                                        <input
-                                            type="text"
-                                            value={formData.city}
-                                            onChange={(e) => setFormData({...formData, city: e.target.value})}
-                                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
-                                            required
-                                        />
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={searchTerm}
+                                                onChange={(e) => {
+                                                    const cleanedValue = e.target.value.replace(/['"\\\/]/g, '');
+                                                    setSearchTerm(cleanedValue);
+                                                    setShowDropdown(true);
+                                                }}
+                                                className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
+                                                placeholder="Buscar provincia"
+                                                onFocus={() => setShowDropdown(true)}
+                                                onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                                                required
+                                            />
+                                            <input 
+                                                type="hidden" 
+                                                name="provincia" 
+                                                value={formData.provincia} 
+                                            />
+                                            {showDropdown && (
+                                                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                                    {filteredProvincias.length > 0 ? (
+                                                        filteredProvincias.map(provincia => (
+                                                            <div
+                                                                key={provincia.id}
+                                                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                                                onClick={() => {
+                                                                    const cleanedValue = provincia.name.replace(/['"\\\/]/g, '');
+                                                                    setFormData({...formData, provincia: cleanedValue});
+                                                                    setSearchTerm(cleanedValue);
+                                                                    setShowDropdown(false);
+                                                                }}
+                                                            >
+                                                                {provincia.name}
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="px-4 py-2 text-gray-500">
+                                                            No se encontraron resultados
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div>
