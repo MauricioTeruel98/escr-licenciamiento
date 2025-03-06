@@ -588,7 +588,7 @@ class EvaluationAnswerController extends Controller
                 $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
 
                 // Verificar si ya se enviaron las notificaciones para evitar duplicados
-                if (!$this->notificationsAlreadySent($user->company_id, $request->value_id)) {
+                if (!$this->notificationsAlreadySent($user->company_id, $request->value_id, 'evaluacion-completada')) {
                     if ($adminUser) {
                         $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
                     }
@@ -597,7 +597,7 @@ class EvaluationAnswerController extends Controller
                     }
 
                     // Registrar que se enviaron las notificaciones
-                    $this->markNotificationsAsSent($user->company_id, $request->value_id);
+                    $this->markNotificationsAsSent($user->company_id, $request->value_id, 'evaluacion-completada');
                 }
 
                 $company->estado_eval = 'evaluacion-completada';
@@ -645,7 +645,7 @@ class EvaluationAnswerController extends Controller
                     ->get()
                     ->groupBy('subcategory.value.id');
 
-                if (!$this->notificationsAlreadySent($user->company_id, $request->value_id)) {
+                if (!$this->notificationsAlreadySent($user->company_id, $request->value_id, 'evaluado')) {
 
                     // Generar PDF con los resultados
                     $pdf = Pdf::loadView('pdf/evaluation', [
@@ -691,7 +691,7 @@ class EvaluationAnswerController extends Controller
                     }
 
                     // Registrar que se enviaron las notificaciones
-                    $this->markNotificationsAsSent($user->company_id, $request->value_id);
+                    $this->markNotificationsAsSent($user->company_id, $request->value_id, 'evaluado');
                 }
                 $company->estado_eval = 'evaluado';
                 $company->save();
@@ -826,10 +826,10 @@ class EvaluationAnswerController extends Controller
      * @param int $valueId
      * @return bool
      */
-    private function notificationsAlreadySent($companyId, $valueId)
+    private function notificationsAlreadySent($companyId, $valueId, $type)
     {
         // Usar cache para verificar si ya se enviaron notificaciones
-        $cacheKey = "notifications_sent_{$companyId}_{$valueId}";
+        $cacheKey = "notifications_sent_{$companyId}_{$valueId}_{$type}";
         return Cache::has($cacheKey);
     }
 
@@ -840,10 +840,10 @@ class EvaluationAnswerController extends Controller
      * @param int $valueId
      * @return void
      */
-    private function markNotificationsAsSent($companyId, $valueId)
+    private function markNotificationsAsSent($companyId, $valueId, $type)
     {
         // Guardar en cache que ya se enviaron notificaciones (expira en 24 horas)
-        $cacheKey = "notifications_sent_{$companyId}_{$valueId}";
+        $cacheKey = "notifications_sent_{$companyId}_{$valueId}_{$type}";
         Cache::put($cacheKey, true, now()->addHours(12));
     }
 }

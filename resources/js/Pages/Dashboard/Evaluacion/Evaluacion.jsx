@@ -13,7 +13,10 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         const initialApprovals = {};
         if (savedAnswers) {
             Object.entries(savedAnswers).forEach(([questionId, answerData]) => {
-                initialApprovals[questionId] = answerData.approved || false;
+                // Solo establecer el valor si existe un valor de aprobación explícito
+                if (answerData.approved !== null && answerData.approved !== undefined) {
+                    initialApprovals[questionId] = answerData.approved;
+                }
             });
         }
         return initialApprovals;
