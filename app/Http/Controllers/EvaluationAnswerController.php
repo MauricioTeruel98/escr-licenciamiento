@@ -693,10 +693,7 @@ class EvaluationAnswerController extends Controller
                     // Registrar que se enviaron las notificaciones
                     $this->markNotificationsAsSent($user->company_id, $request->value_id);
                 }
-
-
                 $company->estado_eval = 'evaluado';
-
                 $company->save();
             }
 
