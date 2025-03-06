@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
@@ -21,9 +22,25 @@ class NewPasswordController extends Controller
      */
     public function create(Request $request): Response
     {
+        $token = $request->route('token');
+        $email = $request->email;
+        
+        // Verificar si el token existe y no ha expirado
+        $tokenRecord = DB::table(config('auth.passwords.users.table'))
+            ->where('email', $email)
+            ->first();
+            
+        $tokenExpired = false;
+        
+        // Si no se encuentra el token o ha expirado
+        if (!$tokenRecord || (now()->subMinutes(config('auth.passwords.users.expire'))->isAfter($tokenRecord->created_at))) {
+            $tokenExpired = true;
+        }
+        
         return Inertia::render('Auth/ResetPassword', [
-            'email' => $request->email,
-            'token' => $request->route('token'),
+            'email' => $email,
+            'token' => $token,
+            'tokenExpired' => $tokenExpired,
         ]);
     }
 
@@ -41,6 +58,18 @@ class NewPasswordController extends Controller
         ], [
             'password.confirmed' => 'La confirmación de la contraseña no coincide.',
         ]);
+
+        // Verificar si el token existe y no ha expirado
+        $tokenRecord = DB::table(config('auth.passwords.users.table'))
+            ->where('email', $request->email)
+            ->first();
+            
+        // Si no se encuentra el token o ha expirado
+        if (!$tokenRecord || (now()->subMinutes(config('auth.passwords.users.expire'))->isAfter($tokenRecord->created_at))) {
+            throw ValidationException::withMessages([
+                'email' => ['El enlace para restablecer la contraseña ha expirado o no es válido.'],
+            ]);
+        }
 
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
