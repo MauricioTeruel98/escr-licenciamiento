@@ -97,11 +97,31 @@ class IndicadoresController extends Controller
             $formattedAnswers[$answer->indicator_id] = $answer->answer;
         }
 
+        // Obtener todos los IDs de indicadores homologados
+        $homologatedIndicatorIds = collect($homologatedIndicators)->flatMap(function ($cert) {
+            return collect($cert['indicators'])->pluck('id');
+        })->unique()->toArray();
+
+        // Asegurar que todos los indicadores homologados tengan valor "1"
+        foreach ($homologatedIndicatorIds as $indicatorId) {
+            $formattedAnswers[$indicatorId] = "1";
+        }
+
         // Obtener la nota actual
         $currentScore = \App\Models\AutoEvaluationValorResult::where('company_id', $user->company_id)
             ->where('value_id', $id)
             ->latest('fecha_evaluacion')
             ->first()?->nota ?? 0;
+
+        // Registrar información para depuración
+        \Illuminate\Support\Facades\Log::info('Cargando indicadores para valor', [
+            'value_id' => $id,
+            'company_id' => $user->company_id,
+            'savedAnswers' => $formattedAnswers,
+            'homologatedIndicatorIds' => $homologatedIndicatorIds,
+            'currentScore' => $currentScore,
+            'autoEvalCompleted' => $company->estado_eval === 'auto-evaluacion-completed'
+        ]);
 
         return Inertia::render('Dashboard/Indicadores/Indicadores', [
             'valueData' => $value,

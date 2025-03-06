@@ -11,7 +11,6 @@ use App\Models\Indicator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use PDF;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AutoEvaluationResults;
 use App\Models\Value;
@@ -20,6 +19,9 @@ use App\Models\Company;
 use App\Models\InfoAdicionalEmpresa;
 use App\Models\User;
 use App\Models\Certification;
+use App\Models\IndicatorHomologation;
+use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class IndicadorAnswerController extends Controller
 {
@@ -28,7 +30,7 @@ class IndicadorAnswerController extends Controller
         try {
             DB::beginTransaction();
 
-            $user = auth()->user();
+            $user = Auth::user();
 
             if (!$user) {
                 return response()->json(['message' => 'Usuario no autenticado'], 401);
@@ -44,6 +46,23 @@ class IndicadorAnswerController extends Controller
                 ->get()
                 ->keyBy('id');
 
+            // Obtener las certificaciones válidas de la empresa
+            $company = Company::find($user->company_id);
+            $validCertifications = $company->certifications()
+                ->whereRaw('fecha_expiracion > NOW() OR fecha_expiracion IS NULL')
+                ->get();
+
+            // Obtener los IDs de las certificaciones disponibles asociadas
+            $homologationIds = $validCertifications->pluck('homologation_id')->filter();
+
+            // Obtener los indicadores homologados
+            $homologatedIndicators = [];
+            if ($homologationIds->count() > 0) {
+                $homologatedIndicators = IndicatorHomologation::whereIn('homologation_id', $homologationIds)
+                    ->pluck('indicator_id')
+                    ->toArray();
+            }
+
             // Guardar respuestas individuales
             foreach ($request->answers as $indicatorId => $answer) {
                 // Verificar que el indicatorId sea un número válido
@@ -53,6 +72,11 @@ class IndicadorAnswerController extends Controller
                         'answer' => $answer
                     ]);
                     continue; // Saltar este indicador
+                }
+                
+                // Si el indicador está homologado, forzar la respuesta a "1" (Sí)
+                if (in_array($indicatorId, $homologatedIndicators)) {
+                    $answer = "1";
                 }
                 
                 // Obtener la justificación si existe
@@ -182,7 +206,7 @@ class IndicadorAnswerController extends Controller
                 $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
 
                 // Generar PDF con todos los valores
-                $pdf = PDF::loadView('pdf/autoevaluation', [
+                $pdf = Pdf::loadView('pdf/autoevaluation', [
                     'values' => $allValues,
                     'answers' => $allAnswers,
                     'company' => $company,
@@ -272,13 +296,30 @@ class IndicadorAnswerController extends Controller
 
     private function calculateSubcategoryScores($valueId, $companyId)
     {
+        // Obtener las certificaciones válidas de la empresa
+        $company = Company::find($companyId);
+        $validCertifications = $company->certifications()
+            ->whereRaw('fecha_expiracion > NOW() OR fecha_expiracion IS NULL')
+            ->get();
+
+        // Obtener los IDs de las certificaciones disponibles asociadas
+        $homologationIds = $validCertifications->pluck('homologation_id')->filter();
+
+        // Obtener los indicadores homologados
+        $homologatedIndicators = [];
+        if ($homologationIds->count() > 0) {
+            $homologatedIndicators = IndicatorHomologation::whereIn('homologation_id', $homologationIds)
+                ->pluck('indicator_id')
+                ->toArray();
+        }
+
         // Obtener todas las respuestas más recientes para los indicadores del valor
         $answers = DB::table('indicator_answers as ia')
             ->join('indicators as i', 'ia.indicator_id', '=', 'i.id')
             ->join('subcategories as s', 'i.subcategory_id', '=', 's.id')
             ->where('ia.company_id', $companyId)
             ->where('s.value_id', $valueId)
-            ->select('s.id as subcategory_id', 'ia.answer')
+            ->select('s.id as subcategory_id', 'ia.answer', 'i.id as indicator_id')
             ->orderBy('ia.updated_at', 'desc') // Asegurar que tomamos las respuestas más recientes
             ->get();
 
@@ -292,7 +333,9 @@ class IndicadorAnswerController extends Controller
                 ];
             }
             $scores[$answer->subcategory_id]['total']++;
-            if ($answer->answer == 1) {
+            
+            // Si el indicador está homologado, contar como respuesta positiva (1)
+            if ($answer->answer == 1 || in_array($answer->indicator_id, $homologatedIndicators)) {
                 $scores[$answer->subcategory_id]['positive']++;
             }
         }
@@ -336,7 +379,7 @@ class IndicadorAnswerController extends Controller
     public function checkAutoEvaluationStatus(Request $request)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             
             if (!$user) {
                 return response()->json(['message' => 'Usuario no autenticado'], 401);
@@ -366,7 +409,7 @@ class IndicadorAnswerController extends Controller
                 $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($companyId);
 
                 // Generar PDF con todos los valores
-                $pdf = PDF::loadView('pdf/autoevaluation', [
+                $pdf = Pdf::loadView('pdf/autoevaluation', [
                     'values' => $allValues,
                     'answers' => $allAnswers,
                     'company' => $company,

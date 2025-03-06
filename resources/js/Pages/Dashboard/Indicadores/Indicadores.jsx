@@ -42,17 +42,34 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
         let totalIndicators = 0;
         let positiveAnswers = 0;
 
+        // Asegurar que currentAnswers sea un objeto
+        if (!currentAnswers || typeof currentAnswers !== 'object') {
+            console.error('calculateCurrentScore: currentAnswers no es un objeto válido', currentAnswers);
+            return 0;
+        }
+
         valueData.subcategories.forEach(subcategory => {
             subcategory.indicators.forEach(indicator => {
                 totalIndicators++;
-                if (currentAnswers[indicator.id] === "1") {
+                
+                // Verificar si el indicador está homologado
+                const isHomologated = Object.values(homologatedIndicators).some(cert => 
+                    cert.indicators.some(i => i.id === indicator.id)
+                );
+                
+                // Si está homologado, contar como respuesta positiva
+                if (isHomologated || currentAnswers[indicator.id] === "1") {
                     positiveAnswers++;
                 }
             });
         });
 
         if (totalIndicators === 0) return 0;
-        return Math.round((positiveAnswers / totalIndicators) * 100);
+        
+        const score = Math.round((positiveAnswers / totalIndicators) * 100);
+        console.log('Cálculo de puntaje:', { totalIndicators, positiveAnswers, score });
+        
+        return score;
     };
 
     const handleAnswer = (indicatorId, answer, isBinding) => {
@@ -133,7 +150,37 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
         
         // Verificar el estado de la autoevaluación
         checkAutoEvaluationStatus();
-    }, [initialScore]);
+
+        // Asegurar que los indicadores homologados tengan valor "1"
+        const homologatedAnswers = { ...savedAnswers };
+        
+        // Recorrer todos los indicadores homologados y asignarles valor "1"
+        Object.values(homologatedIndicators).forEach(cert => {
+            cert.indicators.forEach(indicator => {
+                homologatedAnswers[indicator.id] = "1";
+            });
+        });
+        
+        // Actualizar el estado de respuestas con los indicadores homologados
+        if (Object.keys(homologatedAnswers).length > 0) {
+            setAnswers(homologatedAnswers);
+            
+            // Solo recalcular el puntaje si no estamos en una autoevaluación completada
+            if (!autoEvalCompleted) {
+                const newScore = calculateCurrentScore(homologatedAnswers);
+                setCurrentScore(newScore);
+            }
+        }
+
+        // Mostrar información de depuración
+        console.log('Inicialización de componente:', {
+            savedAnswers,
+            initialScore,
+            homologatedIndicators,
+            autoEvalCompleted,
+            currentScore: initialScore
+        });
+    }, [initialScore, homologatedIndicators, savedAnswers]);
 
     // Verificar el estado de la autoevaluación
     const checkAutoEvaluationStatus = async () => {
@@ -290,6 +337,32 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     };
 
     const autoEvalCompleted = company.estado_eval === 'auto-evaluacion-completed';
+
+    // Efecto específico para cuando la autoevaluación está completa
+    useEffect(() => {
+        if (autoEvalCompleted) {
+            console.log('Autoevaluación completada, asegurando que se muestren las respuestas guardadas');
+            
+            // Asegurar que se muestren las respuestas guardadas
+            if (savedAnswers) {
+                // Crear una copia de las respuestas guardadas
+                const finalAnswers = { ...savedAnswers };
+                
+                // Asegurar que los indicadores homologados tengan valor "1"
+                Object.values(homologatedIndicators).forEach(cert => {
+                    cert.indicators.forEach(indicator => {
+                        finalAnswers[indicator.id] = "1";
+                    });
+                });
+                
+                // Actualizar el estado de respuestas
+                setAnswers(finalAnswers);
+                
+                // Mostrar información de depuración
+                console.log('Respuestas finales en autoevaluación completada:', finalAnswers);
+            }
+        }
+    }, [autoEvalCompleted, savedAnswers, homologatedIndicators]);
 
     return (
         <DashboardLayout userName={userName} title="Indicadores">

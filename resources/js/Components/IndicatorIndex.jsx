@@ -11,17 +11,35 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
         }
     };
 
-    // Convertimos el value a string para la comparación
-    const stringValue = String(value);
+    // Convertimos el value a string para la comparación, asegurando que no sea null o undefined
+    const stringValue = value !== null && value !== undefined ? String(value) : '';
     
     // Si está homologado, deshabilitar los inputs y mostrar como respondido
     const isHomologated = !!homologation;
 
+    // Si está homologado, forzar el valor a "1" (Sí)
+    const effectiveValue = isHomologated ? "1" : stringValue;
+
     // Verificar si el usuario ha respondido "Sí" (para habilitar el campo de justificación)
-    const wantsToAnswer = stringValue === "1";
+    const wantsToAnswer = effectiveValue === "1";
 
     // Determinar si los inputs deben estar deshabilitados
     const isDisabled = isHomologated || !availableToModifyAutoeval || !isExporter || autoEvalCompleted;
+
+    // Asegurar que si está homologado, se envíe el valor "1" al componente padre
+    // Esto garantiza que el cálculo de puntaje considere los indicadores homologados como "Sí"
+    if (isHomologated && stringValue !== "1" && !autoEvalCompleted) {
+        // Solo llamar a onAnswer si el valor actual no es "1" y la autoevaluación no está completa
+        setTimeout(() => onAnswer("1"), 0);
+    }
+
+    // Determinar si los radios deben estar marcados
+    // Asegurarse de que los valores sean strings para la comparación
+    const showYesChecked = isHomologated || effectiveValue === "1";
+    const showNoChecked = !isHomologated && effectiveValue === "0";
+
+    // Mostrar información de depuración en la consola
+    console.log(`Indicador ${code}: value=${value}, stringValue=${stringValue}, effectiveValue=${effectiveValue}, showYesChecked=${showYesChecked}, showNoChecked=${showNoChecked}`);
 
     return (
         <div className={`bg-white rounded-lg space-y-4 ${isHomologated ? 'bg-blue-50/50 ring-1 ring-blue-100 p-3' : !isExporter ? 'bg-red-50/50 ring-1 ring-red-100 p-3' : wasHomologated ? 'bg-yellow-50/50 ring-1 ring-yellow-100 p-3' : ''}`}>
@@ -111,7 +129,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                         type="radio" 
                         name={`indicator-${code}`}
                         value="1"
-                        checked={isHomologated ? true : stringValue === "1"}
+                        checked={showYesChecked}
                         onChange={handleChange}
                         disabled={isDisabled}
                         className={`w-4 h-4 ${isDisabled 
@@ -126,7 +144,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                         type="radio"
                         name={`indicator-${code}`}
                         value="0"
-                        checked={!isHomologated && stringValue === "0"}
+                        checked={showNoChecked}
                         onChange={handleChange}
                         disabled={isDisabled}
                         className={`w-4 h-4 ${isDisabled 
