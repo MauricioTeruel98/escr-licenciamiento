@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
 
 class EvaluationAnswerController extends Controller
 {
@@ -260,22 +261,34 @@ class EvaluationAnswerController extends Controller
 
                     // Enviar email con PDF al superadmin
                     if ($superAdminUser) {
-                        Mail::to($superAdminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));
+                        Mail::to($superAdminUser->email)->send(new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company));
                     }
 
-                    // Actualizar la columna eval_ended en la tabla companies
-                    $company->update(['eval_ended' => true]);
+                    $company->estado_eval = 'evaluado';
+
+                    $company->save();
                 }
 
-                // if ($adminUser) {
-                //     $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
-                // }
+                $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
 
-                // if ($superAdminUser) {
-                //     $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
-                // }
-
-
+                // Verificar si ya se enviaron las notificaciones para evitar duplicados
+                if (!$this->notificationsAlreadySent($user->company_id, $request->value_id)) {
+                    $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
+                    $superAdminUser = User::where('role', 'super_admin')->first();
+                    
+                    if ($adminUser) {
+                        $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
+                    }
+                    if ($superAdminUser) {
+                        $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
+                    }
+                    
+                    // Registrar que se enviaron las notificaciones
+                    $this->markNotificationsAsSent($user->company_id, $request->value_id);
+                    
+                    $company->estado_eval = 'evaluacion-completada';
+                    $company->save();
+                }
             }
 
             return response()->json([
@@ -646,11 +659,26 @@ class EvaluationAnswerController extends Controller
                     $company->save();
                 }
 
+                $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
+                $superAdminUser = User::where('role', 'super_admin')->first();
+
                 $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
 
-                $company->estado_eval = 'evaluacion-completada';
-                $company->save();
-
+                // Verificar si ya se enviaron las notificaciones para evitar duplicados
+                if (!$this->notificationsAlreadySent($user->company_id, $request->value_id)) {
+                    if ($adminUser) {
+                        $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
+                    }
+                    if ($superAdminUser) {
+                        $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
+                    }
+                    
+                    // Registrar que se enviaron las notificaciones
+                    $this->markNotificationsAsSent($user->company_id, $request->value_id);
+                    
+                    $company->estado_eval = 'evaluacion-completada';
+                    $company->save();
+                }
             }
 
             DB::commit();
@@ -773,5 +801,33 @@ class EvaluationAnswerController extends Controller
 
         // Calcular y redondear el porcentaje
         return round(($approvedEvaluations / $totalEvaluations) * 100);
+    }
+
+    /**
+     * Verifica si ya se enviaron notificaciones para esta empresa y valor
+     * 
+     * @param int $companyId
+     * @param int $valueId
+     * @return bool
+     */
+    private function notificationsAlreadySent($companyId, $valueId)
+    {
+        // Usar cache para verificar si ya se enviaron notificaciones
+        $cacheKey = "notifications_sent_{$companyId}_{$valueId}";
+        return Cache::has($cacheKey);
+    }
+
+    /**
+     * Marca las notificaciones como enviadas para esta empresa y valor
+     * 
+     * @param int $companyId
+     * @param int $valueId
+     * @return void
+     */
+    private function markNotificationsAsSent($companyId, $valueId)
+    {
+        // Guardar en cache que ya se enviaron notificaciones (expira en 24 horas)
+        $cacheKey = "notifications_sent_{$companyId}_{$valueId}";
+        Cache::put($cacheKey, true, now()->addHours(12));
     }
 }
