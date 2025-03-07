@@ -17,14 +17,6 @@ class CompanyProfileController extends Controller
     public function store(Request $request)
     {
         try {
-            // Validar los campos requeridos
-            /*$request->validate([
-                'direccion_empresa' => 'required|string|max:350',
-            ], [
-                'direccion_empresa.required' => 'La dirección detallada es obligatoria',
-                'direccion_empresa.max' => 'La dirección detallada no debe exceder los 500 caracteres',
-            ]);*/
-
             DB::beginTransaction();
 
             $companyId = Auth::user()->company_id;
@@ -48,6 +40,14 @@ class CompanyProfileController extends Controller
 
             // Procesar datos de ubicación (provincia, cantón y distrito)
             $companyData = [];
+
+            $camposObligatorios = [
+                'direccion_empresa',
+                'nombre_comercial',
+                'nombre_legal',
+                'descripcion_es',
+                'descripcion_en',
+            ];
             
             // Obtener los nombres de provincia, cantón y distrito a partir de los IDs
             if ($request->has('provincia') && !empty($request->provincia)) {

@@ -1033,9 +1033,12 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         
         // Expresiones regulares para diferentes tipos de campos
         const regexComunes = /["'\\;]/g; // Comillas simples, dobles, punto-coma y barras invertidas (prohibidos en todos los campos)
-        const regexSoloLetras = /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g; // Solo letras y espacios
-        const regexLetrasNumerosPunto = /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ0-9\s.]/g; // Letras, números y punto
-        const regexLetrasNumerosPuntoDoble = /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ0-9\s.:]/g; // Letras, números, punto y doble punto
+        
+        // Expresiones regulares mejoradas para permitir todos los caracteres acentuados
+        // Incluye todas las vocales con acentos (á, é, í, ó, ú, à, è, ì, ò, ù, â, ê, î, ô, û, ä, ë, ï, ö, ü) y otros caracteres especiales
+        const regexSoloLetras = /[^a-zA-ZáàâäéèêëíìîïóòôöúùûüÁÀÂÄÉÈÊËÍÌÎÏÓÒÔÖÚÙÛÜñÑçÇ\s]/g; // Solo letras y espacios
+        const regexLetrasNumerosPunto = /[^a-zA-ZáàâäéèêëíìîïóòôöúùûüÁÀÂÄÉÈÊËÍÌÎÏÓÒÔÖÚÙÛÜñÑçÇ0-9\s.,]/g; // Letras, números, punto y coma
+        const regexLetrasNumerosPuntoDoble = /[^a-zA-ZáàâäéèêëíìîïóòôöúùûüÁÀÂÄÉÈÊËÍÌÎÏÓÒÔÖÚÙÛÜñÑçÇ0-9\s.:,]/g; // Letras, números, punto, doble punto y coma
         const regexSoloNumeros = /[^0-9]/g; // Solo números
         const regexURL = /["'\\;]/g; // Caracteres prohibidos en URLs
 
