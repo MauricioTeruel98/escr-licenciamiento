@@ -156,6 +156,14 @@ class EvaluationController extends Controller
         // Contar las preguntas asociadas a esos indicadores
         $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)->count();
 
+        $numeroDePreguntasQueVaAResponderLaEmpresaPorValor = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)
+            ->get()
+            ->filter(function ($question) use ($value_id) {
+                $indicatorValueId = Indicator::find($question->indicator_id)->value_id;
+                return $indicatorValueId == $value_id;
+            })
+            ->count();
+
         $numeroDePreguntasQueRespondioLaEmpresa = IndicatorAnswerEvaluation::where('company_id', $user->company_id)->count();
 
         $numeroDePreguntasQueClificoElEvaluador = EvaluatorAssessment::where('company_id', $user->company_id)->count();
@@ -171,7 +179,8 @@ class EvaluationController extends Controller
             'company' => $company,
             'numeroDePreguntasQueVaAResponderLaEmpresa' => $numeroDePreguntasQueVaAResponderLaEmpresa,
             'numeroDePreguntasQueRespondioLaEmpresa' => $numeroDePreguntasQueRespondioLaEmpresa,
-            'numeroDePreguntasQueClificoElEvaluador' => $numeroDePreguntasQueClificoElEvaluador
+            'numeroDePreguntasQueClificoElEvaluador' => $numeroDePreguntasQueClificoElEvaluador,
+            'numeroDePreguntasQueVaAResponderLaEmpresaPorValor' => $numeroDePreguntasQueVaAResponderLaEmpresaPorValor
         ]);
     }
 

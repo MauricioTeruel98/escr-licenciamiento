@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { router, usePage } from '@inertiajs/react';
 
-export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, progress, totalSteps, value_id, company }) {
+export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, progress, totalSteps, value_id, company, numeroDePreguntasQueVaAResponderLaEmpresaPorValor, numeroDePreguntasQueRespondioLaEmpresa }) {
     const { auth } = usePage().props;
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [approvals, setApprovals] = useState(() => {
@@ -41,7 +41,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     const [currentProgress, setCurrentProgress] = useState(0);
     const [evaluatorProgress, setEvaluatorProgress] = useState(0);
     const [validationErrors, setValidationErrors] = useState({});
-    
+
     // Verificar si la empresa es exportadora
     const isExporter = auth.user.company?.is_exporter === true;
 
@@ -85,8 +85,6 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }
     };
 
-    console.log(company)
-
     const handleContinue = async () => {
         // Validar campos antes de continuar
         const errors = {};
@@ -99,13 +97,13 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 if (question.is_binary === false || question.is_binary === 0) {
                     return;
                 }
-                
+
                 // Verificar descripción
                 if (!answers[question.id]?.description?.trim()) {
                     errors[`description-${question.id}`] = 'La descripción es obligatoria';
                     hasErrors = true;
                 }
-                
+
                 // Verificar si hay archivos
                 const hasFiles = answers[question.id]?.files && answers[question.id]?.files.length > 0;
                 if (!hasFiles) {
@@ -114,7 +112,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 }
             });
         });
-        
+
         setValidationErrors(errors);
 
         if (hasErrors) {
@@ -124,7 +122,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             });
             return;
         }
-        
+
         if (!areCurrentSubcategoryQuestionsAnswered()) {
             setNotification({
                 type: 'error',
@@ -135,10 +133,10 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
         try {
             setLoading(true);
-            
+
             // Guardar respuestas por indicador para la subcategoría actual
             let hasError = false;
-            
+
             for (const indicator of subcategories[currentSubcategoryIndex].indicators) {
                 // Configurar como guardado parcial
                 const result = await saveAnswersByIndicator(indicator, true);
@@ -153,7 +151,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     type: 'success',
                     message: 'Respuestas guardadas correctamente'
                 });
-                
+
                 // Avanzar a la siguiente subcategoría
                 if (currentSubcategoryIndex < subcategories.length - 1) {
                     setCurrentSubcategoryIndex(prev => prev + 1);
@@ -192,6 +190,9 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         let totalQuestions = 0;
         let answeredQuestions = 0;
 
+        //numeroDePreguntasQueVaAResponderLaEmpresaPorValor
+        //numeroDePreguntasQueRespondioLaEmpresa
+
         subcategories.forEach(subcategory => {
             subcategory.indicators.forEach(indicator => {
                 indicator.evaluation_questions.forEach(question => {
@@ -202,7 +203,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                         answeredQuestions++;
                         return;
                     }
-                    
+
                     // Para empresas, verificar que el valor esté definido
                     const hasValue = answers[question.id]?.value !== undefined;
 
@@ -225,6 +226,18 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         // Calcular el porcentaje y redondear al entero más cercano
         return totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
     };
+
+    /*
+        const calculateProgress = () => {
+        // Calcular el progreso basado en el número de preguntas que va a responder la empresa por valor
+        // y el número de preguntas que ya respondió la empresa
+        const totalQuestions = numeroDePreguntasQueVaAResponderLaEmpresaPorValor;
+        const answeredQuestions = numeroDePreguntasQueRespondioLaEmpresa;
+
+        // Calcular el porcentaje y redondear al entero más cercano
+        return totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
+    };
+    */
 
     // Nueva función para calcular el progreso específico de los evaluadores
     const calculateEvaluatorProgress = () => {
@@ -300,8 +313,6 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         setApprovals(newApprovals);
     };
 
-    console.log(valueData)
-
     const areAllQuestionsAnswered = () => {
         if (isEvaluador) {
             // Para evaluadores, usar la misma lógica que calculateEvaluatorProgress
@@ -312,7 +323,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 subcategory.indicators.forEach(indicator => {
                     indicator.evaluation_questions.forEach(question => {
                         totalQuestions++;
-                        
+
                         // Para evaluadores, verificar si se ha tomado una decisión (aprobado o no)
                         if (approvals[question.id] !== undefined) {
                             answeredQuestions++;
@@ -331,13 +342,13 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 subcategory.indicators.forEach(indicator => {
                     indicator.evaluation_questions.forEach(question => {
                         totalQuestions++;
-                        
+
                         // Si la pregunta no es binaria, considerarla como respondida automáticamente
                         if (question.is_binary === false || question.is_binary === 0) {
                             answeredQuestions++;
                             return;
                         }
-                        
+
                         // Para empresas, verificar que el valor esté definido
                         const hasValue = answers[question.id]?.value !== undefined;
 
@@ -385,7 +396,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     // Verificar que la descripción no esté vacía después de quitar espacios
                     const hasDescription = answers[question.id]?.description?.trim() !== '' &&
                         answers[question.id]?.description !== undefined;
-                    
+
                     // Verificar que haya al menos un archivo subido
                     const hasFiles = answers[question.id]?.files && answers[question.id]?.files.length > 0;
 
@@ -408,7 +419,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         // Verificar si hay preguntas sin archivos
         let hasQuestionsWithoutFiles = false;
         const errors = {};
-        
+
         valueData.subcategories.forEach(subcategory => {
             subcategory.indicators.forEach(indicator => {
                 indicator.evaluation_questions.forEach(question => {
@@ -416,10 +427,10 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     if (question.is_binary === false || question.is_binary === 0) {
                         return;
                     }
-                    
+
                     // Verificar si hay archivos
                     const hasFiles = answers[question.id]?.files && answers[question.id]?.files.length > 0;
-                    
+
                     if (!hasFiles) {
                         hasQuestionsWithoutFiles = true;
                         errors[`files-${question.id}`] = 'Debe subir al menos un archivo como evidencia';
@@ -427,7 +438,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 });
             });
         });
-        
+
         if (hasQuestionsWithoutFiles) {
             setValidationErrors(errors);
             setNotification({
@@ -451,7 +462,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     const handleConfirmSubmit = async () => {
         try {
             setLoading(true);
-            
+
             // Obtener todos los indicadores de todas las subcategorías
             const allIndicators = [];
             subcategories.forEach(subcategory => {
@@ -459,10 +470,10 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     allIndicators.push(indicator);
                 });
             });
-            
+
             // Guardar respuestas por indicador
             let hasError = false;
-            
+
             for (const indicator of allIndicators) {
                 const result = await saveAnswersByIndicator(indicator);
                 if (!result.success) {
@@ -470,14 +481,14 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     break;
                 }
             }
-            
+
             if (!hasError) {
                 setNotification({
                     type: 'success',
                     message: 'Respuestas guardadas correctamente'
                 });
                 setShowConfirmModal(false);
-                
+
                 // Obtener el siguiente valor disponible
                 try {
                     const valuesResponse = await axios.get('/api/active-values');
@@ -523,7 +534,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             setLoading(false);
         }
     };
-    
+
     // Modificar la función saveAnswersByIndicator para aceptar un parámetro isPartialSave
     const saveAnswersByIndicator = async (indicator, isPartialSave = false) => {
         try {
@@ -531,7 +542,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             formData.append('isPartialSave', isPartialSave ? 'true' : 'false');
             formData.append('value_id', value_id);
             formData.append('indicator_id', indicator.id);
-            
+
             // Obtener solo las respuestas del indicador actual
             const indicatorAnswers = {};
             indicator.evaluation_questions.forEach(question => {
@@ -539,12 +550,12 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     indicatorAnswers[question.id] = answers[question.id];
                 }
             });
-            
+
             // Si no hay respuestas para este indicador, omitirlo
             if (Object.keys(indicatorAnswers).length === 0) {
                 return { success: true };
             }
-            
+
             Object.entries(indicatorAnswers).forEach(([questionId, answerData]) => {
                 formData.append(`answers[${questionId}][value]`, answerData.value);
                 formData.append(`answers[${questionId}][description]`, answerData.description || '');
@@ -564,13 +575,13 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     formData.append(`answers[${questionId}][evaluator_comment]`, answerData.evaluator_comment || '');
                 }
             });
-            
+
             const response = await axios.post(route('evaluacion.store-answers-by-indicator'), formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-            
+
             if (response.data.success && response.data.savedAnswers) {
                 // Actualizar las respuestas guardadas
                 setAnswers(prevAnswers => ({
@@ -578,7 +589,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     ...response.data.savedAnswers
                 }));
             }
-            
+
             return response.data;
         } catch (error) {
             console.error(`Error al guardar respuestas del indicador ${indicator.id}:`, error);
