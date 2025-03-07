@@ -40,7 +40,7 @@ class IndicatorController extends Controller
             'binding' => 'required|boolean',
             'self_evaluation_question' => 'required|string',
             'evaluation_questions' => 'nullable|array',
-            'evaluation_questions.*' => 'string',
+            'evaluation_questions.*' => 'nullable|string',
             'guide' => 'nullable|string',
             'is_active' => 'boolean',
             'requisito_id' => 'required|exists:requisitos,id',
@@ -62,12 +62,19 @@ class IndicatorController extends Controller
 
         $indicator->homologations()->attach($request->homologation_ids);
 
-        foreach ($request->input('evaluation_questions', []) as $index => $question) {
-            $is_binary = $request->input('evaluation_questions_binary.' . $index, false);
-            $indicator->evaluationQuestions()->create([
-                'question' => $question,
-                'is_binary' => $is_binary
-            ]);
+        // Filtrar y guardar solo las preguntas no vacías
+        $evaluationQuestions = $request->input('evaluation_questions', []);
+        $evaluationQuestionsBinary = $request->input('evaluation_questions_binary', []);
+
+        foreach ($evaluationQuestions as $index => $question) {
+            // Verificar que la pregunta no esté vacía
+            if (!empty(trim($question))) {
+                $is_binary = isset($evaluationQuestionsBinary[$index]) ? $evaluationQuestionsBinary[$index] : false;
+                $indicator->evaluationQuestions()->create([
+                    'question' => $question,
+                    'is_binary' => $is_binary
+                ]);
+            }
         }
 
         $indicator->load(['homologations', 'value', 'subcategory']);
@@ -89,7 +96,7 @@ class IndicatorController extends Controller
             'binding' => 'required|boolean',
             'self_evaluation_question' => 'required|string',
             'evaluation_questions' => 'nullable|array',
-            'evaluation_questions.*' => 'string',
+            'evaluation_questions.*' => 'nullable|string',
             'guide' => 'nullable|string',
             'is_active' => 'boolean',
             'requisito_id' => 'required|exists:requisitos,id',
@@ -115,24 +122,30 @@ class IndicatorController extends Controller
         // Obtener preguntas existentes
         $existingQuestions = $indicator->evaluationQuestions()->pluck('question', 'id')->toArray();
 
-        // Recorrer las preguntas enviadas y actualizar o agregar nuevas
-        foreach ($request->input('evaluation_questions', []) as $index => $question) {
-            $is_binary = $request->input('evaluation_questions_binary.' . $index, false);
+        // Filtrar y procesar solo las preguntas no vacías
+        $evaluationQuestions = $request->input('evaluation_questions', []);
+        $evaluationQuestionsBinary = $request->input('evaluation_questions_binary', []);
 
-            // Buscar si la pregunta ya existe
-            $existingQuestionId = array_search($question, $existingQuestions);
+        foreach ($evaluationQuestions as $index => $question) {
+            // Verificar que la pregunta no esté vacía
+            if (!empty(trim($question))) {
+                $is_binary = isset($evaluationQuestionsBinary[$index]) ? $evaluationQuestionsBinary[$index] : false;
 
-            if ($existingQuestionId !== false) {
-                // Si la pregunta ya existe, actualizarla
-                $indicator->evaluationQuestions()->where('id', $existingQuestionId)->update([
-                    'is_binary' => $is_binary
-                ]);
-            } else {
-                // Si la pregunta es nueva, crearla
-                $indicator->evaluationQuestions()->create([
-                    'question' => $question,
-                    'is_binary' => $is_binary
-                ]);
+                // Buscar si la pregunta ya existe
+                $existingQuestionId = array_search($question, $existingQuestions);
+
+                if ($existingQuestionId !== false) {
+                    // Si la pregunta ya existe, actualizarla
+                    $indicator->evaluationQuestions()->where('id', $existingQuestionId)->update([
+                        'is_binary' => $is_binary
+                    ]);
+                } else {
+                    // Si la pregunta es nueva, crearla
+                    $indicator->evaluationQuestions()->create([
+                        'question' => $question,
+                        'is_binary' => $is_binary
+                    ]);
+                }
             }
         }
 

@@ -110,7 +110,25 @@ export default function IndicatorModal({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(formData);
+        
+        // Filtrar preguntas vacías antes de enviar
+        const filteredFormData = {
+            ...formData,
+            evaluation_questions: formData.evaluation_questions.filter((question, index) => {
+                // Si la pregunta está vacía, también eliminamos su correspondiente valor binario
+                if (!question.trim()) {
+                    return false;
+                }
+                return true;
+            }),
+            evaluation_questions_binary: formData.evaluation_questions.map((question, index) => {
+                return formData.evaluation_questions_binary[index];
+            }).filter((_, index) => {
+                return formData.evaluation_questions[index] && formData.evaluation_questions[index].trim() !== '';
+            })
+        };
+        
+        onSubmit(filteredFormData);
     };
 
     const handleClose = () => {

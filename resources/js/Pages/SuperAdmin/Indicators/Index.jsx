@@ -228,6 +228,14 @@ export default function IndicatorsIndex() {
 
     const handleSubmit = async (formData) => {
         try {
+            // Verificar si hay preguntas vacías y filtrarlas
+            if (formData.evaluation_questions && formData.evaluation_questions.length > 0) {
+                const hasEmptyQuestions = formData.evaluation_questions.some(q => !q.trim());
+                if (hasEmptyQuestions) {
+                    console.log('Se han filtrado preguntas vacías');
+                }
+            }
+
             if (selectedIndicator) {
                 await axios.put(`/api/indicators/${selectedIndicator.id}`, formData);
                 showNotification('success', 'Indicador actualizado exitosamente');
@@ -239,11 +247,24 @@ export default function IndicatorsIndex() {
             setModalOpen(false);
         } catch (error) {
             console.error('Error al guardar indicador:', error);
-            if (error.response && error.response.data && error.response.data.error) {
-                showNotification('error', error.response.data.error);
-            } else {
-                showNotification('error', 'Error al guardar el indicador');
+            let errorMessage = 'Error al guardar el indicador';
+            
+            if (error.response) {
+                if (error.response.data && error.response.data.error) {
+                    errorMessage = error.response.data.error;
+                } else if (error.response.data && error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                } else if (error.response.data && error.response.data.errors) {
+                    // Manejar errores de validación
+                    const validationErrors = error.response.data.errors;
+                    const firstError = Object.values(validationErrors)[0];
+                    if (firstError && firstError.length > 0) {
+                        errorMessage = firstError[0];
+                    }
+                }
             }
+            
+            showNotification('error', errorMessage);
         }
     };
 
