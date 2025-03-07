@@ -195,9 +195,9 @@ export default function CompanyRegister({ legalId, provincias }) {
                                 className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="https://www.ejemplo.com"
                             />
-                            <p className="text-xs text-gray-500 mt-1">
+                            {/* <p className="text-xs text-gray-500 mt-1">
                                 Debe incluir "https://" o "http://" al inicio de la dirección (ejemplo: https://www.miempresa.com)
-                            </p>
+                            </p> */}
                             <InputError message={errors.website} />
                         </div>
 

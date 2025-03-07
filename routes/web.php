@@ -191,7 +191,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     // Rutas para ordenar subcategorías
     Route::get('/api/values/{value}/subcategories', [ValueController::class, 'getSubcategoriesByValue']);
     Route::post('/api/subcategories/update-order', [ValueController::class, 'updateSubcategoriesOrder']);
-    Route::get('/api/subcategories/fix-order', [ValueController::class, 'fixSubcategoriesOrder']);
+
 
     // Rutas para gestión de usuarios
     Route::get('/api/users', [UsersManagementSuperAdminController::class, 'index']);
