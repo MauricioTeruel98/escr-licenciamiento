@@ -18,12 +18,12 @@ class CompanyProfileController extends Controller
     {
         try {
             // Validar los campos requeridos
-            $request->validate([
+            /*$request->validate([
                 'direccion_empresa' => 'required|string|max:350',
             ], [
                 'direccion_empresa.required' => 'La dirección detallada es obligatoria',
                 'direccion_empresa.max' => 'La dirección detallada no debe exceder los 500 caracteres',
-            ]);
+            ]);*/
 
             DB::beginTransaction();
 
