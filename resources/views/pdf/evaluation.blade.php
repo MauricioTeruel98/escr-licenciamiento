@@ -398,25 +398,52 @@
     <p></p> --}}
 
     <h2>Datos de contacto</h2>
-    @if ($company->infoAdicional->vocero_nombre)
+
+    @if ($company->infoAdicional->contacto_notificacion_nombre)
         <h3>Contacto para recibir Notificaciones de Marca País</h3>
+        <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->contacto_notificacion_nombre ?? 'N/A' }}</p>
+        <p><strong>Posición dentro de la organización:</strong>
+            {{ $company->infoAdicional->contacto_notificacion_puesto ?? 'N/A' }}</p>
+        <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->contacto_notificacion_email ?? 'N/A' }}</p>
+        <p><strong>Cédula:</strong> {{ $company->infoAdicional->contacto_notificacion_cedula ?? 'N/A' }}</p>
+        <p><strong>Teléfono:</strong> {{ $company->infoAdicional->contacto_notificacion_telefono ?? 'N/A' }}
+            <strong>Celular:</strong> {{ $company->infoAdicional->contacto_notificacion_celular ?? 'N/A' }}
+        </p>
+    @endif
+
+    @if ($company->infoAdicional->asignado_proceso_nombre)
+        <h3>Contacto asignado para el proceso de licenciamiento de la Marca País</h3>
+        <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->asignado_proceso_nombre ?? 'N/A' }}</p>
+        <p><strong>Posición dentro de la organización:</strong>
+            {{ $company->infoAdicional->asignado_proceso_puesto ?? 'N/A' }}</p>
+        <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->asignado_proceso_email ?? 'N/A' }}</p>
+        <p><strong>Cédula:</strong> {{ $company->infoAdicional->asignado_proceso_cedula ?? 'N/A' }}</p>
+        <p><strong>Teléfono:</strong> {{ $company->infoAdicional->asignado_proceso_telefono ?? 'N/A' }}
+            <strong>Celular:</strong> {{ $company->infoAdicional->asignado_proceso_celular ?? 'N/A' }}
+        </p>
+    @endif
+
+    @if ($company->infoAdicional->representante_nombre)
+        <h3>Contacto del Representante Legal o Gerente General</h3>
         <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->representante_nombre ?? 'N/A' }}</p>
         <p><strong>Posición dentro de la organización:</strong>
             {{ $company->infoAdicional->representante_puesto ?? 'N/A' }}</p>
+        <p><strong>Cédula:</strong> {{ $company->infoAdicional->representante_cedula ?? 'N/A' }}</p>
         <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->representante_email ?? 'N/A' }}</p>
         <p><strong>Teléfono:</strong> {{ $company->infoAdicional->representante_telefono ?? 'N/A' }}
             <strong>Celular:</strong> {{ $company->infoAdicional->representante_celular ?? 'N/A' }}
         </p>
     @endif
-
+    
     @if ($company->infoAdicional->vocero_nombre)
-        <h3>Contacto asignado para el proceso de licenciamiento de la Marca País</h3>
+        <h3>Contacto Vocero de la empresa</h3>
         <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->vocero_nombre ?? 'N/A' }}</p>
-        <p><strong>Posición dentro de la organización:</strong> {{ $company->infoAdicional->vocero_puesto ?? 'N/A' }}
-        </p>
+        <p><strong>Posición dentro de la organización:</strong>
+            {{ $company->infoAdicional->vocero_puesto ?? 'N/A' }}</p>
         <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->vocero_email ?? 'N/A' }}</p>
-        <p><strong>Teléfono:</strong> {{ $company->infoAdicional->vocero_telefono ?? 'N/A' }} <strong>Celular:</strong>
-            {{ $company->infoAdicional->vocero_celular ?? 'N/A' }}</p>
+        <p><strong>Teléfono:</strong> {{ $company->infoAdicional->vocero_telefono ?? 'N/A' }}
+            <strong>Celular:</strong> {{ $company->infoAdicional->vocero_celular ?? 'N/A' }}
+        </p>
     @endif
 
     @if ($company->infoAdicional->mercadeo_nombre)
@@ -441,18 +468,6 @@
         <p><strong>Teléfono:</strong> {{ $company->infoAdicional->micrositio_telefono ?? 'N/A' }}
             <strong>Celular:</strong>
             {{ $company->infoAdicional->micrositio_celular ?? 'N/A' }}
-        </p>
-    @endif
-
-    @if ($company->infoAdicional->representante_nombre)
-        <h3>Contacto del Representante Legal o Gerente General</h3>
-        <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->representante_nombre ?? 'N/A' }}</p>
-        <p><strong>Posición dentro de la organización:</strong>
-            {{ $company->infoAdicional->representante_puesto ?? 'N/A' }}</p>
-        <p><strong>Cédula:</strong> {{ $company->infoAdicional->cedula_juridica ?? 'N/A' }}</p>
-        <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->representante_email ?? 'N/A' }}</p>
-        <p><strong>Teléfono:</strong> {{ $company->infoAdicional->representante_telefono ?? 'N/A' }}
-            <strong>Celular:</strong> {{ $company->infoAdicional->representante_celular ?? 'N/A' }}
         </p>
     @endif
 

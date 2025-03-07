@@ -55,6 +55,22 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         recomienda_marca_pais: infoAdicional?.recomienda_marca_pais || false,
         observaciones: infoAdicional?.observaciones || '',
 
+        // Contacto para recibir notificaciones de la Marca País
+        contacto_notificacion_nombre: infoAdicional?.contacto_notificacion_nombre || '',
+        contacto_notificacion_email: infoAdicional?.contacto_notificacion_email || '',
+        contacto_notificacion_puesto: infoAdicional?.contacto_notificacion_puesto || '',
+        contacto_notificacion_cedula: infoAdicional?.contacto_notificacion_cedula || '',
+        contacto_notificacion_telefono: infoAdicional?.contacto_notificacion_telefono || '',
+        contacto_notificacion_celular: infoAdicional?.contacto_notificacion_celular || '',
+
+        // Contacto asignado para llevar el proceso del licenciamiento
+        asignado_proceso_nombre: infoAdicional?.asignado_proceso_nombre || '',
+        asignado_proceso_email: infoAdicional?.asignado_proceso_email || '',
+        asignado_proceso_puesto: infoAdicional?.asignado_proceso_puesto || '',
+        asignado_proceso_cedula: infoAdicional?.asignado_proceso_cedula || '',
+        asignado_proceso_telefono: infoAdicional?.asignado_proceso_telefono || '',
+        asignado_proceso_celular: infoAdicional?.asignado_proceso_celular || '',
+
         mercadeo_nombre: infoAdicional?.mercadeo_nombre || '',
         mercadeo_email: infoAdicional?.mercadeo_email || '',
         mercadeo_puesto: infoAdicional?.mercadeo_puesto || '',
@@ -76,6 +92,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         representante_nombre: infoAdicional?.representante_nombre || '',
         representante_email: infoAdicional?.representante_email || '',
         representante_puesto: infoAdicional?.representante_puesto || '',
+        representante_cedula: infoAdicional?.representante_cedula || '',
         representante_telefono: infoAdicional?.representante_telefono || '',
         representante_celular: infoAdicional?.representante_celular || '',
 
@@ -739,6 +756,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 }
             }
             setLoading(false);
+            
+            //Redirigir al home sin navigate
+            window.location.href = route('dashboard');
         } catch (error) {
             console.error('Error en la petición:', error);
             
@@ -1155,6 +1175,10 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             case 'vocero_puesto':
             case 'representante_nombre':
             case 'representante_puesto':
+            case 'asignado_proceso_nombre':
+            case 'asignado_proceso_puesto':
+            case 'contacto_notificacion_nombre':
+            case 'contacto_notificacion_puesto':
                 tipoValidacion = 'solo_letras';
                 break;
                 
@@ -1177,6 +1201,10 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             case 'vocero_celular':
             case 'representante_telefono':
             case 'representante_celular':
+            case 'asignado_proceso_telefono':
+            case 'asignado_proceso_celular':
+            case 'contacto_notificacion_telefono':
+            case 'contacto_notificacion_celular':
                 tipoValidacion = 'solo_numeros';
                 break;
                 
@@ -2316,6 +2344,258 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                         </button>
                         {seccionesExpandidas.contactos && (
                             <div className="p-6 pt-0 space-y-8">
+                                {/* Contacto para recibir notificaciones de la Marca País */}
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-4">Contacto para recibir notificaciones de la Marca País <span className="text-red-500">*</span></h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Nombre Completo <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.contacto_notificacion_nombre}
+                                                onChange={handleChange}
+                                                name="contacto_notificacion_nombre"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.contacto_notificacion_nombre} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Correo Electrónico <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="email"
+                                                value={data.contacto_notificacion_email}
+                                                onChange={handleChange}
+                                                name="contacto_notificacion_email"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.contacto_notificacion_email} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Puesto <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.contacto_notificacion_puesto}
+                                                onChange={handleChange}
+                                                name="contacto_notificacion_puesto"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.contacto_notificacion_puesto} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Cédula <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.contacto_notificacion_cedula}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    const valorSinEspacios = value.replace(/\s/g, '');
+                                                    const valorNumerico = validarCampo(valorSinEspacios, 'solo_numeros');
+                                                    setData('contacto_notificacion_cedula', valorNumerico);
+                                                }}
+                                                name="contacto_notificacion_cedula"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.contacto_notificacion_cedula} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Teléfono <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.contacto_notificacion_telefono}
+                                                onChange={handleChange}
+                                                name="contacto_notificacion_telefono"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.contacto_notificacion_telefono} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Celular <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.contacto_notificacion_celular}
+                                                onChange={handleChange}
+                                                name="contacto_notificacion_celular"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.contacto_notificacion_celular} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Contacto asignado para llevar el proceso del licenciamiento */}
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-4">Contacto asignado para llevar el proceso del licenciamiento <span className="text-red-500">*</span></h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Nombre Completo <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.asignado_proceso_nombre}
+                                                onChange={handleChange}
+                                                name="asignado_proceso_nombre"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.asignado_proceso_nombre} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Correo Electrónico <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="email"
+                                                value={data.asignado_proceso_email}
+                                                onChange={handleChange}
+                                                name="asignado_proceso_email"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.asignado_proceso_email} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Puesto <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.asignado_proceso_puesto}
+                                                onChange={handleChange}
+                                                name="asignado_proceso_puesto"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.asignado_proceso_puesto} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Cédula <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.asignado_proceso_cedula}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    const valorSinEspacios = value.replace(/\s/g, '');
+                                                    const valorNumerico = validarCampo(valorSinEspacios, 'solo_numeros');
+                                                    setData('asignado_proceso_cedula', valorNumerico);
+                                                }}
+                                                name="asignado_proceso_cedula"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.asignado_proceso_cedula} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Teléfono <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.asignado_proceso_telefono}
+                                                onChange={handleChange}
+                                                name="asignado_proceso_telefono"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.asignado_proceso_telefono} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Celular <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.asignado_proceso_celular}
+                                                onChange={handleChange}
+                                                name="asignado_proceso_celular"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.asignado_proceso_celular} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Representante Legal */}
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-4">Contacto del Representante Legal de su organización o Gerente General <span className="text-red-500">*</span></h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Nombre Completo <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.representante_nombre}
+                                                onChange={handleChange}
+                                                name="representante_nombre"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.representante_nombre} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Correo Electrónico <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="email"
+                                                value={data.representante_email}
+                                                onChange={handleChange}
+                                                name="representante_email"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.representante_email} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Puesto <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.representante_puesto}
+                                                onChange={handleChange}
+                                                name="representante_puesto"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.representante_puesto} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Cédula <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.representante_cedula}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    const valorSinEspacios = value.replace(/\s/g, '');
+                                                    const valorNumerico = validarCampo(valorSinEspacios, 'solo_numeros');
+                                                    setData('representante_cedula', valorNumerico);
+                                                }}
+                                                name="representante_cedula"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.representante_cedula} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Teléfono <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.representante_telefono}
+                                                onChange={handleChange}
+                                                name="representante_telefono"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.representante_telefono} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Celular <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={data.representante_celular}
+                                                onChange={handleChange}
+                                                name="representante_celular"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
+                                            />
+                                            <InputError message={errors.representante_celular} />
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {/* Contacto de su área de Mercadeo */}
                                 <div>
                                     <h3 className="text-lg font-medium text-gray-900 mb-4">Contacto de su área de Mercadeo</h3>
@@ -2503,70 +2783,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                                 <InputError message={errors.vocero_celular} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Contacto del Representante Legal */}
-                                <div>
-                                    <h3 className="text-lg font-medium text-gray-900 mb-4">Contacto del Representante Legal de su organización o Gerente General</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Nombre Completo</label>
-                                            <input
-                                                type="text"
-                                                value={data.representante_nombre}
-                                                onChange={handleChange}
-                                                name="representante_nombre"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            />
-                                            <InputError message={errors.representante_nombre} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-                                            <input
-                                                type="email"
-                                                value={data.representante_email}
-                                                onChange={handleChange}
-                                                name="representante_email"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            />
-                                            <InputError message={errors.representante_email} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Puesto</label>
-                                            <input
-                                                type="text"
-                                                value={data.representante_puesto}
-                                                onChange={handleChange}
-                                                name="representante_puesto"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            />
-                                            <InputError message={errors.representante_puesto} />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">Teléfono</label>
-                                                <input
-                                                    type="tel"
-                                                    value={data.representante_telefono}
-                                                    onChange={handleChange}
-                                                    name="representante_telefono"
-                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                />
-                                                <InputError message={errors.representante_telefono} />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">Celular</label>
-                                                <input
-                                                    type="tel"
-                                                    value={data.representante_celular}
-                                                    onChange={handleChange}
-                                                    name="representante_celular"
-                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                />
-                                                <InputError message={errors.representante_celular} />
                                             </div>
                                         </div>
                                     </div>
