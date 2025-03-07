@@ -206,6 +206,7 @@ class IndicadorAnswerController extends Controller
                 $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
 
                 // Generar PDF con todos los valores
+                /*
                 $pdf = Pdf::loadView('pdf/autoevaluation', [
                     'values' => $allValues,
                     'answers' => $allAnswers,
@@ -250,6 +251,7 @@ class IndicadorAnswerController extends Controller
                 $company->update(['estado_eval' => 'auto-evaluacion-completed']);
 
                 $company->save();
+                */
 
                 return response()->json([
                     'success' => true,
@@ -291,6 +293,97 @@ class IndicadorAnswerController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             return response()->json(['message' => 'Error al guardar respuestas: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function finalizarAutoEvaluacion()
+    {
+        $user = Auth::user();
+
+        $company = Company::find($user->company_id);
+
+        $autoevaluationResult = AutoEvaluationResult::where('company_id', $user->company_id)->first();
+
+        $applicationSended = $autoevaluationResult->application_sended;
+        $formSended = $autoevaluationResult->form_sended;
+
+        $evaluacionCompleta = $this->isAutoEvaluationComplete($user->company_id);
+
+        if($applicationSended && $formSended && $evaluacionCompleta){
+            try {
+                // Obtener todos los valores y sus respuestas
+                $allValues = Value::with(['subcategories.indicators'])
+                    ->where('is_active', true)
+                    ->get();
+
+                $allAnswers = IndicatorAnswer::where('company_id', $user->company_id)
+                    ->with('indicator.subcategory.value')
+                    ->get()
+                    ->groupBy('indicator.subcategory.value.id');
+
+                // Obtener información adicional de la empresa
+                $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
+
+                // Generar PDF con todos los valores
+                $pdf = Pdf::loadView('pdf/autoevaluation', [
+                    'values' => $allValues,
+                    'answers' => $allAnswers,
+                    'company' => $company,
+                    'date' => now()->format('d/m/Y'),
+                    'finalScores' => AutoEvaluationValorResult::where('company_id', $user->company_id)
+                        ->get()
+                        ->keyBy('value_id')
+                ]);
+
+                // Crear estructura de carpetas para la empresa
+                $companySlug = Str::slug($company->name);
+                $basePath = storage_path('app/public/autoevaluations');
+                $companyPath = "{$basePath}/{$user->company_id}-{$companySlug}";
+
+                // Crear carpetas si no existen
+                if (!file_exists($basePath)) {
+                    mkdir($basePath, 0755, true);
+                }
+                if (!file_exists($companyPath)) {
+                    mkdir($companyPath, 0755, true);
+                }
+                
+                // Generar nombre de archivo con timestamp
+                $fileName = "autoevaluation_{$user->company_id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
+                $fullPath = "{$companyPath}/{$fileName}";
+
+                // Guardar PDF
+                $pdf->save($fullPath);
+
+                // Enviar email con PDF al usuario administrador de la empresa
+                $admin = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
+                Mail::to($admin->email)->send(new AutoEvaluationResults($fullPath, $company));
+
+                $superadminuser = User::where('role', 'super_admin')->first();
+                Mail::to($superadminuser->email)->send(new AutoEvaluationComplete($fullPath, $company));
+
+                // Actualizar la columna autoeval_ended en la tabla companies
+                $company->update([
+                    'autoeval_ended' => true,
+                    'estado_eval' => 'auto-evaluacion-completed'
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => '¡Autoevaluación finalizada! Se ha enviado un PDF a su correo con los resultados.'
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Error al finalizar autoevaluación:', [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                return response()->json(['message' => 'Error al finalizar autoevaluación: ' . $e->getMessage()], 500);
+            }
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede finalizar la autoevaluación. Verifique que haya completado todos los requisitos.'
+            ], 400);
         }
     }
 
@@ -357,8 +450,16 @@ class IndicadorAnswerController extends Controller
     {
         $activeValues = Value::where('is_active', true)->count();
         $evaluatedValues = AutoEvaluationValorResult::where('company_id', $companyId)->count();
+
+        $numeroDeIndicadoresAResponder = Indicator::where('is_active', true)->count();
+
+        $numeroDeIndicadoresRespondidos = IndicatorAnswer::where('company_id', $companyId)
+            ->whereHas('indicator', function($query) {
+                $query->where('is_active', true);
+            })
+            ->count();
         
-        $isComplete = $activeValues === $evaluatedValues;
+        $isComplete = $numeroDeIndicadoresAResponder === $numeroDeIndicadoresRespondidos;
         
         Log::info('Verificación de autoevaluación completa:', [
             'company_id' => $companyId,

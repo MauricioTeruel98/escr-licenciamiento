@@ -4,6 +4,27 @@ import { CircleArrowDown, CircleArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import ApplicationModal from '@/Components/Modals/ApplicationModal';
 import axios from 'axios';
+import FinalizarAutoevaluacionModal from '@/Components/Modals/FinalizarAutoevaluacionModal';
+
+// Componente de notificación simple
+const Notification = ({ type, message, onClose }) => {
+    if (!message) return null;
+
+    const bgColor = type === 'error' ? 'bg-red-100 border-red-400 text-red-700' : 'bg-green-100 border-green-400 text-green-700';
+
+    return (
+        <div className={`fixed top-4 right-4 px-4 py-3 rounded border ${bgColor} max-w-md z-50`} role="alert">
+            <strong className="font-bold">{type === 'error' ? 'Error: ' : 'Éxito: '}</strong>
+            <span className="block sm:inline">{message}</span>
+            <button
+                className="absolute top-0 bottom-0 right-0 px-4 py-3"
+                onClick={onClose}
+            >
+                <span className="text-2xl">&times;</span>
+            </button>
+        </div>
+    );
+};
 
 // Componente FAQ actualizado
 const FAQSection = () => {
@@ -95,13 +116,17 @@ export default function Evaluation({
     status,
     failedBindingIndicators,
     failedValues,
-    autoEvaluationResult
+    autoEvaluationResult,
+    company
 }) {
     const { post } = useForm();
     const { auth } = usePage().props;
 
     const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
+    const [isFinalizarAutoevaluacionModalOpen, setIsFinalizarAutoevaluacionModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [notification, setNotification] = useState(null);
+    const [modalStatus, setModalStatus] = useState('initial');
 
     const handleApplicationSubmit = async () => {
         try {
@@ -119,6 +144,49 @@ export default function Evaluation({
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    // Función para abrir el modal de confirmación
+    const openFinalizarModal = () => {
+        setModalStatus('initial');
+        setIsFinalizarAutoevaluacionModalOpen(true);
+    };
+
+    // Función para confirmar y enviar la autoevaluación
+    const confirmFinalizarAutoevaluacion = async () => {
+        try {
+            setModalStatus('processing');
+            setIsSubmitting(true);
+
+            const response = await axios.post(route('indicadores.finalizar-autoevaluacion'));
+
+            if (response.data.success) {
+                setModalStatus('completed');
+                //Recarga la pagina a los 3 segundos
+                // Recargar datos necesarios
+                router.reload({ only: ['autoEvaluationResult'] });
+                router.reload({ only: ['company'] });
+            } else {
+                throw new Error(response.data.message || 'Error al finalizar la autoevaluación');
+            }
+        } catch (error) {
+            setIsFinalizarAutoevaluacionModalOpen(false);
+            setNotification({
+                type: 'error',
+                message: error.response?.data?.message || error.message || 'Error al finalizar la autoevaluación'
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Función para cerrar el modal
+    const closeFinalizarModal = () => {
+        setIsFinalizarAutoevaluacionModalOpen(false);
+        // Resetear el estado del modal para la próxima vez
+        setTimeout(() => {
+            setModalStatus('initial');
+        }, 300);
     };
 
     const handleDownloadPDF = () => {
@@ -200,29 +268,148 @@ export default function Evaluation({
                 <div className="md:flex gap-8">
                     {
                         autoEvaluationResult && autoEvaluationResult.application_sended == 1 && (
-                            <div className="space-y-4">
-                                <div className="">
-                                    <p className="text-xl font-semibold">¡Bienvenido/a {userName}!</p>
-                                </div>
-                                <h1 className="text-4xl font-extrabold">
-                                    Evaluación de {companyName}
-                                </h1>
-                                <div className='bg-green-50/50 p-2 rounded-lg'>
-                                    <div className="flex items-center justify-start gap-2 mb-5">
-                                        <div className="flex-shrink-0">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-info-circle text-green-700"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
-                                        </div>
-                                        <p className="text-sm text-green-700 font-medium">
-                                            Su empresa cuenta con indicadores aptos para iniciar el proceso de licenciamiento.
-                                        </p>
+                            <>
+                                <div className="space-y-4 w-full md:w-2/3">
+                                    <div className="">
+                                        <p className="text-xl font-semibold">¡Bienvenido/a {userName}!</p>
                                     </div>
-                                    <Link href={route('form.empresa')}
-                                        className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75"
-                                    >
-                                        Completar Formulario de Empresa
-                                    </Link>
+                                    <h1 className="text-4xl font-extrabold">
+                                        Evaluación de {companyName}
+                                    </h1>
+                                    <div className='bg-green-50/50 p-2 rounded-lg'>
+                                        <div className="flex items-center justify-start gap-2 mb-5">
+                                            <div className="flex-shrink-0">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-info-circle text-green-700"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
+                                            </div>
+                                            <p className="text-sm text-green-700 font-medium">
+                                                Su empresa cuenta con indicadores aptos para iniciar el proceso de licenciamiento.
+                                            </p>
+                                        </div>
+                                        <Link href={route('form.empresa')}
+                                            className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75"
+                                        >
+                                            {autoEvaluationResult.form_sended === 1 ? 'Editar Información de la Empresa' : 'Completar Información de la Empresa'}
+                                        </Link>
+                                    </div>
                                 </div>
-                            </div>
+
+                                <div className="w-full md:w-1/3 flex items-center justify-center">
+                                    {
+                                        autoEvaluationResult.application_sended === 1 && autoEvaluationResult.form_sended === 1
+                                        && company.estado_eval == 'auto-evaluacion'
+                                        && (
+                                            <div className="space-y-4 bg-green-50/50 p-4 rounded-lg">
+                                                <div className="flex items-center justify-start gap-2">
+                                                    <div className="flex-shrink-0">
+                                                        <svg
+                                                            className="h-5 w-5 text-green-700"
+                                                            viewBox="0 0 20 20"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                    <p className="text-sm text-green-700 font-medium">
+                                                        Su empresa puede enviar la Autoevaluación finalizada.
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={openFinalizarModal}
+                                                    disabled={isSubmitting}
+                                                    className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75"
+                                                >
+                                                    {isSubmitting ? (
+                                                        <>
+                                                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            Enviando...
+                                                        </>
+                                                    ) : (
+                                                        'Finalizar Autoevaluación'
+                                                    )}
+                                                </button>
+                                            </div>
+                                        )
+                                    }
+                                    {
+                                        company.estado_eval == 'auto-evaluacion-completed' && (
+                                            <div className="space-y-4 bg-amber-50/50 p-4 rounded-lg">
+                                                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-yellow-100 mb-4">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-600">
+                                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                                    </svg>
+                                                </div>
+                                                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                                    En espera de autorización
+                                                </h3>
+                                                <p className="text-sm text-gray-500">
+                                                    Debe esperar a que se le autorice para poder realizar la evaluación.
+                                                </p>
+                                            </div>
+                                        )
+                                    }
+
+                                    {
+                                        company.estado_eval == 'evaluacion' && (
+                                            <div className="space-y-4 bg-blue-50/50 p-4 rounded-lg">
+                                                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 mb-4">
+                                                    <svg
+                                                        className="h-5 w-5 text-blue-700"
+                                                        viewBox="0 0 20 20"
+                                                        fill="currentColor"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                                    Evaluación en curso
+                                                </h3>
+                                                <p className="text-sm text-gray-500">
+                                                    Su empresa es apta para realizar la evaluación.
+                                                </p>
+                                            </div>
+                                        )
+                                    }
+
+                                    {
+                                        company.estado_eval == 'evaluacion-completada' && (
+                                            <div className="space-y-4 bg-amber-50/50 p-4 rounded-lg">
+                                                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 mb-4">
+                                                    <svg
+                                                        className="h-5 w-5 text-amber-700"
+                                                        viewBox="0 0 20 20"
+                                                        fill="currentColor"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                                    Evaluación completada
+                                                </h3>
+                                                <p className="text-sm text-gray-500">
+                                                    Su empresa ha completado la Evaluación. Debe esperar a que un evaluador califique la evaluación
+                                                </p>
+                                            </div>
+                                        )
+                                    }
+                                </div>
+                            </>
                         )
                     }
 
@@ -512,6 +699,18 @@ export default function Evaluation({
             <ApplicationModal
                 isOpen={isApplicationModalOpen}
                 onClose={() => setIsApplicationModalOpen(false)}
+            />
+            <FinalizarAutoevaluacionModal
+                isOpen={isFinalizarAutoevaluacionModalOpen}
+                onClose={closeFinalizarModal}
+                onConfirm={confirmFinalizarAutoevaluacion}
+                status={modalStatus}
+                isProcessing={isSubmitting}
+            />
+            <Notification
+                type={notification?.type}
+                message={notification?.message}
+                onClose={() => setNotification(null)}
             />
         </DashboardLayout>
     );

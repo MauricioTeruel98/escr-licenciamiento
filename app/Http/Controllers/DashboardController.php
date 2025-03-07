@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Certification;
 use App\Models\IndicatorHomologation;
-
+use App\Models\Company;
 class DashboardController extends Controller
 {
     public function index()
@@ -26,6 +26,10 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         $isAdmin = $user->isAdmin();
+
+        $companyId = $user->company_id;
+
+        $company = Company::find($companyId);
 
         // Obtener el total de indicadores activos
         $totalIndicadores = Indicator::where('is_active', true)->count();
@@ -126,7 +130,8 @@ class DashboardController extends Controller
             'status' => $status,
             'failedBindingIndicators' => $failedBindingIndicators,
             'failedValues' => $failedValues,
-            'autoEvaluationResult' => $autoEvaluationResult
+            'autoEvaluationResult' => $autoEvaluationResult,
+            'company' => $company
         ]);
     }
 

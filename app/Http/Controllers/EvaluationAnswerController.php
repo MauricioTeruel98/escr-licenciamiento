@@ -274,7 +274,7 @@ class EvaluationAnswerController extends Controller
                 $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
 
                 // Verificar si ya se enviaron las notificaciones para evitar duplicados
-                if (!$this->notificationsAlreadySent($user->company_id, $request->value_id)) {
+                if (!$this->notificationsAlreadySent($user->company_id, $request->value_id, 'evaluacion-completada')) {
                     $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
                     $superAdminUser = User::where('role', 'super_admin')->first();
 
@@ -286,7 +286,7 @@ class EvaluationAnswerController extends Controller
                     }
 
                     // Registrar que se enviaron las notificaciones
-                    $this->markNotificationsAsSent($user->company_id, $request->value_id);
+                    $this->markNotificationsAsSent($user->company_id, $request->value_id, 'evaluacion-completada');
 
                     $company->estado_eval = 'evaluacion-completada';
                     $company->save();

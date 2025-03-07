@@ -107,6 +107,16 @@ class IndicadoresController extends Controller
             $formattedAnswers[$indicatorId] = "1";
         }
 
+        $numeroDeIndicadoresAResponder = Indicator::where('is_active', true)->count();
+
+        $numeroDeIndicadoresRespondidos = IndicatorAnswer::where('company_id', $user->company_id)
+            ->whereHas('indicator', function($query) {
+                $query->where('is_active', true);
+            })
+            ->count();
+
+        //dd($numeroDeIndicadoresAResponder, $numeroDeIndicadoresRespondidos);
+
         // Obtener la nota actual
         $currentScore = \App\Models\AutoEvaluationValorResult::where('company_id', $user->company_id)
             ->where('value_id', $id)

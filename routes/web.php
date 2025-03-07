@@ -113,6 +113,10 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
     // Ruta para guardar las respuestas de los indicadores
     Route::post('/indicadores/store-answers', [IndicadorAnswerController::class, 'store'])
         ->name('indicadores.store-answers');
+        
+    // Ruta para finalizar la autoevaluación
+    Route::post('/indicadores/finalizar-autoevaluacion', [IndicadorAnswerController::class, 'finalizarAutoEvaluacion'])
+        ->name('indicadores.finalizar-autoevaluacion');
 });
 
 Route::middleware(['auth', 'verified', EnsureUserHasCompany::class, EnsureCompanyIsAuthorized::class])->group(function () {
