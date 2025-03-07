@@ -42,6 +42,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         provincia: infoAdicional?.provincia_id || '',
         canton: infoAdicional?.canton_id || '',
         distrito: infoAdicional?.distrito_id || '',
+        direccion_empresa: infoAdicional?.direccion_empresa || '',
 
         cedula_juridica: infoAdicional?.cedula_juridica || '',
         actividad_comercial: infoAdicional?.actividad_comercial || '',
@@ -1160,6 +1161,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             case 'proceso_licenciamiento':
             case 'observaciones':
             case 'planes_expansion':
+            case 'direccion_empresa':
                 tipoValidacion = 'descripcion';
                 break;
                 
@@ -1560,6 +1562,25 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 </select>
                                                 <InputError message={errors.distrito} />
                                             </div>
+                                        </div>
+                                        
+                                        <div className="mt-4">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Dirección Detallada<span className="text-red-500">*</span>
+                                            </label>
+                                            <textarea
+                                                value={data.direccion_empresa}
+                                                onChange={handleChange}
+                                                name="direccion_empresa"
+                                                rows="3"
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                placeholder="Ingrese la dirección detallada (calle, número, referencias, etc.)"
+                                                required
+                                            ></textarea>
+                                            <InputError message={errors.direccion_empresa} />
+                                            <p className="mt-1 text-sm text-gray-500">
+                                                Incluya detalles como calle, número, edificio, piso, oficina y referencias para ubicar fácilmente su empresa.
+                                            </p>
                                         </div>
                                     </div>
 

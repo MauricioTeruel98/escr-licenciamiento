@@ -29,6 +29,7 @@ class InfoAdicionalEmpresa extends Model
         'telefono_2',
         'es_exportadora',
         'paises_exportacion',
+        'direccion_empresa',
         'provincia',
         'canton',
         'distrito',
