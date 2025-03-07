@@ -10,7 +10,9 @@ class ValueController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Value::with('subcategories');
+        $query = Value::with(['subcategories' => function($query) {
+            $query->orderBy('order', 'desc');
+        }]);
 
         // Búsqueda
         if ($request->has('search')) {
@@ -114,6 +116,83 @@ class ValueController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error al obtener los valores: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getSubcategoriesByValue(Value $value)
+    {
+        try {
+            // Obtener las subcategorías ordenadas por el campo order de forma descendente
+            $subcategories = $value->subcategories()
+                ->orderBy('order', 'desc')
+                ->get();
+
+            // Asegurarse de que todas las subcategorías tengan un valor de orden
+            foreach ($subcategories as $subcategory) {
+                if ($subcategory->order === null) {
+                    $subcategory->order = 0;
+                    $subcategory->save();
+                }
+            }
+
+            return response()->json($subcategories);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al obtener las subcategorías: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateSubcategoriesOrder(Request $request)
+    {
+        try {
+            $request->validate([
+                'subcategories' => 'required|array',
+                'subcategories.*.id' => 'required|exists:subcategories,id',
+                'subcategories.*.order' => 'required|integer|min:0'
+            ]);
+
+            foreach ($request->subcategories as $subcategory) {
+                \App\Models\Subcategory::where('id', $subcategory['id'])
+                    ->update(['order' => $subcategory['order']]);
+            }
+
+            return response()->json([
+                'message' => 'Orden de subcategorías actualizado exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al actualizar el orden de las subcategorías: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fixSubcategoriesOrder()
+    {
+        try {
+            // Obtener todos los valores
+            $values = Value::all();
+
+            foreach ($values as $value) {
+                // Obtener las subcategorías de este valor ordenadas por ID (o fecha de creación)
+                $subcategories = $value->subcategories()->orderBy('id')->get();
+                
+                // Asignar un orden descendente (los más recientes tendrán mayor prioridad)
+                $totalSubcategories = $subcategories->count();
+                
+                foreach ($subcategories as $index => $subcategory) {
+                    $subcategory->order = $totalSubcategories - $index;
+                    $subcategory->save();
+                }
+            }
+
+            return response()->json([
+                'message' => 'Orden de todas las subcategorías actualizado exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al actualizar el orden de las subcategorías: ' . $e->getMessage()
             ], 500);
         }
     }

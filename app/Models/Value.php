@@ -24,7 +24,7 @@ class Value extends Model
 
     public function subcategories(): HasMany
     {
-        return $this->hasMany(Subcategory::class);
+        return $this->hasMany(Subcategory::class)->orderBy('order', 'desc');
     }
 
     public function requisitos(): HasMany

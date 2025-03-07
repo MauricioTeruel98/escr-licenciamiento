@@ -25,6 +25,7 @@
         "@heroicons/react": "^2.2.0",
         "heroicons": "^2.2.0",
         "lucide-react": "^0.454.0",
+        "react-beautiful-dnd": "^13.1.1",
         "react-datepicker": "^7.5.0"
     }
 }

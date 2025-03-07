@@ -2,20 +2,24 @@ import { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import SuperAdminLayout from '@/Layouts/SuperAdminLayout';
 import TableList from '@/Components/TableList';
-import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import ValueModal from '@/Components/Modals/ValueModal';
 import DeleteModal from '@/Components/Modals/DeleteModal';
+import SubcategoryOrderModal from '@/Components/Modals/SubcategoryOrderModal';
 import axios from 'axios';
 import Toast from '@/Components/ToastAdmin';
 import EditIcon from '@/Components/Icons/EditIcon';
 import TrashIcon from '@/Components/Icons/TrashIcon';
+import OrderIcon from '@/Components/Icons/OrderIcon';
 
 export default function ValuesIndex() {
     const [values, setValues] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [orderModalOpen, setOrderModalOpen] = useState(false);
     const [selectedValue, setSelectedValue] = useState(null);
     const [valueToDelete, setValueToDelete] = useState(null);
+    const [valueToOrder, setValueToOrder] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [pagination, setPagination] = useState({
         currentPage: 1,
@@ -30,7 +34,7 @@ export default function ValuesIndex() {
         { key: 'minimum_score', label: 'Puntaje mínimo' },
         {
             key: 'subcategories',
-            label: 'Subcategorías',
+            label: 'Componentes',
             render: (item) => (
                 <div className="max-w-md">
                     {item.subcategories && item.subcategories.length > 0 ? (
@@ -77,6 +81,15 @@ export default function ValuesIndex() {
                         <EditIcon />
                         Editar
                     </button>
+                    {item.subcategories && item.subcategories.length > 1 && (
+                        <button
+                            onClick={() => handleOrderSubcategories(item)}
+                            className="text-blue-700 hover:text-blue-800 flex items-center gap-1"
+                        >
+                            <OrderIcon />
+                            Ordenar
+                        </button>
+                    )}
                     <button
                         onClick={() => handleDelete(item)}
                         className="p-1 text-red-600 hover:text-red-900 flex items-center gap-1"
@@ -146,6 +159,22 @@ export default function ValuesIndex() {
         setDeleteModalOpen(true);
     };
 
+    const handleOrderSubcategories = (value) => {
+        setValueToOrder(value);
+        setOrderModalOpen(true);
+    };
+
+    const handleFixSubcategoriesOrder = async () => {
+        try {
+            const response = await axios.get('/api/subcategories/fix-order');
+            showNotification('success', 'Orden de subcategorías corregido exitosamente');
+            loadValues(pagination.currentPage, pagination.perPage, searchTerm);
+        } catch (error) {
+            console.error('Error al corregir el orden de las subcategorías:', error);
+            showNotification('error', 'Error al corregir el orden de las subcategorías');
+        }
+    };
+
     const showNotification = (type, message) => {
         setNotification({ type, message });
     };
@@ -210,8 +239,15 @@ export default function ValuesIndex() {
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
                         </svg>
-                        Subcategorías
+                        Componentes
                     </Link>
+                    {/* <button
+                        onClick={handleFixSubcategoriesOrder}
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                    >
+                        <OrderIcon className="mr-2" />
+                        Corregir orden
+                    </button> */}
                     <button
                         onClick={handleCreate}
                         className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
@@ -249,8 +285,18 @@ export default function ValuesIndex() {
                     setValueToDelete(null);
                 }}
                 onConfirm={confirmDelete}
-                title={`¿Eliminar valor "${valueToDelete?.name}"?`}
-                description="¿Está seguro de que desea eliminar este valor? Esta acción no se puede deshacer y podría afectar a los registros relacionados."
+                title="Eliminar valor"
+                message={`¿Estás seguro de que deseas eliminar el valor "${valueToDelete?.name}"? Esta acción no se puede deshacer.`}
+            />
+
+            <SubcategoryOrderModal
+                isOpen={orderModalOpen}
+                onClose={() => {
+                    setOrderModalOpen(false);
+                    setValueToOrder(null);
+                }}
+                valueId={valueToOrder?.id}
+                valueName={valueToOrder?.name}
             />
 
             {notification && (

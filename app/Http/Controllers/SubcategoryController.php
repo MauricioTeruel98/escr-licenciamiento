@@ -18,7 +18,11 @@ class SubcategoryController extends Controller
             $query->where('name', 'like', "%{$searchTerm}%");
         }
 
-        $subcategories = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Primero ordenar por value_id y luego por order de forma descendente
+        $query->orderBy('value_id')->orderBy('order', 'desc');
+
+        $perPage = $request->input('per_page', 10);
+        $subcategories = $query->paginate($perPage);
 
         return response()->json($subcategories);
     }
@@ -32,7 +36,14 @@ class SubcategoryController extends Controller
             'is_active' => 'boolean'
         ]);
 
-        $subcategory = Subcategory::create($request->all());
+        // Obtener el máximo valor de orden para las subcategorías del mismo valor
+        $maxOrder = Subcategory::where('value_id', $request->value_id)->max('order') ?? 0;
+        
+        // Crear la subcategoría con un orden mayor (para que aparezca al principio en orden descendente)
+        $data = $request->all();
+        $data['order'] = $maxOrder + 1;
+        
+        $subcategory = Subcategory::create($data);
 
         return response()->json([
             'message' => 'Subcategoría creada exitosamente',
@@ -48,6 +59,16 @@ class SubcategoryController extends Controller
             'value_id' => 'required|exists:values,id',
             'is_active' => 'boolean'
         ]);
+
+        // Si el value_id ha cambiado, asignar un nuevo orden
+        if ($request->value_id != $subcategory->value_id) {
+            // Obtener el máximo valor de orden para las subcategorías del nuevo valor
+            $maxOrder = Subcategory::where('value_id', $request->value_id)->max('order') ?? 0;
+            $request->merge(['order' => $maxOrder + 1]);
+        } else {
+            // Mantener el orden actual
+            $request->merge(['order' => $subcategory->order]);
+        }
 
         $subcategory->update($request->all());
 
