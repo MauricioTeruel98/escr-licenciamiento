@@ -12,6 +12,8 @@ use App\Models\AutoEvaluationValorResult;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Certification;
+use App\Models\IndicatorHomologation;
 
 class DashboardController extends Controller
 {
@@ -40,6 +42,30 @@ class DashboardController extends Controller
 
         // Calcular el porcentaje de progreso
         $progreso = $totalIndicadores > 0 ? round(($indicadoresRespondidos / $totalIndicadores) * 100) : 0;
+
+        // Calcular indicadores homologados por certificaciones
+        $indicadoresHomologados = 0;
+        $certificaciones = Certification::where('company_id', $user->company_id)
+            ->where(function($query) {
+                $query->whereNull('fecha_expiracion')
+                      ->orWhere('fecha_expiracion', '>=', now()->startOfDay());
+            })
+            ->get();
+            
+        if ($certificaciones->count() > 0) {
+            // Obtener IDs de las certificaciones disponibles asociadas
+            $homologationIds = $certificaciones->pluck('homologation_id')->filter()->toArray();
+            
+            if (!empty($homologationIds)) {
+                // Obtener indicadores homologados únicos (sin duplicados)
+                $indicadoresHomologados = IndicatorHomologation::whereIn('homologation_id', $homologationIds)
+                    ->whereHas('indicator', function ($query) {
+                        $query->where('is_active', true);
+                    })
+                    ->distinct('indicator_id')
+                    ->count('indicator_id');
+            }
+        }
 
         // Obtener indicadores vinculantes fallidos
         $failedBindingIndicators = IndicatorAnswer::where('company_id', $user->company_id)
@@ -94,6 +120,7 @@ class DashboardController extends Controller
             'pendingRequests' => $pendingRequests,
             'totalIndicadores' => $totalIndicadores,
             'indicadoresRespondidos' => $indicadoresRespondidos,
+            'indicadoresHomologados' => $indicadoresHomologados,
             'progreso' => $progreso,
             'companyName' => $user->company->name,
             'status' => $status,

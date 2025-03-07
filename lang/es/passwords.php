@@ -12,9 +12,10 @@ return [
     |
     */
 
-    'reset' => 'Su contraseña ha sido restablecida.',
-    'sent' => 'Hemos enviado por correo electrónico el enlace para restablecer su contraseña.',
-    'throttled' => 'Por favor espere antes de intentar de nuevo.',
+    'reset' => 'Tu contraseña ha sido restablecida.',
+    'sent' => 'Hemos enviado por correo electrónico el enlace para restablecer tu contraseña.',
+    'throttled' => 'Por favor espera antes de intentarlo de nuevo.',
     'token' => 'Este token de restablecimiento de contraseña es inválido.',
-    'user' => 'Credenciales inválidas.',
+    'user' => 'No podemos encontrar un usuario con esa dirección de correo electrónico.',
+    'requirements' => 'La contraseña debe tener al menos 8 caracteres, una letra mayúscula y un número.',
 ]; 

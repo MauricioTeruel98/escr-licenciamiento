@@ -23,14 +23,15 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
         
-        // Configurar las reglas de validación de contraseñas con mensajes en español
-        /*Password::defaults(function () {
+        // Configurar las reglas de validación de contraseñas: mínimo 8 caracteres, al menos una mayúscula y al menos un número
+        Password::defaults(function () {
             return Password::min(8)
-                ->letters()
                 ->mixedCase()
+                /*->letters()
                 ->numbers()
                 ->symbols()
-                ->uncompromised();
-        });*/
+                ->uncompromised()*/
+                ->numbers();
+        });
     }
 }

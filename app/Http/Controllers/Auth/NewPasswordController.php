@@ -57,6 +57,9 @@ class NewPasswordController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ], [
             'password.confirmed' => 'La confirmación de la contraseña no coincide.',
+            'password.min' => 'La contraseña debe tener al menos :min caracteres.',
+            'password.mixed' => 'La contraseña debe contener al menos una letra mayúscula.',
+            'password.numbers' => 'La contraseña debe contener al menos un número.',
         ]);
 
         // Verificar si el token existe y no ha expirado

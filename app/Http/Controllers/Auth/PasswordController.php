@@ -18,6 +18,12 @@ class PasswordController extends Controller
         $validated = $request->validate([
             'current_password' => ['required', 'current_password'],
             'password' => ['required', Password::defaults(), 'confirmed'],
+        ], [
+            'current_password.current_password' => 'La contraseña actual no es correcta.',
+            'password.confirmed' => 'La confirmación de la contraseña no coincide.',
+            'password.min' => 'La contraseña debe tener al menos :min caracteres.',
+            'password.mixed' => 'La contraseña debe contener al menos una letra mayúscula.',
+            'password.numbers' => 'La contraseña debe contener al menos un número.',
         ]);
 
         $request->user()->update([
