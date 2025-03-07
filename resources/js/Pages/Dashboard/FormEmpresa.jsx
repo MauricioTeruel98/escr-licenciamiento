@@ -495,13 +495,11 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         type: 'success'
     });
 
-    const submit = async (e) => {
-        e.preventDefault();
-
-        setLoading(true);
-
+    const uploadLogo = async () => {
+        if (!imagenes.logo) return null;
+        
         const formData = new FormData();
-
+        
         // Agregar logo si existe
         if (imagenes.logo instanceof File) {
             formData.append('logo', imagenes.logo);
@@ -509,79 +507,203 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             // Si hay un logo existente, enviar su ruta
             formData.append('logo_existente', imagenes.logo);
         }
-
-        // Agregar fotografías
-        if (imagenes.fotografias && imagenes.fotografias.length > 0) {
-            // Separar fotografías existentes de las nuevas
-            const existingPhotos = [];
-            
-            imagenes.fotografias.forEach((foto, index) => {
-                if (foto instanceof File) {
-                    formData.append(`fotografias[]`, foto);
-                } else if (foto) {
-                    // Si es una foto existente (URL o path), guardar su ruta
-                    existingPhotos.push(foto.path || foto);
+        
+        try {
+            const response = await axios.post(route('company.profile.upload-logo'), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
                 }
             });
             
-            // Enviar las rutas de las fotografías existentes
-            if (existingPhotos.length > 0) {
-                formData.append('fotografias_existentes', JSON.stringify(existingPhotos));
-            }
+            return response.data.success ? response.data.path : null;
+        } catch (error) {
+            console.error('Error al subir el logo:', error);
+            throw error;
         }
-
-        // Agregar certificaciones
-        if (imagenes.certificaciones && imagenes.certificaciones.length > 0) {
-            // Separar certificaciones existentes de las nuevas
-            const existingCerts = [];
-            
-            imagenes.certificaciones.forEach((cert, index) => {
-                if (cert instanceof File) {
-                    formData.append(`certificaciones[]`, cert);
-                } else if (cert) {
-                    // Si es una certificación existente (URL o path), guardar su ruta
-                    existingCerts.push(cert.path || cert);
+    };
+    
+    const uploadFotografias = async () => {
+        if (!imagenes.fotografias || imagenes.fotografias.length === 0) return null;
+        
+        const formData = new FormData();
+        
+        // Separar fotografías existentes de las nuevas
+        const existingPhotos = [];
+        
+        imagenes.fotografias.forEach((foto, index) => {
+            if (foto instanceof File) {
+                formData.append(`fotografias[]`, foto);
+            } else if (foto) {
+                // Si es una foto existente (URL o path), guardar su ruta
+                existingPhotos.push(foto.path || foto);
+            }
+        });
+        
+        // Enviar las rutas de las fotografías existentes
+        if (existingPhotos.length > 0) {
+            formData.append('fotografias_existentes', JSON.stringify(existingPhotos));
+        }
+        
+        try {
+            const response = await axios.post(route('company.profile.upload-fotografias'), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
                 }
             });
             
-            // Enviar las rutas de las certificaciones existentes
-            if (existingCerts.length > 0) {
-                formData.append('certificaciones_existentes', JSON.stringify(existingCerts));
-            }
+            return response.data.success ? response.data.paths : null;
+        } catch (error) {
+            console.error('Error al subir las fotografías:', error);
+            throw error;
         }
-
+    };
+    
+    const uploadCertificaciones = async () => {
+        if (!imagenes.certificaciones || imagenes.certificaciones.length === 0) return null;
+        
+        const formData = new FormData();
+        
+        // Separar certificaciones existentes de las nuevas
+        const existingCerts = [];
+        
+        imagenes.certificaciones.forEach((cert, index) => {
+            if (cert instanceof File) {
+                formData.append(`certificaciones[]`, cert);
+            } else if (cert) {
+                // Si es una certificación existente (URL o path), guardar su ruta
+                existingCerts.push(cert.path || cert);
+            }
+        });
+        
+        // Enviar las rutas de las certificaciones existentes
+        if (existingCerts.length > 0) {
+            formData.append('certificaciones_existentes', JSON.stringify(existingCerts));
+        }
+        
+        try {
+            const response = await axios.post(route('company.profile.upload-certificaciones'), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+            
+            return response.data.success ? response.data.paths : null;
+        } catch (error) {
+            console.error('Error al subir las certificaciones:', error);
+            throw error;
+        }
+    };
+    
+    const uploadProductos = async () => {
+        if (!data.productos || data.productos.length === 0) return null;
+        
+        const formData = new FormData();
+        
         // Agregar productos
-        if (data.productos && data.productos.length > 0) {
-            data.productos.forEach((producto, index) => {
-                formData.append(`productos[${index}][id]`, producto.id || '');
-                formData.append(`productos[${index}][nombre]`, producto.nombre || '');
-                formData.append(`productos[${index}][descripcion]`, producto.descripcion || '');
+        data.productos.forEach((producto, index) => {
+            formData.append(`productos[${index}][id]`, producto.id || '');
+            formData.append(`productos[${index}][nombre]`, producto.nombre || '');
+            formData.append(`productos[${index}][descripcion]`, producto.descripcion || '');
 
-                // Agregar imagen del producto si existe y es un nuevo archivo
-                if (imagenes.productos && imagenes.productos[index] instanceof File) {
-                    formData.append(`productos[${index}][imagen]`, imagenes.productos[index]);
-                } else if (producto.imagen) {
-                    // Mantener la imagen existente si no se sube una nueva
-                    formData.append(`productos[${index}][imagen_existente]`, producto.imagen);
-                }
-            });
-        }
-
-        // Agregar el resto de datos
-        Object.keys(data).forEach(key => {
-            if (key !== 'productos') {
-                formData.append(key, data[key] || '');
+            // Agregar imagen del producto si existe y es un nuevo archivo
+            if (imagenes.productos && imagenes.productos[index] instanceof File) {
+                formData.append(`productos[${index}][imagen]`, imagenes.productos[index]);
+            } else if (producto.imagen) {
+                // Mantener la imagen existente si no se sube una nueva
+                formData.append(`productos[${index}][imagen_existente]`, producto.imagen);
             }
         });
+        
+        try {
+            const response = await axios.post(route('company.profile.upload-productos'), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+            
+            return response.data.success ? response.data.productos : null;
+        } catch (error) {
+            console.error('Error al subir los productos:', error);
+            throw error;
+        }
+    };
 
-        // Agregar información de depuración para ubicación
-        console.log('Enviando datos de ubicación:', {
-            provincia: data.provincia,
-            canton: data.canton,
-            distrito: data.distrito
-        });
+    const submit = async (e) => {
+        e.preventDefault();
+
+        setLoading(true);
+        setErrors({});
 
         try {
+            // Subir imágenes por separado
+            let logoPath = null;
+            let fotografiasPaths = null;
+            let certificacionesPaths = null;
+            let productosData = null;
+            
+            try {
+                // Subir logo
+                logoPath = await uploadLogo();
+                
+                // Subir fotografías
+                fotografiasPaths = await uploadFotografias();
+                
+                // Subir certificaciones
+                certificacionesPaths = await uploadCertificaciones();
+                
+                // Subir productos
+                productosData = await uploadProductos();
+            } catch (error) {
+                console.error('Error al subir archivos:', error);
+                
+                if (error.response && error.response.data && error.response.data.errors) {
+                    setErrors(error.response.data.errors);
+                } else {
+                    setToast({
+                        show: true,
+                        message: 'Error al subir archivos: ' + (error.response?.data?.message || error.message),
+                        type: 'error'
+                    });
+                }
+                
+                setLoading(false);
+                return;
+            }
+
+            // Crear FormData para los datos principales
+            const formData = new FormData();
+            
+            // Agregar referencias a las imágenes subidas
+            if (logoPath) {
+                formData.append('logo_path', logoPath);
+            }
+            
+            if (fotografiasPaths) {
+                formData.append('fotografias_paths', JSON.stringify(fotografiasPaths));
+            }
+            
+            if (certificacionesPaths) {
+                formData.append('certificaciones_paths', JSON.stringify(certificacionesPaths));
+            }
+            
+            if (productosData) {
+                formData.append('productos_data', JSON.stringify(productosData));
+            }
+
+            // Agregar el resto de datos
+            Object.keys(data).forEach(key => {
+                if (key !== 'productos') {
+                    formData.append(key, data[key] || '');
+                }
+            });
+
+            // Agregar información de depuración para ubicación
+            console.log('Enviando datos de ubicación:', {
+                provincia: data.provincia,
+                canton: data.canton,
+                distrito: data.distrito
+            });
+
             const response = await axios.post(route('company.profile.store'), formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',

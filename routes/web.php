@@ -285,6 +285,12 @@ Route::post('/company/profile', [CompanyProfileController::class, 'store'])->nam
 Route::post('/company/profile/delete-file', [CompanyProfileController::class, 'deleteFile'])->name('company.profile.delete-file');
 Route::get('/company/profile/download-file', [CompanyProfileController::class, 'downloadFile'])->name('company.profile.download-file');
 
+// Nuevas rutas para carga de imágenes por separado
+Route::post('/company/profile/upload-logo', [CompanyProfileController::class, 'uploadLogo'])->name('company.profile.upload-logo');
+Route::post('/company/profile/upload-fotografias', [CompanyProfileController::class, 'uploadFotografias'])->name('company.profile.upload-fotografias');
+Route::post('/company/profile/upload-certificaciones', [CompanyProfileController::class, 'uploadCertificaciones'])->name('company.profile.upload-certificaciones');
+Route::post('/company/profile/upload-productos', [CompanyProfileController::class, 'uploadProductos'])->name('company.profile.upload-productos');
+
 Route::delete('/company/product/{productId}', [CompanyProfileController::class, 'destroyProduct'])
     ->name('company.product.destroy')
     ->middleware(['auth', 'verified', EnsureUserHasCompany::class]);
