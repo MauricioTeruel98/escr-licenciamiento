@@ -134,10 +134,43 @@ class CompanyProfileController extends Controller
                 $allData
             );
 
-            // Actualizar el campo form_sended en la tabla auto_evaluation_result
-            DB::table('auto_evaluation_result')
-                ->where('company_id', $companyId)
-                ->update(['form_sended' => 1]);
+            // Verificar si los campos obligatorios están completos antes de marcar el formulario como enviado
+            $camposObligatorios = [
+                'nombre_comercial',
+                'nombre_legal',
+                'descripcion_es',
+                'anio_fundacion',
+                'contacto_notificacion_nombre',
+                'contacto_notificacion_email',
+                'contacto_notificacion_telefono',
+                'contacto_notificacion_celular'
+            ];
+            
+            $formularioCompleto = true;
+            foreach ($camposObligatorios as $campo) {
+                if (empty($allData[$campo])) {
+                    $formularioCompleto = false;
+                    break;
+                }
+            }
+            
+            // Solo actualizar el campo form_sended si todos los campos obligatorios están completos
+            if ($formularioCompleto) {
+                DB::table('auto_evaluation_result')
+                    ->where('company_id', $companyId)
+                    ->update(['form_sended' => 1]);
+                
+                Log::info('Formulario marcado como completamente enviado', [
+                    'company_id' => $companyId
+                ]);
+            } else {
+                Log::info('Formulario guardado pero no marcado como completamente enviado', [
+                    'company_id' => $companyId,
+                    'campos_faltantes' => array_filter($camposObligatorios, function($campo) use ($allData) {
+                        return empty($allData[$campo]);
+                    })
+                ]);
+            }
 
             // Procesar productos
             if ($request->has('productos_data')) {
@@ -205,11 +238,18 @@ class CompanyProfileController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Información guardada correctamente',
-                'data' => $responseData
+                'data' => $responseData,
+                'formulario_completo' => $formularioCompleto,
+                'campos_faltantes' => !$formularioCompleto ? array_filter($camposObligatorios, function($campo) use ($allData) {
+                    return empty($allData[$campo]);
+                }) : []
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al guardar información de la empresa: ' . $e->getMessage());
+            Log::error('Error al guardar información adicional de empresa', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
             return response()->json([
                 'success' => false,

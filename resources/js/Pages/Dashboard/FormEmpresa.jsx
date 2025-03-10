@@ -110,6 +110,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
     const [loading, setLoading] = useState(false);
     const [clientErrors, setErrors] = useState({});
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+    const [camposFaltantes, setCamposFaltantes] = useState([]);
 
     // Combinar errores del backend y del cliente para mostrarlos en los campos
     const errors = { ...backendErrors, ...clientErrors };
@@ -507,13 +509,6 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         }
     };
 
-    // Agregar estado para el Toast
-    const [toast, setToast] = useState({
-        show: false,
-        message: '',
-        type: 'success'
-    });
-
     const uploadLogo = async () => {
         if (!imagenes.logo) return null;
 
@@ -652,6 +647,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
         setLoading(true);
         setErrors({});
+        setCamposFaltantes([]);
 
         try {
             // Subir imágenes por separado
@@ -730,11 +726,26 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             });
 
             if (response.data.success) {
+                // Mensaje de éxito básico
+                let mensaje = '¡Datos guardados exitosamente!';
+                let tipo = 'success';
+                
+                // Si el formulario no está completo, mostrar un mensaje adicional
+                if (response.data.formulario_completo === false) {
+                    const camposFaltantesArray = Object.keys(response.data.campos_faltantes);
+                    setCamposFaltantes(camposFaltantesArray);
+                    
+                    const numCamposFaltantes = camposFaltantesArray.length;
+                    mensaje += ` Sin embargo, aún faltan ${numCamposFaltantes} campos obligatorios por completar para que el formulario se considere enviado completamente.`;
+                    tipo = 'warning';
+                }
+                
                 setToast({
                     show: true,
-                    message: '¡Datos guardados exitosamente!',
-                    type: 'success'
+                    message: mensaje,
+                    type: tipo
                 });
+                
                 // Limpiar errores del cliente si la operación fue exitosa
                 setErrors({});
 
@@ -1380,6 +1391,11 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         ));
     };
 
+    // Función para verificar si un campo está en la lista de campos faltantes
+    const esCampoFaltante = (nombreCampo) => {
+        return camposFaltantes.includes(nombreCampo);
+    };
+
     return (
         <DashboardLayout userName={userName} title="Perfil de Empresa">
             <h1 className="text-4xl font-bold mt-3">Perfil de Empresa</h1>
@@ -1417,7 +1433,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             onChange={handleChange}
                                             name="nombre_comercial"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            required
+                                            
                                         />
                                         <InputError message={errors.nombre_comercial} />
                                     </div>
@@ -1433,7 +1449,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             onChange={handleChange}
                                             name="nombre_legal"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            required
+                                            
                                         />
                                         <InputError message={errors.nombre_legal} />
                                     </div>
@@ -1449,7 +1465,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             name="descripcion_es"
                                             rows={3}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            required
+                                            
                                         />
                                         <InputError message={errors.descripcion_es} />
                                     </div>
@@ -1480,7 +1496,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             name="anio_fundacion"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             maxLength={4}
-                                            required
+                                            
                                         />
                                         <InputError message={errors.anio_fundacion} />
                                     </div>
@@ -1496,7 +1512,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             onChange={handleURLChange}
                                             name="sitio_web"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            required
+                                            
                                         />
                                         <InputError message={errors.sitio_web} />
                                     </div>
@@ -1580,7 +1596,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 placeholder="Ingrese la dirección detallada (calle, número, referencias, etc.)"
                                                 maxLength="150"
-                                                required
+                                                
                                             ></textarea>
                                             <InputError message={errors.direccion_empresa} />
                                             <p className="mt-1 text-sm text-gray-500">
@@ -1662,7 +1678,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             onChange={handleChange}
                                             name="sector"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            required
+                                            
                                         />
                                         <InputError message={errors.sector} />
                                     </div>
@@ -1738,7 +1754,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             value={data.cedula_juridica}
                                             disabled={true}
                                             className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed"
-                                            required
+                                            
                                         />
                                         <p className="text-sm text-gray-500 mt-1">
                                             Para cambiar la cédula jurídica, favor comunicarse con
@@ -1758,7 +1774,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             onChange={handleChange}
                                             name="actividad_comercial"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            required
+                                            
                                         />
                                         <InputError message={errors.actividad_comercial} />
                                     </div>
@@ -2241,7 +2257,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             rows={4}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             placeholder="Respuesta"
-                                            required
+                                            
                                         />
                                     </div>
 
@@ -2257,7 +2273,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             rows={4}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             placeholder="Answer"
-                                            required
+                                            
                                         />
                                     </div>
 
@@ -2273,7 +2289,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             rows={4}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             placeholder="Respuesta"
-                                            required
+                                            
                                         />
                                     </div>
 
@@ -2320,7 +2336,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 rows={4}
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 placeholder="Respuesta"
-                                                required
+                                                
                                             />
                                         </div>
                                     </div>
@@ -2382,7 +2398,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="contacto_notificacion_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.contacto_notificacion_nombre} />
                                         </div>
@@ -2394,7 +2410,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="contacto_notificacion_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.contacto_notificacion_email} />
                                         </div>
@@ -2406,7 +2422,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="contacto_notificacion_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.contacto_notificacion_puesto} />
                                         </div>
@@ -2423,7 +2439,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 }}
                                                 name="contacto_notificacion_cedula"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.contacto_notificacion_cedula} />
                                         </div> */}
@@ -2435,9 +2451,11 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     value={data.contacto_notificacion_telefono}
                                                     onChange={handleChange}
                                                     name="contacto_notificacion_telefono"
-                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                    required
+                                                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 ${esCampoFaltante('contacto_notificacion_telefono') ? 'border-red-500 bg-red-50' : ''}`}
                                                 />
+                                                {esCampoFaltante('contacto_notificacion_telefono') && (
+                                                    <p className="mt-1 text-sm text-red-500">Este campo es obligatorio para completar el formulario</p>
+                                                )}
                                                 <InputError message={errors.contacto_notificacion_telefono} />
                                             </div>
                                             <div>
@@ -2447,9 +2465,11 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     value={data.contacto_notificacion_celular}
                                                     onChange={handleChange}
                                                     name="contacto_notificacion_celular"
-                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                    required
+                                                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 ${esCampoFaltante('contacto_notificacion_celular') ? 'border-red-500 bg-red-50' : ''}`}
                                                 />
+                                                {esCampoFaltante('contacto_notificacion_celular') && (
+                                                    <p className="mt-1 text-sm text-red-500">Este campo es obligatorio para completar el formulario</p>
+                                                )}
                                                 <InputError message={errors.contacto_notificacion_celular} />
                                             </div>
                                         </div>
@@ -2468,7 +2488,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="asignado_proceso_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.asignado_proceso_nombre} />
                                         </div>
@@ -2480,7 +2500,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="asignado_proceso_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.asignado_proceso_email} />
                                         </div>
@@ -2492,7 +2512,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="asignado_proceso_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.asignado_proceso_puesto} />
                                         </div>
@@ -2509,7 +2529,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 }}
                                                 name="asignado_proceso_cedula"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.asignado_proceso_cedula} />
                                         </div> */}
@@ -2522,7 +2542,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     onChange={handleChange}
                                                     name="asignado_proceso_telefono"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                    required
+                                                    
                                                 />
                                                 <InputError message={errors.asignado_proceso_telefono} />
                                             </div>
@@ -2534,7 +2554,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     onChange={handleChange}
                                                     name="asignado_proceso_celular"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                    required
+                                                    
                                                 />
                                                 <InputError message={errors.asignado_proceso_celular} />
                                             </div>
@@ -2554,7 +2574,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="representante_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.representante_nombre} />
                                         </div>
@@ -2566,7 +2586,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="representante_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.representante_email} />
                                         </div>
@@ -2578,7 +2598,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="representante_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.representante_puesto} />
                                         </div>
@@ -2595,7 +2615,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 }}
                                                 name="representante_cedula"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.representante_cedula} />
                                         </div>
@@ -2607,7 +2627,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="representante_telefono"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.representante_telefono} />
                                         </div>
@@ -2619,7 +2639,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="representante_celular"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
+                                                
                                             />
                                             <InputError message={errors.representante_celular} />
                                         </div>
