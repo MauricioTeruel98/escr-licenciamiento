@@ -5,6 +5,7 @@ import Toast from '@/Components/Toast';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { router, usePage } from '@inertiajs/react';
+import EvaluacionProcessing from '@/Components/Modals/EvaluacionProcessing';
 
 export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, progress, totalSteps, value_id, company, numeroDePreguntasQueVaAResponderLaEmpresaPorValor, numeroDePreguntasQueRespondioLaEmpresa }) {
     const { auth } = usePage().props;
@@ -1079,6 +1080,15 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     </div>
                 </div>
             )}
+
+            {/* Modal de confirmación */}
+            {
+                loading && (
+                    <EvaluacionProcessing
+                        caso={'evaluacion'}
+                    />
+                )
+            }
 
             {/* Toast notification */}
             {notification && (

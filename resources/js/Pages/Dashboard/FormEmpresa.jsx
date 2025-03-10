@@ -6,6 +6,7 @@ import axios from 'axios';
 import Toast from '@/Components/ToastAdmin';
 import { TrashIcon } from '@heroicons/react/20/solid';
 import DeleteModal from '@/Components/Modals/DeleteModal';
+import EvaluacionProcessing from '@/Components/Modals/EvaluacionProcessing';
 
 /**
  * Mejoras implementadas:
@@ -3037,6 +3038,14 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     onClose={() => setToast({ ...toast, show: false })}
                 />
             )}
+
+            {
+                loading && (
+                    <EvaluacionProcessing
+                        caso={'form-empresa'}
+                    />
+                )
+            }
 
             {/* Agregar el modal de confirmación al final del componente */}
             <DeleteModal
