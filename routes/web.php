@@ -325,6 +325,14 @@ Route::middleware(['auth'])->group(function () {
         ->name('companies.authorize');
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::post('/api/enviar-evaluacion-completada', [EvaluationAnswerController::class, 'enviarEvaluacionCompletada'])
+        ->name('indicadores.enviar-evaluacion-completada');
+
+    Route::post('/api/enviar-evaluacion-calificada', [EvaluationAnswerController::class, 'enviarEvaluacionCalificada'])
+        ->name('indicadores.enviar-evaluacion-calificada');
+});
+
 Route::get('/api/lugares', function () {
     return response()->file(storage_path('app/public/lugares.json'));
 })->name('api.lugares');

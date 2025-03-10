@@ -1,11 +1,12 @@
 import { useState, useEffect, Fragment } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 import EvaluadorLayout from '@/Layouts/EvaluadorLayout';
 import { Building2, ClipboardList, Users, AlertTriangle, XCircle, CheckCircle } from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import { Combobox, Transition } from '@headlessui/react';
 import { ChevronUpDownIcon, CheckIcon } from '@heroicons/react/20/solid';
+import CalificarEvaluacionModal from '@/Components/Modals/CalificarEvaluacion';
 
 export default function EvaluadorDashboard({ auth }) {
     const { flash } = usePage().props;
@@ -15,6 +16,10 @@ export default function EvaluadorDashboard({ auth }) {
     const [isCompanyAuthorized, setIsCompanyAuthorized] = useState(false);
     const [companyStatusEval, setCompanyStatusEval] = useState(null);
     const [query, setQuery] = useState('');
+    const [isFinalizarEvaluacionModalOpen, setIsFinalizarEvaluacionModalOpen] = useState(false);
+    const [modalStatus, setModalStatus] = useState('initial');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [notification, setNotification] = useState(null);
 
     useEffect(() => {
         fetchCompanies();
@@ -63,6 +68,44 @@ export default function EvaluadorDashboard({ auth }) {
             }
         } catch (error) {
             console.error('Error al cambiar de empresa:', error);
+        }
+    };
+
+    const openFinalizarEvaluacionModal = () => {
+        setModalStatus('initial');
+        setIsFinalizarEvaluacionModalOpen(true);
+    };
+
+    const closeFinalizarEvaluacionModal = () => {
+        setIsFinalizarEvaluacionModalOpen(false);
+        // Resetear el estado del modal para la próxima vez
+        setTimeout(() => {
+            setModalStatus('initial');
+        }, 300);
+    };
+
+    const confirmFinalizarEvaluacion = async () => {
+        try {
+            setModalStatus('processing');
+            setIsSubmitting(true);
+
+            const response = await axios.post(route('indicadores.enviar-evaluacion-calificada'));
+
+            if (response.data.success) {
+                setModalStatus('completed');
+                router.reload({ only: ['autoEvaluationResult'] });
+                router.reload({ only: ['company'] });
+                router.reload({ only: ['companyStatusEval'] });
+            } else {
+                throw new Error(response.data.message || 'Error al finalizar la evaluación');
+            }
+
+        } catch (error) {
+            setIsFinalizarEvaluacionModalOpen(false);
+            setNotification({
+                type: 'error',
+                message: error.response?.data?.message || error.message || 'Error al finalizar la evaluación'
+            });
         }
     };
 
@@ -174,7 +217,7 @@ export default function EvaluadorDashboard({ auth }) {
                                 <div>
                                     <h3 className="text-md font-semibold text-yellow-800">Empresa no autorizada para evaluación</h3>
                                     <p className="text-sm text-yellow-700 mt-1">
-                                        Esta empresa aún no ha sido autorizada para realizar la evaluación. 
+                                        Esta empresa aún no ha sido autorizada para realizar la evaluación.
                                         No se podrá acceder a las opciones de evaluación hasta que la empresa sea autorizada.
                                     </p>
                                 </div>
@@ -182,7 +225,7 @@ export default function EvaluadorDashboard({ auth }) {
                         </div>
                     )}
 
-                    <div className="mb-8">
+                    <div className="mb-8 block md:flex items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
                             <span className="text-xl font-semibold">Evaluar empresa:</span>
                             <div className="relative w-[300px]">
@@ -219,8 +262,7 @@ export default function EvaluadorDashboard({ auth }) {
                                                         <Combobox.Option
                                                             key={company.id}
                                                             className={({ active }) =>
-                                                                `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                                                    active ? 'bg-green-600 text-white' : 'text-gray-900'
+                                                                `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? 'bg-green-600 text-white' : 'text-gray-900'
                                                                 }`
                                                             }
                                                             value={company}
@@ -253,6 +295,30 @@ export default function EvaluadorDashboard({ auth }) {
                                 ACCEDER
                             </button>
                         </div>
+
+                        {
+                            activeCompany && companyStatusEval === 'evaluacion-calificada' && (
+                                <div className="">
+                                    <button
+                                        onClick={openFinalizarEvaluacionModal}
+                                        disabled={isSubmitting}
+                                        className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-75"
+                                    >
+                                        {isSubmitting ? (
+                                            <>
+                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Enviando...
+                                            </>
+                                        ) : (
+                                            'Finalizar Evaluación'
+                                        )}
+                                    </button>
+                                </div>
+                            )
+                        }
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -263,7 +329,7 @@ export default function EvaluadorDashboard({ auth }) {
                                     <a href={route('download.company.documentation')} className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors text-center" target="_blank" rel="noopener noreferrer">
                                         Descargar
                                     </a>
-                                    
+
                                     {/* {activeCompany && companyStatusEval === 'evaluacion-completada' && (
                                         <a 
                                             href={route('download.evaluation.pdf', activeCompany.id)} 
@@ -291,6 +357,13 @@ export default function EvaluadorDashboard({ auth }) {
                     </div>
                 </div>
             </div>
+            <CalificarEvaluacionModal
+                isOpen={isFinalizarEvaluacionModalOpen}
+                onClose={closeFinalizarEvaluacionModal}
+                onConfirm={confirmFinalizarEvaluacion}
+                status={modalStatus}
+                isProcessing={isSubmitting}
+            />
         </EvaluadorLayout>
     );
 } 

@@ -287,14 +287,14 @@ class EvaluationAnswerController extends Controller
                     $superAdminUser = User::where('role', 'super_admin')->first();
 
                     if ($adminUser) {
-                        try{
+                        try {
                             $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
                         } catch (\Exception $e) {
                             Log::error('Error al enviar la notificación de evaluación completada al administrador: ' . $e->getMessage());
                         }
                     }
                     if ($superAdminUser) {
-                        try{
+                        try {
                             $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
                         } catch (\Exception $e) {
                             Log::error('Error al enviar la notificación de evaluación completada al superadmin: ' . $e->getMessage());
@@ -596,128 +596,16 @@ class EvaluationAnswerController extends Controller
 
             $numeroDePreguntasQueClificoElEvaluador = EvaluatorAssessment::where('company_id', $user->company_id)->count();
 
+            $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
+
             // Enviar notificación al completar la evaluación
             if ($numeroDePreguntasQueRespondioLaEmpresa == $numeroDePreguntasQueVaAResponderLaEmpresa && $user->role !== 'evaluador') {
-                $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
-                $superAdminUser = User::where('role', 'super_admin')->first();
-
-                $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
-
-                // Verificar si ya se enviaron las notificaciones para evitar duplicados
-                if (!$this->notificationsAlreadySent($user->company_id, $request->value_id, 'evaluacion-completada')) {
-                    if ($adminUser) {
-                        try{
-                            $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
-                        } catch (\Exception $e) {
-                            Log::error('Error al enviar la notificación de evaluación completada al administrador: ' . $e->getMessage());
-                        }
-                    }
-                    if ($superAdminUser) {
-                        try{
-                            $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
-                        } catch (\Exception $e) {
-                            Log::error('Error al enviar la notificación de evaluación completada al superadmin: ' . $e->getMessage());
-                        }
-                    }
-
-                    // Registrar que se enviaron las notificaciones
-                    $this->markNotificationsAsSent($user->company_id, $request->value_id, 'evaluacion-completada');
-                }
-
-                $company->estado_eval = 'evaluacion-completada';
+                $company->estado_eval = 'evaluacion-pendiente';
                 $company->save();
             }
             // Si el usuario es evaluador y es el último valor, generar PDF con los resultados
             if ($user->role === 'evaluador' && $numeroDePreguntasQueClificoElEvaluador == $numeroDePreguntasQueVaAResponderLaEmpresa) {
-
-                $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
-                $superAdminUser = User::where('role', 'super_admin')->first();
-
-                // Obtener todos los valores
-                $allValues = Value::where('is_active', true)->get();
-
-                // Obtener la empresa evaluada
-                $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
-
-                // Obtener las puntuaciones finales
-                $finalScores = EvaluationValueResult::where('company_id', $user->company_id)
-                    ->get()
-                    ->keyBy('value_id');
-
-                // Obtener todas las evaluaciones del evaluador para esta empresa
-                $evaluatorAssessments = EvaluatorAssessment::where('company_id', $user->company_id)
-                    ->with(['evaluationQuestion', 'indicator'])
-                    ->get()
-                    ->groupBy('indicator_id');
-
-                // Obtener todas las respuestas de la empresa
-                $companyAnswers = IndicatorAnswerEvaluation::where('company_id', $user->company_id)
-                    ->with(['evaluationQuestion', 'indicator'])
-                    ->get()
-                    ->groupBy('indicator_id');
-
-                // Obtener todas las respuestas de autoevaluación
-                $autoEvaluationAnswers = \App\Models\IndicatorAnswer::where('company_id', $user->company_id)
-                    ->with(['indicator'])
-                    ->get()
-                    ->groupBy('indicator_id');
-
-
-                // Agrupar indicadores por valor
-                $indicatorsByValue = Indicator::where('is_active', true)
-                    ->with(['subcategory.value', 'evaluationQuestions'])
-                    ->get()
-                    ->groupBy('subcategory.value.id');
-
-                if (!$this->notificationsAlreadySent($user->company_id, $request->value_id, 'evaluado')) {
-
-                    // Generar PDF con los resultados
-                    $pdf = Pdf::loadView('pdf/evaluation', [
-                        'values' => $allValues,
-                        'company' => $company,
-                        'evaluador' => $user,
-                        'date' => now()->format('d/m/Y'),
-                        'finalScores' => $finalScores,
-                        'evaluatorAssessments' => $evaluatorAssessments,
-                        'companyAnswers' => $companyAnswers,
-                        'autoEvaluationAnswers' => $autoEvaluationAnswers,
-                        'indicatorsByValue' => $indicatorsByValue
-                    ]);
-
-                    // Crear estructura de carpetas para la empresa
-                    $companySlug = Str::slug($company->name); // Convertir nombre de empresa a slug
-                    $basePath = storage_path('app/public/evaluations');
-                    $companyPath = "{$basePath}/{$company->id}-{$companySlug}";
-
-                    // Crear carpetas si no existen
-                    if (!file_exists($basePath)) {
-                        mkdir($basePath, 0755, true);
-                    }
-                    if (!file_exists($companyPath)) {
-                        mkdir($companyPath, 0755, true);
-                    }
-
-                    // Generar nombre de archivo con timestamp
-                    $fileName = "evaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
-                    $fullPath = "{$companyPath}/{$fileName}";
-
-                    // Guardar PDF
-                    $pdf->save($fullPath);
-
-                    // Enviar email con PDF al usuario administrador de la empresa
-                    if ($adminUser) {
-                        Mail::to($adminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));
-                    }
-
-                    // Enviar email con PDF al superadmin
-                    if ($superAdminUser) {
-                        Mail::to($superAdminUser->email)->send(new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company));
-                    }
-
-                    // Registrar que se enviaron las notificaciones
-                    $this->markNotificationsAsSent($user->company_id, $request->value_id, 'evaluado');
-                }
-                $company->estado_eval = 'evaluado';
+                $company->estado_eval = 'evaluacion-calificada';
                 $company->save();
             }
 
@@ -869,5 +757,160 @@ class EvaluationAnswerController extends Controller
         // Guardar en cache que ya se enviaron notificaciones (expira en 24 horas)
         $cacheKey = "notifications_sent_{$companyId}_{$valueId}_{$type}";
         Cache::put($cacheKey, true, now()->addHours(12));
+    }
+
+    /**
+     * Envia la notificación de evaluación completada
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function enviarEvaluacionCompletada(Request $request)
+    {
+        $user = Auth::user();
+        $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
+
+        $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
+        $superAdminUser = User::where('role', 'super_admin')->first();
+
+        // Verificar si ya se enviaron las notificaciones para evitar duplicados
+        if (!$this->notificationsAlreadySent($user->company_id, $request->value_id ?? null, 'evaluacion-completada')) {
+            if ($adminUser) {
+                try {
+                    $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
+                } catch (\Exception $e) {
+                    Log::error('Error al enviar la notificación de evaluación completada al administrador: ' . $e->getMessage());
+                }
+            }
+            if ($superAdminUser) {
+                try {
+                    $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
+                } catch (\Exception $e) {
+                    Log::error('Error al enviar la notificación de evaluación completada al superadmin: ' . $e->getMessage());
+                }
+            }
+
+            // Registrar que se enviaron las notificaciones
+            $this->markNotificationsAsSent($user->company_id, $request->value_id, 'evaluacion-completada');
+        }
+
+        $company->estado_eval = 'evaluacion-completada';
+        $company->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Evaluación completada exitosamente'
+        ]);
+    }
+
+    /**
+     * Envia la notificación de evaluación calificada
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function enviarEvaluacionCalificada(Request $request)
+    {
+        $user = Auth::user();
+        $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
+
+        $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
+        $superAdminUser = User::where('role', 'super_admin')->first();
+
+        // Obtener todos los valores
+        $allValues = Value::where('is_active', true)->get();
+
+        // Obtener las puntuaciones finales
+        $finalScores = EvaluationValueResult::where('company_id', $user->company_id)
+            ->get()
+            ->keyBy('value_id');
+
+        // Obtener todas las evaluaciones del evaluador para esta empresa
+        $evaluatorAssessments = EvaluatorAssessment::where('company_id', $user->company_id)
+            ->with(['evaluationQuestion', 'indicator'])
+            ->get()
+            ->groupBy('indicator_id');
+
+        // Obtener todas las respuestas de la empresa
+        $companyAnswers = IndicatorAnswerEvaluation::where('company_id', $user->company_id)
+            ->with(['evaluationQuestion', 'indicator'])
+            ->get()
+            ->groupBy('indicator_id');
+
+        // Obtener todas las respuestas de autoevaluación
+        $autoEvaluationAnswers = \App\Models\IndicatorAnswer::where('company_id', $user->company_id)
+            ->with(['indicator'])
+            ->get()
+            ->groupBy('indicator_id');
+
+        // Agrupar indicadores por valor
+        $indicatorsByValue = Indicator::where('is_active', true)
+            ->with(['subcategory.value', 'evaluationQuestions'])
+            ->get()
+            ->groupBy('subcategory.value.id');
+
+        if (!$this->notificationsAlreadySent($user->company_id, $request->value_id, 'evaluado')) {
+
+            // Generar PDF con los resultados
+            $pdf = Pdf::loadView('pdf/evaluation', [
+                'values' => $allValues,
+                'company' => $company,
+                'evaluador' => $user,
+                'date' => now()->format('d/m/Y'),
+                'finalScores' => $finalScores,
+                'evaluatorAssessments' => $evaluatorAssessments,
+                'companyAnswers' => $companyAnswers,
+                'autoEvaluationAnswers' => $autoEvaluationAnswers,
+                'indicatorsByValue' => $indicatorsByValue
+            ]);
+
+            // Crear estructura de carpetas para la empresa
+            $companySlug = Str::slug($company->name); // Convertir nombre de empresa a slug
+            $basePath = storage_path('app/public/evaluations');
+            $companyPath = "{$basePath}/{$company->id}-{$companySlug}";
+
+            // Crear carpetas si no existen
+            if (!file_exists($basePath)) {
+                mkdir($basePath, 0755, true);
+            }
+            if (!file_exists($companyPath)) {
+                mkdir($companyPath, 0755, true);
+            }
+
+            // Generar nombre de archivo con timestamp
+            $fileName = "evaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
+            $fullPath = "{$companyPath}/{$fileName}";
+
+            // Guardar PDF
+            $pdf->save($fullPath);
+
+            // Enviar email con PDF al usuario administrador de la empresa
+            if ($adminUser) {
+                try {
+                    Mail::to($adminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));
+                } catch (\Exception $e) {
+                    Log::error('Error al enviar el email de evaluación calificada al administrador: ' . $e->getMessage());
+                }
+            }
+
+            // Enviar email con PDF al superadmin
+            if ($superAdminUser) {
+                try {
+                    Mail::to($superAdminUser->email)->send(new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company));
+                } catch (\Exception $e) {
+                    Log::error('Error al enviar el email de evaluación calificada al superadmin: ' . $e->getMessage());
+                }
+            }
+
+            // Registrar que se enviaron las notificaciones
+            $this->markNotificationsAsSent($user->company_id, $request->value_id, 'evaluado');
+        }
+        $company->estado_eval = 'evaluado';
+        $company->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Evaluación calificada exitosamente'
+        ]);
     }
 }

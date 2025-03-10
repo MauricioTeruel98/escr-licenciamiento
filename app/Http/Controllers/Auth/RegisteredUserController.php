@@ -42,9 +42,10 @@ class RegisteredUserController extends Controller
             'lastname.regex' => 'El apellido solo puede contener letras y espacios.',
             'email.regex' => 'El correo no puede contener espacios ni caracteres especiales excepto guiones, arroba, punto y signo más.',
             'password.regex' => 'La contraseña no puede contener espacios, comillas simples o dobles.',
-            'password.min' => 'La contraseña debe tener al menos :min caracteres, una letra mayúscula y un número.',
-            'password.mixed' => 'La contraseña debe tener al menos :min caracteres, una letra mayúscula y un número.',
-            'password.numbers' => 'La contraseña debe tener al menos :min caracteres, una letra mayúscula y un número.',
+            'password.min' => 'La contraseña debe tener al menos :min caracteres, una letra mayúscula, una letra minúscula y un número.',
+            'password.lowercase' => 'La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una letra minúscula y un número.',
+            'password.mixed' => 'La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una letra minúscula y un número.',
+            'password.numbers' => 'La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una letra minúscula y un número.',
             'terms_accepted.required' => 'Debe aceptar los términos y condiciones para registrarse.',
             'terms_accepted.accepted' => 'Debe aceptar los términos y condiciones para registrarse.',
         ]);
