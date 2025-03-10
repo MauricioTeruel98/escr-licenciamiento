@@ -735,9 +735,13 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     const camposFaltantesArray = Object.keys(response.data.campos_faltantes);
                     setCamposFaltantes(camposFaltantesArray);
 
-                    const numCamposFaltantes = camposFaltantesArray.length;
+                    /*const numCamposFaltantes = camposFaltantesArray.length;
                     mensaje += ` Sin embargo, aún faltan ${numCamposFaltantes} campos obligatorios por completar para que el formulario se considere enviado completamente.`;
-                    tipo = 'warning';
+                    tipo = 'warning';*/
+
+                    const numCamposFaltantes = camposFaltantesArray.length;
+                    mensaje += ``;
+                    tipo = 'success';
                 }
 
                 setToast({
@@ -1473,7 +1477,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     {/* Descripción Inglés */}
                                     <div className="">
                                         <label className="block text-sm font-medium text-gray-700">
-                                            Descripción de la empresa (Inglés)
+                                            Descripción de la empresa (Inglés)<span className="text-red-500">*</span>
                                         </label>
                                         <textarea
                                             value={data.descripcion_en}
@@ -1487,7 +1491,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
-                                            ¿En que año se fundó su organización? <span className="text-red-500">*</span>
+                                            ¿En que año se fundó su organización?<span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="number"
@@ -1523,7 +1527,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">
-                                                    Provincia<span className="text-red-500">*</span>
+                                                    Provincia
                                                 </label>
                                                 <select
                                                     value={data.provincia}
@@ -1543,7 +1547,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">
-                                                    Cantón<span className="text-red-500">*</span>
+                                                    Cantón
                                                 </label>
                                                 <select
                                                     value={data.canton}
@@ -1564,7 +1568,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">
-                                                    Distrito<span className="text-red-500">*</span>
+                                                    Distrito
                                                 </label>
                                                 <select
                                                     value={data.distrito}
@@ -1586,7 +1590,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
                                         <div className="mt-4">
                                             <label className="block text-sm font-medium text-gray-700">
-                                                Dirección Detallada<span className="text-red-500">*</span>
+                                                Dirección Detallada
                                             </label>
                                             <textarea
                                                 value={data.direccion_empresa}
@@ -1670,7 +1674,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     {/* Sector y Tamaño */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
-                                            Sector<span className="text-red-500">*</span>
+                                            Sector
                                         </label>
                                         <input
                                             type="text"
@@ -1709,7 +1713,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         <h3 className="text-lg font-medium text-gray-900 mb-4">¿Cuantas personas emplea?</h3>
                                         <div className="grid grid-cols-3 gap-4">
                                             <div>
-                                                <label className="block text-sm text-gray-600">Cantidad de Hombres</label>
+                                                <label className="block text-sm text-gray-600">Cantidad de Hombres<span className="text-red-500">*</span></label>
                                                 <input
                                                     type="number"
                                                     value={data.cantidad_hombres}
@@ -1720,7 +1724,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm text-gray-600">Cantidad de mujeres</label>
+                                                <label className="block text-sm text-gray-600">Cantidad de mujeres<span className="text-red-500">*</span></label>
                                                 <input
                                                     type="number"
                                                     value={data.cantidad_mujeres}
@@ -1731,7 +1735,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm text-gray-600">Cantidad de otros</label>
+                                                <label className="block text-sm text-gray-600">Cantidad de otros<span className="text-red-500">*</span></label>
                                                 <input
                                                     type="number"
                                                     value={data.cantidad_otros}
@@ -1811,7 +1815,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     {/* Empresa exportadora */}
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700">
-                                            ¿Es una empresa exportadora?
+                                            ¿Es una empresa exportadora?<span className="text-red-500">*</span>
                                         </label>
                                         <div className="mt-2 flex gap-4">
                                             <label className="inline-flex items-center">
@@ -2125,7 +2129,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                 {/* Logos de certificaciones */}
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium text-gray-700">
-                                        Logos de certificaciones
+                                        Logos de certificaciones<span className="text-red-500">*</span>
                                     </label>
                                     <div className="mt-2">
                                         <label
@@ -2303,7 +2307,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     <div className="space-y-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">
-                                                ¿Recomendaría a otras empresas obtener la Marca País?
+                                                ¿Recomendaría a otras empresas obtener la Marca País?<span className="text-red-500">*</span>
                                             </label>
                                             <div className="mt-2 flex gap-4">
                                                 <label className="inline-flex items-center">
