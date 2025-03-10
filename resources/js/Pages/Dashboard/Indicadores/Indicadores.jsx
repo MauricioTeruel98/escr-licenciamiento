@@ -228,7 +228,10 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
             return;
         }
 
-        if (Object.keys(answers).length === 0) {
+        // Verificar si hay respuestas o si todos los indicadores están homologados
+        const allIndicatorsHomologated = areAllQuestionsAnswered();
+        
+        if (Object.keys(answers).length === 0 && !allIndicatorsHomologated) {
             setNotification({
                 type: 'error',
                 message: 'Por favor, responde al menos una pregunta antes de continuar.'
@@ -317,26 +320,79 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
         let totalQuestions = 0;
         let answeredQuestions = 0;
 
+        // Verificar si todos los indicadores están homologados
+        let allIndicatorsHomologated = true;
+        let homologatedIndicatorsIds = [];
+
+        // Recopilar todos los IDs de indicadores homologados
+        Object.values(homologatedIndicators).forEach(cert => {
+            cert.indicators.forEach(indicator => {
+                homologatedIndicatorsIds.push(indicator.id);
+            });
+        });
+
+        // Verificar si todos los indicadores del valor están homologados
         valueData.subcategories.forEach(subcategory => {
             subcategory.indicators.forEach(indicator => {
                 totalQuestions++;
-                if (answers[indicator.id] !== undefined) {
+                
+                // Verificar si el indicador está homologado o ya fue respondido
+                if (homologatedIndicatorsIds.includes(indicator.id) || answers[indicator.id] !== undefined) {
                     answeredQuestions++;
+                } else {
+                    allIndicatorsHomologated = false;
                 }
             });
         });
+
+        // Si todos los indicadores están homologados, permitir finalizar
+        if (allIndicatorsHomologated && homologatedIndicatorsIds.length === totalQuestions) {
+            return true;
+        }
 
         return totalQuestions === answeredQuestions;
     };
 
     const areCurrentSubcategoryQuestionsAnswered = () => {
         const currentSubcategory = subcategories[currentSubcategoryIndex];
+        
+        // Recopilar todos los IDs de indicadores homologados
+        let homologatedIndicatorsIds = [];
+        Object.values(homologatedIndicators).forEach(cert => {
+            cert.indicators.forEach(indicator => {
+                homologatedIndicatorsIds.push(indicator.id);
+            });
+        });
+        
         return currentSubcategory.indicators.every(indicator => 
-            answers[indicator.id] !== undefined
+            homologatedIndicatorsIds.includes(indicator.id) || answers[indicator.id] !== undefined
         );
     };
 
     const autoEvalCompleted = company.estado_eval === 'auto-evaluacion-completed';
+
+    // Efecto para marcar automáticamente los indicadores homologados como respondidos
+    useEffect(() => {
+        if (Object.keys(homologatedIndicators).length > 0) {
+            // Crear una copia de las respuestas actuales
+            const updatedAnswers = { ...answers };
+            
+            // Marcar todos los indicadores homologados como respondidos con "1" (Sí)
+            Object.values(homologatedIndicators).forEach(cert => {
+                cert.indicators.forEach(indicator => {
+                    if (updatedAnswers[indicator.id] === undefined) {
+                        updatedAnswers[indicator.id] = "1";
+                    }
+                });
+            });
+            
+            // Actualizar el estado de respuestas solo si hay cambios
+            if (Object.keys(updatedAnswers).length !== Object.keys(answers).length) {
+                setAnswers(updatedAnswers);
+                console.log('Indicadores homologados marcados automáticamente:', updatedAnswers);
+            }
+        }
+    }, [homologatedIndicators]);
 
     // Efecto específico para cuando la autoevaluación está completa
     useEffect(() => {
