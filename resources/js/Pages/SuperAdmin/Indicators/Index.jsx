@@ -245,6 +245,8 @@ export default function IndicatorsIndex() {
             }
             loadIndicators(pagination.currentPage, pagination.perPage, searchTerm);
             setModalOpen(false);
+            //recargar la pagina
+            window.location.reload();
         } catch (error) {
             console.error('Error al guardar indicador:', error);
             let errorMessage = 'Error al guardar el indicador';
