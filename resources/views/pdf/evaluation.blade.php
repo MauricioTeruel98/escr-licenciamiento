@@ -405,7 +405,7 @@
         <p><strong>Posición dentro de la organización:</strong>
             {{ $company->infoAdicional->contacto_notificacion_puesto ?? 'N/A' }}</p>
         <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->contacto_notificacion_email ?? 'N/A' }}</p>
-        <p><strong>Cédula:</strong> {{ $company->infoAdicional->contacto_notificacion_cedula ?? 'N/A' }}</p>
+        {{-- <p><strong>Cédula:</strong> {{ $company->infoAdicional->contacto_notificacion_cedula ?? 'N/A' }}</p> --}}
         <p><strong>Teléfono:</strong> {{ $company->infoAdicional->contacto_notificacion_telefono ?? 'N/A' }}
             <strong>Celular:</strong> {{ $company->infoAdicional->contacto_notificacion_celular ?? 'N/A' }}
         </p>
@@ -417,7 +417,7 @@
         <p><strong>Posición dentro de la organización:</strong>
             {{ $company->infoAdicional->asignado_proceso_puesto ?? 'N/A' }}</p>
         <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->asignado_proceso_email ?? 'N/A' }}</p>
-        <p><strong>Cédula:</strong> {{ $company->infoAdicional->asignado_proceso_cedula ?? 'N/A' }}</p>
+        {{-- <p><strong>Cédula:</strong> {{ $company->infoAdicional->asignado_proceso_cedula ?? 'N/A' }}</p> --}}
         <p><strong>Teléfono:</strong> {{ $company->infoAdicional->asignado_proceso_telefono ?? 'N/A' }}
             <strong>Celular:</strong> {{ $company->infoAdicional->asignado_proceso_celular ?? 'N/A' }}
         </p>

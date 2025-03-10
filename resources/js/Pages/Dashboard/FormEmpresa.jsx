@@ -29,7 +29,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         otra_red_social: infoAdicional?.otra_red_social || '',
         sector: infoAdicional?.sector || '',
         tamano_empresa: infoAdicional?.tamano_empresa || '',
-        anio_fundacion: infoAdicional?.anio_fundacion || '', 
+        anio_fundacion: infoAdicional?.anio_fundacion || '',
         cantidad_hombres: infoAdicional?.cantidad_hombres || '',
         cantidad_mujeres: infoAdicional?.cantidad_mujeres || '',
         cantidad_otros: infoAdicional?.cantidad_otros || '',
@@ -109,7 +109,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
     const [loading, setLoading] = useState(false);
     const [clientErrors, setErrors] = useState({});
-    
+
     // Combinar errores del backend y del cliente para mostrarlos en los campos
     const errors = { ...backendErrors, ...clientErrors };
 
@@ -126,7 +126,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         if (infoAdicional) {
             // Inicializar imágenes
             const productosImagenes = [];
-            
+
             // Si hay productos con imágenes, inicializar el array de imágenes de productos
             if (infoAdicional.productos && infoAdicional.productos.length > 0) {
                 infoAdicional.productos.forEach((producto, index) => {
@@ -135,7 +135,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     }
                 });
             }
-            
+
             setImagenes({
                 logo: infoAdicional.logo || null,
                 fotografias: infoAdicional.fotografias_urls || [],
@@ -150,7 +150,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         try {
             // Para el logo, no es necesario modificar la ruta
             const adjustedPath = tipo === 'logo' ? path : path.replace('/storage/', '');
-            
+
             const response = await axios.post(route('company.profile.delete-file'), {
                 type: tipo,
                 path: adjustedPath,
@@ -249,12 +249,12 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         const files = Array.from(e.dataTransfer.files).filter(
             file => allowedTypes.includes(file.type)
         );
-        
+
         // Mostrar mensaje si hay archivos no permitidos
         if (files.length < e.dataTransfer.files.length) {
             alert('Solo se permiten archivos de tipo: jpg, jpeg o png. Los archivos no válidos han sido ignorados.');
         }
-        
+
         // Si no hay archivos válidos, salir
         if (files.length === 0) {
             return;
@@ -282,25 +282,25 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             // Verificar si se excede el límite de fotografías
             const currentCount = (imagenes.fotografias || []).length;
             const availableSlots = maxFiles.fotografias - currentCount;
-            
+
             if (availableSlots <= 0) {
                 alert(`Ya has alcanzado el límite máximo de ${maxFiles.fotografias} fotografías.`);
                 return;
             }
-            
+
             // Tomar solo los archivos que caben dentro del límite
             const filesToAdd = files.slice(0, availableSlots);
-            
+
             if (filesToAdd.length < files.length) {
                 alert(`Solo se han añadido ${filesToAdd.length} fotografías. El límite máximo es de ${maxFiles.fotografias} fotografías.`);
             }
-            
+
             // Generar URLs de vista previa para las fotografías
             const filesWithPreviews = filesToAdd.map(file => {
                 file.preview = URL.createObjectURL(file);
                 return file;
             });
-            
+
             setImagenes(prev => ({
                 ...prev,
                 fotografias: [...(prev.fotografias || []), ...filesWithPreviews]
@@ -309,25 +309,25 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             // Verificar si se excede el límite de certificaciones
             const currentCount = (imagenes.certificaciones || []).length;
             const availableSlots = maxFiles.certificaciones - currentCount;
-            
+
             if (availableSlots <= 0) {
                 alert(`Ya has alcanzado el límite máximo de ${maxFiles.certificaciones} certificaciones.`);
                 return;
             }
-            
+
             // Tomar solo los archivos que caben dentro del límite
             const filesToAdd = files.slice(0, availableSlots);
-            
+
             if (filesToAdd.length < files.length) {
                 alert(`Solo se han añadido ${filesToAdd.length} certificaciones. El límite máximo es de ${maxFiles.certificaciones} certificaciones.`);
             }
-            
+
             // Generar URLs de vista previa para las certificaciones
             const filesWithPreviews = filesToAdd.map(file => {
                 file.preview = URL.createObjectURL(file);
                 return file;
             });
-            
+
             setImagenes(prev => ({
                 ...prev,
                 certificaciones: [...(prev.certificaciones || []), ...filesWithPreviews]
@@ -338,7 +338,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 alert(`Solo se permite ${maxFiles.productos} imagen por producto.`);
                 files = [files[0]]; // Tomar solo el primer archivo
             }
-            
+
             setImagenes(prev => ({
                 ...prev,
                 [tipo]: [...(prev[tipo] || []), ...files]
@@ -364,27 +364,27 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
     const handleImagenChange = (e, tipo, productoIndex = null) => {
         const files = Array.from(e.target.files);
-        
+
         // Validar tipos de archivos permitidos
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
-        
+
         if (invalidFiles.length > 0) {
             alert('Solo se permiten archivos de tipo: jpg, jpeg o png.');
             e.target.value = null; // Limpiar el input
             return;
         }
-        
+
         // Validar tamaño máximo de 2 MB
         const maxSizeInBytes = 2 * 1024 * 1024; // 2 MB en bytes
         const oversizedFiles = files.filter(file => file.size > maxSizeInBytes);
-        
+
         if (oversizedFiles.length > 0) {
             alert('El tamaño máximo permitido por imagen es de 2 MB.');
             e.target.value = null; // Limpiar el input
             return;
         }
-        
+
         // Definir límites por tipo de archivo
         const maxFiles = {
             logo: 1,
@@ -392,7 +392,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             certificaciones: 5,
             productos: 1
         };
-        
+
         if (tipo === 'logo') {
             // Generar URL de vista previa para el logo
             const fileWithPreview = files[0];
@@ -402,26 +402,26 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             // Verificar si se excede el límite de fotografías
             const currentCount = (imagenes.fotografias || []).length;
             const availableSlots = maxFiles.fotografias - currentCount;
-            
+
             if (availableSlots <= 0) {
                 alert(`Ya has alcanzado el límite máximo de ${maxFiles.fotografias} fotografías.`);
                 e.target.value = null; // Limpiar el input
                 return;
             }
-            
+
             // Tomar solo los archivos que caben dentro del límite
             const filesToAdd = files.slice(0, availableSlots);
-            
+
             if (filesToAdd.length < files.length) {
                 alert(`Solo se han añadido ${filesToAdd.length} fotografías. El límite máximo es de ${maxFiles.fotografias} fotografías.`);
             }
-            
+
             // Generar URLs de vista previa para las fotografías
             const filesWithPreviews = filesToAdd.map(file => {
                 file.preview = URL.createObjectURL(file);
                 return file;
             });
-            
+
             setImagenes(prev => ({
                 ...prev,
                 fotografias: [...(prev.fotografias || []), ...filesWithPreviews]
@@ -430,25 +430,25 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             // Verificar si se excede el límite de certificaciones
             const currentCount = (imagenes.certificaciones || []).length;
             const availableSlots = maxFiles.certificaciones - currentCount;
-            
+
             if (availableSlots <= 0) {
                 alert(`Ya has alcanzado el límite máximo de ${maxFiles.certificaciones} certificaciones.`);
                 return;
             }
-            
+
             // Tomar solo los archivos que caben dentro del límite
             const filesToAdd = files.slice(0, availableSlots);
-            
+
             if (filesToAdd.length < files.length) {
                 alert(`Solo se han añadido ${filesToAdd.length} certificaciones. El límite máximo es de ${maxFiles.certificaciones} certificaciones.`);
             }
-            
+
             // Generar URLs de vista previa para las certificaciones
             const filesWithPreviews = filesToAdd.map(file => {
                 file.preview = URL.createObjectURL(file);
                 return file;
             });
-            
+
             setImagenes(prev => ({
                 ...prev,
                 certificaciones: [...(prev.certificaciones || []), ...filesWithPreviews]
@@ -459,7 +459,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 alert(`Solo se permite ${maxFiles.productos} imagen por producto.`);
                 files = [files[0]]; // Tomar solo el primer archivo
             }
-            
+
             setImagenes(prev => {
                 const newProductos = [...(prev.productos || [])];
                 if (!newProductos[productoIndex]) {
@@ -468,7 +468,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 newProductos[productoIndex] = files[0];
                 return { ...prev, productos: newProductos };
             });
-            
+
             // También actualizar la referencia en el estado de data para mantener la consistencia
             setData(prevData => {
                 const newProductos = [...prevData.productos];
@@ -515,9 +515,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
     const uploadLogo = async () => {
         if (!imagenes.logo) return null;
-        
+
         const formData = new FormData();
-        
+
         // Agregar logo si existe
         if (imagenes.logo instanceof File) {
             formData.append('logo', imagenes.logo);
@@ -525,29 +525,29 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             // Si hay un logo existente, enviar su ruta
             formData.append('logo_existente', imagenes.logo);
         }
-        
+
         try {
             const response = await axios.post(route('company.profile.upload-logo'), formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 }
             });
-            
+
             return response.data.success ? response.data.path : null;
         } catch (error) {
             console.error('Error al subir el logo:', error);
             throw error;
         }
     };
-    
+
     const uploadFotografias = async () => {
         if (!imagenes.fotografias || imagenes.fotografias.length === 0) return null;
-        
+
         const formData = new FormData();
-        
+
         // Separar fotografías existentes de las nuevas
         const existingPhotos = [];
-        
+
         imagenes.fotografias.forEach((foto, index) => {
             if (foto instanceof File) {
                 formData.append(`fotografias[]`, foto);
@@ -556,34 +556,34 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 existingPhotos.push(foto.path || foto);
             }
         });
-        
+
         // Enviar las rutas de las fotografías existentes
         if (existingPhotos.length > 0) {
             formData.append('fotografias_existentes', JSON.stringify(existingPhotos));
         }
-        
+
         try {
             const response = await axios.post(route('company.profile.upload-fotografias'), formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 }
             });
-            
+
             return response.data.success ? response.data.paths : null;
         } catch (error) {
             console.error('Error al subir las fotografías:', error);
             throw error;
         }
     };
-    
+
     const uploadCertificaciones = async () => {
         if (!imagenes.certificaciones || imagenes.certificaciones.length === 0) return null;
-        
+
         const formData = new FormData();
-        
+
         // Separar certificaciones existentes de las nuevas
         const existingCerts = [];
-        
+
         imagenes.certificaciones.forEach((cert, index) => {
             if (cert instanceof File) {
                 formData.append(`certificaciones[]`, cert);
@@ -592,31 +592,31 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 existingCerts.push(cert.path || cert);
             }
         });
-        
+
         // Enviar las rutas de las certificaciones existentes
         if (existingCerts.length > 0) {
             formData.append('certificaciones_existentes', JSON.stringify(existingCerts));
         }
-        
+
         try {
             const response = await axios.post(route('company.profile.upload-certificaciones'), formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 }
             });
-            
+
             return response.data.success ? response.data.paths : null;
         } catch (error) {
             console.error('Error al subir las certificaciones:', error);
             throw error;
         }
     };
-    
+
     const uploadProductos = async () => {
         if (!data.productos || data.productos.length === 0) return null;
-        
+
         const formData = new FormData();
-        
+
         // Agregar productos
         data.productos.forEach((producto, index) => {
             formData.append(`productos[${index}][id]`, producto.id || '');
@@ -631,14 +631,14 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 formData.append(`productos[${index}][imagen_existente]`, producto.imagen);
             }
         });
-        
+
         try {
             const response = await axios.post(route('company.profile.upload-productos'), formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 }
             });
-            
+
             return response.data.success ? response.data.productos : null;
         } catch (error) {
             console.error('Error al subir los productos:', error);
@@ -658,22 +658,22 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             let fotografiasPaths = null;
             let certificacionesPaths = null;
             let productosData = null;
-            
+
             try {
                 // Subir logo
                 logoPath = await uploadLogo();
-                
+
                 // Subir fotografías
                 fotografiasPaths = await uploadFotografias();
-                
+
                 // Subir certificaciones
                 certificacionesPaths = await uploadCertificaciones();
-                
+
                 // Subir productos
                 productosData = await uploadProductos();
             } catch (error) {
                 console.error('Error al subir archivos:', error);
-                
+
                 if (error.response && error.response.data && error.response.data.errors) {
                     setErrors(error.response.data.errors);
                 } else {
@@ -683,27 +683,27 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                         type: 'error'
                     });
                 }
-                
+
                 setLoading(false);
                 return;
             }
 
             // Crear FormData para los datos principales
             const formData = new FormData();
-            
+
             // Agregar referencias a las imágenes subidas
             if (logoPath) {
                 formData.append('logo_path', logoPath);
             }
-            
+
             if (fotografiasPaths) {
                 formData.append('fotografias_paths', JSON.stringify(fotografiasPaths));
             }
-            
+
             if (certificacionesPaths) {
                 formData.append('certificaciones_paths', JSON.stringify(certificacionesPaths));
             }
-            
+
             if (productosData) {
                 formData.append('productos_data', JSON.stringify(productosData));
             }
@@ -736,7 +736,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 });
                 // Limpiar errores del cliente si la operación fue exitosa
                 setErrors({});
-                
+
                 // Mostrar información sobre los datos de ubicación guardados
                 console.log('Datos de ubicación guardados:', {
                     provincia: response.data.data.provincia_nombre || response.data.data.provincia,
@@ -757,12 +757,12 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 }
             }
             setLoading(false);
-            
+
             //Redirigir al home sin navigate
             window.location.href = route('dashboard');
         } catch (error) {
             console.error('Error en la petición:', error);
-            
+
             // Capturar errores de validación del backend
             if (error.response && error.response.status === 422 && error.response.data.errors) {
                 // Establecer los errores en el estado para que se muestren en los campos
@@ -814,7 +814,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     ...prev,
                     provincias: lugares.provincias
                 }));
-                
+
                 console.log('Datos de ubicación cargados:', {
                     provincias: lugares.provincias.length,
                     provinciaSeleccionada: data.provincia,
@@ -833,23 +833,23 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     useEffect(() => {
         if (data.provincia) {
             const provinciaSeleccionada = ubicaciones.provincias.find(p => p.id === data.provincia);
-            
+
             if (provinciaSeleccionada) {
                 console.log('Provincia seleccionada:', {
                     id: provinciaSeleccionada.id,
                     name: provinciaSeleccionada.name,
                     cantones: provinciaSeleccionada.cantones?.length || 0
                 });
-                
+
                 setUbicaciones(prev => ({
                     ...prev,
                     cantones: provinciaSeleccionada.cantones || [],
                     // No resetear distritos si ya hay un cantón seleccionado que coincide con los nuevos cantones
-                    distritos: data.canton && provinciaSeleccionada.cantones.some(c => c.id === data.canton) 
-                        ? prev.distritos 
+                    distritos: data.canton && provinciaSeleccionada.cantones.some(c => c.id === data.canton)
+                        ? prev.distritos
                         : []
                 }));
-                
+
                 // Solo resetear cantón si no existe en la nueva lista de cantones
                 if (data.canton && !provinciaSeleccionada.cantones.some(c => c.id === data.canton)) {
                     console.log('Reseteando cantón porque no existe en la nueva lista de cantones');
@@ -865,19 +865,19 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         if (data.canton && data.provincia) {
             const provinciaSeleccionada = ubicaciones.provincias.find(p => p.id === data.provincia);
             const cantonSeleccionado = provinciaSeleccionada?.cantones.find(c => c.id === data.canton);
-            
+
             if (cantonSeleccionado) {
                 console.log('Cantón seleccionado:', {
                     id: cantonSeleccionado.id,
                     name: cantonSeleccionado.name,
                     distritos: cantonSeleccionado.distritos?.length || 0
                 });
-                
+
                 setUbicaciones(prev => ({
                     ...prev,
                     distritos: cantonSeleccionado.distritos || []
                 }));
-                
+
                 // Solo resetear distrito si no existe en la nueva lista de distritos
                 if (data.distrito && !cantonSeleccionado.distritos.some(d => d.id === data.distrito)) {
                     console.log('Reseteando distrito porque no existe en la nueva lista de distritos');
@@ -897,20 +897,20 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     canton: data.canton,
                     distrito: data.distrito
                 });
-                
+
                 const provinciaSeleccionada = ubicaciones.provincias.find(p => p.id === data.provincia);
-                
+
                 if (provinciaSeleccionada) {
                     // Cargar cantones
                     setUbicaciones(prev => ({
                         ...prev,
                         cantones: provinciaSeleccionada.cantones || []
                     }));
-                    
+
                     // Si también hay cantón seleccionado, cargar distritos
                     if (data.canton) {
                         const cantonSeleccionado = provinciaSeleccionada.cantones.find(c => c.id === data.canton);
-                        
+
                         if (cantonSeleccionado) {
                             setUbicaciones(prev => ({
                                 ...prev,
@@ -921,7 +921,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 }
             }
         };
-        
+
         initializeLocationData();
     }, [data.provincia, data.canton, ubicaciones.provincias]);
 
@@ -968,7 +968,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     // Agregar estados para el modal de confirmación de eliminación
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [productoToDelete, setProductoToDelete] = useState(null);
-    
+
     // Modificar la función para manejar el inicio del proceso de eliminación
     const handleDeleteProducto = (producto, index) => {
         if (producto.id) {
@@ -980,7 +980,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             eliminarProductoNuevo(index);
         }
     };
-    
+
     // Función para eliminar productos nuevos (no guardados en la base de datos)
     const eliminarProductoNuevo = (index) => {
         setData('productos', data.productos.filter((_, i) => i !== index));
@@ -990,11 +990,11 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             type: 'success'
         });
     };
-    
+
     // Función para confirmar la eliminación de un producto existente
     const confirmarEliminarProducto = async () => {
         if (!productoToDelete) return;
-        
+
         try {
             const response = await axios.delete(route('company.product.destroy', { productId: productoToDelete.producto.id }));
 
@@ -1019,7 +1019,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             setProductoToDelete(null);
         }
     };
-    
+
     // Reemplazar la función eliminarProducto existente
     const eliminarProducto = async (productId) => {
         // Esta función ya no se usa directamente, se mantiene por compatibilidad
@@ -1030,10 +1030,10 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     const validarCampo = (valor, tipo = 'texto') => {
         // Eliminar espacios al inicio para todos los campos
         const valorSinEspaciosInicio = valor.trimStart();
-        
+
         // Expresiones regulares para diferentes tipos de campos
         const regexComunes = /["'\\;]/g; // Comillas simples, dobles, punto-coma y barras invertidas (prohibidos en todos los campos)
-        
+
         // Expresiones regulares mejoradas para permitir todos los caracteres acentuados
         // Incluye todas las vocales con acentos (á, é, í, ó, ú, à, è, ì, ò, ù, â, ê, î, ô, û, ä, ë, ï, ö, ü) y otros caracteres especiales
         const regexSoloLetras = /[^a-zA-ZáàâäéèêëíìîïóòôöúùûüÁÀÂÄÉÈÊËÍÌÎÏÓÒÔÖÚÙÛÜñÑçÇ\s]/g; // Solo letras y espacios
@@ -1047,32 +1047,32 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             case 'nombre_comercial':
             case 'nombre_legal':
                 return valorSinEspaciosInicio.replace(regexComunes, '').replace(regexLetrasNumerosPunto, '');
-                
+
             case 'descripcion':
                 return valorSinEspaciosInicio.replace(regexComunes, '').replace(regexLetrasNumerosPuntoDoble, '');
-                
+
             case 'url':
                 return valorSinEspaciosInicio.replace(regexURL, '');
-                
+
             case 'solo_letras':
                 return valorSinEspaciosInicio.replace(regexComunes, '').replace(regexSoloLetras, '');
-                
+
             case 'solo_numeros':
                 return valorSinEspaciosInicio.replace(regexSoloNumeros, '');
-                
+
             case 'numeros_sin_e':
                 // Primero eliminamos todos los caracteres que no son números
                 let resultado = valorSinEspaciosInicio.replace(regexSoloNumeros, '');
                 // Luego eliminamos específicamente la letra 'e' (que podría ser ingresada en campos numéricos)
                 resultado = resultado.replace(/e/gi, '');
                 return resultado;
-                
+
             case 'email':
                 return valorSinEspaciosInicio.replace(regexComunes, '');
-                
+
             case 'texto_con_puntos':
                 return valorSinEspaciosInicio.replace(regexComunes, '').replace(regexLetrasNumerosPuntoDoble, '');
-                
+
             default: // 'texto' - validación básica
                 return valorSinEspaciosInicio.replace(regexComunes, '');
         }
@@ -1081,20 +1081,20 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     // Función para manejar cambios en campos de texto
     const handleChange = (e) => {
         const { name, value } = e.target;
-        
+
         // Si es un campo de radio button, manejar de forma especial
         if (e.target.type === 'radio') {
             const newValue = value === 'true' ? true : value === 'false' ? false : value;
             setData(name, newValue);
             return;
         }
-        
+
         // Si es el campo de países, usar la función específica
         if (name === 'paises_exportacion' && e.target.multiple) {
             handlePaisesChange(e);
             return;
         }
-        
+
         // Verificar si es un campo de productos (nombre o descripción)
         if (name.includes('productos[')) {
             // Extraer el índice y el campo del nombre
@@ -1102,7 +1102,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             if (matches && matches.length === 3) {
                 const index = parseInt(matches[1]);
                 const field = matches[2];
-                
+
                 // Determinar el tipo de validación según el campo
                 let tipoValidacion = 'texto';
                 if (field === 'nombre') {
@@ -1110,10 +1110,10 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 } else if (field === 'descripcion') {
                     tipoValidacion = 'descripcion';
                 }
-                
+
                 // Validar el valor según el tipo de campo
                 const valorValidado = validarCampo(value, tipoValidacion);
-                
+
                 // Verificar si se filtraron caracteres no permitidos
                 if (valorValidado !== value.trimStart()) {
                     // Establecer un error para este campo
@@ -1129,24 +1129,24 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                         return newErrors;
                     });
                 }
-                
+
                 // Crear una copia del array de productos
                 const nuevosProductos = [...data.productos];
-                
+
                 // Actualizar el campo específico del producto
                 if (nuevosProductos[index]) {
                     nuevosProductos[index] = {
                         ...nuevosProductos[index],
                         [field]: valorValidado
                     };
-                    
+
                     // Actualizar el estado con los productos modificados
                     setData('productos', nuevosProductos);
                 }
                 return;
             }
         }
-        
+
         // Determinar el tipo de validación según el campo
         let tipoValidacion;
         switch (name) {
@@ -1155,7 +1155,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             case 'nombre_legal':
                 tipoValidacion = 'nombre_comercial';
                 break;
-                
+
             // Campos que solo permiten letras, números, punto y doble punto
             case 'descripcion_es':
             case 'descripcion_en':
@@ -1167,7 +1167,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             case 'direccion_empresa':
                 tipoValidacion = 'descripcion';
                 break;
-                
+
             // Campos que solo permiten letras
             case 'sector':
             case 'actividad_comercial':
@@ -1186,7 +1186,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             case 'contacto_notificacion_puesto':
                 tipoValidacion = 'solo_letras';
                 break;
-                
+
             // Campos que solo permiten números sin la letra e
             case 'anio_fundacion':
             case 'cantidad_hombres':
@@ -1194,7 +1194,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             case 'cantidad_otros':
                 tipoValidacion = 'numeros_sin_e';
                 break;
-                
+
             // Campos que solo permiten números
             case 'telefono_1':
             case 'telefono_2':
@@ -1212,7 +1212,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             case 'contacto_notificacion_celular':
                 tipoValidacion = 'solo_numeros';
                 break;
-                
+
             // Campos de email
             case 'mercadeo_email':
             case 'micrositio_email':
@@ -1220,7 +1220,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             case 'representante_email':
                 tipoValidacion = 'email';
                 break;
-                
+
             // Campos de URL
             case 'sitio_web':
             case 'facebook':
@@ -1230,14 +1230,14 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 // Estos se manejan con handleURLChange, pero por si acaso
                 tipoValidacion = 'url';
                 break;
-                
+
             default:
                 tipoValidacion = 'texto';
         }
-        
+
         // Validar el valor según el tipo de campo
         const valorValidado = validarCampo(value, tipoValidacion);
-        
+
         // Verificar si se filtraron caracteres no permitidos
         if (valorValidado !== value.trimStart()) {
             // Establecer un error para este campo
@@ -1245,7 +1245,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 ...prevErrors,
                 [name]: 'Se han eliminado caracteres no permitidos.'
             }));
-            
+
             // Limpiar el error después de 3 segundos
             setTimeout(() => {
                 setErrors(prevErrors => {
@@ -1255,7 +1255,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 });
             }, 3000);
         }
-        
+
         // Actualizar el estado con el valor validado
         setData(name, valorValidado);
     };
@@ -1263,10 +1263,10 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     // Función para manejar cambios en campos de URL
     const handleURLChange = (e) => {
         const { name, value } = e.target;
-        
+
         // Eliminar espacios al inicio y caracteres no permitidos
         let valorLimpio = value.trimStart().replace(/["'\\;]/g, '');
-        
+
         // Verificar si la URL tiene el protocolo, si no, agregar https://
         if (valorLimpio && !valorLimpio.match(/^https?:\/\//i)) {
             // Solo agregar el protocolo si el usuario ha escrito algo más que solo www.
@@ -1274,7 +1274,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 valorLimpio = 'https://' + valorLimpio;
             }
         }
-        
+
         // Verificar si se filtraron caracteres no permitidos o se modificó el valor
         if (valorLimpio !== value) {
             // Establecer un error para este campo
@@ -1282,7 +1282,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 ...prevErrors,
                 [name]: 'Se ha modificado el formato de la URL para cumplir con los estándares.'
             }));
-            
+
             // Limpiar el error después de 3 segundos
             setTimeout(() => {
                 setErrors(prevErrors => {
@@ -1292,18 +1292,18 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 });
             }, 3000);
         }
-        
+
         // Actualizar el estado con el valor limpio y formateado
         setData(name, valorLimpio);
     };
-    
+
     // Función específica para manejar el año de fundación
     const handleAnioFundacionChange = (e) => {
         const { name, value } = e.target;
-        
+
         // Eliminar espacios al inicio
         const valorSinEspacios = value.trimStart();
-        
+
         // Permitir campo vacío
         if (valorSinEspacios === '') {
             setData(name, valorSinEspacios);
@@ -1315,17 +1315,17 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             });
             return;
         }
-        
+
         // Usar la función validarCampo con el tipo 'numeros_sin_e'
         const valorNumerico = validarCampo(valorSinEspacios, 'numeros_sin_e');
-        
+
         // Si se filtraron caracteres, mostrar un error
         if (valorNumerico !== valorSinEspacios) {
             setErrors(prevErrors => ({
                 ...prevErrors,
                 [name]: 'Por favor ingrese solo números.'
             }));
-            
+
             // Limpiar el error después de 3 segundos
             setTimeout(() => {
                 setErrors(prevErrors => {
@@ -1335,12 +1335,12 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 });
             }, 3000);
         }
-        
+
         setData(name, valorNumerico);
     };
 
     const [paises, setPaises] = useState([]);
-    
+
     // Cargar la lista de países al montar el componente
     useEffect(() => {
         const fetchPaises = async () => {
@@ -1352,21 +1352,21 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 console.error('Error al cargar la lista de países:', error);
             }
         };
-        
+
         fetchPaises();
     }, []);
-    
+
     // Función para manejar la selección múltiple de países
     const handlePaisesChange = (e) => {
         const options = e.target.options;
         const selectedValues = [];
-        
+
         for (let i = 0; i < options.length; i++) {
             if (options[i].selected) {
                 selectedValues.push(options[i].value);
             }
         }
-        
+
         setData('paises_exportacion', selectedValues.join(','));
     };
 
@@ -1566,7 +1566,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 <InputError message={errors.distrito} />
                                             </div>
                                         </div>
-                                        
+
                                         <div className="mt-4">
                                             <label className="block text-sm font-medium text-gray-700">
                                                 Dirección Detallada<span className="text-red-500">*</span>
@@ -1996,9 +1996,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 {/* Vista previa de la imagen */}
                                                 {(foto.preview || foto.path) && (
                                                     <div className="w-12 h-12 overflow-hidden rounded-md ml-2">
-                                                        <img 
-                                                            src={foto.preview || (foto.path ? `/storage/${foto.path}` : '')} 
-                                                            alt="Vista previa" 
+                                                        <img
+                                                            src={foto.preview || (foto.path ? `/storage/${foto.path}` : '')}
+                                                            alt="Vista previa"
                                                             className="w-full h-full object-cover"
                                                         />
                                                     </div>
@@ -2152,8 +2152,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 </div>
                                                 <div className="flex items-center">
                                                     <span className="text-sm mr-2">
-                                                        {cert instanceof File 
-                                                            ? Math.round(cert.size / 1024) 
+                                                        {cert instanceof File
+                                                            ? Math.round(cert.size / 1024)
                                                             : Math.round((cert.size || 0) / 1024)} KB
                                                     </span>
                                                     {cert.url && (
@@ -2170,9 +2170,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     {/* Vista previa de la imagen */}
                                                     {(cert.preview || cert.path) && (
                                                         <div className="w-10 h-10 overflow-hidden rounded-md ml-2">
-                                                            <img 
-                                                                src={cert.preview || (cert.path ? `/storage/${cert.path}` : '')} 
-                                                                alt="Vista previa" 
+                                                            <img
+                                                                src={cert.preview || (cert.path ? `/storage/${cert.path}` : '')}
+                                                                alt="Vista previa"
                                                                 className="w-full h-full object-cover"
                                                             />
                                                         </div>
@@ -2409,7 +2409,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             />
                                             <InputError message={errors.contacto_notificacion_puesto} />
                                         </div>
-                                        <div>
+                                        {/* <div>
                                             <label className="block text-sm font-medium text-gray-700">Cédula <span className="text-red-500">*</span></label>
                                             <input
                                                 type="text"
@@ -2425,30 +2425,32 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 required
                                             />
                                             <InputError message={errors.contacto_notificacion_cedula} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Teléfono <span className="text-red-500">*</span></label>
-                                            <input
-                                                type="text"
-                                                value={data.contacto_notificacion_telefono}
-                                                onChange={handleChange}
-                                                name="contacto_notificacion_telefono"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
-                                            />
-                                            <InputError message={errors.contacto_notificacion_telefono} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Celular <span className="text-red-500">*</span></label>
-                                            <input
-                                                type="text"
-                                                value={data.contacto_notificacion_celular}
-                                                onChange={handleChange}
-                                                name="contacto_notificacion_celular"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
-                                            />
-                                            <InputError message={errors.contacto_notificacion_celular} />
+                                        </div> */}
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Teléfono <span className="text-red-500">*</span></label>
+                                                <input
+                                                    type="text"
+                                                    value={data.contacto_notificacion_telefono}
+                                                    onChange={handleChange}
+                                                    name="contacto_notificacion_telefono"
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    required
+                                                />
+                                                <InputError message={errors.contacto_notificacion_telefono} />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Celular <span className="text-red-500">*</span></label>
+                                                <input
+                                                    type="text"
+                                                    value={data.contacto_notificacion_celular}
+                                                    onChange={handleChange}
+                                                    name="contacto_notificacion_celular"
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    required
+                                                />
+                                                <InputError message={errors.contacto_notificacion_celular} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -2493,7 +2495,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             />
                                             <InputError message={errors.asignado_proceso_puesto} />
                                         </div>
-                                        <div>
+                                        {/* <div>
                                             <label className="block text-sm font-medium text-gray-700">Cédula <span className="text-red-500">*</span></label>
                                             <input
                                                 type="text"
@@ -2509,30 +2511,32 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 required
                                             />
                                             <InputError message={errors.asignado_proceso_cedula} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Teléfono <span className="text-red-500">*</span></label>
-                                            <input
-                                                type="text"
-                                                value={data.asignado_proceso_telefono}
-                                                onChange={handleChange}
-                                                name="asignado_proceso_telefono"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
-                                            />
-                                            <InputError message={errors.asignado_proceso_telefono} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Celular <span className="text-red-500">*</span></label>
-                                            <input
-                                                type="text"
-                                                value={data.asignado_proceso_celular}
-                                                onChange={handleChange}
-                                                name="asignado_proceso_celular"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                required
-                                            />
-                                            <InputError message={errors.asignado_proceso_celular} />
+                                        </div> */}
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Teléfono <span className="text-red-500">*</span></label>
+                                                <input
+                                                    type="text"
+                                                    value={data.asignado_proceso_telefono}
+                                                    onChange={handleChange}
+                                                    name="asignado_proceso_telefono"
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    required
+                                                />
+                                                <InputError message={errors.asignado_proceso_telefono} />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Celular <span className="text-red-500">*</span></label>
+                                                <input
+                                                    type="text"
+                                                    value={data.asignado_proceso_celular}
+                                                    onChange={handleChange}
+                                                    name="asignado_proceso_celular"
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    required
+                                                />
+                                                <InputError message={errors.asignado_proceso_celular} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -3033,7 +3037,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     onClose={() => setToast({ ...toast, show: false })}
                 />
             )}
-            
+
             {/* Agregar el modal de confirmación al final del componente */}
             <DeleteModal
                 isOpen={deleteModalOpen}

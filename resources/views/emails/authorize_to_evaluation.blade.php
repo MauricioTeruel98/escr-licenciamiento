@@ -55,6 +55,9 @@
         <div class="content">
             <p>Hola {{$company->name}}</p>
             <p>Tu empresa está autorizada para realizar la Evaluación.</p>
+
+            <p>Para continuar, ingrese a la plataforma y complete su evaluación.</p>
+            <a href="{{ url('/dashboard') }}" class="button">Ir a la plataforma</a>
         </div>
         
         <div class="footer">

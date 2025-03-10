@@ -357,10 +357,18 @@ class IndicadorAnswerController extends Controller
 
                 // Enviar email con PDF al usuario administrador de la empresa
                 $admin = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
-                Mail::to($admin->email)->send(new AutoEvaluationResults($fullPath, $company));
+                try {
+                    Mail::to($admin->email)->send(new AutoEvaluationResults($fullPath, $company));
+                } catch (\Exception $e) {
+                    Log::error('Error al enviar el correo de resultados de evaluación: ' . $e->getMessage());
+                }
 
                 $superadminuser = User::where('role', 'super_admin')->first();
-                Mail::to($superadminuser->email)->send(new AutoEvaluationComplete($fullPath, $company));
+                try {
+                    Mail::to($superadminuser->email)->send(new AutoEvaluationComplete($fullPath, $company));
+                } catch (\Exception $e) {
+                    Log::error('Error al enviar el correo de resultados de evaluación al superadmin: ' . $e->getMessage());
+                }
 
                 // Actualizar la columna autoeval_ended en la tabla companies
                 $company->update([
@@ -542,10 +550,18 @@ class IndicadorAnswerController extends Controller
 
                 // Enviar email con PDF al usuario administrador de la empresa
                 $admin = User::where('company_id', $companyId)->where('role', 'admin')->first();
-                Mail::to($admin->email)->send(new AutoEvaluationResults($fullPath, $company));
+                try {
+                    Mail::to($admin->email)->send(new AutoEvaluationResults($fullPath, $company));
+                } catch (\Exception $e) {
+                    Log::error('Error al enviar el correo de resultados de evaluación: ' . $e->getMessage());
+                }
 
                 $superadminuser = User::where('role', 'super_admin')->first();
-                Mail::to($superadminuser->email)->send(new AutoEvaluationComplete($fullPath, $company));
+                try {
+                    Mail::to($superadminuser->email)->send(new AutoEvaluationComplete($fullPath, $company));
+                } catch (\Exception $e) {
+                    Log::error('Error al enviar el correo de resultados de evaluación al superadmin: ' . $e->getMessage());
+                }
 
                 // Actualizar la columna autoeval_ended en la tabla companies
                 $company->update([

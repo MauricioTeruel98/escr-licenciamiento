@@ -258,12 +258,20 @@ class EvaluationAnswerController extends Controller
 
                     // Enviar email con PDF al usuario administrador de la empresa
                     if ($adminUser) {
-                        Mail::to($adminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));
+                        try {
+                            Mail::to($adminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));
+                        } catch (\Exception $e) {
+                            Log::error('Error al enviar el correo de resultados de evaluación: ' . $e->getMessage());
+                        }
                     }
 
                     // Enviar email con PDF al superadmin
                     if ($superAdminUser) {
-                        Mail::to($superAdminUser->email)->send(new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company));
+                        try {
+                            Mail::to($superAdminUser->email)->send(new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company));
+                        } catch (\Exception $e) {
+                            Log::error('Error al enviar el correo de resultados de evaluación al superadmin: ' . $e->getMessage());
+                        }
                     }
 
                     $company->estado_eval = 'evaluado';
