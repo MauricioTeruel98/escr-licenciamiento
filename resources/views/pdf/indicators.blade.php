@@ -45,6 +45,7 @@
             color: #333;
             margin: 0;
             padding: 20px;
+            font-size: 0.85rem !important;
         }
 
         .header {

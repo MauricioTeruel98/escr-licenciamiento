@@ -48,6 +48,7 @@
             color: #333;
             margin: 0;
             padding: 20px;
+            font-size: 0.85rem !important;
         }
 
         @page {
@@ -177,7 +178,7 @@
                     <th>Requisito</th>
                     <th>Indicador</th>
                     <th>Cumplimiento</th>
-                    {{-- <th>Justificación</th> --}}
+                    <th>Justificación</th>
                 </tr>
                 @foreach($value->subcategories as $subcategory)
                     @foreach($subcategory->indicators as $indicator)
@@ -197,7 +198,13 @@
                                     No respondida
                                 @endif
                             </td>
-                            {{-- <td></td> --}}
+                            <td>
+                                @if(isset($answers[$value->id]))
+                                    {{ $answers[$value->id]->firstWhere('indicator_id', $indicator->id)->justification }}
+                                @else
+                                    Sin justificación
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 @endforeach

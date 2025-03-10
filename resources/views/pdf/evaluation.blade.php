@@ -48,6 +48,7 @@
             color: #333;
             margin: 0;
             padding: 25px;
+            font-size: 0.85rem !important;
         }
 
         @page {
@@ -511,6 +512,9 @@
             @foreach ($indicatorsByValue[$value->id] as $indicator)
                 <div class="indicator-section">
                     <h4>{{ $indicator->name }}</h4>
+                    {{-- <p><strong>Valor:</strong> <span style="color: #157f3d;">{{ $indicator->value->name }}</span></p> --}}
+                    <p><strong>Componente:</strong> <span style="color: #157f3d;">{{ $indicator->subcategory->name }}</span></p>
+                    <p><strong>Requisito:</strong> <span style="color: #157f3d;">{{ $indicator->requisito->name }}</span></p>
 
                     <!-- Pregunta de autoevaluación -->
                     <div class="auto-evaluation-section">
@@ -528,14 +532,14 @@
                                                 @if ($indicator->is_binary)
                                                     {{ $autoAnswer->answer == 1 ? 'Sí' : 'No' }}
                                                 @else
-                                                    {{ $autoAnswer->answer }}
+                                                    {{ $autoAnswer->justification }}
                                                 @endif
                                             </span>
                                         </p>
-                                        @if ($autoAnswer->justification)
+                                        {{-- @if ($autoAnswer->justification)
                                             <p><strong>Justificación:</strong> <span
                                                     class="justification">{{ $autoAnswer->justification }}</span></p>
-                                        @endif
+                                        @endif --}}
                                     </div>
                                 @endforeach
                             @else
@@ -554,8 +558,63 @@
                     <table>
                         <tr>
                             <th>Pregunta</th>
+                            {{-- <th>Respuesta</th> --}}
+                            <th>Cumplimiento</th>
+                            <th>Justificación</th>
+                        </tr>
+                        @foreach ($indicator->evaluationQuestions as $question)
+                            <tr>
+                                <td>{{ $question->question }}</td>
+                                {{-- <td>
+                                    @if (isset($companyAnswers[$indicator->id]))
+                                        @foreach ($companyAnswers[$indicator->id] as $answer)
+                                            @if ($answer->evaluation_question_id == $question->id)
+                                                <p>{{ $answer->answer == 1 ? 'Sí' : 'No' }}</p>
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        <p>Sin respuesta</p>
+                                    @endif
+                                </td> --}}
+                                <td class="">
+                                    @if (isset($evaluatorAssessments[$indicator->id]))
+                                        @foreach ($evaluatorAssessments[$indicator->id] as $assessment)
+                                            @if ($assessment->evaluation_question_id == $question->id)
+                                                @if ($assessment->approved)
+                                                    <span class="approved">Sí</span>
+                                                    <p>Comentario del evaluador: {{ $assessment->comment }}</p>
+                                                @else
+                                                    <span class="not-approved">No</span>
+                                                    <p><strong>Comentario del evaluador:</strong> {{ $assessment->comment }}</p>
+                                                @endif
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        <span>No evaluado</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if (isset($companyAnswers[$indicator->id]))
+                                        @foreach ($companyAnswers[$indicator->id] as $answer)
+                                            @if ($answer->evaluation_question_id == $question->id)
+                                                <p>{{ $answer->description }}</p>
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        <p>Sin respuesta</p>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </table>
+
+                    {{--
+                    <h5>Evaluación</h5>
+                    <table>
+                        <tr>
+                            <th>Pregunta</th>
                             <th>Respuesta de la empresa</th>
-                            <th>Aprobado</th>
+                            <th>Cumplimiento</th>
                             <th>Comentario del evaluador</th>
                         </tr>
                         @foreach ($indicator->evaluationQuestions as $question)
@@ -567,7 +626,7 @@
                                             @if ($answer->evaluation_question_id == $question->id)
                                                 <p><strong>Respuesta:</strong> {{ $answer->answer == 1 ? 'Sí' : 'No' }}
                                                 </p>
-                                                <p><strong>Descripción:</strong> {{ $answer->description }}</p>
+                                                <p><strong>Justificación:</strong> {{ $answer->description }}</p>
                                                 @if ($answer->file_path)
                                                     <p><strong>Archivos adjuntos:</strong> Sí</p>
                                                 @endif
@@ -600,10 +659,12 @@
                                             @endif
                                         @endforeach
                                     @endif
+                    
                                 </td>
                             </tr>
                         @endforeach
                     </table>
+                    --}}
                 </div>
             @endforeach
         @else
