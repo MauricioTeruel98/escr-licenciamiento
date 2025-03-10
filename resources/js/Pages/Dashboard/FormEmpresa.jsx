@@ -1578,6 +1578,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 rows="3"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 placeholder="Ingrese la dirección detallada (calle, número, referencias, etc.)"
+                                                maxLength="150"
                                                 required
                                             ></textarea>
                                             <InputError message={errors.direccion_empresa} />
