@@ -287,10 +287,18 @@ class EvaluationAnswerController extends Controller
                     $superAdminUser = User::where('role', 'super_admin')->first();
 
                     if ($adminUser) {
-                        $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
+                        try{
+                            $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
+                        } catch (\Exception $e) {
+                            Log::error('Error al enviar la notificación de evaluación completada al administrador: ' . $e->getMessage());
+                        }
                     }
                     if ($superAdminUser) {
-                        $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
+                        try{
+                            $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
+                        } catch (\Exception $e) {
+                            Log::error('Error al enviar la notificación de evaluación completada al superadmin: ' . $e->getMessage());
+                        }
                     }
 
                     // Registrar que se enviaron las notificaciones
@@ -598,10 +606,18 @@ class EvaluationAnswerController extends Controller
                 // Verificar si ya se enviaron las notificaciones para evitar duplicados
                 if (!$this->notificationsAlreadySent($user->company_id, $request->value_id, 'evaluacion-completada')) {
                     if ($adminUser) {
-                        $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
+                        try{
+                            $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
+                        } catch (\Exception $e) {
+                            Log::error('Error al enviar la notificación de evaluación completada al administrador: ' . $e->getMessage());
+                        }
                     }
                     if ($superAdminUser) {
-                        $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
+                        try{
+                            $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
+                        } catch (\Exception $e) {
+                            Log::error('Error al enviar la notificación de evaluación completada al superadmin: ' . $e->getMessage());
+                        }
                     }
 
                     // Registrar que se enviaron las notificaciones

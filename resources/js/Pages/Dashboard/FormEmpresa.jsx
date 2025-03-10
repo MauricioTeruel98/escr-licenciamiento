@@ -1956,7 +1956,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             onDrop={(e) => handleDrop(e, 'fotografias')}
                                         >
                                             <div className="text-center text-gray-600">
-                                                Arrastre png, jpg o <span className="text-green-600">Cargar</span>
+                                                Arrastre o <span className="text-green-600">Cargar</span>
                                                 <p className="text-xs mt-1">Máximo 3 fotografías. Solo formatos jpg, jpeg o png.</p>
                                             </div>
                                             <input
@@ -2022,7 +2022,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             onDrop={(e) => handleDrop(e, 'logo')}
                                         >
                                             <div className="text-center text-gray-600">
-                                                Arrastre png, jpg o <span className="text-green-600">Cargar</span>
+                                                Arrastre o <span className="text-green-600">Cargar</span>
                                                 <p className="text-xs mt-1">Máximo 1 logo. Solo formatos jpg, jpeg o png.</p>
                                             </div>
                                             <input
@@ -2115,7 +2115,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             onDrop={(e) => handleDrop(e, 'certificaciones')}
                                         >
                                             <div className="text-center text-gray-600">
-                                                Arrastre png, jpg o <span className="text-green-600">Cargar</span>
+                                                Arrastre o <span className="text-green-600">Cargar</span>
                                                 <p className="text-xs mt-1">Máximo 5 certificaciones. Solo formatos jpg, jpeg o png.</p>
                                             </div>
                                             <input
@@ -2848,7 +2848,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                             onClick={() => toggleSeccion('productos')}
                             className="w-full p-6 flex justify-between items-center text-left"
                         >
-                            <h2 className="text-xl font-semibold">Productos</h2>
+                            <h2 className="text-xl font-semibold">Licencia de producto</h2>
                             <svg
                                 className={`w-6 h-6 transform transition-transform ${seccionesExpandidas.productos ? 'rotate-180' : ''
                                     }`}
@@ -2923,7 +2923,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                         onDrop={(e) => handleDrop(e, 'producto', index)}
                                                     >
                                                         <div className="text-center text-gray-600">
-                                                            Arrastre png, jpg o <span className="text-green-600">Cargar</span>
+                                                            Arrastre o <span className="text-green-600">Cargar</span>
                                                             <p className="text-xs mt-1">Máximo 1 imagen por producto. Solo formatos jpg, jpeg o png.</p>
                                                         </div>
                                                         <input

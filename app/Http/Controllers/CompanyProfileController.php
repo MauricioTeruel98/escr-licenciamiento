@@ -41,12 +41,10 @@ class CompanyProfileController extends Controller
             // Procesar datos de ubicación (provincia, cantón y distrito)
             $companyData = [];
 
+            $infoAdicional = InfoAdicionalEmpresa::where('company_id', $companyId)->first();
+
             $camposObligatorios = [
-                'direccion_empresa',
-                'nombre_comercial',
-                'nombre_legal',
-                'descripcion_es',
-                'descripcion_en',
+                $infoAdicional->direccion_empresa,
             ];
             
             // Obtener los nombres de provincia, cantón y distrito a partir de los IDs
