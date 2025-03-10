@@ -1915,7 +1915,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 Procesando...
                                             </>
                                         ) : (
-                                            'Guardar Cambios'
+                                            'Guardar Información'
                                         )}
                                     </button>
                                 </div>
@@ -2200,7 +2200,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 Procesando...
                                             </>
                                         ) : (
-                                            'Guardar Cambios'
+                                            'Guardar Imagenes'
                                         )}
                                     </button>
                                 </div>
@@ -2342,7 +2342,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 Procesando...
                                             </>
                                         ) : (
-                                            'Guardar Cambios'
+                                            'Guardar datos'
                                         )}
                                     </button>
                                 </div>
@@ -2834,7 +2834,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 Procesando...
                                             </>
                                         ) : (
-                                            'Guardar Cambios'
+                                            'Guardar datos de contacto'
                                         )}
                                     </button>
                                 </div>
@@ -3019,7 +3019,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 Procesando...
                                             </>
                                         ) : (
-                                            'Guardar Cambios'
+                                            'Guardar productos'
                                         )}
                                     </button>
                                 </div>
