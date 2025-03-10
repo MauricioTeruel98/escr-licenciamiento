@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import ImageLayout from '@/Layouts/ImageLayout';
 
 export default function CompanyRegister({ legalId, provincias }) {
+
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         website: '',

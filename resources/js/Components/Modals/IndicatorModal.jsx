@@ -119,48 +119,48 @@ export default function IndicatorModal({
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        // Verificar si hay preguntas vacías
-        const hasEmptyQuestions = formData.evaluation_questions.some(question => question.trim() === '');
-        
-        if (hasEmptyQuestions) {
-            // Mostrar un mensaje de error
-            setValidationError('Hay preguntas de evaluación vacías. Por favor, complételas o elimínelas antes de continuar.');
-            // Hacer scroll a la sección de preguntas
-            document.querySelector('.evaluation-questions-section')?.scrollIntoView({ behavior: 'smooth' });
+        // Validar que haya al menos una pregunta de evaluación
+        if (!formData.evaluation_questions.length || formData.evaluation_questions.every(q => !q.trim())) {
+            setValidationError('Debe agregar al menos una pregunta de evaluación');
             return;
         }
-        
-        // Limpiar error de validación
-        setValidationError(null);
-        
-        // Preparar los datos para enviar
-        const filteredFormData = {
+
+        // Validar que no haya preguntas vacías
+        const hasEmptyQuestions = formData.evaluation_questions.some(q => !q.trim());
+        if (hasEmptyQuestions) {
+            setValidationError('No puede haber preguntas vacías');
+            return;
+        }
+
+        // Filtrar preguntas vacías (por si acaso)
+        const filteredQuestions = formData.evaluation_questions.filter(q => q.trim());
+        const filteredBinary = formData.evaluation_questions_binary.filter((_, i) => formData.evaluation_questions[i].trim());
+
+        // Crear una copia del formData con las preguntas filtradas
+        const submissionData = {
             ...formData,
-            evaluation_questions: formData.evaluation_questions.filter(question => question.trim() !== ''),
-            evaluation_questions_binary: formData.evaluation_questions
-                .map((question, index) => ({ question, binary: formData.evaluation_questions_binary[index] || false }))
-                .filter(item => item.question.trim() !== '')
-                .map(item => item.binary)
+            evaluation_questions: filteredQuestions,
+            evaluation_questions_binary: filteredBinary
         };
-        
-        // Si estamos editando un indicador existente, también necesitamos manejar los IDs de las preguntas
-        if (indicator && formData.evaluation_question_ids) {
-            // Filtrar los IDs de las preguntas que no están vacías
-            filteredFormData.evaluation_question_ids = formData.evaluation_questions
-                .map((question, index) => ({ 
-                    question, 
-                    id: formData.evaluation_question_ids && index < formData.evaluation_question_ids.length 
-                        ? formData.evaluation_question_ids[index] 
-                        : null 
-                }))
-                .filter(item => item.question.trim() !== '')
-                .map(item => item.id)
-                .filter(id => id !== null);
+
+        // Enviar los datos al componente padre con un tipo de evento
+        if (indicator) {
+            // Si estamos editando, enviamos un evento de actualización
+            onSubmit({ 
+                type: 'indicator_updated', 
+                indicatorId: indicator.id, 
+                data: submissionData 
+            });
+        } else {
+            // Si estamos creando, enviamos un evento de creación
+            onSubmit({ 
+                type: 'indicator_created', 
+                data: submissionData 
+            });
         }
         
-        onSubmit(filteredFormData);
-        //recargar la pagina
-        window.location.reload();
+        // Cerrar el modal
+        handleClose();
     };
 
     const handleClose = () => {
@@ -176,6 +176,21 @@ export default function IndicatorModal({
             evaluation_questions: [...prev.evaluation_questions, ''],
             evaluation_questions_binary: [...prev.evaluation_questions_binary, true]
         }));
+        
+        // Hacer scroll a la última pregunta añadida
+        setTimeout(() => {
+            const questionElements = document.querySelectorAll('.question-item');
+            if (questionElements.length > 0) {
+                const lastQuestion = questionElements[questionElements.length - 1];
+                lastQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Enfocar el último input de pregunta
+                const lastInput = lastQuestion.querySelector('input[type="text"]');
+                if (lastInput) {
+                    lastInput.focus();
+                }
+            }
+        }, 100);
     };
 
     const handleDeleteQuestion = (index) => {
@@ -211,6 +226,12 @@ export default function IndicatorModal({
                             ? prev.evaluation_question_ids.filter((_, i) => i !== index)
                             : undefined
                     }));
+                    
+                    // Notificar al componente padre que se ha eliminado una pregunta
+                    if (onSubmit) {
+                        // Enviamos un evento personalizado para indicar que se eliminó una pregunta
+                        onSubmit({ type: 'question_deleted', indicatorId: indicator.id, questionId });
+                    }
                 })
                 .catch(error => {
                     console.error('Error al eliminar la pregunta:', error);

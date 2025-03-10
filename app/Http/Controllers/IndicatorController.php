@@ -179,8 +179,13 @@ class IndicatorController extends Controller
             $question = $indicator->evaluationQuestions()->findOrFail($questionId);
             $question->delete();
             
+            // Recargar el indicador con sus relaciones para devolver datos actualizados
+            $indicator = Indicator::with(['homologations', 'value', 'subcategory', 'evaluationQuestions', 'requisito'])
+                ->findOrFail($indicatorId);
+            
             return response()->json([
-                'message' => 'Pregunta de evaluación eliminada exitosamente'
+                'message' => 'Pregunta de evaluación eliminada exitosamente',
+                'indicator' => $indicator
             ]);
         } catch (\Exception $e) {
             return response()->json([

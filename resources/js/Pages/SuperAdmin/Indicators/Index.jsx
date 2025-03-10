@@ -32,6 +32,7 @@ export default function IndicatorsIndex() {
     });
     const [viewQuestionsModalOpen, setViewQuestionsModalOpen] = useState(false);
     const [selectedIndicatorForQuestions, setSelectedIndicatorForQuestions] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const columns = [
         { key: 'name', label: 'Nombre' },
@@ -135,24 +136,36 @@ export default function IndicatorsIndex() {
     }, []);
 
     const loadIndicators = async (page = 1, perPage = 10, search = '') => {
+        setLoading(true);
         try {
             const response = await axios.get('/api/indicators', {
                 params: {
                     page,
                     per_page: perPage,
-                    search,
-                    with: ['homologations', 'value', 'subcategory']
+                    search
                 }
             });
+            
             setIndicators(response.data.data);
             setPagination({
                 currentPage: response.data.current_page,
-                lastPage: response.data.last_page,
+                perPage: response.data.per_page,
                 total: response.data.total,
-                perPage: response.data.per_page
+                lastPage: response.data.last_page
             });
+            
+            // Si hay un indicador seleccionado, actualizamos su información
+            if (selectedIndicator) {
+                const updatedIndicator = response.data.data.find(ind => ind.id === selectedIndicator.id);
+                if (updatedIndicator) {
+                    setSelectedIndicator(updatedIndicator);
+                }
+            }
+            
+            setLoading(false);
         } catch (error) {
             console.error('Error al cargar indicadores:', error);
+            setLoading(false);
             showNotification('error', 'Error al cargar los indicadores');
         }
     };
@@ -228,6 +241,20 @@ export default function IndicatorsIndex() {
 
     const handleSubmit = async (formData) => {
         try {
+            // Verificar si es un evento personalizado
+            if (formData.type) {
+                // Manejar eventos personalizados
+                if (formData.type === 'question_deleted') {
+                    // Ya se ha eliminado la pregunta en el backend, solo necesitamos recargar los datos
+                    await loadIndicators(pagination.currentPage, pagination.perPage, searchTerm);
+                    showNotification('success', 'Pregunta eliminada exitosamente');
+                    return;
+                } else if (formData.type === 'indicator_updated' || formData.type === 'indicator_created') {
+                    // Continuar con el flujo normal para guardar el indicador
+                    formData = formData.data;
+                }
+            }
+
             // Verificar si hay preguntas vacías y filtrarlas
             if (formData.evaluation_questions && formData.evaluation_questions.length > 0) {
                 const hasEmptyQuestions = formData.evaluation_questions.some(q => !q.trim());
@@ -243,10 +270,10 @@ export default function IndicatorsIndex() {
                 await axios.post('/api/indicators', formData);
                 showNotification('success', 'Indicador creado exitosamente');
             }
-            loadIndicators(pagination.currentPage, pagination.perPage, searchTerm);
+            
+            // Recargar los indicadores para reflejar los cambios
+            await loadIndicators(pagination.currentPage, pagination.perPage, searchTerm);
             setModalOpen(false);
-            //recargar la pagina
-            window.location.reload();
         } catch (error) {
             console.error('Error al guardar indicador:', error);
             let errorMessage = 'Error al guardar el indicador';
