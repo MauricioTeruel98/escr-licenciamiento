@@ -37,6 +37,7 @@ use App\Http\Controllers\RequisitosController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\Commands\StorageCommandController;
 use App\Http\Controllers\UsersManagementSuperAdminController;
+use App\Http\Middleware\EnsureUserHasNoCompany;
 // Ruta principal
 Route::get('/', function () {
     if (Auth::check()) {
@@ -50,10 +51,18 @@ Route::controller(CompanyAuthController::class)
     ->middleware(['auth'])
     ->group(function () {
         Route::get('/regard', 'showRegard')->name('regard');
-        Route::get('/company-register', 'showCompanyRegister')->name('company.register');
-        Route::post('/company-register', 'storeCompany')->name('company.store');
-        Route::get('/legal-id', 'showLegalId')->name('legal.id');
-        Route::post('/legal-id/verify', 'verifyLegalId')->name('legal-id.verify');
+        Route::get('/company-register', 'showCompanyRegister')
+            ->middleware([EnsureUserHasNoCompany::class])
+            ->name('company.register');
+        Route::post('/company-register', 'storeCompany')
+            ->middleware([EnsureUserHasNoCompany::class])
+            ->name('company.store');
+        Route::get('/legal-id', 'showLegalId')
+            ->middleware([EnsureUserHasNoCompany::class])
+            ->name('legal.id');
+        Route::post('/legal-id/verify', 'verifyLegalId')
+            ->middleware([EnsureUserHasNoCompany::class])
+            ->name('legal-id.verify');
         Route::get('/company-exists', 'showCompanyExists')->name('company.exists');
         Route::post('/company-request-access', 'requestAccess')->name('company.request-access');
     });
