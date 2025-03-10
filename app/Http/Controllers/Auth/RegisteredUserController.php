@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -59,9 +60,13 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
-        
+
         // Enviar notificación de bienvenida
-        $user->notify(new WelcomeNotification());
+        try {
+            $user->notify(new WelcomeNotification());
+        } catch (\Exception $e) {
+            Log::error('Error al enviar la notificación de bienvenida: ' . $e->getMessage());
+        }
 
         Auth::login($user);
 

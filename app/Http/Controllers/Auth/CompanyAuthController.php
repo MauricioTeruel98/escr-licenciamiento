@@ -129,7 +129,11 @@ class CompanyAuthController extends Controller
             $user->save();
 
             // Enviar notificación al usuario solicitante
-            $user->notify(new AccessRequestPendingNotification($company));
+            try {
+                $user->notify(new AccessRequestPendingNotification($company));
+            } catch (\Exception $e) {
+                Log::error('Error al enviar la notificación de solicitud de acceso pendiente: ' . $e->getMessage());
+            }
 
             // Enviar notificación al administrador de la empresa
             $adminUser = \App\Models\User::where('company_id', $companyId)
@@ -137,7 +141,11 @@ class CompanyAuthController extends Controller
                 ->first();
 
             if ($adminUser) {
-                $adminUser->notify(new NewAccessRequestNotification($user));
+                try {
+                    $adminUser->notify(new NewAccessRequestNotification($user));
+                } catch (\Exception $e) {
+                    Log::error('Error al enviar la notificación de solicitud de acceso pendiente al administrador: ' . $e->getMessage());
+                }
             }
 
             session()->forget('pending_company_id');

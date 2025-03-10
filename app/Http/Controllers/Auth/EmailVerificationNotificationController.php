@@ -17,7 +17,11 @@ class EmailVerificationNotificationController extends Controller
             return redirect()->intended(route('dashboard', absolute: false));
         }
 
-        $request->user()->sendEmailVerificationNotification();
+        try {
+            $request->user()->sendEmailVerificationNotification();
+        } catch (\Exception $e) {
+            Log::error('Error al enviar la notificación de verificación de correo electrónico: ' . $e->getMessage());
+        }
 
         return back()->with('status', 'verification-link-sent');
     }

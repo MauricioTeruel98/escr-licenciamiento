@@ -93,9 +93,7 @@ export default function EvaluadorDashboard({ auth }) {
 
             if (response.data.success) {
                 setModalStatus('completed');
-                router.reload({ only: ['autoEvaluationResult'] });
-                router.reload({ only: ['company'] });
-                router.reload({ only: ['companyStatusEval'] });
+                router.reload({ only: ['activeCompany'] });
             } else {
                 throw new Error(response.data.message || 'Error al finalizar la evaluación');
             }

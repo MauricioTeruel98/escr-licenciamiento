@@ -42,10 +42,6 @@ class CompanyProfileController extends Controller
             $companyData = [];
 
             $infoAdicional = InfoAdicionalEmpresa::where('company_id', $companyId)->first();
-
-            $camposObligatorios = [
-                $infoAdicional->direccion_empresa,
-            ];
             
             // Obtener los nombres de provincia, cantón y distrito a partir de los IDs
             if ($request->has('provincia') && !empty($request->provincia)) {

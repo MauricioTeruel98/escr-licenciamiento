@@ -375,8 +375,28 @@ export default function Evaluation({
                                             </div>
                                         )
                                     }
+
                                     {
-                                        company.estado_eval == 'auto-evaluacion-completed' && (
+                                        company.estado_eval == 'auto-evaluacion-completed' && autoEvaluationResult.form_sended == 0 && (
+                                            <div className="space-y-4 bg-amber-50/50 p-4 rounded-lg">
+                                                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-yellow-100 mb-4">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-600">
+                                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                                    </svg>
+                                                </div>
+                                                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                                    En espera de información de la empresa
+                                                </h3>
+                                                <p className="text-sm text-gray-500">
+                                                    Debes enviar la información de la empresa para poder enviar la autoevaluación.
+                                                </p>
+                                            </div>
+                                        )
+                                    }
+                                    {
+                                        company.estado_eval == 'auto-evaluacion-completed' && autoEvaluationResult.form_sended == 1 && (
                                             <div className="space-y-4 bg-amber-50/50 p-4 rounded-lg">
                                                 <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-yellow-100 mb-4">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-600">
@@ -490,7 +510,7 @@ export default function Evaluation({
                                         )
                                     }
 
-{
+                                    {
                                         company.estado_eval == 'evaluado' && (
                                             <div className="space-y-4 bg-green-50/50 p-4 rounded-lg">
                                                 <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-100 mb-4">
