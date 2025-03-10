@@ -20,19 +20,19 @@ class CompanyProfileController extends Controller
             DB::beginTransaction();
 
             $companyId = Auth::user()->company_id;
-            
+
             // Log para depuración
             Log::info('Iniciando proceso de guardado', [
                 'request_data' => $request->all()
             ]);
-            
+
             // Procesar datos básicos
             $allData = $request->except(['productos_data', 'logo_path', 'fotografias_paths', 'certificaciones_paths', 'provincia', 'canton', 'distrito']);
-            
+
             // Convertir valores booleanos a 1 o 0
             $allData['es_exportadora'] = filter_var($allData['es_exportadora'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
             $allData['recomienda_marca_pais'] = filter_var($allData['recomienda_marca_pais'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
-            
+
             $allData['company_id'] = $companyId;
 
             // Obtener información adicional existente
@@ -42,35 +42,35 @@ class CompanyProfileController extends Controller
             $companyData = [];
 
             $infoAdicional = InfoAdicionalEmpresa::where('company_id', $companyId)->first();
-            
+
             // Obtener los nombres de provincia, cantón y distrito a partir de los IDs
             if ($request->has('provincia') && !empty($request->provincia)) {
                 // Cargar el archivo de lugares
                 $lugaresJson = Storage::disk('public')->get('lugares.json');
                 $lugares = json_decode($lugaresJson, true);
-                
+
                 // Buscar la provincia seleccionada
                 $provinciaId = $request->provincia;
                 $provinciaName = null;
                 $cantonName = null;
                 $distritoName = null;
-                
+
                 foreach ($lugares[0]['provincias'] as $provincia) {
                     if ($provincia['id'] === $provinciaId) {
                         $provinciaName = $provincia['name'];
-                        
+
                         // Buscar el cantón seleccionado
                         if ($request->has('canton') && !empty($request->canton)) {
                             $cantonId = $request->canton;
-                            
+
                             foreach ($provincia['cantones'] as $canton) {
                                 if ($canton['id'] === $cantonId) {
                                     $cantonName = $canton['name'];
-                                    
+
                                     // Buscar el distrito seleccionado
                                     if ($request->has('distrito') && !empty($request->distrito)) {
                                         $distritoId = $request->distrito;
-                                        
+
                                         foreach ($canton['distritos'] as $distrito) {
                                             if ($distrito['id'] === $distritoId) {
                                                 $distritoName = $distrito['name'];
@@ -85,19 +85,19 @@ class CompanyProfileController extends Controller
                         break;
                     }
                 }
-                
+
                 // Guardar los nombres en lugar de los IDs
                 $companyData['provincia'] = $provinciaName;
                 $companyData['canton'] = $cantonName;
                 $companyData['distrito'] = $distritoName;
-                
+
                 Log::info('Datos de ubicación procesados', [
                     'provincia' => $provinciaName,
                     'canton' => $cantonName,
                     'distrito' => $distritoName
                 ]);
             }
-            
+
             // Actualizar la información de la empresa
             if (!empty($companyData)) {
                 Company::where('id', $companyId)->update($companyData);
@@ -139,13 +139,42 @@ class CompanyProfileController extends Controller
                 'nombre_comercial',
                 'nombre_legal',
                 'descripcion_es',
+                'descripcion_en',
                 'anio_fundacion',
+                'sitio_web',
+                'tamano_empresa',
+                'cantidad_hombres',
+                'cantidad_mujeres',
+                'cantidad_otros',
+                'es_exportadora',
+                'provincia',
+                'actividad_comercial',
+                'razon_licenciamiento_es',
+                'razon_licenciamiento_en',
+                'proceso_licenciamiento',
+                'recomienda_marca_pais',
+                'observaciones',
                 'contacto_notificacion_nombre',
                 'contacto_notificacion_email',
+                'contacto_notificacion_puesto',
                 'contacto_notificacion_telefono',
-                'contacto_notificacion_celular'
+                'contacto_notificacion_celular',
+                'asignado_proceso_nombre',
+                'asignado_proceso_email',
+                'asignado_proceso_puesto',
+                'asignado_proceso_telefono',
+                'asignado_proceso_celular',
+                'representante_nombre',
+                'representante_email',
+                'representante_puesto',
+                'representante_cedula',
+                'representante_telefono',
+                'representante_celular',
+                'logo_path',
+                'fotografias_paths',
+                'certificaciones_paths'
             ];
-            
+
             $formularioCompleto = true;
             foreach ($camposObligatorios as $campo) {
                 if (empty($allData[$campo])) {
@@ -153,20 +182,20 @@ class CompanyProfileController extends Controller
                     break;
                 }
             }
-            
+
             // Solo actualizar el campo form_sended si todos los campos obligatorios están completos
             if ($formularioCompleto) {
                 DB::table('auto_evaluation_result')
                     ->where('company_id', $companyId)
                     ->update(['form_sended' => 1]);
-                
+
                 Log::info('Formulario marcado como completamente enviado', [
                     'company_id' => $companyId
                 ]);
             } else {
                 Log::info('Formulario guardado pero no marcado como completamente enviado', [
                     'company_id' => $companyId,
-                    'campos_faltantes' => array_filter($camposObligatorios, function($campo) use ($allData) {
+                    'campos_faltantes' => array_filter($camposObligatorios, function ($campo) use ($allData) {
                         return empty($allData[$campo]);
                     })
                 ]);
@@ -175,7 +204,7 @@ class CompanyProfileController extends Controller
             // Procesar productos
             if ($request->has('productos_data')) {
                 $productos = json_decode($request->productos_data, true);
-                
+
                 if (is_array($productos)) {
                     foreach ($productos as $producto) {
                         $productoData = [
@@ -184,11 +213,11 @@ class CompanyProfileController extends Controller
                             'nombre' => $producto['nombre'],
                             'descripcion' => $producto['descripcion']
                         ];
-                        
+
                         if (isset($producto['imagen'])) {
                             $productoData['imagen'] = $producto['imagen'];
                         }
-                        
+
                         // Crear o actualizar el producto
                         CompanyProducts::updateOrCreate(
                             ['info_adicional_empresa_id' => $infoAdicional->id, 'nombre' => $producto['nombre']],
@@ -207,7 +236,7 @@ class CompanyProfileController extends Controller
             }
             if (isset($responseData['fotografias_paths'])) {
                 $fotografias = json_decode($responseData['fotografias_paths'], true);
-                $responseData['fotografias_urls'] = array_map(function($path) {
+                $responseData['fotografias_urls'] = array_map(function ($path) {
                     return [
                         'name' => basename($path),
                         'path' => $path,
@@ -219,7 +248,7 @@ class CompanyProfileController extends Controller
             }
             if (isset($responseData['certificaciones_paths'])) {
                 $certificaciones = json_decode($responseData['certificaciones_paths'], true);
-                $responseData['certificaciones_urls'] = array_map(function($path) {
+                $responseData['certificaciones_urls'] = array_map(function ($path) {
                     return [
                         'name' => basename($path),
                         'path' => $path,
@@ -229,7 +258,7 @@ class CompanyProfileController extends Controller
                     ];
                 }, $certificaciones);
             }
-            
+
             // Agregar información de ubicación a la respuesta
             $responseData['provincia_nombre'] = $companyData['provincia'] ?? null;
             $responseData['canton_nombre'] = $companyData['canton'] ?? null;
@@ -240,7 +269,7 @@ class CompanyProfileController extends Controller
                 'message' => 'Información guardada correctamente',
                 'data' => $responseData,
                 'formulario_completo' => $formularioCompleto,
-                'campos_faltantes' => !$formularioCompleto ? array_filter($camposObligatorios, function($campo) use ($allData) {
+                'campos_faltantes' => !$formularioCompleto ? array_filter($camposObligatorios, function ($campo) use ($allData) {
                     return empty($allData[$campo]);
                 }) : []
             ]);
@@ -250,7 +279,7 @@ class CompanyProfileController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al guardar información: ' . $e->getMessage()
@@ -312,7 +341,6 @@ class CompanyProfileController extends Controller
             }
 
             return response()->json(['success' => true, 'message' => 'Archivo eliminado correctamente']);
-
         } catch (\Exception $e) {
             Log::error('Error al eliminar archivo:', [
                 'error' => $e->getMessage(),
@@ -330,13 +358,12 @@ class CompanyProfileController extends Controller
     {
         try {
             $path = $request->path;
-            
+
             if (!Storage::disk('public')->exists($path)) {
                 return response()->json(['message' => 'Archivo no encontrado'], 404);
             }
 
             return response()->download(storage_path('app/public/' . $path));
-
         } catch (\Exception $e) {
             Log::error('Error al descargar archivo:', [
                 'error' => $e->getMessage(),
@@ -406,30 +433,30 @@ class CompanyProfileController extends Controller
             if (!in_array($logo->getMimeType(), $allowedTypes)) {
                 $errorMessages[] = 'El logo debe ser un archivo de tipo: jpg, jpeg o png.';
             }
-            
+
             // Validar tamaño del logo
             if ($logo->getSize() > $maxSizeInBytes) {
                 $errorMessages[] = 'El logo no debe exceder los 2 MB de tamaño.';
             }
-            
+
             // El logo ya está limitado a 1 por la estructura del formulario
         }
 
         // Validar fotografías
         if ($request->hasFile('fotografias')) {
             $fotografias = $request->file('fotografias');
-            
+
             // Validar cantidad máxima
             if (count($fotografias) > $maxFiles['fotografias']) {
                 $errorMessages[] = "Solo puede subir un máximo de {$maxFiles['fotografias']} fotografías.";
             }
-            
+
             // Validar tipos de archivo y tamaño
             foreach ($fotografias as $index => $foto) {
                 if (!in_array($foto->getMimeType(), $allowedTypes)) {
                     $errorMessages[] = "La fotografía #{$index} debe ser un archivo de tipo: jpg, jpeg o png.";
                 }
-                
+
                 // Validar tamaño
                 if ($foto->getSize() > $maxSizeInBytes) {
                     $errorMessages[] = "La fotografía #{$index} no debe exceder los 2 MB de tamaño.";
@@ -440,18 +467,18 @@ class CompanyProfileController extends Controller
         // Validar certificaciones
         if ($request->hasFile('certificaciones')) {
             $certificaciones = $request->file('certificaciones');
-            
+
             // Validar cantidad máxima
             if (count($certificaciones) > $maxFiles['certificaciones']) {
                 $errorMessages[] = "Solo puede subir un máximo de {$maxFiles['certificaciones']} certificaciones.";
             }
-            
+
             // Validar tipos de archivo y tamaño
             foreach ($certificaciones as $index => $cert) {
                 if (!in_array($cert->getMimeType(), $allowedTypes)) {
                     $errorMessages[] = "La certificación #{$index} debe ser un archivo de tipo: jpg, jpeg o png.";
                 }
-                
+
                 // Validar tamaño
                 if ($cert->getSize() > $maxSizeInBytes) {
                     $errorMessages[] = "La certificación #{$index} no debe exceder los 2 MB de tamaño.";
@@ -468,12 +495,12 @@ class CompanyProfileController extends Controller
                     if (!in_array($imagen->getMimeType(), $allowedTypes)) {
                         $errorMessages[] = "La imagen del producto '{$producto['nombre']}' debe ser un archivo de tipo: jpg, jpeg o png.";
                     }
-                    
+
                     // Validar tamaño
                     if ($imagen->getSize() > $maxSizeInBytes) {
                         $errorMessages[] = "La imagen del producto '{$producto['nombre']}' no debe exceder los 2 MB de tamaño.";
                     }
-                    
+
                     // Cada producto solo puede tener 1 imagen, lo cual ya está controlado por la estructura del formulario
                 }
             }
@@ -491,10 +518,10 @@ class CompanyProfileController extends Controller
             // Validar tipos de archivos permitidos para el logo
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
             $maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
-            
+
             if ($request->hasFile('logo')) {
                 $logo = $request->file('logo');
-                
+
                 // Validar tipo
                 if (!in_array($logo->getMimeType(), $allowedTypes)) {
                     return response()->json([
@@ -503,7 +530,7 @@ class CompanyProfileController extends Controller
                         'errors' => ['logo' => ['El logo debe ser un archivo de tipo: jpg, jpeg o png.']]
                     ], 422);
                 }
-                
+
                 // Validar tamaño
                 if ($logo->getSize() > $maxSizeInBytes) {
                     return response()->json([
@@ -512,19 +539,19 @@ class CompanyProfileController extends Controller
                         'errors' => ['logo' => ['El logo no debe exceder los 2 MB de tamaño.']]
                     ], 422);
                 }
-                
+
                 $companyId = Auth::user()->company_id;
-                
+
                 // Crear directorio si no existe
                 Storage::disk('public')->makeDirectory("empresas/{$companyId}/logos");
-                
+
                 // Guardar el logo
                 $logoPath = $logo->storeAs(
                     "empresas/{$companyId}/logos",
                     time() . '_' . $logo->getClientOriginalName(),
                     'public'
                 );
-                
+
                 return response()->json([
                     'success' => true,
                     'path' => $logoPath,
@@ -538,7 +565,7 @@ class CompanyProfileController extends Controller
                     'url' => asset('storage/' . $request->logo_existente)
                 ]);
             }
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'No se ha proporcionado ningún logo.'
@@ -551,7 +578,7 @@ class CompanyProfileController extends Controller
             ], 500);
         }
     }
-    
+
     public function uploadFotografias(Request $request)
     {
         try {
@@ -559,12 +586,12 @@ class CompanyProfileController extends Controller
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
             $maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
             $companyId = Auth::user()->company_id;
-            
+
             // Crear directorio si no existe
             Storage::disk('public')->makeDirectory("empresas/{$companyId}/fotografias");
-            
+
             $fotografiasPaths = [];
-            
+
             // Primero, agregar las fotografías existentes si se enviaron
             if ($request->has('fotografias_existentes')) {
                 $existingPhotos = json_decode($request->fotografias_existentes, true);
@@ -572,7 +599,7 @@ class CompanyProfileController extends Controller
                     $fotografiasPaths = array_merge($fotografiasPaths, $existingPhotos);
                 }
             }
-            
+
             // Luego, agregar las nuevas fotografías
             if ($request->hasFile('fotografias')) {
                 foreach ($request->file('fotografias') as $index => $foto) {
@@ -584,7 +611,7 @@ class CompanyProfileController extends Controller
                             'errors' => ['fotografias.' . $index => ['La fotografía debe ser un archivo de tipo: jpg, jpeg o png.']]
                         ], 422);
                     }
-                    
+
                     // Validar tamaño
                     if ($foto->getSize() > $maxSizeInBytes) {
                         return response()->json([
@@ -593,7 +620,7 @@ class CompanyProfileController extends Controller
                             'errors' => ['fotografias.' . $index => ['La fotografía no debe exceder los 2 MB de tamaño.']]
                         ], 422);
                     }
-                    
+
                     $path = $foto->storeAs(
                         "empresas/{$companyId}/fotografias",
                         time() . '_' . $foto->getClientOriginalName(),
@@ -602,11 +629,11 @@ class CompanyProfileController extends Controller
                     $fotografiasPaths[] = $path;
                 }
             }
-            
+
             return response()->json([
                 'success' => true,
                 'paths' => $fotografiasPaths,
-                'urls' => array_map(function($path) {
+                'urls' => array_map(function ($path) {
                     return asset('storage/' . $path);
                 }, $fotografiasPaths)
             ]);
@@ -618,7 +645,7 @@ class CompanyProfileController extends Controller
             ], 500);
         }
     }
-    
+
     public function uploadCertificaciones(Request $request)
     {
         try {
@@ -626,12 +653,12 @@ class CompanyProfileController extends Controller
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
             $maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
             $companyId = Auth::user()->company_id;
-            
+
             // Crear directorio si no existe
             Storage::disk('public')->makeDirectory("empresas/{$companyId}/certificaciones");
-            
+
             $certificacionesPaths = [];
-            
+
             // Primero, agregar las certificaciones existentes si se enviaron
             if ($request->has('certificaciones_existentes')) {
                 $existingCerts = json_decode($request->certificaciones_existentes, true);
@@ -639,7 +666,7 @@ class CompanyProfileController extends Controller
                     $certificacionesPaths = array_merge($certificacionesPaths, $existingCerts);
                 }
             }
-            
+
             // Luego, agregar las nuevas certificaciones
             if ($request->hasFile('certificaciones')) {
                 foreach ($request->file('certificaciones') as $index => $cert) {
@@ -651,7 +678,7 @@ class CompanyProfileController extends Controller
                             'errors' => ['certificaciones.' . $index => ['La certificación debe ser un archivo de tipo: jpg, jpeg, png o pdf.']]
                         ], 422);
                     }
-                    
+
                     // Validar tamaño
                     if ($cert->getSize() > $maxSizeInBytes) {
                         return response()->json([
@@ -660,7 +687,7 @@ class CompanyProfileController extends Controller
                             'errors' => ['certificaciones.' . $index => ['La certificación no debe exceder los 2 MB de tamaño.']]
                         ], 422);
                     }
-                    
+
                     $path = $cert->storeAs(
                         "empresas/{$companyId}/certificaciones",
                         time() . '_' . $cert->getClientOriginalName(),
@@ -669,11 +696,11 @@ class CompanyProfileController extends Controller
                     $certificacionesPaths[] = $path;
                 }
             }
-            
+
             return response()->json([
                 'success' => true,
                 'paths' => $certificacionesPaths,
-                'urls' => array_map(function($path) {
+                'urls' => array_map(function ($path) {
                     return asset('storage/' . $path);
                 }, $certificacionesPaths)
             ]);
@@ -685,7 +712,7 @@ class CompanyProfileController extends Controller
             ], 500);
         }
     }
-    
+
     public function uploadProductos(Request $request)
     {
         try {
@@ -693,12 +720,12 @@ class CompanyProfileController extends Controller
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
             $maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
             $companyId = Auth::user()->company_id;
-            
+
             // Crear directorio si no existe
             Storage::disk('public')->makeDirectory("empresas/{$companyId}/productos");
-            
+
             $productos = [];
-            
+
             if ($request->has('productos')) {
                 foreach ($request->productos as $index => $producto) {
                     $productoData = [
@@ -706,12 +733,12 @@ class CompanyProfileController extends Controller
                         'nombre' => $producto['nombre'] ?? '',
                         'descripcion' => $producto['descripcion'] ?? ''
                     ];
-                    
+
                     // Procesar imagen del producto
                     $imagenKey = "productos.{$index}.imagen";
                     if ($request->hasFile($imagenKey)) {
                         $imagen = $request->file($imagenKey);
-                        
+
                         // Validar tipo
                         if (!in_array($imagen->getMimeType(), $allowedTypes)) {
                             return response()->json([
@@ -720,7 +747,7 @@ class CompanyProfileController extends Controller
                                 'errors' => [$imagenKey => ["La imagen del producto '{$producto['nombre']}' debe ser un archivo de tipo: jpg, jpeg o png."]]
                             ], 422);
                         }
-                        
+
                         // Validar tamaño
                         if ($imagen->getSize() > $maxSizeInBytes) {
                             return response()->json([
@@ -729,7 +756,7 @@ class CompanyProfileController extends Controller
                                 'errors' => [$imagenKey => ["La imagen del producto '{$producto['nombre']}' no debe exceder los 2 MB de tamaño."]]
                             ], 422);
                         }
-                        
+
                         $imagenPath = $imagen->storeAs(
                             "empresas/{$companyId}/productos",
                             time() . '_' . $imagen->getClientOriginalName(),
@@ -740,11 +767,11 @@ class CompanyProfileController extends Controller
                         // Mantener la imagen existente si se envió
                         $productoData['imagen'] = $producto['imagen_existente'];
                     }
-                    
+
                     $productos[] = $productoData;
                 }
             }
-            
+
             return response()->json([
                 'success' => true,
                 'productos' => $productos

@@ -729,23 +729,23 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 // Mensaje de éxito básico
                 let mensaje = '¡Datos guardados exitosamente!';
                 let tipo = 'success';
-                
+
                 // Si el formulario no está completo, mostrar un mensaje adicional
                 if (response.data.formulario_completo === false) {
                     const camposFaltantesArray = Object.keys(response.data.campos_faltantes);
                     setCamposFaltantes(camposFaltantesArray);
-                    
+
                     const numCamposFaltantes = camposFaltantesArray.length;
                     mensaje += ` Sin embargo, aún faltan ${numCamposFaltantes} campos obligatorios por completar para que el formulario se considere enviado completamente.`;
                     tipo = 'warning';
                 }
-                
+
                 setToast({
                     show: true,
                     message: mensaje,
                     type: tipo
                 });
-                
+
                 // Limpiar errores del cliente si la operación fue exitosa
                 setErrors({});
 
@@ -1433,7 +1433,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             onChange={handleChange}
                                             name="nombre_comercial"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            
+
                                         />
                                         <InputError message={errors.nombre_comercial} />
                                     </div>
@@ -1449,7 +1449,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             onChange={handleChange}
                                             name="nombre_legal"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            
+
                                         />
                                         <InputError message={errors.nombre_legal} />
                                     </div>
@@ -1465,7 +1465,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             name="descripcion_es"
                                             rows={3}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            
+
                                         />
                                         <InputError message={errors.descripcion_es} />
                                     </div>
@@ -1496,7 +1496,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             name="anio_fundacion"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             maxLength={4}
-                                            
+
                                         />
                                         <InputError message={errors.anio_fundacion} />
                                     </div>
@@ -1512,7 +1512,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             onChange={handleURLChange}
                                             name="sitio_web"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            
+
                                         />
                                         <InputError message={errors.sitio_web} />
                                     </div>
@@ -1596,7 +1596,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 placeholder="Ingrese la dirección detallada (calle, número, referencias, etc.)"
                                                 maxLength="150"
-                                                
+
                                             ></textarea>
                                             <InputError message={errors.direccion_empresa} />
                                             <p className="mt-1 text-sm text-gray-500">
@@ -1678,7 +1678,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             onChange={handleChange}
                                             name="sector"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            
+
                                         />
                                         <InputError message={errors.sector} />
                                     </div>
@@ -1754,7 +1754,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             value={data.cedula_juridica}
                                             disabled={true}
                                             className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed"
-                                            
+
                                         />
                                         <p className="text-sm text-gray-500 mt-1">
                                             Para cambiar la cédula jurídica, favor comunicarse con
@@ -1774,7 +1774,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             onChange={handleChange}
                                             name="actividad_comercial"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            
+
                                         />
                                         <InputError message={errors.actividad_comercial} />
                                     </div>
@@ -1959,162 +1959,166 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                         </button>
                         {seccionesExpandidas.logos && (
                             <div className="p-6 pt-0">
-                                {/* Fotografías de la empresa */}
-                                <div className="mb-6">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Fotografías de la empresa (máximo 3)<span className="text-red-500">*</span>
-                                    </label>
-                                    <div className="mt-2">
-                                        <label
-                                            htmlFor="fotografias-input"
-                                            className="border border-gray-300 rounded-md p-4 block cursor-pointer"
-                                            onDragOver={handleDragOver}
-                                            onDragLeave={handleDragLeave}
-                                            onDrop={(e) => handleDrop(e, 'fotografias')}
-                                        >
-                                            <div className="text-center text-gray-600">
-                                                Arrastre o <span className="text-green-600">Cargar</span>
-                                                <p className="text-xs mt-1">Máximo 3 fotografías. Solo formatos jpg, jpeg o png.</p>
-                                            </div>
-                                            <input
-                                                id="fotografias-input"
-                                                type="file"
-                                                className="hidden"
-                                                accept=".png,.jpg,.jpeg"
-                                                multiple
-                                                onChange={(e) => handleImagenChange(e, 'fotografias')}
-                                            />
+                                <div className="block lg:flex gap-2">
+                                    {/* Fotografías de la empresa */}
+                                    <div className="mb-6 w-full lg:w-1/2">
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Fotografías de la empresa (máximo 3)<span className="text-red-500">*</span>
                                         </label>
-                                        {/* Archivos cargados */}
-                                        {imagenes.fotografias?.map((foto, index) => (
-                                            <div key={index} className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
-                                                <div className="flex items-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setImagenes(prev => ({
-                                                                ...prev,
-                                                                fotografias: prev.fotografias.filter((_, i) => i !== index)
-                                                            }));
-                                                            if (foto.path) {
-                                                                handleFileDelete(foto.path, 'fotografias');
-                                                            }
-                                                        }}
-                                                        className="mr-2"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                    <span className="text-sm">
-                                                        {foto.name || 'Fotografía'}
-                                                    </span>
+                                        <div className="mt-2">
+                                            <label
+                                                htmlFor="fotografias-input"
+                                                className="border border-gray-300 rounded-md p-4 block cursor-pointer"
+                                                onDragOver={handleDragOver}
+                                                onDragLeave={handleDragLeave}
+                                                onDrop={(e) => handleDrop(e, 'fotografias')}
+                                            >
+                                                <div className="text-center text-gray-600">
+                                                    Arrastre o <span className="text-green-600">Cargar</span>
+                                                    <p className="text-xs mt-1">Máximo 3 fotografías. Solo formatos jpg, jpeg o png.</p>
                                                 </div>
-                                                {/* Vista previa de la imagen */}
-                                                {(foto.preview || foto.path) && (
-                                                    <div className="w-12 h-12 overflow-hidden rounded-md ml-2">
+                                                <input
+                                                    id="fotografias-input"
+                                                    type="file"
+                                                    className="hidden"
+                                                    accept=".png,.jpg,.jpeg"
+                                                    multiple
+                                                    onChange={(e) => handleImagenChange(e, 'fotografias')}
+                                                />
+                                            </label>
+                                            {/* Archivos cargados */}
+                                            <div className="">
+                                                {imagenes.fotografias?.map((foto, index) => (
+                                                    <div key={index} className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                        <div className="flex items-center">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setImagenes(prev => ({
+                                                                        ...prev,
+                                                                        fotografias: prev.fotografias.filter((_, i) => i !== index)
+                                                                    }));
+                                                                    if (foto.path) {
+                                                                        handleFileDelete(foto.path, 'fotografias');
+                                                                    }
+                                                                }}
+                                                                className="mr-2"
+                                                            >
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                </svg>
+                                                            </button>
+                                                            <span className="text-sm">
+                                                                {foto.name || 'Fotografía'}
+                                                            </span>
+                                                        </div>
+                                                        {/* Vista previa de la imagen */}
+                                                        {(foto.preview || foto.path) && (
+                                                            <div className="w-12 h-12 overflow-hidden rounded-md ml-2">
+                                                                <img
+                                                                    src={foto.preview || (foto.path ? `/storage/${foto.path}` : '')}
+                                                                    alt="Vista previa"
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Logo de la empresa */}
+                                    <div className="mb-6 w-full lg:w-1/2">
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Logo de la empresa<span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="mt-2">
+                                            <label
+                                                htmlFor="logo-input"
+                                                className="border border-gray-300 rounded-md p-4 block cursor-pointer"
+                                                onDragOver={handleDragOver}
+                                                onDragLeave={handleDragLeave}
+                                                onDrop={(e) => handleDrop(e, 'logo')}
+                                            >
+                                                <div className="text-center text-gray-600">
+                                                    Arrastre o <span className="text-green-600">Cargar</span>
+                                                    <p className="text-xs mt-1">Máximo 1 logo. Solo formatos jpg, jpeg o png.</p>
+                                                </div>
+                                                <input
+                                                    id="logo-input"
+                                                    type="file"
+                                                    className="hidden"
+                                                    accept=".png,.jpg,.jpeg"
+                                                    onChange={(e) => handleImagenChange(e, 'logo')}
+                                                />
+                                            </label>
+
+                                            {/* Vista previa del logo existente */}
+                                            {infoAdicional?.logo_url && !imagenes.logo && data.logo_existente !== null && (
+                                                <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                    <div className="flex items-center">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeExistingImage('logo', infoAdicional.logo_path)}
+                                                            className="mr-2"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                        <span className="text-sm">Logo actual</span>
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleFileDownload(infoAdicional.logo_path)}
+                                                            className="download-button"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                            </svg>
+                                                        </button>
                                                         <img
-                                                            src={foto.preview || (foto.path ? `/storage/${foto.path}` : '')}
-                                                            alt="Vista previa"
-                                                            className="w-full h-full object-cover"
+                                                            src={infoAdicional.logo_url}
+                                                            alt="Logo preview"
+                                                            className="w-10 h-10 object-cover ml-2 rounded"
                                                         />
                                                     </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                                </div>
+                                            )}
 
-                                {/* Logo de la empresa */}
-                                <div className="mb-6">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Logo de la empresa<span className="text-red-500">*</span>
-                                    </label>
-                                    <div className="mt-2">
-                                        <label
-                                            htmlFor="logo-input"
-                                            className="border border-gray-300 rounded-md p-4 block cursor-pointer"
-                                            onDragOver={handleDragOver}
-                                            onDragLeave={handleDragLeave}
-                                            onDrop={(e) => handleDrop(e, 'logo')}
-                                        >
-                                            <div className="text-center text-gray-600">
-                                                Arrastre o <span className="text-green-600">Cargar</span>
-                                                <p className="text-xs mt-1">Máximo 1 logo. Solo formatos jpg, jpeg o png.</p>
-                                            </div>
-                                            <input
-                                                id="logo-input"
-                                                type="file"
-                                                className="hidden"
-                                                accept=".png,.jpg,.jpeg"
-                                                onChange={(e) => handleImagenChange(e, 'logo')}
-                                            />
-                                        </label>
-
-                                        {/* Vista previa del logo existente */}
-                                        {infoAdicional?.logo_url && !imagenes.logo && data.logo_existente !== null && (
-                                            <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
-                                                <div className="flex items-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeExistingImage('logo', infoAdicional.logo_path)}
-                                                        className="mr-2"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                    <span className="text-sm">Logo actual</span>
+                                            {/* Vista previa del nuevo logo */}
+                                            {imagenes.logo instanceof File && (
+                                                <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                    <div className="flex items-center">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setImagenes(prev => ({
+                                                                    ...prev,
+                                                                    logo: null
+                                                                }));
+                                                            }}
+                                                            className="mr-2"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                        <span className="text-sm">{imagenes.logo?.name}</span>
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <span className="text-sm mr-2">{imagenes.logo ? Math.round(imagenes.logo.size / 1024) : 0} KB</span>
+                                                        <img
+                                                            src={imagenes.logo.preview || URL.createObjectURL(imagenes.logo)}
+                                                            alt="Logo preview"
+                                                            className="w-10 h-10 object-cover ml-2 rounded"
+                                                        />
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleFileDownload(infoAdicional.logo_path)}
-                                                        className="download-button"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                        </svg>
-                                                    </button>
-                                                    <img
-                                                        src={infoAdicional.logo_url}
-                                                        alt="Logo preview"
-                                                        className="w-10 h-10 object-cover ml-2 rounded"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Vista previa del nuevo logo */}
-                                        {imagenes.logo instanceof File && (
-                                            <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
-                                                <div className="flex items-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setImagenes(prev => ({
-                                                                ...prev,
-                                                                logo: null
-                                                            }));
-                                                        }}
-                                                        className="mr-2"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                    <span className="text-sm">{imagenes.logo?.name}</span>
-                                                </div>
-                                                <div className="flex items-center">
-                                                    <span className="text-sm mr-2">{imagenes.logo ? Math.round(imagenes.logo.size / 1024) : 0} KB</span>
-                                                    <img
-                                                        src={imagenes.logo.preview || URL.createObjectURL(imagenes.logo)}
-                                                        alt="Logo preview"
-                                                        className="w-10 h-10 object-cover ml-2 rounded"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -2145,58 +2149,60 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             />
                                         </label>
                                         {/* Archivos cargados */}
-                                        {imagenes.certificaciones?.map((cert, index) => (
-                                            <div key={index} className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
-                                                <div className="flex items-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setImagenes(prev => ({
-                                                                ...prev,
-                                                                certificaciones: prev.certificaciones.filter((_, i) => i !== index)
-                                                            }));
-                                                            if (cert.path) {
-                                                                handleFileDelete(cert.path, 'certificaciones');
-                                                            }
-                                                        }}
-                                                        className="mr-2"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                    <span className="text-sm">{cert.name || (cert instanceof File ? cert.name : 'Certificación')}</span>
-                                                </div>
-                                                <div className="flex items-center">
-                                                    <span className="text-sm mr-2">
-                                                        {cert instanceof File
-                                                            ? Math.round(cert.size / 1024)
-                                                            : Math.round((cert.size || 0) / 1024)} KB
-                                                    </span>
-                                                    {cert.url && (
+                                        <div className="grid xl:grid-cols-2 gap-2">
+                                            {imagenes.certificaciones?.map((cert, index) => (
+                                                <div key={index} className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                    <div className="flex items-center">
                                                         <button
                                                             type="button"
-                                                            onClick={() => handleFileDownload(cert.path)}
-                                                            className="download-button"
+                                                            onClick={() => {
+                                                                setImagenes(prev => ({
+                                                                    ...prev,
+                                                                    certificaciones: prev.certificaciones.filter((_, i) => i !== index)
+                                                                }));
+                                                                if (cert.path) {
+                                                                    handleFileDelete(cert.path, 'certificaciones');
+                                                                }
+                                                            }}
+                                                            className="mr-2"
                                                         >
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                             </svg>
                                                         </button>
-                                                    )}
-                                                    {/* Vista previa de la imagen */}
-                                                    {(cert.preview || cert.path) && (
-                                                        <div className="w-10 h-10 overflow-hidden rounded-md ml-2">
-                                                            <img
-                                                                src={cert.preview || (cert.path ? `/storage/${cert.path}` : '')}
-                                                                alt="Vista previa"
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        </div>
-                                                    )}
+                                                        <span className="text-sm">{cert.name || (cert instanceof File ? cert.name : 'Certificación')}</span>
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <span className="text-sm mr-2">
+                                                            {cert instanceof File
+                                                                ? Math.round(cert.size / 1024)
+                                                                : Math.round((cert.size || 0) / 1024)} KB
+                                                        </span>
+                                                        {cert.url && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleFileDownload(cert.path)}
+                                                                className="download-button"
+                                                            >
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                </svg>
+                                                            </button>
+                                                        )}
+                                                        {/* Vista previa de la imagen */}
+                                                        {(cert.preview || cert.path) && (
+                                                            <div className="w-10 h-10 overflow-hidden rounded-md ml-2">
+                                                                <img
+                                                                    src={cert.preview || (cert.path ? `/storage/${cert.path}` : '')}
+                                                                    alt="Vista previa"
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -2257,7 +2263,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             rows={4}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             placeholder="Respuesta"
-                                            
+
                                         />
                                     </div>
 
@@ -2273,7 +2279,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             rows={4}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             placeholder="Answer"
-                                            
+
                                         />
                                     </div>
 
@@ -2289,7 +2295,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             rows={4}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             placeholder="Respuesta"
-                                            
+
                                         />
                                     </div>
 
@@ -2336,7 +2342,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 rows={4}
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 placeholder="Respuesta"
-                                                
+
                                             />
                                         </div>
                                     </div>
@@ -2398,7 +2404,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="contacto_notificacion_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.contacto_notificacion_nombre} />
                                         </div>
@@ -2410,7 +2416,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="contacto_notificacion_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.contacto_notificacion_email} />
                                         </div>
@@ -2422,7 +2428,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="contacto_notificacion_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.contacto_notificacion_puesto} />
                                         </div>
@@ -2488,7 +2494,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="asignado_proceso_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.asignado_proceso_nombre} />
                                         </div>
@@ -2500,7 +2506,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="asignado_proceso_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.asignado_proceso_email} />
                                         </div>
@@ -2512,7 +2518,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="asignado_proceso_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.asignado_proceso_puesto} />
                                         </div>
@@ -2542,7 +2548,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     onChange={handleChange}
                                                     name="asignado_proceso_telefono"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                    
+
                                                 />
                                                 <InputError message={errors.asignado_proceso_telefono} />
                                             </div>
@@ -2554,7 +2560,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                     onChange={handleChange}
                                                     name="asignado_proceso_celular"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                    
+
                                                 />
                                                 <InputError message={errors.asignado_proceso_celular} />
                                             </div>
@@ -2574,7 +2580,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="representante_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.representante_nombre} />
                                         </div>
@@ -2586,7 +2592,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="representante_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.representante_email} />
                                         </div>
@@ -2598,7 +2604,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="representante_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.representante_puesto} />
                                         </div>
@@ -2615,7 +2621,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 }}
                                                 name="representante_cedula"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.representante_cedula} />
                                         </div>
@@ -2627,7 +2633,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="representante_telefono"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.representante_telefono} />
                                         </div>
@@ -2639,7 +2645,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                 onChange={handleChange}
                                                 name="representante_celular"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.representante_celular} />
                                         </div>
