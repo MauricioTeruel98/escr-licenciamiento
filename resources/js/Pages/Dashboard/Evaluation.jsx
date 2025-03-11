@@ -394,7 +394,7 @@ export default function Evaluation({
                                     }
 
                                     {
-                                        company.estado_eval == 'auto-evaluacion-completed' && autoEvaluationResult.form_sended == 0 && (
+                                        company.estado_eval == 'auto-evaluacion' && autoEvaluationResult.form_sended == 0 && (
                                             <div className="space-y-4 bg-amber-50/50 p-4 rounded-lg">
                                                 <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-yellow-100 mb-4">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-600">
@@ -408,6 +408,9 @@ export default function Evaluation({
                                                 </h3>
                                                 <p className="text-sm text-gray-500">
                                                     Debes enviar la información de la empresa para poder enviar la autoevaluación.
+                                                </p>
+                                                <p className="text-sm text-gray-500">
+                                                    Complete todos los campos obligatorios.
                                                 </p>
                                             </div>
                                         )

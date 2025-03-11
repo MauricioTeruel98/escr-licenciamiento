@@ -24,7 +24,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
     const wantsToAnswer = effectiveValue === "1";
 
     // Determinar si los inputs deben estar deshabilitados
-    const isDisabled = isHomologated || !availableToModifyAutoeval || !isExporter || autoEvalCompleted;
+    const isDisabled = isHomologated || !availableToModifyAutoeval || autoEvalCompleted;
 
     // Asegurar que si está homologado, se envíe el valor "1" al componente padre
     // Esto garantiza que el cálculo de puntaje considere los indicadores homologados como "Sí"
@@ -42,7 +42,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
     console.log(`Indicador ${code}: value=${value}, stringValue=${stringValue}, effectiveValue=${effectiveValue}, showYesChecked=${showYesChecked}, showNoChecked=${showNoChecked}`);
 
     return (
-        <div className={`bg-white rounded-lg space-y-4 ${isHomologated ? 'bg-blue-50/50 ring-1 ring-blue-100 p-3' : !isExporter ? 'bg-red-50/50 ring-1 ring-red-100 p-3' : wasHomologated ? 'bg-yellow-50/50 ring-1 ring-yellow-100 p-3' : ''}`}>
+        <div className={`bg-white rounded-lg space-y-4 ${isHomologated ? 'bg-blue-50/50 ring-1 ring-blue-100 p-3' : wasHomologated ? 'bg-yellow-50/50 ring-1 ring-yellow-100 p-3' : ''}`}>
             {/* Cabecera del indicador */}
             <div className="space-y-2">
                 <div className="inline-block">
@@ -85,21 +85,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                                 Certificación vencida - Ya no está homologado
                             </span>
                         )}
-                        {!isExporter && (
-                            <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 ml-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" 
-                                     className="h-4 w-4 mr-1" 
-                                     viewBox="0 0 24 24" 
-                                     fill="none" 
-                                     stroke="currentColor" 
-                                     strokeWidth="2" 
-                                     strokeLinecap="round" 
-                                     strokeLinejoin="round">
-                                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                                Requiere ser exportador
-                            </span>
-                        )}
+                        
                     </div>
                 </div>
                 <h3 className="text-gray-900 font-medium leading-6">
@@ -159,12 +145,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                         Respuesta automática por homologación
                     </span>
                 )}
-                
-                {!isExporter && (
-                    <span className="text-sm text-red-600 italic ml-2">
-                        Requiere ser empresa exportadora
-                    </span>
-                )}
+            
             </div>
 
             {/* Campo de justificación para preguntas no binarias */}
@@ -190,7 +171,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                         }`}
                         placeholder={wantsToAnswer ? "Respuesta..." : "Respuesta..."}
                     ></textarea>
-                    {wantsToAnswer && !justification && !isHomologated && isExporter && (
+                    {wantsToAnswer && !justification && !isHomologated && (
                         <p className="mt-1 text-sm text-red-600 font-medium">
                             Este campo es obligatorio cuando la respuesta es "Sí".
                         </p>

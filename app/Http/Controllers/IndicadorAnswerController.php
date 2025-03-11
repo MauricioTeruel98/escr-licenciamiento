@@ -160,9 +160,12 @@ class IndicadorAnswerController extends Controller
                 ->where('nota', '<', 70)
                 ->exists();
 
+            $activeValues = Value::where('is_active', true)->count();
+            $evaluatedValues = AutoEvaluationValorResult::where('company_id', $user->company_id)->count();
+
             // Determinar el estado
             $status = 'en_proceso';
-            if ($answeredIndicators === $totalIndicators) {
+            if ($evaluatedValues === $activeValues) {
                 if (!$hasFailedBindingQuestions && !$hasFailedValues) {
                     $status = 'apto';
                 } else {
@@ -467,7 +470,7 @@ class IndicadorAnswerController extends Controller
             })
             ->count();
         
-        $isComplete = $numeroDeIndicadoresAResponder === $numeroDeIndicadoresRespondidos;
+        $isComplete = $activeValues === $evaluatedValues;
         
         Log::info('Verificación de autoevaluación completa:', [
             'company_id' => $companyId,

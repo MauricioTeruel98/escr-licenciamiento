@@ -45,6 +45,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
     // Verificar si la empresa es exportadora
     const isExporter = auth.user.company?.is_exporter === true;
+    const isAuthorizedByAdmin = company.authorized_by_super_admin === 1;
 
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
@@ -267,13 +268,13 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
     const handleAnswer = (questionId, value, description = '', files = [], evaluator_comment = '') => {
         // Si la empresa no es exportadora y no es evaluador, no permitir cambios
-        if (!isExporter && !isEvaluador) {
+        /*if (!isExporter && !isEvaluador) {
             setNotification({
                 type: 'error',
                 message: 'Su empresa debe ser exportadora para poder realizar la evaluación.'
             });
             return;
-        }
+        }*/
 
         const newAnswers = { ...answers };
         newAnswers[questionId] = {
@@ -301,13 +302,13 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
     const handleApproval = (questionId, value) => {
         // Si la empresa no es exportadora y no es evaluador, no permitir cambios
-        if (!isExporter && !isEvaluador) {
+        /*if (!isExporter && !isEvaluador) {
             setNotification({
                 type: 'error',
                 message: 'Su empresa debe ser exportadora para poder realizar la evaluación.'
             });
             return;
-        }
+        }*/
 
         const newApprovals = { ...approvals };
         newApprovals[questionId] = value;
@@ -409,7 +410,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
     const handleFinish = () => {
         // Si la empresa no es exportadora y no es evaluador, no permitir finalizar
-        if (!isExporter && !isEvaluador) {
+        if (!isExporter && !isEvaluador && !isAuthorizedByAdmin) {
             setNotification({
                 type: 'error',
                 message: 'Su empresa debe ser exportadora para poder realizar la evaluación.'
@@ -648,7 +649,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     return (
         <DashboardLayout userName={userName} title="Evaluación">
             <div className="space-y-8">
-                {!isExporter && !isEvaluador && (
+                {!isExporter && !isEvaluador && !isAuthorizedByAdmin && (
                     <div className="bg-red-50 border-l-4 border-red-400 p-4">
                         <div className="flex">
                             <div className="flex-shrink-0">
@@ -658,7 +659,23 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             </div>
                             <div className="ml-3">
                                 <p className="text-sm text-red-700">
-                                    <strong>Atención:</strong> Su empresa debe ser exportadora para poder realizar la evaluación. Por favor, actualice la información de su empresa en su perfil.
+                                    <strong>Atención:</strong> Su empresa debe ser exportadora para poder realizar la auto evaluación. Por favor, actualice la información de su empresa en su perfil.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {!isExporter && !isEvaluador && isAuthorizedByAdmin && (
+                    <div className="bg-green-50 border-l-4 border-green-400 p-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-green-700">
+                                    <strong>Autorizado:</strong> Su empresa ha sido autorizada por el administrador para realizar la auto evaluación a pesar de no ser exportadora.
                                 </p>
                             </div>
                         </div>
@@ -786,7 +803,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 value="1"
                                                                 checked={answers[question.id]?.value === "1"}
                                                                 onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                                disabled={isEvaluador || (!isExporter && !isEvaluador) || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
+                                                                disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
                                                                 className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                             />
                                                             <span className="text-gray-900">Sí</span>
@@ -799,7 +816,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 value="0"
                                                                 checked={answers[question.id]?.value === "0"}
                                                                 onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                                disabled={isEvaluador || (!isExporter && !isEvaluador) || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
+                                                                disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
                                                                 className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                             />
                                                             <span className="text-gray-900">No</span>
@@ -833,7 +850,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     });
                                                                 }
                                                             }}
-                                                            disabled={isEvaluador || (!isExporter && !isEvaluador) || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
+                                                            disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
                                                             maxLength={240}
                                                             className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none disabled:bg-gray-100 disabled:text-gray-500 ${validationErrors[`description-${question.id}`] ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
                                                                 }`}
@@ -863,7 +880,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 fileType: 'Tipo de archivo no permitido. Solo se permiten archivos jpg, jpeg, png, pdf, excel y word.'
                                                             }}
                                                             onFileSelect={(file) => {
-                                                                if (!isEvaluador && isExporter) {
+                                                                if (!isEvaluador) {
                                                                     const currentFiles = answers[question.id]?.files || [];
                                                                     handleAnswer(
                                                                         question.id,
@@ -874,7 +891,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 }
                                                             }}
                                                             onFileRemove={async (fileToRemove) => {
-                                                                if (!isEvaluador && isExporter) {
+                                                                if (!isEvaluador) {
                                                                     const currentFiles = answers[question.id]?.files || [];
                                                                     const updatedFiles = currentFiles.filter(f =>
                                                                         f.path ? f.path !== fileToRemove.path : f !== fileToRemove
@@ -888,7 +905,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     );
                                                                 }
                                                             }}
-                                                            readOnly={isEvaluador || (!isExporter && !isEvaluador) || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
+                                                            disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
                                                         />
                                                         {validationErrors[`files-${question.id}`] && (
                                                             <p className="mt-1 text-sm text-red-600">

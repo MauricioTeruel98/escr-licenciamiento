@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Certification;
 use App\Models\IndicatorHomologation;
 use App\Models\Company;
+use App\Models\Value;
+
 class DashboardController extends Controller
 {
     public function index()
@@ -100,8 +102,11 @@ class DashboardController extends Controller
         $status = 'en_proceso';
         $autoEvaluationResult = \App\Models\AutoEvaluationResult::where('company_id', $user->company_id)->first();
 
+        $activeValues = Value::where('is_active', true)->count();
+        $evaluatedValues = AutoEvaluationValorResult::where('company_id', $user->company_id)->count();
+
         if ($autoEvaluationResult) {
-            if ($indicadoresRespondidos === $totalIndicadores) {
+            if ($activeValues === $evaluatedValues) {
                 if ($failedBindingIndicators->isEmpty() && $failedValues->isEmpty()) {
                     $status = 'apto';
                 } else {

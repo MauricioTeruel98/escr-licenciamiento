@@ -146,7 +146,7 @@ class CompanyProfileController extends Controller
                 'cantidad_hombres',
                 'cantidad_mujeres',
                 //'cantidad_otros',
-                'es_exportadora',
+                //'es_exportadora',
                 'actividad_comercial',
                 'razon_licenciamiento_es',
                 'razon_licenciamiento_en',

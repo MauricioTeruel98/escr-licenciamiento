@@ -20,6 +20,8 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     
     // Verificar si la empresa es exportadora
     const isExporter = company?.is_exporter === true;
+    const isEvaluador = auth.user.role === 'evaluador';
+    const isAuthorizedByAdmin = company.authorized_by_super_admin === 1;
 
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
@@ -74,13 +76,13 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
 
     const handleAnswer = (indicatorId, answer, isBinding) => {
         // Si la empresa no es exportadora, no permitir cambios
-        if (!isExporter) {
+        /*if (!isExporter) {
             setNotification({
                 type: 'error',
                 message: 'Su empresa debe ser exportadora para poder realizar la auto evaluación.'
             });
             return;
-        }
+        }*/
 
         if (!indicatorId) {
             console.error('ID del indicador no válido');
@@ -103,13 +105,13 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
 
     const handleJustificationChange = (indicatorId, text, currentAnswer) => {
         // Si la empresa no es exportadora, no permitir cambios
-        if (!isExporter) {
+        /*if (!isExporter) {
             setNotification({
                 type: 'error',
                 message: 'Su empresa debe ser exportadora para poder realizar la auto evaluación.'
             });
             return;
-        }
+        }*/
 
         if (!indicatorId) {
             console.error('ID del indicador no válido');
@@ -220,7 +222,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
 
     const handleFinish = () => {
         // Si la empresa no es exportadora, no permitir finalizar
-        if (!isExporter) {
+        if (!isExporter && !isAuthorizedByAdmin) {
             setNotification({
                 type: 'error',
                 message: 'Su empresa debe ser exportadora para poder realizar la auto evaluación.'
@@ -423,7 +425,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     return (
         <DashboardLayout userName={userName} title="Indicadores">
             <div className="space-y-8">
-                {!isExporter && (
+            {!isExporter && !isEvaluador && !isAuthorizedByAdmin && (
                     <div className="bg-red-50 border-l-4 border-red-400 p-4">
                         <div className="flex">
                             <div className="flex-shrink-0">
@@ -434,6 +436,22 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
                             <div className="ml-3">
                                 <p className="text-sm text-red-700">
                                     <strong>Atención:</strong> Su empresa debe ser exportadora para poder realizar la auto evaluación. Por favor, actualice la información de su empresa en su perfil.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {!isExporter && !isEvaluador && isAuthorizedByAdmin && (
+                    <div className="bg-green-50 border-l-4 border-green-400 p-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-green-700">
+                                    <strong>Autorizado:</strong> Su empresa ha sido autorizada por el administrador para realizar la auto evaluación a pesar de no ser exportadora.
                                 </p>
                             </div>
                         </div>
@@ -586,7 +604,7 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                                                 homologation={homologation ? homologation.certification_name : null}
                                                 guide={indicator.guide}
                                                 autoeval_ended={company.autoeval_ended}
-                                                availableToModifyAutoeval={availableToModifyAutoeval && isExporter}
+                                                availableToModifyAutoeval={availableToModifyAutoeval}
                                                 isBinary={indicator.is_binary}
                                                 justification={justifications[indicator.id] || ''}
                                                 onJustificationChange={(text, currentAnswer) => handleJustificationChange(indicator.id, text, currentAnswer)}
