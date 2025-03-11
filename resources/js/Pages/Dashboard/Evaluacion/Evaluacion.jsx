@@ -192,33 +192,21 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         let totalQuestions = 0;
         let answeredQuestions = 0;
 
-        //numeroDePreguntasQueVaAResponderLaEmpresaPorValor
-        //numeroDePreguntasQueRespondioLaEmpresa
-
         subcategories.forEach(subcategory => {
             subcategory.indicators.forEach(indicator => {
                 indicator.evaluation_questions.forEach(question => {
                     totalQuestions++;
 
-                    // Si la pregunta no es binaria, considerarla como respondida automáticamente
-                    if (question.is_binary === false || question.is_binary === 0) {
-                        answeredQuestions++;
-                        return;
-                    }
-
-                    // Para empresas, verificar que el valor esté definido
-                    const hasValue = answers[question.id]?.value !== undefined;
-
                     // Verificar que la descripción no esté vacía después de quitar espacios
                     const hasDescription = answers[question.id]?.description?.trim() !== '' &&
                         answers[question.id]?.description !== undefined;
-
+                    
                     // Verificar que haya al menos un archivo
                     const hasFiles = answers[question.id]?.files?.length > 0;
 
-                    // Una pregunta se considera respondida si tiene valor y descripción
-                    // Los archivos son opcionales en algunos casos
-                    if (hasValue && hasDescription) {
+                    // Una pregunta se considera respondida solo si tiene descripción y archivos,
+                    // independientemente de si es binaria o no, o si tiene valor asignado automáticamente
+                    if (hasDescription && hasFiles) {
                         answeredQuestions++;
                     }
                 });
@@ -345,15 +333,6 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     indicator.evaluation_questions.forEach(question => {
                         totalQuestions++;
 
-                        // Si la pregunta no es binaria, considerarla como respondida automáticamente
-                        if (question.is_binary === false || question.is_binary === 0) {
-                            answeredQuestions++;
-                            return;
-                        }
-
-                        // Para empresas, verificar que el valor esté definido
-                        const hasValue = answers[question.id]?.value !== undefined;
-
                         // Verificar que la descripción no esté vacía después de quitar espacios
                         const hasDescription = answers[question.id]?.description?.trim() !== '' &&
                             answers[question.id]?.description !== undefined;
@@ -361,8 +340,8 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                         // Verificar que haya al menos un archivo subido
                         const hasFiles = answers[question.id]?.files && answers[question.id]?.files.length > 0;
 
-                        // Una pregunta se considera respondida si tiene valor, descripción y al menos un archivo
-                        if (hasValue && hasDescription && hasFiles) {
+                        // Una pregunta se considera respondida solo si tiene descripción y archivos
+                        if (hasDescription && hasFiles) {
                             answeredQuestions++;
                         }
                     });
@@ -387,14 +366,6 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             // Para empresas
             return currentSubcategory.indicators.every(indicator =>
                 indicator.evaluation_questions.every(question => {
-                    // Si la pregunta no es binaria, considerarla como respondida automáticamente
-                    if (question.is_binary === false || question.is_binary === 0) {
-                        return true;
-                    }
-
-                    // Verificar que el valor esté definido
-                    const hasValue = answers[question.id]?.value !== undefined;
-
                     // Verificar que la descripción no esté vacía después de quitar espacios
                     const hasDescription = answers[question.id]?.description?.trim() !== '' &&
                         answers[question.id]?.description !== undefined;
@@ -402,7 +373,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     // Verificar que haya al menos un archivo subido
                     const hasFiles = answers[question.id]?.files && answers[question.id]?.files.length > 0;
 
-                    return hasValue && hasDescription && hasFiles;
+                    return hasDescription && hasFiles;
                 })
             );
         }
