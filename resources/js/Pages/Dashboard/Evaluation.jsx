@@ -593,7 +593,7 @@ export default function Evaluation({
                                                 : 'bg-red-50 text-red-700 ring-red-600/20'
                                                 } px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset flex items-center gap-2`}
                                             >
-                                                ESTATUS: {status === 'apto' ? 'APTO' : 'NO APTO'} PARA LICENCIAMIENTO
+                                                ESTATUS: {status === 'apto' ? 'APTO PARA LICENCIAMIENTO' : 'ESTATUS: PROCESO DE LLENADO DE INFORMACIÓN'}
                                             </span>
                                         </div>
 

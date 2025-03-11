@@ -422,7 +422,7 @@ export default function Indicadores({
                         </div>
                         <h1 className="text-4xl font-bold mt-3">{valueData.name}</h1>
                         <p className="text-gray-500 mt-2">
-                            Para todos los valores, debe responder cada una de las preguntas de los indicadores.
+                            Para todos los valores, debe responder cada una de las preguntas de cada componente.
                         </p>
                     </div>
                     <div className="lg:w-1/2 mt-5 lg:mt-0">
