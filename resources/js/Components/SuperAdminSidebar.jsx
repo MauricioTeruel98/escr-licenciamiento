@@ -8,7 +8,7 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
 
     // Agrupar los items de navegación
     const evaluacionItems = navigation.filter(item =>
-        ['Valores', 'Componentes', 'Requisitos', 'Homologaciones', 'Certificaciones', 'Indicadores'].includes(item.name)
+        ['Valores', 'Componentes', 'Requisitos', 'Certificaciones', 'Indicadores'].includes(item.name)
     );
 
     const usuariosItems = navigation.filter(item =>
@@ -187,6 +187,26 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                         </ul>
                     </li>
 
+                    {/* Homologaciones */   }
+                    <li className="mb-1">
+                        <Link
+                            href={route('super.homologations')}
+                            className={`
+                                block px-4 py-2 rounded-lg
+                                transition-colors duration-200
+                                focus:text-white focus:bg-green-800
+                                active:text-white active:bg-green-800
+                                ${route().current('super.homologations')
+                                    ? 'bg-green-800'
+                                    : 'hover:bg-green-800'}
+                            `}
+                        >
+                            <div className="flex items-center">
+                                Homologaciones
+                            </div>
+                        </Link>
+                    </li>
+                    
                     {/* Reportes */}
                     <li className="mb-1">
                         <Link

@@ -57,7 +57,7 @@
             
             <p>¡Gracias por registrarte en nuestra plataforma! Estamos emocionados de tenerte con nosotros.</p>
             
-            <p>Para comenzar a usar la plataforma, por favor completa el registro de tu empresa haciendo clic en el siguiente botón:</p>
+            <p>Para comenzar a usar la plataforma puede dar click en el siguiente botón:</p>
             
             <div style="text-align: center;">
                 <a href="{{ route('login') }}" class="button">Iniciar sesión</a>
@@ -65,7 +65,7 @@
             
             <p>Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.</p>
             
-            <p>¡Bienvenido a bordo!</p>
+            <p>¡Bienvenido/a!</p>
         </div>
         
         <div class="footer">
