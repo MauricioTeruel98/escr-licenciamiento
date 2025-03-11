@@ -204,7 +204,7 @@ export default function Register() {
 
                     <div className="space-y-2">
                         <label htmlFor="email" className="block text-sm">
-                            Correo electrónico
+                            Email
                             <span className="text-red-500">*</span>
                         </label>
                         <input

@@ -162,7 +162,7 @@ export default function CompanyRegister({ legalId, provincias }) {
 
     return (
         <ImageLayout title="Registro de Empresa">
-            <div className="max-w-2xl w-full mx-auto p-6">
+            <div className="max-w-2xl w-full mx-auto p-6 mt-10">
                 <h2 className="text-2xl font-semibold mb-4">Complete el registro de su empresa.</h2>
 
                 <form onSubmit={submit} className="space-y-6">
@@ -381,8 +381,7 @@ export default function CompanyRegister({ legalId, provincias }) {
                                     Ser empresa exportadora es un requisito obligatorio.
                                 </p>
                                 <p className="text-gray-600 text-sm">
-                                    Para excepciones{' '}
-                                    <a 
+                                    Para consultas <a 
                                         href="mailto:licenciasmarcapais@procomer.com" 
                                         className="text-green-600 hover:underline"
                                     >

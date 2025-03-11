@@ -93,7 +93,7 @@ export default function Login({ status, canResetPassword }) {
                 <form onSubmit={submit} className="space-y-6">
                     <div className="space-y-2">
                         <label htmlFor="email" className="block text-sm">
-                            Correo electrónico
+                            Email
                             <span className="text-red-500">*</span>
                         </label>
                         <input

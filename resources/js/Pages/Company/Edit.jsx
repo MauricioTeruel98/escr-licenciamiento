@@ -358,9 +358,8 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                         Ser empresa exportadora es un requisito obligatorio.
                                     </p>
                                     <p className="text-gray-600 text-sm">
-                                        Para excepciones{' '}
-                                        <a
-                                            href="mailto:licenciasmarcapais@procomer.com"
+                                        Para consultas <a 
+                                            href="mailto:licenciasmarcapais@procomer.com" 
                                             className="text-green-600 hover:underline"
                                         >
                                             licenciasmarcapais@procomer.com
