@@ -93,8 +93,12 @@ class IndicadoresController extends Controller
             
         // Formatear las respuestas para el componente React
         $formattedAnswers = [];
+        $formattedJustifications = [];
         foreach ($savedAnswers as $answer) {
             $formattedAnswers[$answer->indicator_id] = $answer->answer;
+            if (!empty($answer->justification)) {
+                $formattedJustifications[$answer->indicator_id] = $answer->justification;
+            }
         }
 
         // Obtener todos los IDs de indicadores homologados
@@ -128,6 +132,7 @@ class IndicadoresController extends Controller
             'value_id' => $id,
             'company_id' => $user->company_id,
             'savedAnswers' => $formattedAnswers,
+            'savedJustifications' => $formattedJustifications,
             'homologatedIndicatorIds' => $homologatedIndicatorIds,
             'currentScore' => $currentScore,
             'autoEvalCompleted' => $company->estado_eval === 'auto-evaluacion-completed'
@@ -138,6 +143,7 @@ class IndicadoresController extends Controller
             'userName' => $user->name,  
             'user' => $user,
             'savedAnswers' => $formattedAnswers,
+            'savedJustifications' => $formattedJustifications,
             'currentScore' => $currentScore,
             'certifications' => $certifications,
             'homologatedIndicators' => $homologatedIndicators,

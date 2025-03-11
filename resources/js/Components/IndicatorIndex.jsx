@@ -1,4 +1,6 @@
-export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide, autoeval_ended, availableToModifyAutoeval, isBinary, justification = '', onJustificationChange, isExporter = true, wasHomologated = false, autoEvalCompleted }) {
+import React, { useEffect } from 'react';
+
+export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide, autoeval_ended, availableToModifyAutoeval, isBinary, justification = '', onJustificationChange, isExporter = true, wasHomologated = false, autoEvalCompleted, isHomologated = false }) {
     const handleChange = (e) => {
         const selectedValue = e.target.value;
         onAnswer(selectedValue);
@@ -7,7 +9,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
     const handleJustificationChange = (e) => {
         const text = e.target.value;
         if (onJustificationChange) {
-            onJustificationChange(text, value);
+            onJustificationChange(text);
         }
     };
 
@@ -15,34 +17,49 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
     const stringValue = value !== null && value !== undefined ? String(value) : '';
     
     // Si está homologado, deshabilitar los inputs y mostrar como respondido
-    const isHomologated = !!homologation;
+    const isHomologatedFromCert = !!homologation;
 
-    // Si está homologado, forzar el valor a "1" (Sí)
-    const effectiveValue = isHomologated ? "1" : stringValue;
+    // Si está homologado (ya sea por prop o por certificación), forzar el valor a "1" (Sí)
+    const effectiveValue = isHomologated || isHomologatedFromCert ? "1" : stringValue;
 
     // Verificar si el usuario ha respondido "Sí" (para habilitar el campo de justificación)
     const wantsToAnswer = effectiveValue === "1";
 
     // Determinar si los inputs deben estar deshabilitados
-    const isDisabled = isHomologated || !availableToModifyAutoeval || autoEvalCompleted;
+    const isDisabled = isHomologated || isHomologatedFromCert || !availableToModifyAutoeval || autoEvalCompleted;
+
+    // Crear texto de justificación para homologación si es necesario
+    useEffect(() => {
+        // Solo aplicar para indicadores homologados que no son binarios y no tienen justificación
+        if ((isHomologated || isHomologatedFromCert) && !isBinary && wantsToAnswer && !justification) {
+            const homologationText = `Homologada por certificación ${homologation || 'verificada'}`;
+            
+            // Usar setTimeout para evitar problemas de renderizado
+            setTimeout(() => {
+                if (onJustificationChange) {
+                    onJustificationChange(homologationText);
+                }
+            }, 0);
+        }
+    }, [isHomologated, isHomologatedFromCert, isBinary, wantsToAnswer, justification, homologation, onJustificationChange]);
 
     // Asegurar que si está homologado, se envíe el valor "1" al componente padre
     // Esto garantiza que el cálculo de puntaje considere los indicadores homologados como "Sí"
-    if (isHomologated && stringValue !== "1" && !autoEvalCompleted) {
+    if ((isHomologated || isHomologatedFromCert) && stringValue !== "1" && !autoEvalCompleted) {
         // Solo llamar a onAnswer si el valor actual no es "1" y la autoevaluación no está completa
         setTimeout(() => onAnswer("1"), 0);
     }
 
     // Determinar si los radios deben estar marcados
     // Asegurarse de que los valores sean strings para la comparación
-    const showYesChecked = isHomologated || effectiveValue === "1";
-    const showNoChecked = !isHomologated && effectiveValue === "0";
+    const showYesChecked = isHomologated || isHomologatedFromCert || effectiveValue === "1";
+    const showNoChecked = !isHomologated && !isHomologatedFromCert && effectiveValue === "0";
 
     // Mostrar información de depuración en la consola
     // console.log(`Indicador ${code}: value=${value}, stringValue=${stringValue}, effectiveValue=${effectiveValue}, showYesChecked=${showYesChecked}, showNoChecked=${showNoChecked}`);
 
     return (
-        <div className={`bg-white rounded-lg space-y-4 ${isHomologated ? 'bg-blue-50/50 ring-1 ring-blue-100 p-3' : wasHomologated ? 'bg-yellow-50/50 ring-1 ring-yellow-100 p-3' : ''}`}>
+        <div className={`bg-white rounded-lg space-y-4 ${isHomologated || isHomologatedFromCert ? 'bg-blue-50/50 ring-1 ring-blue-100 p-3' : wasHomologated ? 'bg-yellow-50/50 ring-1 ring-yellow-100 p-3' : ''}`}>
             {/* Cabecera del indicador */}
             <div className="space-y-2">
                 <div className="inline-block">
@@ -140,7 +157,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                     <span className={`${isDisabled ? 'text-gray-400' : 'text-gray-900'}`}>No</span>
                 </label>
                 
-                {isHomologated && (
+                {(isHomologated || isHomologatedFromCert) && (
                     <span className="text-sm text-blue-600 italic ml-2">
                         Respuesta automática por homologación
                     </span>
@@ -153,7 +170,8 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                 <div className="mt-3">
                     <label htmlFor={`justification-${code}`} className="block text-sm font-medium text-gray-700 mb-1">
                         Escriba su respuesta aquí
-                        {wantsToAnswer && <span className="text-red-500 ml-1">*</span>}
+                        {wantsToAnswer && !(isHomologated || isHomologatedFromCert) && <span className="text-red-500 ml-1">*</span>}
+                        {(isHomologated || isHomologatedFromCert) && <span className="text-blue-500 ml-1">(Automática)</span>}
                     </label>
                     <textarea
                         id={`justification-${code}`}
@@ -165,15 +183,20 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                         className={`block w-full rounded-md shadow-sm sm:text-sm ${
                             isDisabled || !wantsToAnswer 
                             ? 'bg-gray-100 cursor-not-allowed border-gray-300 focus:border-green-500 focus:ring-green-500' 
-                            : wantsToAnswer && !justification 
+                            : wantsToAnswer && !justification && !(isHomologated || isHomologatedFromCert)
                               ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
                               : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
                         }`}
-                        placeholder={wantsToAnswer ? "Respuesta..." : "Respuesta..."}
+                        placeholder={wantsToAnswer ? (isHomologated || isHomologatedFromCert) ? "Justificación automática..." : "Respuesta..." : "Respuesta..."}
                     ></textarea>
-                    {wantsToAnswer && !justification && !isHomologated && (
+                    {wantsToAnswer && !justification && !(isHomologated || isHomologatedFromCert) && (
                         <p className="mt-1 text-sm text-red-600 font-medium">
                             Este campo es obligatorio cuando la respuesta es "Sí".
+                        </p>
+                    )}
+                    {(isHomologated || isHomologatedFromCert) && wantsToAnswer && (
+                        <p className="mt-1 text-sm text-blue-600 italic">
+                            La justificación se completa automáticamente para indicadores homologados.
                         </p>
                     )}
                 </div>

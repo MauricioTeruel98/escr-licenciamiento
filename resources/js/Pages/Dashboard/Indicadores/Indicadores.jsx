@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import StepIndicator from '@/Components/StepIndicator';
@@ -6,11 +6,23 @@ import IndicatorIndex from '@/Components/IndicatorIndex';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
 
-export default function Indicadores({ valueData, userName, user, savedAnswers, currentScore: initialScore, certifications, homologatedIndicators, previouslyHomologatedIndicators = [], company, availableToModifyAutoeval }) {
+export default function Indicadores({ 
+    valueData, 
+    userName, 
+    user, 
+    savedAnswers = {}, 
+    savedJustifications = {},
+    currentScore: initialScore = 0, 
+    certifications, 
+    homologatedIndicators = {}, 
+    previouslyHomologatedIndicators = [], 
+    company = {}, 
+    availableToModifyAutoeval 
+}) {
     const { auth } = usePage().props;
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
-    const [answers, setAnswers] = useState({});
-    const [justifications, setJustifications] = useState({});
+    const [answers, setAnswers] = useState(savedAnswers || {});
+    const [justifications, setJustifications] = useState(savedJustifications || {});
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [notification, setNotification] = useState(null);
     const [bindingWarning, setBindingWarning] = useState(false);
@@ -18,49 +30,72 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
     const [autoEvaluationItems, setAutoEvaluationItems] = useState(null);
     const [loading, setLoading] = useState(false);
     
-    // Verificar si la empresa es exportadora
-    const isExporter = company?.is_exporter === true;
-    const isEvaluador = auth.user.role === 'evaluador';
-    const isAuthorizedByAdmin = company.authorized_by_super_admin === 1;
+    // Valores memoizados para evitar recálculos innecesarios
+    const isExporter = useMemo(() => company?.is_exporter === true, [company]);
+    const isEvaluador = useMemo(() => auth.user.role === 'evaluador', [auth.user.role]);
+    const isAuthorizedByAdmin = useMemo(() => company.authorized_by_super_admin === 1, [company]);
+    const autoEvalCompleted = useMemo(() => company.estado_eval === 'auto-evaluacion-completed', [company.estado_eval]);
 
     const subcategories = valueData.subcategories;
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
 
-    const steps = subcategories.map(subcategory => ({
-        title: subcategory.name.split(' ')[0],
-        subtitle: subcategory.name.split(' ').slice(1).join(' ')
-    }));
+    // Transformación de datos memoizada
+    const steps = useMemo(() => 
+        subcategories.map(subcategory => ({
+            title: subcategory.name.split(' ')[0],
+            subtitle: subcategory.name.split(' ').slice(1).join(' ')
+        })), 
+    [subcategories]);
 
-    const checkBindingAnswers = (currentAnswers) => {
+    // Cálculo memoizado de indicadores homologados
+    const totalHomologatedIndicators = useMemo(() => 
+        Object.values(homologatedIndicators)
+            .reduce((total, cert) => {
+                const indicatorsInThisValue = cert.indicators.filter(indicator => 
+                    valueData.subcategories.some(subcategory =>
+                        subcategory.indicators.some(i => i.id === indicator.id)
+                    )
+                );
+                return total + indicatorsInThisValue.length;
+            }, 0),
+    [homologatedIndicators, valueData]);
+
+    // Lista memoizada de IDs de indicadores homologados
+    const homologatedIndicatorsIds = useMemo(() => {
+        const ids = [];
+        Object.values(homologatedIndicators).forEach(cert => {
+            cert.indicators.forEach(indicator => {
+                ids.push(indicator.id);
+            });
+        });
+        return ids;
+    }, [homologatedIndicators]);
+
+    // Función para verificar respuestas vinculantes
+    const checkBindingAnswers = useCallback((currentAnswers) => {
         const hasNegativeBinding = subcategories.some(subcategory =>
             subcategory.indicators.some(indicator =>
                 indicator.binding && currentAnswers[indicator.id] === "0"
             )
         );
         setBindingWarning(hasNegativeBinding);
-    };
+    }, [subcategories]);
 
-    const calculateCurrentScore = (currentAnswers) => {
-        let totalIndicators = 0;
-        let positiveAnswers = 0;
-
-        // Asegurar que currentAnswers sea un objeto
+    // Función para calcular puntaje actual
+    const calculateCurrentScore = useCallback((currentAnswers) => {
         if (!currentAnswers || typeof currentAnswers !== 'object') {
-            console.error('calculateCurrentScore: currentAnswers no es un objeto válido', currentAnswers);
             return 0;
         }
+
+        let totalIndicators = 0;
+        let positiveAnswers = 0;
 
         valueData.subcategories.forEach(subcategory => {
             subcategory.indicators.forEach(indicator => {
                 totalIndicators++;
                 
-                // Verificar si el indicador está homologado
-                const isHomologated = Object.values(homologatedIndicators).some(cert => 
-                    cert.indicators.some(i => i.id === indicator.id)
-                );
-                
-                // Si está homologado, contar como respuesta positiva
-                if (isHomologated || currentAnswers[indicator.id] === "1") {
+                // Verificar si el indicador está homologado o respondido positivamente
+                if (homologatedIndicatorsIds.includes(indicator.id) || currentAnswers[indicator.id] === "1") {
                     positiveAnswers++;
                 }
             });
@@ -68,160 +103,134 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
 
         if (totalIndicators === 0) return 0;
         
-        const score = Math.round((positiveAnswers / totalIndicators) * 100);
-        console.log('Cálculo de puntaje:', { totalIndicators, positiveAnswers, score });
-        
-        return score;
-    };
+        return Math.round((positiveAnswers / totalIndicators) * 100);
+    }, [valueData, homologatedIndicatorsIds]);
 
-    const handleAnswer = (indicatorId, answer, isBinding) => {
-        // Si la empresa no es exportadora, no permitir cambios
-        /*if (!isExporter) {
-            setNotification({
-                type: 'error',
-                message: 'Su empresa debe ser exportadora para poder realizar la auto evaluación.'
-            });
-            return;
-        }*/
-
+    // Función optimizada para responder preguntas
+    const handleAnswer = useCallback((indicatorId, answer, isBinding) => {
         if (!indicatorId) {
-            console.error('ID del indicador no válido');
             return;
         }
 
-        const newAnswers = {
-            ...answers,
-            [indicatorId]: answer
-        };
-        setAnswers(newAnswers);
-
-        const newScore = calculateCurrentScore(newAnswers);
-        setCurrentScore(newScore);
-
-        if (isBinding) {
-            checkBindingAnswers(newAnswers);
-        }
-    };
-
-    const handleJustificationChange = (indicatorId, text, currentAnswer) => {
-        // Si la empresa no es exportadora, no permitir cambios
-        /*if (!isExporter) {
-            setNotification({
-                type: 'error',
-                message: 'Su empresa debe ser exportadora para poder realizar la auto evaluación.'
-            });
+        // Si el indicador está homologado, no permitir cambios
+        if (homologatedIndicatorsIds.includes(indicatorId)) {
             return;
-        }*/
+        }
 
+        setAnswers(prev => {
+            // Crear una copia de las respuestas actuales
+            const newAnswers = {
+                ...prev,
+                [indicatorId]: answer
+            };
+            
+            // Si la respuesta es "1" y el indicador no es binario, verificar si necesita justificación
+            if (answer === "1") {
+                const indicatorData = valueData.subcategories
+                    .flatMap(subcategory => subcategory.indicators)
+                    .find(ind => ind.id === indicatorId);
+                
+                if (indicatorData && !indicatorData.is_binary && !justifications[indicatorId]) {
+                    // Revisar si es un indicador homologado
+                    const homologation = Object.values(homologatedIndicators).find(cert => 
+                        cert.indicators.some(i => i.id === indicatorId)
+                    );
+                    
+                    if (homologation) {
+                        // Si está homologado, establecer justificación automática
+                        setJustifications(prev => ({
+                            ...prev,
+                            [indicatorId]: `Homologada por certificación ${homologation.certification_name}`
+                        }));
+                    }
+                }
+            }
+            
+            // Calcular nuevo puntaje y verificar respuestas vinculantes en un solo ciclo
+            const newScore = calculateCurrentScore(newAnswers);
+            setCurrentScore(newScore);
+            
+            if (isBinding) {
+                checkBindingAnswers(newAnswers);
+            }
+            
+            return newAnswers;
+        });
+    }, [calculateCurrentScore, checkBindingAnswers, homologatedIndicatorsIds, valueData, homologatedIndicators, justifications]);
+
+    // Función optimizada para cambiar justificaciones
+    const handleJustificationChange = useCallback((indicatorId, text) => {
         if (!indicatorId) {
-            console.error('ID del indicador no válido');
             return;
         }
 
-        // Guardar la justificación
-        const newJustifications = {
-            ...justifications,
+        setJustifications(prev => ({
+            ...prev,
             [indicatorId]: text
-        };
-        setJustifications(newJustifications);
-    };
+        }));
+    }, []);
 
-    const fetchValues = async () => {
+    // Funciones para navegación
+    const handleStepClick = useCallback((index) => {
+        setCurrentSubcategoryIndex(index);
+    }, []);
+
+    const handleContinue = useCallback(() => {
+        if (currentSubcategoryIndex < subcategories.length - 1) {
+            setCurrentSubcategoryIndex(prev => prev + 1);
+        }
+    }, [currentSubcategoryIndex, subcategories.length]);
+
+    const handleBack = useCallback(() => {
+        if (currentSubcategoryIndex > 0) {
+            setCurrentSubcategoryIndex(prev => prev - 1);
+        }
+    }, [currentSubcategoryIndex]);
+
+    // Verificar si todas las preguntas están respondidas
+    const areAllQuestionsAnswered = useCallback(() => {
+        let totalQuestions = 0;
+        let answeredQuestions = 0;
+
+        valueData.subcategories.forEach(subcategory => {
+            subcategory.indicators.forEach(indicator => {
+                totalQuestions++;
+                
+                if (homologatedIndicatorsIds.includes(indicator.id) || answers[indicator.id] !== undefined) {
+                    answeredQuestions++;
+                }
+            });
+        });
+
+        // Si todos los indicadores están homologados, permitir finalizar
+        if (homologatedIndicatorsIds.length === totalQuestions) {
+            return true;
+        }
+
+        return totalQuestions === answeredQuestions;
+    }, [valueData, homologatedIndicatorsIds, answers]);
+
+    // Verificar si las preguntas de la subcategoría actual están respondidas
+    const areCurrentSubcategoryQuestionsAnswered = useCallback(() => {
+        const currentSubcategory = subcategories[currentSubcategoryIndex];
+        
+        return currentSubcategory.indicators.every(indicator => 
+            homologatedIndicatorsIds.includes(indicator.id) || answers[indicator.id] !== undefined
+        );
+    }, [subcategories, currentSubcategoryIndex, homologatedIndicatorsIds, answers]);
+
+    // Cargar valores activos
+    const fetchValues = useCallback(async () => {
         try {
             const response = await axios.get('/api/active-values');
             setAutoEvaluationItems(response.data);
         } catch (error) {
             console.error('Error al cargar valores:', error);
         }
-    };
+    }, []);
 
-    useEffect(() => {
-        // Inicializar respuestas guardadas
-        if (savedAnswers) {
-            setAnswers(savedAnswers);
-            checkBindingAnswers(savedAnswers);
-            // No recalcular el score, usar el que viene del servidor
-            // calculateCurrentScore(savedAnswers);
-        }
-
-        // Establecer explícitamente el score inicial
-        setCurrentScore(initialScore);
-
-        // Cargar datos de autoevaluación
-        fetchValues();
-        
-        // Verificar el estado de la autoevaluación
-        //checkAutoEvaluationStatus();
-
-        // Asegurar que los indicadores homologados tengan valor "1"
-        const homologatedAnswers = { ...savedAnswers };
-        
-        // Recorrer todos los indicadores homologados y asignarles valor "1"
-        Object.values(homologatedIndicators).forEach(cert => {
-            cert.indicators.forEach(indicator => {
-                homologatedAnswers[indicator.id] = "1";
-            });
-        });
-        
-        // Actualizar el estado de respuestas con los indicadores homologados
-        if (Object.keys(homologatedAnswers).length > 0) {
-            setAnswers(homologatedAnswers);
-            
-            // Solo recalcular el puntaje si no estamos en una autoevaluación completada
-            if (!autoEvalCompleted) {
-                const newScore = calculateCurrentScore(homologatedAnswers);
-                setCurrentScore(newScore);
-            }
-        }
-
-        // Mostrar información de depuración
-        console.log('Inicialización de componente:', {
-            savedAnswers,
-            initialScore,
-            homologatedIndicators,
-            autoEvalCompleted,
-            currentScore: initialScore
-        });
-    }, [initialScore, homologatedIndicators, savedAnswers]);
-
-    // Verificar el estado de la autoevaluación
-    const checkAutoEvaluationStatus = async () => {
-        try {
-            const response = await axios.get('/api/check-autoevaluation-status');
-            
-            if (response.data.success) {
-                // Si la autoevaluación está completa, mostrar notificación
-                if (response.data.autoeval_status.is_complete) {
-                    /*setNotification({
-                        type: 'success',
-                        message: response.data.message
-                    });*/
-                    console.log(response.data.message);
-                }
-            }
-        } catch (error) {
-            console.error('Error al verificar el estado de la autoevaluación:', error);
-        }
-    };
-
-    const handleStepClick = (index) => {
-        setCurrentSubcategoryIndex(index);
-    };
-
-    const handleContinue = () => {
-        if (currentSubcategoryIndex < subcategories.length - 1) {
-            setCurrentSubcategoryIndex(prev => prev + 1);
-        }
-    };
-
-    const handleBack = () => {
-        if (currentSubcategoryIndex > 0) {
-            setCurrentSubcategoryIndex(prev => prev - 1);
-        }
-    };
-
-    const handleFinish = () => {
-        // Si la empresa no es exportadora, no permitir finalizar
+    // Manejar finalización
+    const handleFinish = useCallback(() => {
         if (!isExporter && !isAuthorizedByAdmin) {
             setNotification({
                 type: 'error',
@@ -230,10 +239,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
             return;
         }
 
-        // Verificar si hay respuestas o si todos los indicadores están homologados
-        const allIndicatorsHomologated = areAllQuestionsAnswered();
-        
-        if (Object.keys(answers).length === 0 && !allIndicatorsHomologated) {
+        if (Object.keys(answers).length === 0 && !areAllQuestionsAnswered()) {
             setNotification({
                 type: 'error',
                 message: 'Por favor, responde al menos una pregunta antes de continuar.'
@@ -242,9 +248,10 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
         }
 
         setShowConfirmModal(true);
-    };
+    }, [isExporter, isAuthorizedByAdmin, answers, areAllQuestionsAnswered]);
 
-    const handleConfirmSubmit = () => {
+    // Manejar confirmación de envío
+    const handleConfirmSubmit = useCallback(() => {
         setLoading(true);
         const formData = {
             value_id: valueData.id,
@@ -256,12 +263,10 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
             .then(async response => {
                 localStorage.removeItem(`answers_${valueData.id}`);
                 
-                // Actualizar el score con el valor devuelto por el servidor
                 if (response.data.finalScore !== undefined) {
                     setCurrentScore(response.data.finalScore);
                 }
                 
-                // Obtener el siguiente valor disponible
                 try {
                     const valuesResponse = await axios.get('/api/active-values');
                     const values = valuesResponse.data;
@@ -269,19 +274,16 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
                     const nextValue = values[currentIndex + 1];
 
                     if (nextValue) {
-                        // Redirigir al siguiente valor
                         router.visit(`/indicadores/${nextValue.id}`);
                         setNotification({
                             type: 'success',
                             message: 'Respuestas guardadas. Pasando al siguiente valor...'
                         });
                     } else {
-                        // Si no hay más valores, mostrar mensaje de finalización
                         setNotification({
                             type: 'success',
                             message: '¡Has completado todos los valores!'
                         });
-                        // Opcional: redirigir a una página de resumen o dashboard
                         router.visit(route('dashboard'));
                     }
                 } catch (error) {
@@ -304,128 +306,64 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
                 setShowConfirmModal(false);
                 setLoading(false);
             });
-    };
+    }, [valueData.id, answers, justifications]);
 
-    // Calcular el total de indicadores homologados SOLO para este valor
-    const totalHomologatedIndicators = Object.values(homologatedIndicators)
-        .reduce((total, cert) => {
-            // Filtrar solo los indicadores que pertenecen a este valor
-            const indicatorsInThisValue = cert.indicators.filter(indicator => 
-                valueData.subcategories.some(subcategory =>
-                    subcategory.indicators.some(i => i.id === indicator.id)
-                )
-            );
-            return total + indicatorsInThisValue.length;
-        }, 0);
+    // Efectos iniciales para cargar datos
+    useEffect(() => {
+        fetchValues();
+    }, [fetchValues]);
 
-    const areAllQuestionsAnswered = () => {
-        let totalQuestions = 0;
-        let answeredQuestions = 0;
-
-        // Verificar si todos los indicadores están homologados
-        let allIndicatorsHomologated = true;
-        let homologatedIndicatorsIds = [];
-
-        // Recopilar todos los IDs de indicadores homologados
+    // Combinar respuestas guardadas e indicadores homologados
+    useEffect(() => {
+        // Crear copia para trabajar
+        const initialAnswers = { ...savedAnswers };
+        const initialJustifications = { ...savedJustifications };
+        
+        // Agregar indicadores homologados automáticamente
         Object.values(homologatedIndicators).forEach(cert => {
             cert.indicators.forEach(indicator => {
-                homologatedIndicatorsIds.push(indicator.id);
-            });
-        });
-
-        // Verificar si todos los indicadores del valor están homologados
-        valueData.subcategories.forEach(subcategory => {
-            subcategory.indicators.forEach(indicator => {
-                totalQuestions++;
+                // Asignar "1" a los indicadores homologados, pero no sobrescribir respuestas existentes
+                if (!initialAnswers.hasOwnProperty(indicator.id)) {
+                    initialAnswers[indicator.id] = "1";
+                }
                 
-                // Verificar si el indicador está homologado o ya fue respondido
-                if (homologatedIndicatorsIds.includes(indicator.id) || answers[indicator.id] !== undefined) {
-                    answeredQuestions++;
-                } else {
-                    allIndicatorsHomologated = false;
+                // Para indicadores no binarios, añadir justificación automática si no existe
+                const indicatorData = valueData.subcategories
+                    .flatMap(subcategory => subcategory.indicators)
+                    .find(ind => ind.id === indicator.id);
+                    
+                if (indicatorData && !indicatorData.is_binary && !initialJustifications[indicator.id]) {
+                    initialJustifications[indicator.id] = `Homologada por certificación ${cert.certification_name}`;
                 }
             });
         });
-
-        // Si todos los indicadores están homologados, permitir finalizar
-        if (allIndicatorsHomologated && homologatedIndicatorsIds.length === totalQuestions) {
-            return true;
-        }
-
-        return totalQuestions === answeredQuestions;
-    };
-
-    const areCurrentSubcategoryQuestionsAnswered = () => {
-        const currentSubcategory = subcategories[currentSubcategoryIndex];
         
-        // Recopilar todos los IDs de indicadores homologados
-        let homologatedIndicatorsIds = [];
-        Object.values(homologatedIndicators).forEach(cert => {
-            cert.indicators.forEach(indicator => {
-                homologatedIndicatorsIds.push(indicator.id);
-            });
-        });
-        
-        return currentSubcategory.indicators.every(indicator => 
-            homologatedIndicatorsIds.includes(indicator.id) || answers[indicator.id] !== undefined
-        );
-    };
-
-    const autoEvalCompleted = company.estado_eval === 'auto-evaluacion-completed';
-
-    // Efecto para marcar automáticamente los indicadores homologados como respondidos
-    useEffect(() => {
-        if (Object.keys(homologatedIndicators).length > 0) {
-            // Crear una copia de las respuestas actuales
-            const updatedAnswers = { ...answers };
+        // Actualizar respuestas solo si hay cambios
+        if (Object.keys(initialAnswers).length > 0) {
+            setAnswers(initialAnswers);
             
-            // Marcar todos los indicadores homologados como respondidos con "1" (Sí)
-            Object.values(homologatedIndicators).forEach(cert => {
-                cert.indicators.forEach(indicator => {
-                    if (updatedAnswers[indicator.id] === undefined) {
-                        updatedAnswers[indicator.id] = "1";
-                    }
-                });
-            });
+            // Verificar respuestas vinculantes
+            checkBindingAnswers(initialAnswers);
             
-            // Actualizar el estado de respuestas solo si hay cambios
-            if (Object.keys(updatedAnswers).length !== Object.keys(answers).length) {
-                setAnswers(updatedAnswers);
-                console.log('Indicadores homologados marcados automáticamente:', updatedAnswers);
+            // No recalcular el score si ya tenemos uno inicial
+            if (!autoEvalCompleted && initialScore === 0) {
+                const newScore = calculateCurrentScore(initialAnswers);
+                setCurrentScore(newScore);
             }
         }
-    }, [homologatedIndicators]);
-
-    // Efecto específico para cuando la autoevaluación está completa
-    useEffect(() => {
-        if (autoEvalCompleted) {
-            console.log('Autoevaluación completada, asegurando que se muestren las respuestas guardadas');
-            
-            // Asegurar que se muestren las respuestas guardadas
-            if (savedAnswers) {
-                // Crear una copia de las respuestas guardadas
-                const finalAnswers = { ...savedAnswers };
-                
-                // Asegurar que los indicadores homologados tengan valor "1"
-                Object.values(homologatedIndicators).forEach(cert => {
-                    cert.indicators.forEach(indicator => {
-                        finalAnswers[indicator.id] = "1";
-                    });
-                });
-                
-                // Actualizar el estado de respuestas
-                setAnswers(finalAnswers);
-                
-                // Mostrar información de depuración
-                console.log('Respuestas finales en autoevaluación completada:', finalAnswers);
-            }
+        
+        // Actualizar justificaciones si hay cambios
+        if (Object.keys(initialJustifications).length > 0) {
+            setJustifications(initialJustifications);
         }
-    }, [autoEvalCompleted, savedAnswers, homologatedIndicators]);
+    }, [savedAnswers, savedJustifications, homologatedIndicators, valueData, checkBindingAnswers, calculateCurrentScore, initialScore, autoEvalCompleted]);
 
+    // Renderizado del componente
     return (
         <DashboardLayout userName={userName} title="Indicadores">
             <div className="space-y-8">
-            {!isExporter && !isEvaluador && !isAuthorizedByAdmin && (
+                {/* Advertencias según estado de la empresa */}
+                {!isExporter && !isEvaluador && !isAuthorizedByAdmin && (
                     <div className="bg-red-50 border-l-4 border-red-400 p-4">
                         <div className="flex">
                             <div className="flex-shrink-0">
@@ -457,22 +395,6 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
                         </div>
                     </div>
                 )}
-                {/* {bindingWarning && (
-                    <div className="bg-red-50 border-l-4 border-red-400 p-4">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <svg className="h-5 w-5 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-sm text-red-700">
-                                    Indicadores E1, E2 son descalificatorios.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )} */}
 
                 <div className="lg:flex justify-between items-center gap-8">
                     <div className="lg:w-1/2">
@@ -495,26 +417,29 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
                     <div className="lg:w-1/2 mt-5 lg:mt-0">
                         <div>
                             <div className="flex">
-                                <div className={`w-1/2 rounded-l-xl px-6 p-4 ${bindingWarning
-                                        ? 'bg-red-100/50 text-red-700'
+                                <div className={`w-1/2 rounded-l-xl px-6 p-4 ${
+                                    bindingWarning
+                                    ? 'bg-red-100/50 text-red-700'
+                                    : currentScore >= valueData.minimum_score
+                                        ? 'bg-green-100/50 text-green-700'
+                                        : 'bg-yellow-100/50 text-yellow-700'
+                                }`}>
+                                    <h2 className={`text-lg font-semibold mb-2 ${
+                                        bindingWarning
+                                        ? 'text-red-700'
                                         : currentScore >= valueData.minimum_score
-                                            ? 'bg-green-100/50 text-green-700'
-                                            : 'bg-yellow-100/50 text-yellow-700'
+                                            ? 'text-green-700'
+                                            : 'text-yellow-700'
                                     }`}>
-                                    <h2 className={`text-lg font-semibold mb-2 ${bindingWarning
-                                            ? 'text-red-700'
-                                            : currentScore >= valueData.minimum_score
-                                                ? 'text-green-700'
-                                                : 'text-yellow-700'
-                                        }`}>
                                         Nota actual
                                     </h2>
-                                    <p className={`text-2xl font-bold ${bindingWarning
-                                            ? 'text-red-500'
-                                            : currentScore >= valueData.minimum_score
-                                                ? 'text-green-500'
-                                                : 'text-yellow-500'
-                                        }`}>
+                                    <p className={`text-2xl font-bold ${
+                                        bindingWarning
+                                        ? 'text-red-500'
+                                        : currentScore >= valueData.minimum_score
+                                            ? 'text-green-500'
+                                            : 'text-yellow-500'
+                                    }`}>
                                         {currentScore}/100
                                     </p>
                                 </div>
@@ -547,20 +472,8 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
                             <div className="flex items-center gap-2 mt-5">
                                 <div>
                                     <svg xmlns="http://www.w3.org/2000/svg"
-                                        width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon icon-
-tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><path
-                                            stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12.01 2.011a3.2 3.2 0 0 1 2.113 
-.797l.154 .145l.698 .698a1.2 1.2 0 0 0 .71 .341l.135 .008h1a3.2 3.2 0 0 1 3.195 
-3.018l.005 .182v1c0 .27 .092 .533 .258 .743l.09 .1l.697 .698a3.2 3.2 0 0 1 .147 
-4.382l-.145 .154l-.698 .698a1.2 1.2 0 0 0 -.341 .71l-.008 .135v1a3.2 3.2 0 0 1 -3.018 
-3.195l-.182 .005h-1a1.2 1.2 0 0 0 -.743 .258l-.1 .09l-.698 .697a3.2 3.2 0 0 1 -4.382 
-.147l-.154 -.145l-.698 -.698a1.2 1.2 0 0 0 -.71 -.341l-.135 -.008h-1a3.2 3.2 0 0 1 -3.195 
--3.018l-.005 -.182v-1a1.2 1.2 0 0 0 -.258 -.743l-.09 -.1l-.697 -.698a3.2 3.2 0 0 1 -.147 
--4.382l.145 -.154l.698 -.698a1.2 1.2 0 0 0 .341 -.71l.008 -.135v-1l.005 -.182a3.2 3.2 0 0 
-1 3.013 -3.013l.182 -.005h1a1.2 1.2 0 0 0 .743 -.258l.1 -.09l.698 -.697a3.2 3.2 0 0 1 
-2.269 -.944zm3.697 7.282a1 1 0 0 0 -1.414 0l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 
-0 0 -1.32 1.497l2 2l.094 .083a1 1 0 0 0 1.32 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 
--1.32z" /></svg>
+                                        width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon icon-tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><path
+                                            stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12.01 2.011a3.2 3.2 0 0 1 2.113 .797l.154 .145l.698 .698a1.2 1.2 0 0 0 .71 .341l.135 .008h1a3.2 3.2 0 0 1 3.195 3.018l.005 .182v1c0 .27 .092 .533 .258 .743l.09 .1l.697 .698a3.2 3.2 0 0 1 .147 4.382l-.145 .154l-.698 .698a1.2 1.2 0 0 0 -.341 .71l-.008 .135v1a3.2 3.2 0 0 1 -3.018 3.195l-.182 .005h-1a1.2 1.2 0 0 0 -.743 .258l-.1 .09l-.698 .697a3.2 3.2 0 0 1 -4.382 .147l-.154 -.145l-.698 -.698a1.2 1.2 0 0 0 -.71 -.341l-.135 -.008h-1a3.2 3.2 0 0 1 -3.195 -3.018l-.005 -.182v-1a1.2 1.2 0 0 0 -.258 -.743l-.09 -.1l-.697 -.698a3.2 3.2 0 0 1 -.147 -4.382l.145 -.154l.698 -.698a1.2 1.2 0 0 0 .341 -.71l.008 -.135v-1l.005 -.182a3.2 3.2 0 0 1 3.013 -3.013l.182 -.005h1a1.2 1.2 0 0 0 .743 -.258l.1 -.09l.698 -.697a3.2 3.2 0 0 1 2.269 -.944zm3.697 7.282a1 1 0 0 0 -1.414 0l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.32 1.497l2 2l.094 .083a1 1 0 0 0 1.32 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z" /></svg>
                                 </div>
                                 <span className='text-green-700'>
                                     {Object.keys(answers).length} indicadores contestados
@@ -599,7 +512,7 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                                                 code={indicator.name}
                                                 question={indicator.self_evaluation_question}
                                                 onAnswer={(answer) => handleAnswer(indicator.id, answer, indicator.binding)}
-                                                value={answers[indicator.id] ? answers[indicator.id] : savedAnswers[indicator.id] || ''}
+                                                value={answers[indicator.id] || ''}
                                                 isBinding={indicator.binding}
                                                 homologation={homologation ? homologation.certification_name : null}
                                                 guide={indicator.guide}
@@ -607,10 +520,11 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                                                 availableToModifyAutoeval={availableToModifyAutoeval}
                                                 isBinary={indicator.is_binary}
                                                 justification={justifications[indicator.id] || ''}
-                                                onJustificationChange={(text, currentAnswer) => handleJustificationChange(indicator.id, text, currentAnswer)}
+                                                onJustificationChange={(text) => handleJustificationChange(indicator.id, text)}
                                                 isExporter={isExporter}
                                                 wasHomologated={wasHomologated}
                                                 autoEvalCompleted={autoEvalCompleted}
+                                                isHomologated={homologation ? true : false}
                                             />
                                         </div>
                                         {indicator.binding && (
