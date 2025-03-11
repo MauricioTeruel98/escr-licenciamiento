@@ -29,6 +29,7 @@ export default function Indicadores({
     const [currentScore, setCurrentScore] = useState(initialScore);
     const [autoEvaluationItems, setAutoEvaluationItems] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [failedBindingIndicators, setFailedBindingIndicators] = useState([]);
     
     // Valores memoizados para evitar recálculos innecesarios
     const isExporter = useMemo(() => company?.is_exporter === true, [company]);
@@ -73,12 +74,22 @@ export default function Indicadores({
 
     // Función para verificar respuestas vinculantes
     const checkBindingAnswers = useCallback((currentAnswers) => {
-        const hasNegativeBinding = subcategories.some(subcategory =>
-            subcategory.indicators.some(indicator =>
-                indicator.binding && currentAnswers[indicator.id] === "0"
-            )
-        );
-        setBindingWarning(hasNegativeBinding);
+        const failedIndicators = [];
+        
+        subcategories.forEach(subcategory => {
+            subcategory.indicators.forEach(indicator => {
+                if (indicator.binding && currentAnswers[indicator.id] === "0") {
+                    failedIndicators.push({
+                        id: indicator.id,
+                        code: indicator.name,
+                        question: indicator.self_evaluation_question
+                    });
+                }
+            });
+        });
+        
+        setFailedBindingIndicators(failedIndicators);
+        setBindingWarning(failedIndicators.length > 0);
     }, [subcategories]);
 
     // Función para calcular puntaje actual
@@ -463,7 +474,9 @@ export default function Indicadores({
                                             </svg>
                                         )}
                                         {bindingWarning
-                                            ? "Indicadores E1, E2 son descalificatorios"
+                                            ? failedBindingIndicators.length > 0 
+                                              ? `Indicadores ${failedBindingIndicators.map(ind => ind.code).join(', ')} son descalificatorios`
+                                              : "Hay indicadores descalificatorios"
                                             : `Necesitas ${valueData.minimum_score - currentScore} puntos más para aprobar`
                                         }
                                     </p>
