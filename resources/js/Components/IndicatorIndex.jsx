@@ -39,7 +39,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
     const showNoChecked = !isHomologated && effectiveValue === "0";
 
     // Mostrar información de depuración en la consola
-    console.log(`Indicador ${code}: value=${value}, stringValue=${stringValue}, effectiveValue=${effectiveValue}, showYesChecked=${showYesChecked}, showNoChecked=${showNoChecked}`);
+    // console.log(`Indicador ${code}: value=${value}, stringValue=${stringValue}, effectiveValue=${effectiveValue}, showYesChecked=${showYesChecked}, showNoChecked=${showNoChecked}`);
 
     return (
         <div className={`bg-white rounded-lg space-y-4 ${isHomologated ? 'bg-blue-50/50 ring-1 ring-blue-100 p-3' : wasHomologated ? 'bg-yellow-50/50 ring-1 ring-yellow-100 p-3' : ''}`}>

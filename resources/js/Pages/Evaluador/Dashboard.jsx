@@ -205,6 +205,23 @@ export default function EvaluadorDashboard({ auth }) {
                         </div>
                     )}
 
+                    {/* Mensaje de advertencia cuando ya se calificó la evaluación de la empresa */}
+                    {companyStatusEval === 'evaluado' && (
+                        <div className="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                                <div className="mt-0.5">
+                                    <CheckCircle className="h-5 w-5 text-blue-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-md font-semibold text-blue-800">La empresa ha sido calificada</h3>
+                                    <p className="text-sm text-blue-700 mt-1">
+                                        La empresa ha sido calificada y está lista para ser evaluada.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Mensaje de advertencia cuando la empresa no está autorizada */}
                     {activeCompany && !isCompanyAuthorized && (
                         <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">

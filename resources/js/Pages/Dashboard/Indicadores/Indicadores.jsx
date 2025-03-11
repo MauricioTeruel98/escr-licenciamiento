@@ -599,7 +599,7 @@ tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><p
                                                 code={indicator.name}
                                                 question={indicator.self_evaluation_question}
                                                 onAnswer={(answer) => handleAnswer(indicator.id, answer, indicator.binding)}
-                                                value={answers[indicator.id] || ''}
+                                                value={answers[indicator.id] ? answers[indicator.id] : savedAnswers[indicator.id] || ''}
                                                 isBinding={indicator.binding}
                                                 homologation={homologation ? homologation.certification_name : null}
                                                 guide={indicator.guide}
