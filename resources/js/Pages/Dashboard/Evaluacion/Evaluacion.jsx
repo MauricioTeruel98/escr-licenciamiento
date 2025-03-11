@@ -646,7 +646,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             </div>
                             <div className="ml-3">
                                 <p className="text-sm text-green-700">
-                                    <strong>Autorizado:</strong> Su empresa ha sido autorizada por el administrador para realizar la auto evaluación a pesar de no ser exportadora.
+                                    <strong>Autorizado:</strong> Su empresa ha sido autorizada por el administrador para realizar la auto evaluación.
                                 </p>
                             </div>
                         </div>
