@@ -7,6 +7,7 @@ import axios from 'axios';
 export default function Reportes() {
     const [empresas, setEmpresas] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [loadingAuthorization, setLoadingAuthorization] = useState(null);
     const [pagination, setPagination] = useState({
         currentPage: 1,
         lastPage: 1,
@@ -57,6 +58,45 @@ export default function Reportes() {
                     </span>
                 );
             }
+        },
+        {
+            key: 'es_exportador',
+            label: 'Exportador',
+            render: (item) => (
+                <div className="text-md p-3 font-semibold mb-1 badge rounded-lg border flex items-center gap-2">
+                    {item.es_exportador ? 'Si' : (
+                        <div className="flex items-center gap-2">
+                            {item.autorizado_por_super_admin ? (
+                                <span className="text-red-600 font-semibold">Autorizado por Super Admin</span>
+                            ) : (
+                                <>
+                                    <span>No</span>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAuthorizeExporter(item);
+                                        }}
+                                        disabled={loadingAuthorization === item.id}
+                                        className={`${loadingAuthorization === item.id ? 'bg-red-400' : 'bg-red-600 hover:bg-red-700'} text-white px-2 py-1 rounded text-xs flex items-center gap-1`}
+                                    >
+                                        {loadingAuthorization === item.id ? (
+                                            <>
+                                                <svg className="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                <span>Procesando...</span>
+                                            </>
+                                        ) : (
+                                            'Autorizar'
+                                        )}
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )
         },
         {
             key: 'actions',
@@ -121,6 +161,19 @@ export default function Reportes() {
     const handleReporteClick = (empresa) => {
         // Implementar la lógica para descargar o ver el reporte
         console.log('Descargar reporte de:', empresa.nombre);
+    };
+
+    const handleAuthorizeExporter = async (empresa) => {
+        try {
+            setLoadingAuthorization(empresa.id);
+            await axios.patch(`/api/empresas-reportes/${empresa.id}/authorize-exporter`);
+            // Actualizar la lista de empresas después de autorizar
+            await loadEmpresas(pagination.currentPage, pagination.perPage, searchTerm);
+        } catch (error) {
+            console.error('Error al autorizar empresa como exportadora:', error);
+        } finally {
+            setLoadingAuthorization(null);
+        }
     };
 
     return (

@@ -241,6 +241,10 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/super/certifications', [SuperAdminController::class, 'certifications'])->name('super.certifications');
 
     Route::get('/api/super/dashboard-stats', [SuperAdminController::class, 'getDashboardStats']);
+
+    Route::get('/api/empresas-reportes', [ReportController::class, 'getCompanies']);
+    Route::patch('/api/empresas-reportes/{company}/authorize-exporter', [ReportController::class, 'authorizeExporter'])
+        ->name('companies.authorize-exporter');
 });
 
 Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {

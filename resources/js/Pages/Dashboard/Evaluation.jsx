@@ -280,11 +280,12 @@ export default function Evaluation({
 
     const isExporter = auth.user.company?.is_exporter === true;
     const isEvaluador = auth.user.role === 'evaluador';
+    const isAuthorizedByAdmin = auth.user.company?.authorized_by_super_admin === 1;
 
     return (
         <DashboardLayout userName={userName} title={`Autoevaluación de ${companyName}`}>
             <div className="space-y-8">
-                {!isExporter && !isEvaluador && (
+                {!isExporter && !isEvaluador && !isAuthorizedByAdmin && (
                     <div className="bg-red-50 border-l-4 border-red-400 p-4">
                         <div className="flex">
                             <div className="flex-shrink-0">
@@ -294,7 +295,23 @@ export default function Evaluation({
                             </div>
                             <div className="ml-3">
                                 <p className="text-sm text-red-700">
-                                    <strong>Atención:</strong> Su empresa debe ser exportadora para poder realizar la evaluación. Por favor, actualice la información de su empresa en su perfil.
+                                    <strong>Atención:</strong> Su empresa debe ser exportadora para poder realizar la auto evaluación. Por favor, actualice la información de su empresa en su perfil.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {!isExporter && !isEvaluador && isAuthorizedByAdmin && (
+                    <div className="bg-green-50 border-l-4 border-green-400 p-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-green-700">
+                                    <strong>Autorizado:</strong> Su empresa ha sido autorizada por el administrador para realizar la auto evaluación a pesar de no ser exportadora.
                                 </p>
                             </div>
                         </div>

@@ -23,7 +23,8 @@ class Company extends Model
         'is_exporter',
         'authorized',
         'autoeval_ended',
-        'estado_eval'
+        'estado_eval',
+        'authorized_by_super_admin'
     ];
 
     protected $casts = [
