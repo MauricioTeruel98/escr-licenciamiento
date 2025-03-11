@@ -88,6 +88,11 @@ export default function Certifications({ certifications: initialCertifications, 
 
     // Agregar funciones de validación para los campos
     const validarInput = (value, tipo) => {
+        // Si el valor es undefined o no es una cadena, devolverlo sin cambios
+        if (value === undefined || value === null || typeof value !== 'string') {
+            return value;
+        }
+        
         // Eliminar espacios al inicio para todos los campos
         let valorLimpio = value.trimStart();
         
@@ -272,7 +277,8 @@ export default function Certifications({ certifications: initialCertifications, 
         try {
             const response = await axios.put(`/certifications/${id}`, {
                 fecha_obtencion: cert.fecha_obtencion.toISOString().split('T')[0],
-                fecha_expiracion: cert.fecha_expiracion.toISOString().split('T')[0]
+                fecha_expiracion: cert.fecha_expiracion.toISOString().split('T')[0],
+                organismo_certificador: cert.organismo_certificador || ''
             });
 
             setCertificaciones(certificaciones.map(cert =>
@@ -291,12 +297,18 @@ export default function Certifications({ certifications: initialCertifications, 
     };
 
     const handleChange = (id, field, value) => {
-        if (field === 'fecha_expiracion') {
+        // Crear copia local del objeto de certificación
+        const certToUpdate = certificaciones.find(cert => cert.id === id);
+        if (!certToUpdate) return;
+
+        let updatedValue = value;
+
+        // Validar fecha de expiración si es necesario
+        if (field === 'fecha_expiracion' && value instanceof Date) {
             validarFechaExpiracion(value, id);
         }
 
-        // Si el campo no es una fecha (que ya se maneja con el DatePicker)
-        // aplicamos la validación correspondiente
+        // Solo aplicar validación de texto a valores de tipo string
         if (typeof value === 'string') {
             let tipo = '';
             if (field.includes('fecha')) {
@@ -306,11 +318,12 @@ export default function Certifications({ certifications: initialCertifications, 
             } else {
                 tipo = 'nombre';
             }
-            value = validarInput(value, tipo);
+            updatedValue = validarInput(value, tipo);
         }
 
+        // Actualizar la certificación en el estado
         setCertificaciones(certificaciones.map(cert =>
-            cert.id === id ? { ...cert, [field]: value } : cert
+            cert.id === id ? { ...cert, [field]: updatedValue } : cert
         ));
     };
 
@@ -347,12 +360,15 @@ export default function Certifications({ certifications: initialCertifications, 
         // Obtener la certificación original de initialCertifications
         const certOriginal = initialCertifications.find(c => c.id === id);
         
+        if (!certOriginal) return;
+        
         // Restaurar los valores originales y desactivar el modo de edición
         setCertificaciones(certificaciones.map(cert =>
             cert.id === id ? {
                 ...cert,
-                fecha_obtencion: certOriginal ? new Date(certOriginal.fecha_obtencion) : cert.fecha_obtencion,
-                fecha_expiracion: certOriginal ? new Date(certOriginal.fecha_expiracion) : cert.fecha_expiracion,
+                fecha_obtencion: new Date(certOriginal.fecha_obtencion),
+                fecha_expiracion: new Date(certOriginal.fecha_expiracion),
+                organismo_certificador: certOriginal.organismo_certificador,
                 editando: false
             } : cert
         ));
@@ -461,9 +477,6 @@ export default function Certifications({ certifications: initialCertifications, 
                                         ...nuevaCertificacion,
                                         fechaObtencion: date
                                     })}
-                                    // onChangeRaw={(e) => {
-                                    //     e.target.value = validarInput(e.target.value, 'fecha');
-                                    // }}
                                     locale={es}
                                     dateFormat="dd/MM/yyyy"
                                     className="w-full px-3 py-2 border rounded-md border-gray-300"
@@ -492,9 +505,6 @@ export default function Certifications({ certifications: initialCertifications, 
                                         });
                                         validarFechaExpiracion(date);
                                     }}
-                                    // onChangeRaw={(e) => {
-                                    //     e.target.value = validarInput(e.target.value, 'fecha');
-                                    // }}
                                     locale={es}
                                     dateFormat="dd/MM/yyyy"
                                     className={`w-full px-3 py-2 border rounded-md ${fechaError
@@ -565,11 +575,24 @@ export default function Certifications({ certifications: initialCertifications, 
                                     return (
                                         <>
                                             <div key={cert.id} className={`p-4 rounded-lg shadow-sm border border-gray-200 ${certificadoExpirado ? 'border-2 border-red-400 rounded-lg bg-red-100/50' : 'bg-white'}`}>
-                                                <div className="flex flex-col md:flex-row justify-between space-y-4">
+                                                <div className="flex flex-col xl:flex-row justify-between space-y-4">
                                                     {/* Primera fila: Nombre y botón editar */}
                                                     <div>
                                                         <div className="flex flex-col justify-between items-start">
-                                                            <h3 className="text-lg font-semibold">{cert.nombre} - {cert.organismo_certificador || 'N/A'}</h3>
+                                                            <h3 className="text-lg font-semibold">{cert.nombre}</h3>
+                                                            <div className="mt-2">
+                                                                <span className="text-sm text-gray-600 font-medium">Organismo certificador:</span>
+                                                                {cert.editando ? (
+                                                                    <input
+                                                                        type="text"
+                                                                        value={cert.organismo_certificador || ''}
+                                                                        onChange={(e) => handleChange(cert.id, 'organismo_certificador', e.target.value)}
+                                                                        className="ml-2 px-2 py-1 border rounded-md text-sm"
+                                                                    />
+                                                                ) : (
+                                                                    <span className="ml-2 text-sm">{cert.organismo_certificador || 'N/A'}</span>
+                                                                )}
+                                                            </div>
                                                             <div className="flex items-center mt-5">
                                                                 <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-blue-600/20">
                                                                     {cert.indicadores} Indicadores homologados.
@@ -590,13 +613,10 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                     <label className="block text-md font-semibold">
                                                                         Fecha de obtención<span className="text-red-500">*</span>
                                                                     </label>
-                                                                    <div className="flex flex-col justify-center items-center h-16">
+                                                                    <div className="flex flex-col justify-center xl:items-center h-16">
                                                                         <DatePicker
                                                                             selected={cert.fecha_obtencion}
                                                                             onChange={(date) => handleChange(cert.id, 'fecha_obtencion', date)}
-                                                                            onChangeRaw={(e) => {
-                                                                                e.target.value = validarInput(e.target.value, 'fecha');
-                                                                            }}
                                                                             locale={es}
                                                                             dateFormat="dd/MM/yyyy"
                                                                             className="w-full px-3 py-2 border rounded-md border-gray-300"
@@ -612,13 +632,10 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                     <label className={`block text-md font-semibold ${fechaErrores[cert.id] ? 'text-red-600' : ''}`}>
                                                                         Fecha de expiración<span className="text-red-500">*</span>
                                                                     </label>
-                                                                    <div className="flex flex-col justify-center items-center h-16">
+                                                                    <div className="flex flex-col justify-center xl:items-center h-16">
                                                                         <DatePicker
                                                                             selected={cert.fecha_expiracion}
                                                                             onChange={(date) => handleChange(cert.id, 'fecha_expiracion', date)}
-                                                                            onChangeRaw={(e) => {
-                                                                                e.target.value = validarInput(e.target.value, 'fecha');
-                                                                            }}
                                                                             locale={es}
                                                                             dateFormat="dd/MM/yyyy"
                                                                             className={`w-full px-3 py-2 border rounded-md ${fechaErrores[cert.id]

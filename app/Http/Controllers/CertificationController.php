@@ -18,7 +18,7 @@ class CertificationController extends Controller
     public function create()
     {
         $certifications = Auth::user()->company->certifications()
-            ->orderBy('created_at', 'desc')
+            ->orderBy('nombre', 'asc')
             ->get();
             
         $availableCertifications = AvailableCertification::select('id', 'nombre')
