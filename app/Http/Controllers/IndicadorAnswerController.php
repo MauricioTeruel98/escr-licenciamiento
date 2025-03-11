@@ -470,7 +470,7 @@ class IndicadorAnswerController extends Controller
             })
             ->count();
         
-        $isComplete = $activeValues === $evaluatedValues;
+        $isComplete = $numeroDeIndicadoresAResponder === $numeroDeIndicadoresRespondidos;
         
         Log::info('Verificación de autoevaluación completa:', [
             'company_id' => $companyId,

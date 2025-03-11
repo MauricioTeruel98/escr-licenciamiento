@@ -151,7 +151,7 @@ export default function Indicadores({ valueData, userName, user, savedAnswers, c
         fetchValues();
         
         // Verificar el estado de la autoevaluación
-        checkAutoEvaluationStatus();
+        //checkAutoEvaluationStatus();
 
         // Asegurar que los indicadores homologados tengan valor "1"
         const homologatedAnswers = { ...savedAnswers };
