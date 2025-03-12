@@ -33,7 +33,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
 
     const handleInputChange = (e, field) => {
         const value = e.target.value;
-        
+
         // Validaciones específicas para cada campo
         if (field === 'name') {
             // Solo permitir letras, números, espacios y punto para el nombre de la empresa
@@ -56,7 +56,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
         } else if (field === 'website') {
             // Para URLs permitimos barras y barras invertidas, solo eliminamos espacios al inicio y comillas
             let cleanedValue = e.target.value.replace(/^[\s]+|['\"]/g, '');
-            
+
             // Verificar si la URL tiene el protocolo, si no, agregar https://
             if (cleanedValue && !cleanedValue.match(/^https?:\/\//i)) {
                 // Solo agregar el protocolo si el usuario ha escrito algo más que solo www.
@@ -64,7 +64,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                     cleanedValue = 'https://' + cleanedValue;
                 }
             }
-            
+
             setData(field, cleanedValue);
         } else {
             // Para otros campos eliminamos espacios al inicio, comillas, barras y barras invertidas
@@ -78,7 +78,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
         if (searchTerm.trim() === '') {
             setFilteredProvincias(provincias || []);
         } else {
-            const filtered = (provincias || []).filter(provincia => 
+            const filtered = (provincias || []).filter(provincia =>
                 provincia.name.toLowerCase().includes(searchTerm.toLowerCase())
             );
             setFilteredProvincias(filtered);
@@ -87,7 +87,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         // Limpiar todos los campos de texto antes de enviar
         const cleanedData = {};
         Object.keys(data).forEach(key => {
@@ -107,12 +107,12 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                 } else if (key === 'website') {
                     // Para URLs solo eliminamos espacios al inicio y comillas
                     let cleanedValue = data[key].replace(/^[\s]+|['\"]/g, '');
-                    
+
                     // Asegurar que la URL tenga el protocolo
                     if (cleanedValue && !cleanedValue.match(/^https?:\/\//i)) {
                         cleanedValue = 'https://' + cleanedValue;
                     }
-                    
+
                     cleanedData[key] = cleanedValue;
                 } else {
                     // Para otros campos eliminamos espacios al inicio, comillas, barras y barras invertidas
@@ -122,12 +122,12 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                 cleanedData[key] = data[key];
             }
         });
-        
+
         // Actualizar los datos con los valores limpios
         Object.keys(cleanedData).forEach(key => {
             setData(key, cleanedData[key]);
         });
-        
+
         patch(route('company.update'));
     };
 
@@ -224,10 +224,10 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                         onFocus={() => setShowDropdown(true)}
                                         onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
                                     />
-                                    <input 
-                                        type="hidden" 
-                                        name="provincia" 
-                                        value={data.provincia} 
+                                    <input
+                                        type="hidden"
+                                        name="provincia"
+                                        value={data.provincia}
                                     />
                                     {showDropdown && (
                                         <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -282,14 +282,17 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                             {/* Actividad comercial */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">
-                                    Actividad comercial<span className="text-red-500">*</span>
+                                    Debe incluir la actividad principal de su negocio<span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={data.commercial_activity}
                                     onChange={e => handleInputChange(e, 'commercial_activity')}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none"
                                     placeholder="Actividad comercial"
+                                    maxLength={100}
+                                    rows={2}
+                                    style={{ resize: 'none' }}
                                 />
                                 <InputError message={errors.commercial_activity} className="mt-2" />
                             </div>
@@ -358,8 +361,8 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                         Ser empresa exportadora es un requisito obligatorio.
                                     </p>
                                     <p className="text-gray-600 text-sm">
-                                        Para consultas <a 
-                                            href="mailto:licenciasmarcapais@procomer.com" 
+                                        Para consultas <a
+                                            href="mailto:licenciasmarcapais@procomer.com"
                                             className="text-green-600 hover:underline"
                                         >
                                             licenciasmarcapais@procomer.com
