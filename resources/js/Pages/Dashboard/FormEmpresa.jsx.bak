@@ -243,7 +243,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         setIsDragging(false);
     };
 
-    const handleDrop = (e, tipo) => {
+    const handleDrop = (e, tipo, productoIndex = null) => {
         e.preventDefault();
         setIsDragging(false);
 
@@ -294,7 +294,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             logo: 1,
             fotografias: 3,
             certificaciones: 10,
-            productos: 1
+            productos: 3
         };
 
         if (tipo === 'logo') {
@@ -324,7 +324,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 alert(`Solo se han añadido ${filesToAdd.length} fotografías. El límite máximo es de ${maxFiles.fotografias} fotografías.`);
             }
 
-            // Generar URLs de vista previa para las fotografías
+            // Generar URL de vista previa para cada fotografía
             const filesWithPreviews = filesToAdd.map(file => {
                 file.preview = URL.createObjectURL(file);
                 return file;
@@ -351,7 +351,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 alert(`Solo se han añadido ${filesToAdd.length} certificaciones. El límite máximo es de ${maxFiles.certificaciones} certificaciones.`);
             }
 
-            // Generar URLs de vista previa para las certificaciones
+            // Generar URL de vista previa para cada certificación
             const filesWithPreviews = filesToAdd.map(file => {
                 file.preview = URL.createObjectURL(file);
                 return file;
@@ -361,17 +361,39 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 ...prev,
                 certificaciones: [...(prev.certificaciones || []), ...filesWithPreviews]
             }));
-        } else {
-            // Para productos, solo se permite 1 imagen por producto
-            if (files.length > maxFiles.productos) {
-                alert(`Solo se permite ${maxFiles.productos} imagen por producto.`);
-                files = [files[0]]; // Tomar solo el primer archivo
+        } else if (tipo === 'productos' && productoIndex !== null) {
+            // Verificar si se excede el límite de imágenes por producto
+            const currentProducto = productos[productoIndex];
+            const currentCount = (currentProducto.imagenes || []).length;
+            const availableSlots = maxFiles.productos - currentCount;
+
+            if (availableSlots <= 0) {
+                alert(`Ya has alcanzado el límite máximo de ${maxFiles.productos} imágenes para este producto.`);
+                return;
             }
 
-            setImagenes(prev => ({
-                ...prev,
-                [tipo]: [...(prev[tipo] || []), ...files]
-            }));
+            // Tomar solo los archivos que caben dentro del límite
+            const filesToAdd = files.slice(0, availableSlots);
+
+            if (filesToAdd.length < files.length) {
+                alert(`Solo se han añadido ${filesToAdd.length} imágenes. El límite máximo es de ${maxFiles.productos} imágenes por producto.`);
+            }
+
+            // Generar URL de vista previa para cada imagen
+            const filesWithPreviews = filesToAdd.map(file => {
+                file.preview = URL.createObjectURL(file);
+                return file;
+            });
+
+            // Actualizar el producto específico con las nuevas imágenes
+            setProductos(prev => {
+                const newProductos = [...prev];
+                newProductos[productoIndex] = {
+                    ...newProductos[productoIndex],
+                    imagenes: [...(newProductos[productoIndex].imagenes || []), ...filesWithPreviews]
+                };
+                return newProductos;
+            });
         }
     };
 
@@ -429,14 +451,19 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             logo: 1,
             fotografias: 3,
             certificaciones: 10,
-            productos: 1
+            productos: 3
         };
 
         if (tipo === 'logo') {
-            // Generar URL de vista previa para el logo
-            const fileWithPreview = files[0];
-            fileWithPreview.preview = URL.createObjectURL(files[0]);
-            setImagenes(prev => ({ ...prev, logo: fileWithPreview }));
+            if (files.length > 0) {
+                // Generar URL de vista previa para el logo
+                const fileWithPreview = files[0];
+                fileWithPreview.preview = URL.createObjectURL(files[0]);
+                setImagenes(prev => ({
+                    ...prev,
+                    logo: fileWithPreview
+                }));
+            }
         } else if (tipo === 'fotografias') {
             // Verificar si se excede el límite de fotografías
             const currentCount = (imagenes.fotografias || []).length;
@@ -455,7 +482,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 alert(`Solo se han añadido ${filesToAdd.length} fotografías. El límite máximo es de ${maxFiles.fotografias} fotografías.`);
             }
 
-            // Generar URLs de vista previa para las fotografías
+            // Generar URL de vista previa para cada fotografía
             const filesWithPreviews = filesToAdd.map(file => {
                 file.preview = URL.createObjectURL(file);
                 return file;
@@ -472,6 +499,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
             if (availableSlots <= 0) {
                 alert(`Ya has alcanzado el límite máximo de ${maxFiles.certificaciones} certificaciones.`);
+                e.target.value = null; // Limpiar el input
                 return;
             }
 
@@ -482,7 +510,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 alert(`Solo se han añadido ${filesToAdd.length} certificaciones. El límite máximo es de ${maxFiles.certificaciones} certificaciones.`);
             }
 
-            // Generar URLs de vista previa para las certificaciones
+            // Generar URL de vista previa para cada certificación
             const filesWithPreviews = filesToAdd.map(file => {
                 file.preview = URL.createObjectURL(file);
                 return file;
@@ -492,56 +520,82 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 ...prev,
                 certificaciones: [...(prev.certificaciones || []), ...filesWithPreviews]
             }));
-        } else if (tipo === 'producto') {
-            // Para productos, solo se permite 1 imagen por producto
-            if (files.length > maxFiles.productos) {
-                alert(`Solo se permite ${maxFiles.productos} imagen por producto.`);
-                files = [files[0]]; // Tomar solo el primer archivo
+        } else if (tipo === 'productos' && productoIndex !== null) {
+            // Verificar si se excede el límite de imágenes por producto
+            const currentProducto = productos[productoIndex];
+            const currentCount = (currentProducto.imagenes || []).length;
+            const availableSlots = maxFiles.productos - currentCount;
+
+            if (availableSlots <= 0) {
+                alert(`Ya has alcanzado el límite máximo de ${maxFiles.productos} imágenes para este producto.`);
+                return;
             }
 
-            setImagenes(prev => {
-                const newProductos = [...(prev.productos || [])];
-                if (!newProductos[productoIndex]) {
-                    newProductos[productoIndex] = [];
-                }
-                newProductos[productoIndex] = files[0];
-                return { ...prev, productos: newProductos };
+            // Tomar solo los archivos que caben dentro del límite
+            const filesToAdd = files.slice(0, availableSlots);
+
+            if (filesToAdd.length < files.length) {
+                alert(`Solo se han añadido ${filesToAdd.length} imágenes. El límite máximo es de ${maxFiles.productos} imágenes por producto.`);
+            }
+
+            // Generar URL de vista previa para cada imagen
+            const filesWithPreviews = filesToAdd.map(file => {
+                file.preview = URL.createObjectURL(file);
+                return file;
             });
 
-            // También actualizar la referencia en el estado de data para mantener la consistencia
-            setData(prevData => {
-                const newProductos = [...prevData.productos];
-                if (newProductos[productoIndex]) {
-                    // Marcar que este producto tiene una nueva imagen
-                    newProductos[productoIndex] = {
-                        ...newProductos[productoIndex],
-                        imagen_cambiada: true
-                    };
-                }
-                return {
-                    ...prevData,
-                    productos: newProductos
+            // Actualizar el producto específico con las nuevas imágenes
+            setProductos(prev => {
+                const newProductos = [...prev];
+                newProductos[productoIndex] = {
+                    ...newProductos[productoIndex],
+                    imagenes: [...(newProductos[productoIndex].imagenes || []), ...filesWithPreviews]
                 };
+                return newProductos;
             });
-        } else {
-            setImagenes(prev => ({ ...prev, [tipo]: [...(prev[tipo] || []), ...files] }));
         }
     };
 
     const removeImagen = (tipo, index = null, productoIndex = null) => {
         if (tipo === 'logo') {
             setImagenes(prev => ({ ...prev, logo: null }));
-        } else if (tipo === 'producto') {
+        } else if (tipo === 'fotografias' && index !== null) {
             setImagenes(prev => {
-                const newProductos = [...prev.productos];
-                newProductos[productoIndex] = null;
-                return { ...prev, productos: newProductos };
+                const newFotografias = [...(prev.fotografias || [])];
+                // Liberar la URL de vista previa para evitar fugas de memoria
+                if (newFotografias[index]?.preview) {
+                    URL.revokeObjectURL(newFotografias[index].preview);
+                }
+                newFotografias.splice(index, 1);
+                return { ...prev, fotografias: newFotografias };
             });
-        } else {
-            setImagenes(prev => ({
-                ...prev,
-                [tipo]: prev[tipo].filter((_, i) => i !== index)
-            }));
+        } else if (tipo === 'certificaciones' && index !== null) {
+            setImagenes(prev => {
+                const newCertificaciones = [...(prev.certificaciones || [])];
+                // Liberar la URL de vista previa para evitar fugas de memoria
+                if (newCertificaciones[index]?.preview) {
+                    URL.revokeObjectURL(newCertificaciones[index].preview);
+                }
+                newCertificaciones.splice(index, 1);
+                return { ...prev, certificaciones: newCertificaciones };
+            });
+        } else if (tipo === 'productos' && productoIndex !== null && index !== null) {
+            setProductos(prev => {
+                const newProductos = [...prev];
+                if (newProductos[productoIndex]) {
+                    const newImagenes = [...(newProductos[productoIndex].imagenes || [])];
+                    // Liberar la URL de vista previa para evitar fugas de memoria
+                    if (newImagenes[index]?.preview) {
+                        URL.revokeObjectURL(newImagenes[index].preview);
+                    }
+                    newImagenes.splice(index, 1);
+                    newProductos[productoIndex] = {
+                        ...newProductos[productoIndex],
+                        imagenes: newImagenes
+                    };
+                }
+                return newProductos;
+            });
         }
     };
 
@@ -655,12 +709,18 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             formData.append(`productos[${index}][nombre]`, producto.nombre || '');
             formData.append(`productos[${index}][descripcion]`, producto.descripcion || '');
 
-            // Agregar imagen del producto si existe y es un nuevo archivo
-            if (imagenes.productos && imagenes.productos[index] instanceof File) {
-                formData.append(`productos[${index}][imagen]`, imagenes.productos[index]);
-            } else if (producto.imagen) {
-                // Mantener la imagen existente si no se sube una nueva
-                formData.append(`productos[${index}][imagen_existente]`, producto.imagen);
+            // Procesar imágenes existentes
+            if (producto.imagenes_existentes && Array.isArray(producto.imagenes_existentes)) {
+                formData.append(`productos[${index}][imagenes_existentes]`, JSON.stringify(producto.imagenes_existentes));
+            }
+
+            // Agregar imágenes nuevas del producto si existen
+            if (productos[index] && productos[index].imagenes) {
+                productos[index].imagenes.forEach((imagen, imgIndex) => {
+                    if (imagen instanceof File) {
+                        formData.append(`productos[${index}][imagenes][]`, imagen);
+                    }
+                });
             }
         });
 
@@ -858,11 +918,11 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     };
 
     const agregarProducto = () => {
-        setData('productos', [...data.productos, {
-            nombre: '',
-            descripcion: '',
-            imagen: null
-        }]);
+        // Agregar un nuevo producto vacío al estado
+        setData('productos', [...data.productos, { nombre: '', descripcion: '', imagenes_existentes: [] }]);
+        
+        // También actualizar el estado de productos para manejar las imágenes
+        setProductos(prev => [...prev, { nombre: '', descripcion: '', imagenes: [] }]);
     };
 
     // Agregar estados para las opciones de ubicación
@@ -3263,7 +3323,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             {/* Fotografía del producto */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">
-                                                    Fotografía producto
+                                                    Fotografías del producto (máximo 3)
                                                 </label>
                                                 <div className="mt-1">
                                                     <label
@@ -3271,22 +3331,23 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                         className="border border-gray-300 rounded-md p-4 block cursor-pointer"
                                                         onDragOver={handleDragOver}
                                                         onDragLeave={handleDragLeave}
-                                                        onDrop={(e) => handleDrop(e, 'producto', index)}
+                                                        onDrop={(e) => handleDrop(e, 'productos', index)}
                                                     >
                                                         <div className="text-center text-gray-600">
                                                             Arrastre o <span className="text-green-600">Cargar</span>
-                                                            <p className="text-xs mt-1">Máximo 1 imagen por producto. Solo formatos jpg, jpeg o png.</p>
+                                                            <p className="text-xs mt-1">Máximo 3 imágenes por producto de hasta 3 mb cada una. Solo formatos jpg, jpeg o png.</p>
                                                         </div>
                                                         <input
                                                             id={`producto-input-${index}`}
                                                             type="file"
                                                             className="hidden"
                                                             accept=".png,.jpg,.jpeg"
-                                                            onChange={(e) => handleImagenChange(e, 'producto', index)}
+                                                            multiple
+                                                            onChange={(e) => handleImagenChange(e, 'productos', index)}
                                                         />
                                                     </label>
 
-                                                    {/* Mostrar imagen existente */}
+                                                    {/* Mostrar imágenes existentes del producto */}
                                                     {producto.imagen && (
                                                         <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
                                                             <div className="flex items-center">
@@ -3299,43 +3360,28 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                                     </svg>
                                                                 </button>
-                                                                <span className="text-sm">Imagen existente</span>
-                                                            </div>
-                                                            <div className="flex items-center">
-                                                                <img
-                                                                    src={`storage/${producto.imagen}`}
-                                                                    alt={`Producto ${index + 1}`}
-                                                                    className="w-10 h-10 object-cover rounded"
-                                                                />
+                                                                <span className="text-sm">{producto.imagen ? producto.imagen.split('/').pop() : ''}</span>
                                                             </div>
                                                         </div>
                                                     )}
 
-                                                    {/* Mostrar nueva imagen si se ha seleccionado */}
-                                                    {imagenes.productos[index] && !producto.imagen && (
-                                                        <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                    {/* Mostrar imágenes nuevas del producto */}
+                                                    {productos[index]?.imagenes && productos[index].imagenes.map((imagen, imgIndex) => (
+                                                        <div key={imgIndex} className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
                                                             <div className="flex items-center">
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => removeImagen('producto', null, index)}
+                                                                    onClick={() => removeImagen('productos', imgIndex, index)}
                                                                     className="mr-2"
                                                                 >
                                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                                     </svg>
                                                                 </button>
-                                                                <span className="text-sm">{imagenes.productos[index].name}</span>
-                                                            </div>
-                                                            <div className="flex items-center">
-                                                                <span className="text-sm mr-2">{Math.round(imagenes.productos[index].size / 1024)} KB</span>
-                                                                <img
-                                                                    src={URL.createObjectURL(imagenes.productos[index])}
-                                                                    alt={`Producto ${index + 1}`}
-                                                                    className="w-10 h-10 object-cover rounded"
-                                                                />
+                                                                <span className="text-sm">{imagen.name}</span>
                                                             </div>
                                                         </div>
-                                                    )}
+                                                    ))}
                                                 </div>
                                             </div>
                                         </div>
