@@ -16,7 +16,7 @@ export default function CompanyRegister({ legalId, provincias }) {
         mobile: '',
         is_exporter: false,
     });
-    
+
     const [validationErrors, setValidationErrors] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
     const [showDropdown, setShowDropdown] = useState(false);
@@ -26,13 +26,13 @@ export default function CompanyRegister({ legalId, provincias }) {
     useEffect(() => {
         if (searchTerm.trim() === '') {
             // Ordenar provincias alfabéticamente por nombre
-            const provinciaOrdenadas = [...(provincias || [])].sort((a, b) => 
+            const provinciaOrdenadas = [...(provincias || [])].sort((a, b) =>
                 a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
             );
             setFilteredProvincias(provinciaOrdenadas);
         } else {
             const filtered = (provincias || [])
-                .filter(provincia => 
+                .filter(provincia =>
                     provincia.name.toLowerCase().includes(searchTerm.toLowerCase())
                 )
                 .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
@@ -63,7 +63,7 @@ export default function CompanyRegister({ legalId, provincias }) {
         if (field === 'website') {
             // Para URLs permitimos barras y barras invertidas, solo eliminamos espacios al inicio y comillas
             let cleanedValue = e.target.value.replace(/^[\s]+|['\"]/g, '');
-            
+
             // Verificar si la URL tiene el protocolo, si no, agregar https://
             if (cleanedValue && !cleanedValue.match(/^https?:\/\//i)) {
                 // Solo agregar el protocolo si el usuario ha escrito algo más que solo www.
@@ -71,7 +71,7 @@ export default function CompanyRegister({ legalId, provincias }) {
                     cleanedValue = 'https://' + cleanedValue;
                 }
             }
-            
+
             setData(field, cleanedValue);
         } else {
             // Para otros campos eliminamos espacios al inicio, comillas, barras y barras invertidas
@@ -83,16 +83,16 @@ export default function CompanyRegister({ legalId, provincias }) {
     const handleLegalIdChange = (e) => {
         // Filtrar espacios y caracteres especiales
         const value = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
-        
+
         setData('legal_id', value);
-        
+
         if (value && !validateLegalId(value)) {
             setValidationErrors({
                 ...validationErrors,
                 legal_id: 'La cédula jurídica solo puede contener letras y números, sin espacios ni caracteres especiales.'
             });
         } else {
-            const newErrors = {...validationErrors};
+            const newErrors = { ...validationErrors };
             delete newErrors.legal_id;
             setValidationErrors(newErrors);
         }
@@ -101,19 +101,19 @@ export default function CompanyRegister({ legalId, provincias }) {
     const handlePhoneChange = (e, field) => {
         // Filtrar caracteres no permitidos en teléfonos y comillas
         const value = e.target.value.replace(/[^0-9\-\(\)]/g, '');
-        
+
         // Eliminar comillas si por alguna razón quedaron
         const cleanedValue = cleanInputValue(value);
-        
+
         setData(field, cleanedValue);
-        
+
         if (cleanedValue && !validatePhone(cleanedValue)) {
             setValidationErrors({
                 ...validationErrors,
                 [field]: 'El teléfono solo puede contener números, guiones y paréntesis.'
             });
         } else {
-            const newErrors = {...validationErrors};
+            const newErrors = { ...validationErrors };
             delete newErrors[field];
             setValidationErrors(newErrors);
         }
@@ -121,20 +121,20 @@ export default function CompanyRegister({ legalId, provincias }) {
 
     const submit = (e) => {
         e.preventDefault();
-        
+
         // Validar antes de enviar
         if (data.legal_id && !validateLegalId(data.legal_id)) {
             return;
         }
-        
+
         if (data.phone && !validatePhone(data.phone)) {
             return;
         }
-        
+
         if (data.mobile && !validatePhone(data.mobile)) {
             return;
         }
-        
+
         // Limpiar todos los campos de texto antes de enviar
         const cleanedData = {};
         Object.keys(data).forEach(key => {
@@ -142,12 +142,12 @@ export default function CompanyRegister({ legalId, provincias }) {
                 if (key === 'website') {
                     // Para URLs solo eliminamos espacios al inicio y comillas
                     let cleanedValue = data[key].replace(/^[\s]+|['\"]/g, '');
-                    
+
                     // Asegurar que la URL tenga el protocolo
                     if (cleanedValue && !cleanedValue.match(/^https?:\/\//i)) {
                         cleanedValue = 'https://' + cleanedValue;
                     }
-                    
+
                     cleanedData[key] = cleanedValue;
                 } else {
                     // Para otros campos eliminamos espacios al inicio, comillas, barras y barras invertidas
@@ -157,12 +157,12 @@ export default function CompanyRegister({ legalId, provincias }) {
                 cleanedData[key] = data[key];
             }
         });
-        
+
         // Actualizar los datos con los valores limpios
         Object.keys(cleanedData).forEach(key => {
             setData(key, cleanedData[key]);
         });
-        
+
         post(route('company.store'));
     };
 
@@ -249,10 +249,10 @@ export default function CompanyRegister({ legalId, provincias }) {
                                     onFocus={() => setShowDropdown(true)}
                                     onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
                                 />
-                                <input 
-                                    type="hidden" 
-                                    name="provincia" 
-                                    value={data.provincia} 
+                                <input
+                                    type="hidden"
+                                    name="provincia"
+                                    value={data.provincia}
                                 />
                                 {showDropdown && (
                                     <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -308,15 +308,17 @@ export default function CompanyRegister({ legalId, provincias }) {
                         {/* Actividad comercial */}
                         <div className="space-y-1">
                             <label htmlFor="commercial_activity" className="block text-sm">
-                                Actividad comercial<span className="text-red-500">*</span>
+                                Debe incluir la actividad principal de su negocio<span className="text-red-500">*</span>
                             </label>
-                            <input
+                            <textarea
                                 id="commercial_activity"
-                                type="text"
                                 value={data.commercial_activity}
                                 onChange={e => handleInputChange(e, 'commercial_activity')}
-                                className="w-full rounded-md border border-gray-300 p-2"
+                                className="w-full rounded-md border border-gray-300 p-2 resize-none"
                                 placeholder="Actividad comercial"
+                                maxLength={100}
+                                rows={2}
+                                style={{ resize: 'none' }}
                             />
                             <InputError message={errors.commercial_activity} />
                         </div>
@@ -387,8 +389,8 @@ export default function CompanyRegister({ legalId, provincias }) {
                                     Ser empresa exportadora es un requisito obligatorio.
                                 </p>
                                 <p className="text-gray-600 text-sm">
-                                    Para consultas <a 
-                                        href="mailto:licenciasmarcapais@procomer.com" 
+                                    Para consultas <a
+                                        href="mailto:licenciasmarcapais@procomer.com"
                                         className="text-green-600 hover:underline"
                                     >
                                         licenciasmarcapais@procomer.com
@@ -401,11 +403,10 @@ export default function CompanyRegister({ legalId, provincias }) {
                     <button
                         type="submit"
                         disabled={processing || !data.is_exporter}
-                        className={`w-full py-2 px-4 rounded-md transition-colors ${
-                            !data.is_exporter 
-                                ? 'bg-gray-400 cursor-not-allowed' 
+                        className={`w-full py-2 px-4 rounded-md transition-colors ${!data.is_exporter
+                                ? 'bg-gray-400 cursor-not-allowed'
                                 : 'bg-green-700 hover:bg-green-800 text-white'
-                        }`}
+                            }`}
                     >
                         Registrar Empresa
                     </button>

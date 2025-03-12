@@ -2079,15 +2079,17 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     {/* Actividad comercial */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
-                                            Actividad comercial<span className="text-red-500">*</span>
+                                        Debe incluir la actividad principal de su negocio<span className="text-red-500">*</span>
                                         </label>
-                                        <input
-                                            type="text"
+                                        <textarea
                                             value={data.actividad_comercial}
                                             onChange={handleChange}
                                             name="actividad_comercial"
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none"
+                                            placeholder="Actividad comercial"
+                                            maxLength={100}
+                                            rows={2}
+                                            style={{ resize: 'none' }}
                                         />
                                         <InputError message={errors.actividad_comercial} />
                                     </div>
