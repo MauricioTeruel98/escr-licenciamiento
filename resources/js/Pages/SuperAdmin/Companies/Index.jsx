@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import SuperAdminLayout from '@/Layouts/SuperAdminLayout';
 import TableList from '@/Components/TableList';
-import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, Eye } from 'lucide-react';
 import CompanyModal from '@/Components/Modals/CompanyModal';
 import DeleteModal from '@/Components/Modals/DeleteModal';
+import CompanyInfoModal from '@/Components/Modals/CompanyInfoModal';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
 import EditIcon from '@/Components/Icons/EditIcon';
@@ -18,6 +19,8 @@ export default function CompaniesIndex() {
     const [companyToDelete, setCompanyToDelete] = useState(null);
     const [notification, setNotification] = useState(null);
     const [provincias, setProvincias] = useState([]);
+    const [infoModalOpen, setInfoModalOpen] = useState(false);
+    const [selectedCompanyId, setSelectedCompanyId] = useState(null);
     const [pagination, setPagination] = useState({
         currentPage: 1,
         lastPage: 1,
@@ -53,6 +56,13 @@ export default function CompaniesIndex() {
             label: 'Acciones',
             render: (item) => (
                 <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => handleView(item)}
+                        className="text-gray-600 hover:text-gray-800 flex items-center gap-1"
+                    >
+                        <Eye className="h-4 w-4" />
+                        Ver
+                    </button>
                     <button
                         onClick={() => handleEdit(item)}
                         className="text-green-700 hover:text-green-800 flex items-center gap-1"
@@ -112,6 +122,11 @@ export default function CompaniesIndex() {
                 message: 'Error al cargar las provincias'
             });
         }
+    };
+
+    const handleView = (company) => {
+        setSelectedCompanyId(company.id);
+        setInfoModalOpen(true);
     };
 
     const handleCreate = () => {
@@ -225,6 +240,12 @@ export default function CompaniesIndex() {
                     onSubmit={handleSubmit}
                     company={selectedCompany}
                     provincias={provincias}
+                />
+
+                <CompanyInfoModal
+                    isOpen={infoModalOpen}
+                    onClose={() => setInfoModalOpen(false)}
+                    companyId={selectedCompanyId}
                 />
 
                 <DeleteModal

@@ -223,6 +223,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     // Rutas para gestión de empresas
     Route::get('/api/companies', [CompanyManagementController::class, 'index']);
     Route::post('/api/companies', [CompanyManagementController::class, 'store']);
+    Route::get('/api/companies/{company}/detail', [CompanyManagementController::class, 'show']);
     Route::put('/api/companies/{company}', [CompanyManagementController::class, 'update']);
     Route::delete('/api/companies/{company}', [CompanyManagementController::class, 'destroy']);
     Route::post('/api/companies/bulk-delete', [CompanyManagementController::class, 'bulkDelete']);

@@ -71,6 +71,23 @@ class CompanyManagementController extends Controller
         ]);
     }
 
+    /**
+     * Obtiene los detalles completos de una empresa específica
+     *
+     * @param Company $company
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(Company $company)
+    {
+        // Cargar la relación infoAdicional
+        $company->load('infoAdicional');
+        
+        return response()->json([
+            'company' => $company,
+            'info_adicional' => $company->infoAdicional
+        ]);
+    }
+
     public function destroy(Company $company)
     {
         if ($company->users()->count() > 0) {
