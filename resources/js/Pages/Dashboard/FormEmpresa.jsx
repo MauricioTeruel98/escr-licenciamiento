@@ -650,6 +650,22 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         setCamposFaltantes([]);
 
         try {
+            // Validar que la cantidad de empleados coincida con el tamaño de empresa
+            const limites = obtenerLimitesEmpleados(data.tamano_empresa);
+            const totalEmpleados = parseInt(data.cantidad_hombres || 0) + 
+                                  parseInt(data.cantidad_mujeres || 0) + 
+                                  parseInt(data.cantidad_otros || 0);
+            
+            if (data.tamano_empresa && (totalEmpleados < limites.minimo || totalEmpleados > limites.maximo)) {
+                setErrors({
+                    empleados: totalEmpleados < limites.minimo ? 
+                        `La cantidad total de empleados (${totalEmpleados}) es menor al mínimo para el tamaño de empresa seleccionado (mínimo ${limites.minimo}).` :
+                        `La cantidad total de empleados (${totalEmpleados}) excede el límite para el tamaño de empresa seleccionado (máximo ${limites.maximo}).`
+                });
+                setLoading(false);
+                return;
+            }
+            
             // Subir imágenes por separado
             let logoPath = null;
             let fotografiasPaths = null;
@@ -1117,6 +1133,113 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             return;
         }
 
+        // Si es el tamaño de empresa, limpiar los valores de cantidad empleados si es necesario
+        if (name === 'tamano_empresa') {
+            setData(name, value);
+            
+            // Obtener los límites según el tamaño seleccionado
+            const limites = obtenerLimitesEmpleados(value);
+            
+            // Verificar si el total de empleados actuales excede el límite superior
+            const totalActual = parseInt(data.cantidad_hombres || 0) + 
+                               parseInt(data.cantidad_mujeres || 0) + 
+                               parseInt(data.cantidad_otros || 0);
+            
+            if (totalActual > limites.maximo) {
+                // Limpiar los campos de cantidad de empleados
+                setData('cantidad_hombres', '');
+                setData('cantidad_mujeres', '');
+                setData('cantidad_otros', '');
+                
+                // Mostrar mensaje informativo
+                setErrors(prevErrors => ({
+                    ...prevErrors,
+                    empleados: `La cantidad total de empleados (${totalActual}) excede el límite para el tamaño de empresa seleccionado (máximo ${limites.maximo}). Por favor, ajuste los valores.`
+                }));
+                
+                // Limpiar el error después de 5 segundos
+                setTimeout(() => {
+                    setErrors(prevErrors => {
+                        const newErrors = { ...prevErrors };
+                        delete newErrors.empleados;
+                        return newErrors;
+                    });
+                }, 5000);
+            }
+            
+            return;
+        }
+
+        // Si es un campo de cantidad de empleados, validar según el tamaño de empresa
+        if (['cantidad_hombres', 'cantidad_mujeres', 'cantidad_otros'].includes(name)) {
+            // Validar primero que sea un número válido
+            // Determinar el tipo de validación según el campo
+            let tipoValidacion = 'numeros_sin_e';
+            
+            // Validar el valor según el tipo de campo
+            const valorValidado = validarCampo(value, tipoValidacion);
+            
+            // Verificar si se filtraron caracteres no permitidos
+            if (valorValidado !== value.trimStart()) {
+                // Establecer un error para este campo
+                setErrors(prevErrors => ({
+                    ...prevErrors,
+                    [name]: 'Se han eliminado caracteres no permitidos.'
+                }));
+
+                // Limpiar el error después de 3 segundos
+                setTimeout(() => {
+                    setErrors(prevErrors => {
+                        const newErrors = { ...prevErrors };
+                        delete newErrors[name];
+                        return newErrors;
+                    });
+                }, 3000);
+            }
+            
+            // Actualizar el valor validado en el estado
+            setData(name, valorValidado);
+            
+            // Obtener los límites según el tamaño de empresa seleccionado
+            const limites = obtenerLimitesEmpleados(data.tamano_empresa);
+            
+            // Calcular el total de empleados incluyendo el nuevo valor
+            let nuevoTotal = 0;
+            
+            if (name === 'cantidad_hombres') {
+                nuevoTotal = parseInt(valorValidado || 0) + 
+                           parseInt(data.cantidad_mujeres || 0) + 
+                           parseInt(data.cantidad_otros || 0);
+            } else if (name === 'cantidad_mujeres') {
+                nuevoTotal = parseInt(data.cantidad_hombres || 0) + 
+                           parseInt(valorValidado || 0) + 
+                           parseInt(data.cantidad_otros || 0);
+            } else { // cantidad_otros
+                nuevoTotal = parseInt(data.cantidad_hombres || 0) + 
+                           parseInt(data.cantidad_mujeres || 0) + 
+                           parseInt(valorValidado || 0);
+            }
+            
+            // Validar contra los límites
+            if (nuevoTotal < limites.minimo || nuevoTotal > limites.maximo) {
+                setErrors(prevErrors => ({
+                    ...prevErrors,
+                    empleados: nuevoTotal < limites.minimo ? 
+                        `La cantidad total de empleados (${nuevoTotal}) es menor al mínimo para el tamaño de empresa seleccionado (mínimo ${limites.minimo}).` :
+                        `La cantidad total de empleados (${nuevoTotal}) excede el límite para el tamaño de empresa seleccionado (máximo ${limites.maximo}).`
+                }));
+            } else {
+                // Limpiar el error si está dentro de los límites
+                setErrors(prevErrors => {
+                    const newErrors = { ...prevErrors };
+                    delete newErrors.empleados;
+                    return newErrors;
+                });
+            }
+            
+            return;
+        }
+
         // Verificar si es un campo de productos (nombre o descripción)
         if (name.includes('productos[')) {
             // Extraer el índice y el campo del nombre
@@ -1426,6 +1549,22 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         }
 
         setData(name, fechaFormateada);
+    };
+
+    // Función para obtener los límites de empleados según el tamaño de empresa
+    const obtenerLimitesEmpleados = (tamanoEmpresa) => {
+        switch (tamanoEmpresa) {
+            case '1-5':
+                return { minimo: 1, maximo: 5 };
+            case '6-30':
+                return { minimo: 6, maximo: 30 };
+            case '31-100':
+                return { minimo: 31, maximo: 100 };
+            case '101+':
+                return { minimo: 101, maximo: 100000 }; // Un valor muy grande para representar "más de 100"
+            default:
+                return { minimo: 0, maximo: 0 }; // Si no hay selección de tamaño
+        }
     };
 
     const [paises, setPaises] = useState([]);
@@ -1835,6 +1974,16 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     {/* Cantidad de empleados */}
                                     <div className="md:col-span-2">
                                         <h3 className="text-lg font-medium text-gray-900 mb-4">¿Cuantas personas emplea?</h3>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {errors.empleados && (
+                                                <div className="col-span-3 text-sm text-red-600 bg-red-50 p-2 rounded border border-red-200 mb-2">
+                                                    {errors.empleados}
+                                                </div>
+                                            )}
+                                            <p className="col-span-3 text-sm text-gray-600 mb-2">
+                                                El total de personas debe estar entre los límites del tamaño de empresa seleccionado.
+                                            </p>
+                                        </div>
                                         <div className="grid grid-cols-3 gap-4">
                                             <div>
                                                 <label className="block text-sm text-gray-600">Cantidad de Hombres<span className="text-red-500">*</span></label>

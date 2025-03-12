@@ -37,10 +37,10 @@ export default function InstructionsLayout({ children, title }) {
 
                 {/* Mobile background image */}
                 <div className="h-48 md:hidden">
-                    <img 
-                        src="/assets/img/bg_register.png" 
-                        alt="Costa Rica Landscape" 
-                        className="w-full h-full object-cover" 
+                    <img
+                        src="/assets/img/bg_register.png"
+                        alt="Costa Rica Landscape"
+                        className="w-full h-full object-cover"
                     />
                 </div>
 
@@ -145,7 +145,10 @@ export default function InstructionsLayout({ children, title }) {
                             </>
                         ) : (
                             <>
-                                <h2 className="text-2xl font-semibold text-white mb-6">
+                                <p className='text-white mb-6'>
+                                    Esta plataforma está diseñada con el fin de que las empresas puedan medir la nota que obtendrían en el momento que apliquen por el proceso de licenciamiento de <i>esencial</i> COSTA RICA.
+                                </p>
+                                {/* <h2 className="text-2xl font-semibold text-white mb-6">
                                     Instrucciones:
                                 </h2>
                                 <p className="text-white mb-6">
@@ -179,7 +182,7 @@ export default function InstructionsLayout({ children, title }) {
                                     >
                                         licenciasmarcapais@procomer.com
                                     </a>
-                                </p>
+                                </p> */}
                             </>
                         )}
                     </div>
