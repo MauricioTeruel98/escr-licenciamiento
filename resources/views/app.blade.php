@@ -107,6 +107,10 @@
         td span {
             font-size: 12px !important;
         }
+
+        .dropdown-notify{
+            width: 500px !important;
+        }
     </style>
     <link rel="preload" href="{{ asset('assets/fonts/poppins/Poppins-Regular.ttf') }}" as="font" type="font/ttf"
         crossorigin>

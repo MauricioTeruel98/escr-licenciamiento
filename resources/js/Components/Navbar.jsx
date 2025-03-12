@@ -86,15 +86,17 @@ export default function Navbar({ userName, onMenuClick }) {
                                 </span>
                             )}
                         </div>
-                        <div tabIndex={0} className="dropdown-content z-[1] menu shadow-lg bg-base-100 rounded-lg w-80 mt-4">
+                        <div tabIndex={0} className="dropdown-content dropdown-notify z-[1] menu shadow-lg bg-base-100 rounded-lg w-80 mt-4">
                             {solicitudesPendientes.map((solicitud) => (
                                 <div key={solicitud.id} className="p-4 hover:bg-gray-50">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                </svg>
+                                            <div>
+                                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                    </svg>
+                                                </div>
                                             </div>
                                             <div>
                                                 <h3 className="text-base font-medium">Solicitud de colaboración</h3>
