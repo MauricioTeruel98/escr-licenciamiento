@@ -57,7 +57,7 @@ export default function InstructionsLayout({ children, title }) {
                                     Auto-evaluación
                                 </h2>
                                 <p className="text-white mb-6">
-                                    Le invitamos a completar el proceso de <span className='font-bold'>auto-evaluación</span> en el cual podrá conocer la etapa en la que se encuentra su empresa para iniciar el proceso de licenciamiento de uso corporativo de esencial COSTA RICA
+                                    Le invitamos a completar el proceso de <span className='font-bold'>auto-evaluación</span> en el cual podrá conocer la etapa en la que se encuentra su empresa para iniciar el proceso de licenciamiento de uso corporativo de <i>esencial</i> COSTA RICA
                                 </p>
                                 <p className="text-white mb-6">
                                     Le recordamos que toda compañía que desee optar por el licenciamiento de la Marca País debe exportar sus productos y servicios
@@ -125,7 +125,7 @@ export default function InstructionsLayout({ children, title }) {
                                     Auto-evaluación
                                 </h2>
                                 <p className="text-white mb-6">
-                                    Le invitamos a completar el proceso de <span className='font-bold'>auto-evaluación</span> en el cual podrá conocer la etapa en la que se encuentra su empresa para iniciar el proceso de licenciamiento de uso corporativo de esencial COSTA RICA
+                                    Le invitamos a completar el proceso de <span className='font-bold'>auto-evaluación</span> en el cual podrá conocer la etapa en la que se encuentra su empresa para iniciar el proceso de licenciamiento de uso corporativo de <i>esencial</i> COSTA RICA
                                 </p>
                                 <p className="text-white mb-6">
                                     Le recordamos que toda compañía que desee optar por el licenciamiento de la Marca País debe exportar sus productos y servicios

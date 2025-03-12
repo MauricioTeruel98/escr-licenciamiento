@@ -25,11 +25,17 @@ export default function CompanyRegister({ legalId, provincias }) {
     // Efecto para filtrar provincias basado en el término de búsqueda
     useEffect(() => {
         if (searchTerm.trim() === '') {
-            setFilteredProvincias(provincias || []);
-        } else {
-            const filtered = (provincias || []).filter(provincia => 
-                provincia.name.toLowerCase().includes(searchTerm.toLowerCase())
+            // Ordenar provincias alfabéticamente por nombre
+            const provinciaOrdenadas = [...(provincias || [])].sort((a, b) => 
+                a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
             );
+            setFilteredProvincias(provinciaOrdenadas);
+        } else {
+            const filtered = (provincias || [])
+                .filter(provincia => 
+                    provincia.name.toLowerCase().includes(searchTerm.toLowerCase())
+                )
+                .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
             setFilteredProvincias(filtered);
         }
     }, [searchTerm, provincias]);
@@ -214,9 +220,9 @@ export default function CompanyRegister({ legalId, provincias }) {
                                 className="w-full rounded-md border border-gray-300 p-2"
                             >
                                 <option value="">Escoger sector</option>
-                                <option value="agricola">Agricola</option>
+                                <option value="agricola">Agrícola</option>
                                 <option value="alimentos">Alimentos</option>
-                                <option value="industria-especializada">Industria especializada</option>
+                                <option value="especializada">Especializada</option>
                                 <option value="servicios">Servicios</option>
                             </select>
                             <InputError message={errors.sector} />

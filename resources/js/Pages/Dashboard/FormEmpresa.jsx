@@ -826,13 +826,19 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             try {
                 const response = await axios.get(route('api.lugares'));
                 const lugares = response.data[0]; // Tomamos el primer elemento que contiene Costa Rica
+                
+                // Ordenar provincias alfabéticamente por nombre
+                const provinciasOrdenadas = [...lugares.provincias].sort((a, b) => 
+                    a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
+                );
+                
                 setUbicaciones(prev => ({
                     ...prev,
-                    provincias: lugares.provincias
+                    provincias: provinciasOrdenadas
                 }));
 
                 console.log('Datos de ubicación cargados:', {
-                    provincias: lugares.provincias.length,
+                    provincias: provinciasOrdenadas.length,
                     provinciaSeleccionada: data.provincia,
                     cantonSeleccionado: data.canton,
                     distritoSeleccionado: data.distrito
@@ -1799,9 +1805,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                         >
                                             <option value="">Escoger sector</option>
-                                            <option value="agricola">Agricola</option>
+                                            <option value="agricola">Agrícola</option>
                                             <option value="alimentos">Alimentos</option>
-                                            <option value="industria-especializada">Industria especializada</option>
+                                            <option value="especializada">Especializada</option>
                                             <option value="servicios">Servicios</option>
                                         </select>
                                         <InputError message={errors.sector} />
