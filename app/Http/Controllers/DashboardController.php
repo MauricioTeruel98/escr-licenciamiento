@@ -26,8 +26,8 @@ class DashboardController extends Controller
 
     public function showEvaluation()
     {
-        $user = auth()->user();
-        $isAdmin = $user->isAdmin();
+        $user = Auth::user();
+        $isAdmin = $user->role === 'admin';
 
         $companyId = $user->company_id;
 
@@ -154,7 +154,7 @@ class DashboardController extends Controller
             'ciudad' => $company->city,
             'cedula_juridica' => $company->legal_id,
             'actividad_comercial' => $company->commercial_activity,
-            'es_exportadora' => $company->is_exporter,
+            'is_exporter' => $company->is_exporter,
             'telefono_1' => $company->phone,
             'telefono_2' => $company->mobile,
         ];

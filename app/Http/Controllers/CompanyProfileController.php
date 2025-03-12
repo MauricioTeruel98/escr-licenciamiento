@@ -27,10 +27,9 @@ class CompanyProfileController extends Controller
             ]);
 
             // Procesar datos básicos
-            $allData = $request->except(['productos_data', 'logo_path', 'fotografias_paths', 'certificaciones_paths', 'provincia', 'canton', 'distrito']);
+            $allData = $request->except(['productos_data', 'logo_path', 'fotografias_paths', 'certificaciones_paths', 'provincia', 'canton', 'distrito', 'is_exporter']);
 
             // Convertir valores booleanos a 1 o 0
-            $allData['es_exportadora'] = filter_var($allData['es_exportadora'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
             $allData['recomienda_marca_pais'] = filter_var($allData['recomienda_marca_pais'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
 
             $allData['company_id'] = $companyId;
@@ -38,8 +37,13 @@ class CompanyProfileController extends Controller
             // Obtener información adicional existente
             $infoExistente = InfoAdicionalEmpresa::where('company_id', $companyId)->first();
 
-            // Procesar datos de ubicación (provincia, cantón y distrito)
+            // Procesar datos de ubicación (provincia, cantón y distrito) y el campo is_exporter
             $companyData = [];
+
+            // Actualizar el campo is_exporter en la tabla companies
+            if ($request->has('is_exporter')) {
+                $companyData['is_exporter'] = filter_var($request->is_exporter, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+            }
 
             $infoAdicional = InfoAdicionalEmpresa::where('company_id', $companyId)->first();
 
@@ -101,7 +105,7 @@ class CompanyProfileController extends Controller
             // Actualizar la información de la empresa
             if (!empty($companyData)) {
                 Company::where('id', $companyId)->update($companyData);
-                Log::info('Datos de ubicación actualizados en la tabla companies', $companyData);
+                Log::info('Datos actualizados en la tabla companies', $companyData);
             }
 
             // Procesar logo

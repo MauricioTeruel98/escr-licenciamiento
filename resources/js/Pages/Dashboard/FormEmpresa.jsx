@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useForm } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import InputError from '@/Components/InputError';
@@ -36,7 +36,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         cantidad_otros: infoAdicional?.cantidad_otros || '',
         telefono_1: infoAdicional?.telefono_1 || '',
         telefono_2: infoAdicional?.telefono_2 || '',
-        es_exportadora: infoAdicional?.es_exportadora || false,
+        is_exporter: infoAdicional?.is_exporter || false,
         paises_exportacion: infoAdicional?.paises_exportacion || '',
 
         // Estos datos ahora vienen de la tabla companies
@@ -1313,7 +1313,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         setData(name, valorLimpio);
     };
 
-    // Función específica para manejar el año de fundación
+    // Función específica para manejar el año de fundación en formato fecha DD/MM/AAAA
     const handleAnioFundacionChange = (e) => {
         const { name, value } = e.target;
 
@@ -1332,14 +1332,81 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             return;
         }
 
-        // Usar la función validarCampo con el tipo 'numeros_sin_e'
-        const valorNumerico = validarCampo(valorSinEspacios, 'numeros_sin_e');
+        // Solo permitir números y el carácter "/"
+        const valorFormateado = valorSinEspacios.replace(/[^\d\/]/g, '');
 
-        // Si se filtraron caracteres, mostrar un error
-        if (valorNumerico !== valorSinEspacios) {
+        // Aplicar formato automático DD/MM/AAAA
+        let fechaFormateada = valorFormateado;
+        
+        // Si se borra hacia atrás y hay un / al final, eliminar también el /
+        if (valorFormateado.length < data.anio_fundacion?.length && 
+            data.anio_fundacion?.endsWith('/') && 
+            !valorFormateado.endsWith('/')) {
+            fechaFormateada = valorFormateado.slice(0, -1);
+        } 
+        // Añadir automáticamente las barras después de DD y MM
+        else if ((valorFormateado.length === 2 || valorFormateado.length === 5) && 
+                !valorFormateado.endsWith('/')) {
+            // Validar límites antes de añadir la barra
+            if (valorFormateado.length === 2) {
+                // Validar día (no puede ser mayor a 31)
+                const dia = parseInt(valorFormateado);
+                if (dia > 31) {
+                    fechaFormateada = '31/';
+                    setErrors(prevErrors => ({
+                        ...prevErrors,
+                        [name]: 'El día no puede ser mayor a 31'
+                    }));
+                } else {
+                    fechaFormateada = valorFormateado + '/';
+                }
+            } else if (valorFormateado.length === 5) {
+                // Validar mes (no puede ser mayor a 12)
+                const partes = valorFormateado.split('/');
+                if (partes.length > 1) {
+                    const mes = parseInt(partes[1]);
+                    if (mes > 12) {
+                        const dia = partes[0];
+                        fechaFormateada = dia + '/12/';
+                        setErrors(prevErrors => ({
+                            ...prevErrors,
+                            [name]: 'El mes no puede ser mayor a 12'
+                        }));
+                    } else {
+                        fechaFormateada = valorFormateado + '/';
+                    }
+                } else {
+                    fechaFormateada = valorFormateado + '/';
+                }
+            }
+        }
+        // Validar año (no puede ser mayor a 2025)
+        else if (valorFormateado.length > 6) {
+            const partes = valorFormateado.split('/');
+            if (partes.length > 2) {
+                const año = partes[2];
+                if (año.length === 4 && parseInt(año) > 2025) {
+                    const dia = partes[0];
+                    const mes = partes[1];
+                    fechaFormateada = dia + '/' + mes + '/2025';
+                    setErrors(prevErrors => ({
+                        ...prevErrors,
+                        [name]: 'El año no puede ser mayor a 2025'
+                    }));
+                }
+            }
+        }
+
+        // Restringir a 10 caracteres (formato DD/MM/AAAA)
+        if (fechaFormateada.length > 10) {
+            fechaFormateada = fechaFormateada.substring(0, 10);
+        }
+
+        // Si hay cambios (caracteres no permitidos), mostrar mensaje
+        if (valorSinEspacios !== fechaFormateada && !errors[name]) {
             setErrors(prevErrors => ({
                 ...prevErrors,
-                [name]: 'Por favor ingrese solo números.'
+                [name]: 'Formato requerido: DD/MM/AAAA'
             }));
 
             // Limpiar el error después de 3 segundos
@@ -1352,10 +1419,11 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             }, 3000);
         }
 
-        setData(name, valorNumerico);
+        setData(name, fechaFormateada);
     };
 
     const [paises, setPaises] = useState([]);
+    const [busquedaPais, setBusquedaPais] = useState('');
 
     // Cargar la lista de países al montar el componente
     useEffect(() => {
@@ -1372,26 +1440,71 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         fetchPaises();
     }, []);
 
+    // Función para manejar la búsqueda de países
+    const handleBusquedaPaisChange = (e) => {
+        setBusquedaPais(e.target.value);
+    };
+
+    // Función para filtrar países según el término de búsqueda
+    const paisesFiltrados = useMemo(() => {
+        if (!busquedaPais.trim()) return paises;
+        
+        const busquedaLowerCase = busquedaPais.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return paises.filter(pais => 
+            pais.es_name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(busquedaLowerCase)
+        );
+    }, [paises, busquedaPais]);
+
     // Función para manejar la selección múltiple de países
     const handlePaisesChange = (e) => {
-        const options = e.target.options;
-        const selectedValues = [];
-
-        for (let i = 0; i < options.length; i++) {
-            if (options[i].selected) {
-                selectedValues.push(options[i].value);
-            }
+        const { value, checked } = e.target;
+        
+        // Obtener la lista actual de países seleccionados
+        const currentValues = data.paises_exportacion ? data.paises_exportacion.split(',') : [];
+        
+        let updatedValues;
+        if (checked) {
+            // Agregar el país a la lista si el checkbox está marcado
+            updatedValues = [...currentValues, value];
+        } else {
+            // Eliminar el país de la lista si el checkbox está desmarcado
+            updatedValues = currentValues.filter(item => item !== value);
         }
+        
+        // Actualizar el estado con la nueva lista de países
+        setData('paises_exportacion', updatedValues.join(','));
+    };
 
-        setData('paises_exportacion', selectedValues.join(','));
+    // Función para verificar si un país está seleccionado
+    const isPaisSelected = (paisName) => {
+        const selectedPaises = data.paises_exportacion ? data.paises_exportacion.split(',') : [];
+        return selectedPaises.includes(paisName);
     };
 
     // Función para renderizar las opciones de países
     const renderPaisesOptions = () => {
-        return paises.map(pais => (
-            <option key={pais.name} value={pais.es_name}>
-                {pais.es_name}
-            </option>
+        if (paisesFiltrados.length === 0) {
+            return (
+                <div className="py-2 text-center text-gray-500">
+                    No se encontraron países con ese criterio de búsqueda
+                </div>
+            );
+        }
+        
+        return paisesFiltrados.map(pais => (
+            <div key={pais.name} className="flex items-center mb-2">
+                <input
+                    type="checkbox"
+                    id={`pais-${pais.name}`}
+                    value={pais.es_name}
+                    checked={isPaisSelected(pais.es_name)}
+                    onChange={handlePaisesChange}
+                    className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                />
+                <label htmlFor={`pais-${pais.name}`} className="ml-2 block text-sm text-gray-900">
+                    {pais.es_name}
+                </label>
+            </div>
         ));
     };
 
@@ -1491,17 +1604,20 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
-                                            ¿En que año se fundó su organización?<span className="text-red-500">*</span>
+                                            ¿En qué fecha se fundó su organización?<span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="number"
+                                            type="text"
                                             value={data.anio_fundacion}
                                             onChange={handleAnioFundacionChange}
                                             name="anio_fundacion"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            maxLength={4}
-
+                                            placeholder="DD/MM/AAAA"
+                                            maxLength={10}
                                         />
+                                        <p className="mt-1 text-xs text-gray-500">
+                                            Ingrese la fecha en formato DD/MM/AAAA
+                                        </p>
                                         <InputError message={errors.anio_fundacion} />
                                     </div>
 
@@ -1703,12 +1819,10 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                         >
                                             <option value="">Selecciona un tamaño</option>
-                                            <option value="1-10">1-10</option>
-                                            <option value="11-50">11-50</option>
-                                            <option value="51-200">51-200</option>
-                                            <option value="201-500">201-500</option>
-                                            <option value="501-1000">501-1000</option>
-                                            <option value="1001-5000">1001-5000</option>
+                                            <option value="1-5">1-5</option>
+                                            <option value="6-30">6-30</option>
+                                            <option value="31-100">31-100</option>
+                                            <option value="101+">+100</option>
                                         </select>
                                     </div>
 
@@ -1825,9 +1939,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <label className="inline-flex items-center">
                                                 <input
                                                     type="radio"
-                                                    name="es_exportadora"
+                                                    name="is_exporter"
                                                     value="true"
-                                                    checked={data.es_exportadora === true}
+                                                    checked={data.is_exporter === true}
                                                     onChange={handleChange}
                                                     className="form-radio text-green-600 focus:ring-green-500"
                                                 />
@@ -1836,91 +1950,99 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             <label className="inline-flex items-center">
                                                 <input
                                                     type="radio"
-                                                    name="es_exportadora"
+                                                    name="is_exporter"
                                                     value="false"
-                                                    checked={data.es_exportadora === false}
+                                                    checked={data.is_exporter === false}
                                                     onChange={handleChange}
                                                     className="form-radio text-green-600 focus:ring-green-500"
                                                 />
                                                 <span className="ml-2">No</span>
                                             </label>
                                         </div>
-                                        <InputError message={errors.es_exportadora} />
+                                        <InputError message={errors.is_exporter} />
                                     </div>
 
-                                    {/* Países de exportación */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            ¿A qué países?
-                                        </label>
-                                        <select
-                                            value={data.paises_exportacion ? data.paises_exportacion.split(',') : []}
-                                            onChange={handlePaisesChange}
-                                            name="paises_exportacion"
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            multiple
-                                            size="5"
-                                        >
-                                            {renderPaisesOptions()}
-                                        </select>
-                                        <p className="mt-1 text-xs text-gray-500">
-                                            Mantenga presionada la tecla Ctrl (o Cmd en Mac) para seleccionar múltiples países.
-                                        </p>
-                                        <InputError message={errors.paises_exportacion} />
-                                    </div>
+                                    {/* Sección condicional - solo se muestra si es exportadora */}
+                                    {data.is_exporter === true && (
+                                        <>
+                                            {/* Países de exportación */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    ¿A qué países?<span className="text-red-500">*</span>
+                                                </label>
+                                                <div className="mb-2">
+                                                    <input
+                                                        type="text"
+                                                        value={busquedaPais}
+                                                        onChange={handleBusquedaPaisChange}
+                                                        placeholder="Buscar país..."
+                                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    />
+                                                </div>
+                                                <div className="mt-1 border border-gray-300 rounded-md shadow-sm overflow-y-auto h-48 p-3 bg-white">
+                                                    {renderPaisesOptions()}
+                                                </div>
+                                                <p className="mt-1 text-xs text-gray-500">
+                                                    Seleccione todos los países que apliquen marcando los checkboxes.
+                                                </p>
+                                                <InputError message={errors.paises_exportacion} />
+                                            </div>
 
-                                    {/* Producto o servicio */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Mencione el producto o servicio
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.producto_servicio}
-                                            onChange={handleChange}
-                                            name="producto_servicio"
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            placeholder="Producto o servicio"
-                                        />
-                                        <InputError message={errors.producto_servicio} />
-                                    </div>
+                                            {/* Producto o servicio */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    Mencione el producto o servicio<span className="text-red-500">*</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={data.producto_servicio}
+                                                    onChange={handleChange}
+                                                    name="producto_servicio"
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    placeholder="Producto o servicio"
+                                                />
+                                                <InputError message={errors.producto_servicio} />
+                                            </div>
 
-                                    {/* Rango de exportaciones */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            ¿En qué rango se ubica su empresa en exportaciones anuales medidas en dólares?
-                                        </label>
-                                        <select
-                                            value={data.rango_exportaciones}
-                                            onChange={handleChange}
-                                            name="rango_exportaciones"
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                        >
-                                            <option value="">Seleccione un rango</option>
-                                            <option value="0-10000">$0 - $10,000</option>
-                                            <option value="10001-50000">$10,001 - $50,000</option>
-                                            <option value="50001-100000">$50,001 - $100,000</option>
-                                            <option value="100001-500000">$100,001 - $500,000</option>
-                                            <option value="500001+">Más de $500,001</option>
-                                        </select>
-                                        <InputError message={errors.rango_exportaciones} />
-                                    </div>
+                                            {/* Rango de exportaciones */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    ¿En qué rango se ubica su empresa en exportaciones anuales medidas en dólares?<span className="text-red-500">*</span>
+                                                </label>
+                                                <select
+                                                    value={data.rango_exportaciones}
+                                                    onChange={handleChange}
+                                                    name="rango_exportaciones"
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                >
+                                                    <option value="">Seleccione un rango</option>
+                                                    <option value="Menos de $10,000">Menos de $10,000</option>
+                                                    <option value="$10,000 - $50,000">$10,000 - $50,000</option>
+                                                    <option value="$50,001 - $100,000">$50,001 - $100,000</option>
+                                                    <option value="$100,001 - $500,000">$100,001 - $500,000</option>
+                                                    <option value="$500,001 - $1,000,000">$500,001 - $1,000,000</option>
+                                                    <option value="Más de $1,000,000">Más de $1,000,000</option>
+                                                </select>
+                                                <InputError message={errors.rango_exportaciones} />
+                                            </div>
 
-                                    {/* Planes de expansión */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            ¿Cuáles son los planes de la empresa en los próximos 5 años para la expansión y/o internacionalización?
-                                        </label>
-                                        <textarea
-                                            value={data.planes_expansion}
-                                            onChange={handleChange}
-                                            name="planes_expansion"
-                                            rows={4}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            placeholder="Respuesta"
-                                        />
-                                        <InputError message={errors.planes_expansion} />
-                                    </div>
+                                            {/* Planes de expansión */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    ¿Cuáles son los planes de la empresa en los próximos 5 años para la expansión y/o internacionalización?<span className="text-red-500">*</span>
+                                                </label>
+                                                <textarea
+                                                    value={data.planes_expansion}
+                                                    onChange={handleChange}
+                                                    name="planes_expansion"
+                                                    rows={3}
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    placeholder="Describa los planes de expansión de su empresa"
+                                                ></textarea>
+                                                <InputError message={errors.planes_expansion} />
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* Botón de guardar */}
