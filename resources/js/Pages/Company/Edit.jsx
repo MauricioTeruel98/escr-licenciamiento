@@ -284,7 +284,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                 <label className="block text-sm font-medium text-gray-700">
                                     Debe incluir la actividad principal de su negocio<span className="text-red-500">*</span>
                                 </label>
-                                <input
+                                <textarea
                                     type="text"
                                     value={data.commercial_activity}
                                     onChange={e => handleInputChange(e, 'commercial_activity')}
@@ -293,7 +293,8 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                     maxLength={100}
                                     rows={2}
                                     style={{ resize: 'none' }}
-                                />
+                                >
+                                </textarea>
                                 <InputError message={errors.commercial_activity} className="mt-2" />
                             </div>
 
