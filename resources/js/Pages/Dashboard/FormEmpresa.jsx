@@ -263,11 +263,37 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             return;
         }
 
+        // Definir límites de tamaño específicos por tipo
+        const maxSize = {
+            logo: 1 * 1024 * 1024, // 1 MB para logo
+            fotografias: 3 * 1024 * 1024, // 3 MB para fotografías
+            certificaciones: 1 * 1024 * 1024, // 1 MB para certificaciones
+            productos: 3 * 1024 * 1024 // 3 MB para productos
+        };
+
+        // Validar tamaño de archivo
+        const validSizeFiles = files.filter(file => file.size <= maxSize[tipo]);
+
+        if (validSizeFiles.length < files.length) {
+            const sizeLimit = tipo === 'logo' ? '1 MB' :
+                tipo === 'fotografias' ? '3 MB' :
+                    tipo === 'certificaciones' ? '1 MB' : '3 MB';
+            alert(`Los archivos deben ser de un tamaño máximo de ${sizeLimit}. Los archivos que exceden este límite han sido ignorados.`);
+        }
+
+        // Si no hay archivos válidos después de filtrar por tamaño, salir
+        if (validSizeFiles.length === 0) {
+            return;
+        }
+
+        // Usar solo los archivos válidos en tamaño
+        files = validSizeFiles;
+
         // Definir límites por tipo de archivo
         const maxFiles = {
             logo: 1,
             fotografias: 3,
-            certificaciones: 5,
+            certificaciones: 10,
             productos: 1
         };
 
@@ -378,12 +404,22 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             return;
         }
 
-        // Validar tamaño máximo de 2 MB
-        const maxSizeInBytes = 2 * 1024 * 1024; // 2 MB en bytes
-        const oversizedFiles = files.filter(file => file.size > maxSizeInBytes);
+        // Definir límites de tamaño específicos por tipo
+        const maxSize = {
+            logo: 1 * 1024 * 1024, // 1 MB para logo
+            fotografias: 3 * 1024 * 1024, // 3 MB para fotografías
+            certificaciones: 1 * 1024 * 1024, // 1 MB para certificaciones
+            productos: 3 * 1024 * 1024 // 3 MB para productos
+        };
+
+        // Validar tamaño máximo según el tipo
+        const oversizedFiles = files.filter(file => file.size > maxSize[tipo]);
 
         if (oversizedFiles.length > 0) {
-            alert('El tamaño máximo permitido por imagen es de 2 MB.');
+            const sizeText = tipo === 'logo' ? '1 MB' :
+                tipo === 'fotografias' ? '3 MB' :
+                    tipo === 'certificaciones' ? '1 MB' : '3 MB';
+            alert(`El tamaño máximo permitido por ${tipo === 'logo' ? 'el logo' : 'imagen'} es de ${sizeText}.`);
             e.target.value = null; // Limpiar el input
             return;
         }
@@ -392,7 +428,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         const maxFiles = {
             logo: 1,
             fotografias: 3,
-            certificaciones: 5,
+            certificaciones: 10,
             productos: 1
         };
 
@@ -652,20 +688,20 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         try {
             // Validar que la cantidad de empleados coincida con el tamaño de empresa
             const limites = obtenerLimitesEmpleados(data.tamano_empresa);
-            const totalEmpleados = parseInt(data.cantidad_hombres || 0) + 
-                                  parseInt(data.cantidad_mujeres || 0) + 
-                                  parseInt(data.cantidad_otros || 0);
-            
+            const totalEmpleados = parseInt(data.cantidad_hombres || 0) +
+                parseInt(data.cantidad_mujeres || 0) +
+                parseInt(data.cantidad_otros || 0);
+
             if (data.tamano_empresa && (totalEmpleados < limites.minimo || totalEmpleados > limites.maximo)) {
                 setErrors({
-                    empleados: totalEmpleados < limites.minimo ? 
+                    empleados: totalEmpleados < limites.minimo ?
                         `La cantidad total de empleados (${totalEmpleados}) es menor al mínimo para el tamaño de empresa seleccionado (mínimo ${limites.minimo}).` :
                         `La cantidad total de empleados (${totalEmpleados}) excede el límite para el tamaño de empresa seleccionado (máximo ${limites.maximo}).`
                 });
                 setLoading(false);
                 return;
             }
-            
+
             // Subir imágenes por separado
             let logoPath = null;
             let fotografiasPaths = null;
@@ -842,12 +878,12 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             try {
                 const response = await axios.get(route('api.lugares'));
                 const lugares = response.data[0]; // Tomamos el primer elemento que contiene Costa Rica
-                
+
                 // Ordenar provincias alfabéticamente por nombre
-                const provinciasOrdenadas = [...lugares.provincias].sort((a, b) => 
+                const provinciasOrdenadas = [...lugares.provincias].sort((a, b) =>
                     a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
                 );
-                
+
                 setUbicaciones(prev => ({
                     ...prev,
                     provincias: provinciasOrdenadas
@@ -1136,27 +1172,27 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         // Si es el tamaño de empresa, limpiar los valores de cantidad empleados si es necesario
         if (name === 'tamano_empresa') {
             setData(name, value);
-            
+
             // Obtener los límites según el tamaño seleccionado
             const limites = obtenerLimitesEmpleados(value);
-            
+
             // Verificar si el total de empleados actuales excede el límite superior
-            const totalActual = parseInt(data.cantidad_hombres || 0) + 
-                               parseInt(data.cantidad_mujeres || 0) + 
-                               parseInt(data.cantidad_otros || 0);
-            
+            const totalActual = parseInt(data.cantidad_hombres || 0) +
+                parseInt(data.cantidad_mujeres || 0) +
+                parseInt(data.cantidad_otros || 0);
+
             if (totalActual > limites.maximo) {
                 // Limpiar los campos de cantidad de empleados
                 setData('cantidad_hombres', '');
                 setData('cantidad_mujeres', '');
                 setData('cantidad_otros', '');
-                
+
                 // Mostrar mensaje informativo
                 setErrors(prevErrors => ({
                     ...prevErrors,
                     empleados: `La cantidad total de empleados (${totalActual}) excede el límite para el tamaño de empresa seleccionado (máximo ${limites.maximo}). Por favor, ajuste los valores.`
                 }));
-                
+
                 // Limpiar el error después de 5 segundos
                 setTimeout(() => {
                     setErrors(prevErrors => {
@@ -1166,7 +1202,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     });
                 }, 5000);
             }
-            
+
             return;
         }
 
@@ -1175,10 +1211,10 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             // Validar primero que sea un número válido
             // Determinar el tipo de validación según el campo
             let tipoValidacion = 'numeros_sin_e';
-            
+
             // Validar el valor según el tipo de campo
             const valorValidado = validarCampo(value, tipoValidacion);
-            
+
             // Verificar si se filtraron caracteres no permitidos
             if (valorValidado !== value.trimStart()) {
                 // Establecer un error para este campo
@@ -1196,35 +1232,35 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     });
                 }, 3000);
             }
-            
+
             // Actualizar el valor validado en el estado
             setData(name, valorValidado);
-            
+
             // Obtener los límites según el tamaño de empresa seleccionado
             const limites = obtenerLimitesEmpleados(data.tamano_empresa);
-            
+
             // Calcular el total de empleados incluyendo el nuevo valor
             let nuevoTotal = 0;
-            
+
             if (name === 'cantidad_hombres') {
-                nuevoTotal = parseInt(valorValidado || 0) + 
-                           parseInt(data.cantidad_mujeres || 0) + 
-                           parseInt(data.cantidad_otros || 0);
+                nuevoTotal = parseInt(valorValidado || 0) +
+                    parseInt(data.cantidad_mujeres || 0) +
+                    parseInt(data.cantidad_otros || 0);
             } else if (name === 'cantidad_mujeres') {
-                nuevoTotal = parseInt(data.cantidad_hombres || 0) + 
-                           parseInt(valorValidado || 0) + 
-                           parseInt(data.cantidad_otros || 0);
+                nuevoTotal = parseInt(data.cantidad_hombres || 0) +
+                    parseInt(valorValidado || 0) +
+                    parseInt(data.cantidad_otros || 0);
             } else { // cantidad_otros
-                nuevoTotal = parseInt(data.cantidad_hombres || 0) + 
-                           parseInt(data.cantidad_mujeres || 0) + 
-                           parseInt(valorValidado || 0);
+                nuevoTotal = parseInt(data.cantidad_hombres || 0) +
+                    parseInt(data.cantidad_mujeres || 0) +
+                    parseInt(valorValidado || 0);
             }
-            
+
             // Validar contra los límites
             if (nuevoTotal < limites.minimo || nuevoTotal > limites.maximo) {
                 setErrors(prevErrors => ({
                     ...prevErrors,
-                    empleados: nuevoTotal < limites.minimo ? 
+                    empleados: nuevoTotal < limites.minimo ?
                         `La cantidad total de empleados (${nuevoTotal}) es menor al mínimo para el tamaño de empresa seleccionado (mínimo ${limites.minimo}).` :
                         `La cantidad total de empleados (${nuevoTotal}) excede el límite para el tamaño de empresa seleccionado (máximo ${limites.maximo}).`
                 }));
@@ -1236,7 +1272,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     return newErrors;
                 });
             }
-            
+
             return;
         }
 
@@ -1466,16 +1502,16 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
         // Aplicar formato automático DD/MM/AAAA
         let fechaFormateada = valorFormateado;
-        
+
         // Si se borra hacia atrás y hay un / al final, eliminar también el /
-        if (valorFormateado.length < data.anio_fundacion?.length && 
-            data.anio_fundacion?.endsWith('/') && 
+        if (valorFormateado.length < data.anio_fundacion?.length &&
+            data.anio_fundacion?.endsWith('/') &&
             !valorFormateado.endsWith('/')) {
             fechaFormateada = valorFormateado.slice(0, -1);
-        } 
+        }
         // Añadir automáticamente las barras después de DD y MM
-        else if ((valorFormateado.length === 2 || valorFormateado.length === 5) && 
-                !valorFormateado.endsWith('/')) {
+        else if ((valorFormateado.length === 2 || valorFormateado.length === 5) &&
+            !valorFormateado.endsWith('/')) {
             // Validar límites antes de añadir la barra
             if (valorFormateado.length === 2) {
                 // Validar día (no puede ser mayor a 31)
@@ -1593,9 +1629,9 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     // Función para filtrar países según el término de búsqueda
     const paisesFiltrados = useMemo(() => {
         if (!busquedaPais.trim()) return paises;
-        
+
         const busquedaLowerCase = busquedaPais.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        return paises.filter(pais => 
+        return paises.filter(pais =>
             pais.es_name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(busquedaLowerCase)
         );
     }, [paises, busquedaPais]);
@@ -1603,10 +1639,10 @@ export default function CompanyProfile({ userName, infoAdicional }) {
     // Función para manejar la selección múltiple de países
     const handlePaisesChange = (e) => {
         const { value, checked } = e.target;
-        
+
         // Obtener la lista actual de países seleccionados
         const currentValues = data.paises_exportacion ? data.paises_exportacion.split(',') : [];
-        
+
         let updatedValues;
         if (checked) {
             // Agregar el país a la lista si el checkbox está marcado
@@ -1615,7 +1651,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             // Eliminar el país de la lista si el checkbox está desmarcado
             updatedValues = currentValues.filter(item => item !== value);
         }
-        
+
         // Actualizar el estado con la nueva lista de países
         setData('paises_exportacion', updatedValues.join(','));
     };
@@ -1635,7 +1671,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 </div>
             );
         }
-        
+
         return paisesFiltrados.map(pais => (
             <div key={pais.name} className="flex items-center mb-2">
                 <input
@@ -2260,7 +2296,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             >
                                                 <div className="text-center text-gray-600">
                                                     Arrastre o <span className="text-green-600">Cargar</span>
-                                                    <p className="text-xs mt-1">Máximo 3 fotografías. Solo formatos jpg, jpeg o png.</p>
+                                                    <p className="text-xs mt-1">Máximo 3 fotografías de hasta 3 mb cada una. Solo formatos jpg, jpeg o png.</p>
                                                 </div>
                                                 <input
                                                     id="fotografias-input"
@@ -2328,7 +2364,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                             >
                                                 <div className="text-center text-gray-600">
                                                     Arrastre o <span className="text-green-600">Cargar</span>
-                                                    <p className="text-xs mt-1">Máximo 1 logo. Solo formatos jpg, jpeg o png.</p>
+                                                    <p className="text-xs mt-1">Máximo 1 logo de hasta 1 mb. Solo formatos jpg, jpeg o png.</p>
                                                 </div>
                                                 <input
                                                     id="logo-input"
@@ -2422,7 +2458,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                         >
                                             <div className="text-center text-gray-600">
                                                 Arrastre o <span className="text-green-600">Cargar</span>
-                                                <p className="text-xs mt-1">Máximo 5 certificaciones. Solo formatos jpg, jpeg o png.</p>
+                                                <p className="text-xs mt-1">Máximo 10 certificaciones, de hasta 1 mb cada una. Solo formatos jpg, jpeg o png.</p>
                                             </div>
                                             <input
                                                 id="certificaciones-input"
@@ -3160,7 +3196,10 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                             onClick={() => toggleSeccion('productos')}
                             className="w-full p-6 flex justify-between items-center text-left"
                         >
-                            <h2 className="text-xl font-semibold">Licencia de producto</h2>
+                            <div>
+                                <h2 className="text-xl font-semibold">Licencia de producto</h2>
+                                <p className="text-xs text-gray-600 mt-2">Si su empresa desea utilizar el sello de esencial COSTA RICA en sus productos, complete la siguiente información</p>
+                            </div>
                             <svg
                                 className={`w-6 h-6 transform transition-transform ${seccionesExpandidas.productos ? 'rotate-180' : ''
                                     }`}

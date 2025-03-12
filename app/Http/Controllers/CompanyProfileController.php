@@ -420,13 +420,17 @@ class CompanyProfileController extends Controller
     {
         $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         $errorMessages = [];
-        $maxSizeInBytes = 2 * 1024 * 1024; // 2 MB en bytes
+        
+        // Límites de tamaño en bytes
+        $maxSizeLogo = 1 * 1024 * 1024; // 1 MB para logo
+        $maxSizeFotografias = 3 * 1024 * 1024; // 3 MB para fotografías
+        $maxSizeCertificaciones = 1 * 1024 * 1024; // 1 MB para certificaciones
 
         // Límites de archivos por tipo
         $maxFiles = [
             'logo' => 1,
             'fotografias' => 3,
-            'certificaciones' => 5,
+            'certificaciones' => 10,
             'productos' => 1 // Por producto
         ];
 
@@ -438,8 +442,8 @@ class CompanyProfileController extends Controller
             }
 
             // Validar tamaño del logo
-            if ($logo->getSize() > $maxSizeInBytes) {
-                $errorMessages[] = 'El logo no debe exceder los 2 MB de tamaño.';
+            if ($logo->getSize() > $maxSizeLogo) {
+                $errorMessages[] = 'El logo no debe exceder 1 MB de tamaño.';
             }
 
             // El logo ya está limitado a 1 por la estructura del formulario
@@ -461,8 +465,8 @@ class CompanyProfileController extends Controller
                 }
 
                 // Validar tamaño
-                if ($foto->getSize() > $maxSizeInBytes) {
-                    $errorMessages[] = "La fotografía #{$index} no debe exceder los 2 MB de tamaño.";
+                if ($foto->getSize() > $maxSizeFotografias) {
+                    $errorMessages[] = "La fotografía #{$index} no debe exceder los 3 MB de tamaño.";
                 }
             }
         }
@@ -483,8 +487,8 @@ class CompanyProfileController extends Controller
                 }
 
                 // Validar tamaño
-                if ($cert->getSize() > $maxSizeInBytes) {
-                    $errorMessages[] = "La certificación #{$index} no debe exceder los 2 MB de tamaño.";
+                if ($cert->getSize() > $maxSizeCertificaciones) {
+                    $errorMessages[] = "La certificación #{$index} no debe exceder 1 MB de tamaño.";
                 }
             }
         }
@@ -500,8 +504,8 @@ class CompanyProfileController extends Controller
                     }
 
                     // Validar tamaño
-                    if ($imagen->getSize() > $maxSizeInBytes) {
-                        $errorMessages[] = "La imagen del producto '{$producto['nombre']}' no debe exceder los 2 MB de tamaño.";
+                    if ($imagen->getSize() > $maxSizeFotografias) {
+                        $errorMessages[] = "La imagen del producto '{$producto['nombre']}' no debe exceder los 3 MB de tamaño.";
                     }
 
                     // Cada producto solo puede tener 1 imagen, lo cual ya está controlado por la estructura del formulario
@@ -520,7 +524,7 @@ class CompanyProfileController extends Controller
         try {
             // Validar tipos de archivos permitidos para el logo
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-            $maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
+            $maxSizeInBytes = 1 * 1024 * 1024; // 1 MB
 
             if ($request->hasFile('logo')) {
                 $logo = $request->file('logo');
@@ -538,8 +542,8 @@ class CompanyProfileController extends Controller
                 if ($logo->getSize() > $maxSizeInBytes) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'El logo no debe exceder los 2 MB de tamaño.',
-                        'errors' => ['logo' => ['El logo no debe exceder los 2 MB de tamaño.']]
+                        'message' => 'El logo no debe exceder 1 MB de tamaño.',
+                        'errors' => ['logo' => ['El logo no debe exceder 1 MB de tamaño.']]
                     ], 422);
                 }
 
@@ -587,7 +591,7 @@ class CompanyProfileController extends Controller
         try {
             // Validar tipos de archivos permitidos para fotografías
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-            $maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
+            $maxSizeInBytes = 3 * 1024 * 1024; // 3 MB
             $companyId = Auth::user()->company_id;
 
             // Crear directorio si no existe
@@ -619,8 +623,8 @@ class CompanyProfileController extends Controller
                     if ($foto->getSize() > $maxSizeInBytes) {
                         return response()->json([
                             'success' => false,
-                            'message' => 'La fotografía no debe exceder los 2 MB de tamaño.',
-                            'errors' => ['fotografias.' . $index => ['La fotografía no debe exceder los 2 MB de tamaño.']]
+                            'message' => 'La fotografía no debe exceder los 3 MB de tamaño.',
+                            'errors' => ['fotografias.' . $index => ['La fotografía no debe exceder los 3 MB de tamaño.']]
                         ], 422);
                     }
 
@@ -654,7 +658,7 @@ class CompanyProfileController extends Controller
         try {
             // Validar tipos de archivos permitidos para certificaciones
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-            $maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
+            $maxSizeInBytes = 1 * 1024 * 1024; // 1 MB
             $companyId = Auth::user()->company_id;
 
             // Crear directorio si no existe
@@ -686,8 +690,8 @@ class CompanyProfileController extends Controller
                     if ($cert->getSize() > $maxSizeInBytes) {
                         return response()->json([
                             'success' => false,
-                            'message' => 'La certificación no debe exceder los 2 MB de tamaño.',
-                            'errors' => ['certificaciones.' . $index => ['La certificación no debe exceder los 2 MB de tamaño.']]
+                            'message' => 'La certificación no debe exceder los 1 MB de tamaño.',
+                            'errors' => ['certificaciones.' . $index => ['La certificación no debe exceder los 1 MB de tamaño.']]
                         ], 422);
                     }
 
@@ -721,7 +725,7 @@ class CompanyProfileController extends Controller
         try {
             // Validar tipos de archivos permitidos para imágenes de productos
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-            $maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
+            $maxSizeInBytes = 3 * 1024 * 1024; // 3 MB (mismo que fotografías)
             $companyId = Auth::user()->company_id;
 
             // Crear directorio si no existe
@@ -755,8 +759,8 @@ class CompanyProfileController extends Controller
                         if ($imagen->getSize() > $maxSizeInBytes) {
                             return response()->json([
                                 'success' => false,
-                                'message' => "La imagen del producto '{$producto['nombre']}' no debe exceder los 2 MB de tamaño.",
-                                'errors' => [$imagenKey => ["La imagen del producto '{$producto['nombre']}' no debe exceder los 2 MB de tamaño."]]
+                                'message' => "La imagen del producto '{$producto['nombre']}' no debe exceder los 3 MB de tamaño.",
+                                'errors' => [$imagenKey => ["La imagen del producto '{$producto['nombre']}' no debe exceder los 3 MB de tamaño."]]
                             ], 422);
                         }
 
