@@ -338,32 +338,34 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Empresas asignadas para evaluar
                                         </label>
-                                        <div className="mt-2 space-y-2">
-                                            {companies.map((company) => (
-                                                <div key={company.id} className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        id={`company-${company.id}`}
-                                                        value={company.id}
-                                                        checked={assignedCompanies.includes(company.id.toString())}
-                                                        onChange={(e) => {
-                                                            const value = e.target.value;
-                                                            setAssignedCompanies(prev =>
-                                                                e.target.checked
-                                                                    ? [...prev, value]
-                                                                    : prev.filter(id => id !== value)
-                                                            );
-                                                        }}
-                                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                                                    />
-                                                    <label
-                                                        htmlFor={`company-${company.id}`}
-                                                        className="ml-2 block text-sm text-gray-900"
-                                                    >
-                                                        {company.name}
-                                                    </label>
-                                                </div>
-                                            ))}
+                                        <div className="mt-2 border border-gray-200 rounded-lg p-2 max-h-48 overflow-y-auto scrollbar-custom">
+                                            <div className="space-y-2">
+                                                {companies.map((company) => (
+                                                    <div key={company.id} className="flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            id={`company-${company.id}`}
+                                                            value={company.id}
+                                                            checked={assignedCompanies.includes(company.id.toString())}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value;
+                                                                setAssignedCompanies(prev =>
+                                                                    e.target.checked
+                                                                        ? [...prev, value]
+                                                                        : prev.filter(id => id !== value)
+                                                                );
+                                                            }}
+                                                            className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                                        />
+                                                        <label
+                                                            htmlFor={`company-${company.id}`}
+                                                            className="ml-2 block text-sm text-gray-900"
+                                                        >
+                                                            {company.name}
+                                                        </label>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                         {assignedCompanies.length === 0 && (
                                             <p className="mt-1 text-sm text-red-600">

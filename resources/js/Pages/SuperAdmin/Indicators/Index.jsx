@@ -45,7 +45,7 @@ export default function IndicatorsIndex() {
                         item.homologations.map((homologation) => (
                             <span
                                 key={homologation.id}
-                                className="text-md p-3 font-semibold mb-1 badge rounded-lg border text-blue-800 border-blue-200 bg-blue-50"
+                                className={`text-md px-3 py-1 font-semibold mb-1 badge rounded-lg border text-blue-800 border-blue-200 bg-blue-50 ${homologation.nombre.length > 10 ? 'h-auto' : ''}`}
                                 title={homologation.descripcion || homologation.nombre}
                             >
                                 {homologation.nombre}

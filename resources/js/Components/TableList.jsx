@@ -125,8 +125,10 @@ export default function TableList({
                                     />
                                 </td>
                                 {columns.map((column) => (
-                                    <td key={`${item.id}-${column.key}`} className="px-6 py-4 whitespace-nowrap">
-                                        {column.render ? column.render(item) : item[column.key]}
+                                    <td key={`${item.id}-${column.key}`} className="px-6 py-4">
+                                        <div className={`${column.key === 'company' ? 'max-h-24' : 'max-h-32'} overflow-y-auto scrollbar-custom pr-2`}>
+                                            {column.render ? column.render(item) : item[column.key]}
+                                        </div>
                                     </td>
                                 ))}
                             </tr>

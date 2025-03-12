@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Plus, Trash, Check, AlertCircle, AlertTriangle } from 'lucide-react';
+import { X, Plus, Trash, Check, AlertCircle, AlertTriangle, Search } from 'lucide-react';
 import axios from 'axios';
 import Switch from '../Switch';
 
@@ -34,6 +34,7 @@ export default function IndicatorModal({
     const [validationError, setValidationError] = useState(null);
     const [questionToDelete, setQuestionToDelete] = useState(null);
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+    const [homologationSearch, setHomologationSearch] = useState('');
 
     useEffect(() => {
         if (isOpen) {
@@ -303,28 +304,94 @@ export default function IndicatorModal({
     };
 
     const HomologationSelector = () => {
+        // Filtrar homologaciones basadas en la búsqueda
+        const filteredHomologations = relatedData.homologations.filter(homologation => 
+            homologation.nombre.toLowerCase().includes(homologationSearch.toLowerCase())
+        );
+
+        // Obtener las homologaciones seleccionadas
+        const selectedHomologations = relatedData.homologations.filter(
+            homologation => formData.homologation_ids.includes(homologation.id)
+        );
+
         return (
             <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                    Homologaciones asociadas (opcional)
-                </label>
-                <div className="mt-1 border border-gray-300 rounded-lg divide-y">
-                    {relatedData.homologations.map((homologation) => (
-                        <div
-                            key={homologation.id}
-                            className="flex items-center p-3 hover:bg-gray-50 cursor-pointer"
-                            onClick={() => toggleHomologation(homologation.id)}
-                        >
-                            <input
-                                type="checkbox"
-                                checked={formData.homologation_ids.includes(homologation.id)}
-                                readOnly
-                                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                            />
-                            <span className="ml-2 text-sm text-gray-700">{homologation.nombre}</span>
-                        </div>
-                    ))}
+                <div className="flex justify-between items-center">
+                    <label className="block text-sm font-medium text-gray-700">
+                        Homologaciones asociadas (opcional)
+                    </label>
+                    {formData.homologation_ids.length > 0 && (
+                        <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                            {formData.homologation_ids.length} seleccionada(s)
+                        </span>
+                    )}
                 </div>
+                
+                {/* Barra de búsqueda */}
+                {/* <div className="relative mb-2">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Search className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                        type="text"
+                        value={homologationSearch}
+                        onChange={(e) => setHomologationSearch(e.target.value)}
+                        placeholder="Buscar homologaciones..."
+                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                    />
+                </div> */}
+                
+                <div className="mt-1 border border-gray-300 rounded-lg max-h-48 overflow-y-auto scrollbar-custom">
+                    {filteredHomologations.length > 0 ? (
+                        <div className="divide-y">
+                            {filteredHomologations.map((homologation) => (
+                                <div
+                                    key={homologation.id}
+                                    className="flex items-center p-3 hover:bg-gray-50 cursor-pointer"
+                                    onClick={() => toggleHomologation(homologation.id)}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.homologation_ids.includes(homologation.id)}
+                                        readOnly
+                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                    />
+                                    <span className="ml-2 text-sm text-gray-700">{homologation.nombre}</span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="p-4 text-center text-sm text-gray-500">
+                            No se encontraron homologaciones con ese criterio
+                        </div>
+                    )}
+                </div>
+                
+                {selectedHomologations.length > 0 && (
+                    <div className="mt-3">
+                        <div className="text-xs font-medium text-gray-500 mb-2">Homologaciones seleccionadas:</div>
+                        <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto scrollbar-custom p-1">
+                            {selectedHomologations.map(homologation => (
+                                <div 
+                                    key={homologation.id}
+                                    className="flex items-center bg-gray-50 text-xs px-2 py-1 rounded-md border border-gray-200"
+                                >
+                                    <span className="text-gray-700">{homologation.nombre}</span>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleHomologation(homologation.id);
+                                        }}
+                                        className="ml-1 text-gray-400 hover:text-red-500"
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         );
     };
