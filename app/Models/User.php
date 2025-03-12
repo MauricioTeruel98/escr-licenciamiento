@@ -30,7 +30,10 @@ class User extends Authenticatable
         'status',
         'puesto',
         'form_sended',
-        'terms_accepted'
+        'terms_accepted',
+        'from_migration',
+        'cedula',
+        'old_id_company'
     ];
 
     /**

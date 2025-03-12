@@ -216,4 +216,43 @@ class SuperAdminController extends Controller
 
         return response()->json($stats);
     }
+
+    /**
+     * Muestra la página para importaciones de archivos SQL o CSV.
+     */
+    public function importaciones()
+    {
+        $companiesColumns = [
+            'legal_id', 'name', 'website', 'sector', 'provincia', 'commercial_activity', 
+            'phone', 'mobile', 'is_exporter', 'created_at', 'updated_at', 'status', 
+            'authorized', 'autoeval_ended', 'estado_eval', 'canton', 'distrito', 
+            'authorized_by_super_admin', 'old_id'
+        ];
+
+        $usersColumns = [
+            'name', 'lastname', 'id_number', 'phone', 'email', 'email_verified_at', 
+            'password', 'role', 'status', 'form_sended', 'terms_accepted', 'puesto', 
+            'from_migration', 'old_company_id', 'cedula'
+        ];
+
+        $usersRequiredColumns = [
+            'name', 'email'
+        ];
+
+        $usersOptionalDefaultValues = [
+            'password' => 'Se generará automáticamente si no se proporciona',
+            'role' => 'user (valores permitidos: user, admin, super_admin, evaluador)',
+            'status' => 'pending (valores permitidos: pending, approved, rejected)',
+            'terms_accepted' => '0',
+            'from_migration' => '1'
+        ];
+
+        return Inertia::render('SuperAdmin/Importaciones/Index', [
+            'title' => 'Importación de Archivos',
+            'companiesColumns' => $companiesColumns,
+            'usersColumns' => $usersColumns,
+            'usersRequiredColumns' => $usersRequiredColumns,
+            'usersOptionalDefaultValues' => $usersOptionalDefaultValues
+        ]);
+    }
 } 

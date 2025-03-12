@@ -38,6 +38,7 @@ use App\Http\Controllers\PDFController;
 use App\Http\Controllers\Commands\StorageCommandController;
 use App\Http\Controllers\UsersManagementSuperAdminController;
 use App\Http\Middleware\EnsureUserHasNoCompany;
+use App\Http\Controllers\ImportController;
 // Ruta principal
 Route::get('/', function () {
     if (Auth::check()) {
@@ -162,6 +163,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/super/requisitos', [SuperAdminController::class, 'requisitos'])->name('super.requisitos');
     Route::get('/super/homologations', [SuperAdminController::class, 'homologations'])->name('super.homologations');
     Route::get('/super/indicators', [SuperAdminController::class, 'indicators'])->name('super.indicators');
+    Route::get('/super/importaciones', [ImportController::class, 'index'])->name('super.importaciones');
 
     Route::get('/api/subcategories', [SubcategoryController::class, 'index']);
     Route::post('/api/subcategories', [SubcategoryController::class, 'store']);
@@ -371,6 +373,13 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/api/users/company/{user}', [UserManagementController::class, 'update']);
     Route::delete('/api/users/company/{user}', [UserManagementController::class, 'destroy']);
     Route::get('/api/pending-users/company', [UserManagementController::class, 'getPendingUsers']);
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Rutas para importación de datos
+    Route::get('/importaciones', [App\Http\Controllers\ImportController::class, 'index'])->name('import.index');
+    Route::post('/import/companies', [App\Http\Controllers\ImportController::class, 'importCompanies'])->name('import.companies');
+    Route::post('/import/users', [App\Http\Controllers\ImportController::class, 'importUsers'])->name('import.users');
 });
 
 require __DIR__ . '/auth.php';

@@ -24,7 +24,8 @@ class Company extends Model
         'authorized',
         'autoeval_ended',
         'estado_eval',
-        'authorized_by_super_admin'
+        'authorized_by_super_admin',
+        'old_id'
     ];
 
     protected $casts = [
