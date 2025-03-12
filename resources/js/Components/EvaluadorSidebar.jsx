@@ -41,6 +41,12 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
                     active: url === `/evaluacion/${value.id}`
                 })) : [];
                 setEvaluacionItems(values);
+                
+                // Verificar si alguna ruta de evaluación está activa para abrir el dropdown automáticamente
+                const isAnyEvaluacionRouteActive = values.some(item => item.active);
+                if (isAnyEvaluacionRouteActive) {
+                    setIsEvaluacionOpen(true);
+                }
             } catch (error) {
                 console.error('Error al cargar valores:', error);
                 setEvaluacionItems([]);
@@ -49,6 +55,13 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
 
         fetchValues();
     }, [url, isCompanyAuthorized]);
+
+    // Verificar si la URL actual corresponde a una página de evaluación
+    useEffect(() => {
+        if (url.startsWith('/evaluacion/')) {
+            setIsEvaluacionOpen(true);
+        }
+    }, [url]);
 
     return (
         <>
@@ -102,7 +115,9 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
                         <li className="mb-1">
                             <button
                                 onClick={() => setIsEvaluacionOpen(!isEvaluacionOpen)}
-                                className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800"
+                                className={`w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800 ${
+                                    url.startsWith('/evaluacion/') ? 'bg-green-800' : ''
+                                }`}
                             >
                                 <div className="flex items-center">
                                     <ClipboardList className="mr-3 h-5 w-5" />
