@@ -32,10 +32,10 @@ class CompanyController extends Controller
             'company' => $company,
             'userName' => $user->name,
             'sectors' => [
-                'Agricultura',
-                'Manufactura',
+                'Agrícola',
+                'Alimentos',
+                'Especializada',
                 'Servicios',
-                'Tecnología',
                 // Agregar más sectores según necesites
             ],
             'provincias' => $provincias

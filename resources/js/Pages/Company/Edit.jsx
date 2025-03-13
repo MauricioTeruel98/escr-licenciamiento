@@ -197,9 +197,10 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                 >
                                     <option value="">Escoger sector</option>
-                                    {sectors.map(sector => (
-                                        <option key={sector} value={sector}>{sector}</option>
-                                    ))}
+                                    <option value="agricola">Agrícola</option>
+                                    <option value="alimentos">Alimentos</option>
+                                    <option value="especializada">Especializada</option>
+                                    <option value="servicios">Servicios</option>
                                 </select>
                                 <InputError message={errors.sector} className="mt-2" />
                             </div>
