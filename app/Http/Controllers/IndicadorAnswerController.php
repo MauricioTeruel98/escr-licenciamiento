@@ -605,4 +605,113 @@ class IndicadorAnswerController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Guarda respuestas parciales sin finalizar la autoevaluación
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function savePartialAnswers(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json(['message' => 'Usuario no autenticado'], 401);
+            }
+
+            if (!$request->has('answers') || !is_array($request->answers)) {
+                return response()->json(['message' => 'No se recibieron respuestas válidas'], 422);
+            }
+
+            // Obtener los indicadores para verificar cuáles son vinculantes y binarios
+            $indicators = Indicator::whereIn('id', array_keys($request->answers))
+                ->select('id', 'binding', 'is_binary')
+                ->get()
+                ->keyBy('id');
+
+            // Obtener las certificaciones válidas de la empresa
+            $company = Company::find($user->company_id);
+            $validCertifications = $company->certifications()
+                ->whereRaw('fecha_expiracion > NOW() OR fecha_expiracion IS NULL')
+                ->get();
+
+            // Obtener los IDs de las certificaciones disponibles asociadas
+            $homologationIds = $validCertifications->pluck('homologation_id')->filter();
+
+            // Obtener los indicadores homologados
+            $homologatedIndicators = [];
+            if ($homologationIds->count() > 0) {
+                $homologatedIndicators = IndicatorHomologation::whereIn('homologation_id', $homologationIds)
+                    ->pluck('indicator_id')
+                    ->toArray();
+            }
+
+            // Guardar respuestas individuales
+            foreach ($request->answers as $indicatorId => $answer) {
+                // Verificar que el indicatorId sea un número válido
+                if (!is_numeric($indicatorId) || $indicatorId <= 0) {
+                    Log::error('ID de indicador no válido:', [
+                        'indicator_id' => $indicatorId,
+                        'answer' => $answer
+                    ]);
+                    continue; // Saltar este indicador
+                }
+                
+                // Si el indicador está homologado, forzar la respuesta a "1" (Sí)
+                if (in_array($indicatorId, $homologatedIndicators)) {
+                    $answer = "1";
+                }
+                
+                // Obtener la justificación si existe
+                $justification = isset($request->justifications[$indicatorId]) ? $request->justifications[$indicatorId] : null;
+                
+                // Verificar si ya existe una respuesta para este indicador en esta empresa
+                $existingAnswer = IndicatorAnswer::where('company_id', $user->company_id)
+                    ->where('indicator_id', $indicatorId)
+                    ->first();
+
+                if ($existingAnswer) {
+                    // Actualizar la respuesta existente
+                    $existingAnswer->update([
+                        'answer' => $answer,
+                        'justification' => $justification,
+                        'user_id' => $user->id, // Actualizar al último usuario que modificó
+                        'is_binding' => $indicators[$indicatorId]->binding ?? false,
+                        'updated_at' => now()
+                    ]);
+                } else {
+                    // Crear nueva respuesta
+                    IndicatorAnswer::create([
+                        'user_id' => $user->id,
+                        'company_id' => $user->company_id,
+                        'indicator_id' => $indicatorId,
+                        'answer' => $answer,
+                        'justification' => $justification,
+                        'is_binding' => $indicators[$indicatorId]->binding ?? false
+                    ]);
+                }
+            }
+
+            // No recalculamos notas ni actualizamos el estado para guardado parcial
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Respuestas guardadas parcialmente.',
+                'value_id' => $request->value_id
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al guardar respuestas parciales:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['message' => 'Error al guardar respuestas parciales: ' . $e->getMessage()], 500);
+        }
+    }
 }

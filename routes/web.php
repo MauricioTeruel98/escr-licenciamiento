@@ -131,6 +131,10 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
     Route::post('/indicadores/store-answers', [IndicadorAnswerController::class, 'store'])
         ->name('indicadores.store-answers');
         
+    // Ruta para guardar parcialmente las respuestas sin finalizar
+    Route::post('/indicadores/save-partial-answers', [IndicadorAnswerController::class, 'savePartialAnswers'])
+        ->name('indicadores.save-partial-answers');
+        
     // Ruta para finalizar la autoevaluación
     Route::post('/indicadores/finalizar-autoevaluacion', [IndicadorAnswerController::class, 'finalizarAutoEvaluacion'])
         ->name('indicadores.finalizar-autoevaluacion');
