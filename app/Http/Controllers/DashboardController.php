@@ -145,7 +145,7 @@ class DashboardController extends Controller
         $user = Auth::user();
         $company = $user->company;
         $infoAdicional = $company->infoAdicional;
-        $autoEvaluacionResult = AutoEvaluationResult::where('company_id', $user->company_id)->first();
+        $autoEvaluationResult = AutoEvaluationResult::where('company_id', $user->company_id)->first();
 
         // Combinar los datos de la empresa con infoAdicional
         $companyData = [
@@ -304,7 +304,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard/FormEmpresa', [
             'userName' => $user->name,
             'infoAdicional' => $infoAdicional,
-            'autoEvaluacionResult' => $autoEvaluacionResult,
+            'autoEvaluationResult' => $autoEvaluationResult,
             'company' => $company
         ]);
     }

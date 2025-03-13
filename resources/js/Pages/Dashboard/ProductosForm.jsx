@@ -29,6 +29,10 @@ import InputError from '@/Components/InputError';
  * @param {Function} props.removeImagen - Función para eliminar imágenes nuevas
  * @param {Function} props.handleDeleteProducto - Función para eliminar productos
  * @param {Function} props.agregarProducto - Función para agregar nuevos productos
+ * @param {Function} props.pasarSiguienteSeccion - Función para pasar a la siguiente sección
+ * @param {Object} props.dataAutoEvaluationResult - Datos de la autoevaluación
+ * @param {Object} props.autoEvaluationResult - Resultado de la autoevaluación
+ * @param {Object} props.company - Datos de la empresa
  */
 export default function ProductosForm({
     data,
@@ -46,7 +50,11 @@ export default function ProductosForm({
     removeExistingImage,
     removeImagen,
     handleDeleteProducto,
-    agregarProducto
+    agregarProducto,
+    pasarSiguienteSeccion,
+    dataAutoEvaluationResult,
+    autoEvaluationResult,
+    company
 }) {
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200" data-seccion="productos">
@@ -92,7 +100,7 @@ export default function ProductosForm({
                                     {/* Nombre del producto */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
-                                            Nombre del producto
+                                            Nombre del producto<span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -108,7 +116,7 @@ export default function ProductosForm({
                                     {/* Descripción */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
-                                            Descripción
+                                            Descripción<span className="text-red-500">*</span>
                                         </label>
                                         <textarea
                                             value={producto.descripcion || ''}
@@ -125,7 +133,7 @@ export default function ProductosForm({
                                 {/* Fotografía del producto */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">
-                                        Fotografía producto
+                                        Fotografía producto<span className="text-red-500">*</span>
                                     </label>
                                     <div className="mt-1">
                                         {/* Área para arrastrar y soltar imágenes */}
@@ -221,6 +229,7 @@ export default function ProductosForm({
                         <button
                             type="submit"
                             disabled={processing || loading}
+                            onClick={() => pasarSiguienteSeccion('productos')}
                             className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800"
                         >
                             {loading ? (
@@ -235,6 +244,13 @@ export default function ProductosForm({
                                 'Guardar productos'
                             )}
                         </button>
+                        {
+                            ((dataAutoEvaluationResult && dataAutoEvaluationResult.form_sended == 1) || (!dataAutoEvaluationResult && autoEvaluationResult && autoEvaluationResult.form_sended == 1)) && company.estado_eval == "auto-evaluacion" && (
+                                <div>
+                                    
+                                </div>
+                            )
+                        }
                     </div>
                 </div>
             )}

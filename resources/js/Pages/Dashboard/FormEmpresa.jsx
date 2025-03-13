@@ -20,7 +20,7 @@ import ProductosForm from './ProductosForm';
  * 5. Mantenimiento del toast solo para mensajes generales de éxito o error no específicos de un campo
  */
 
-export default function CompanyProfile({ userName, infoAdicional, autoEvaluacionResult, company }) {
+export default function CompanyProfile({ userName, infoAdicional, autoEvaluationResult, company }) {
     const { data, setData, post, processing, errors: backendErrors } = useForm({
         nombre_comercial: infoAdicional?.nombre_comercial || '',
         nombre_legal: infoAdicional?.nombre_legal || '',
@@ -659,7 +659,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluacion
         data.productos.forEach((producto, index) => {
             formData.append(`productos[${index}][nombre]`, producto.nombre || '');
             formData.append(`productos[${index}][descripcion]`, producto.descripcion || '');
-            
+
             if (producto.id) {
                 formData.append(`productos[${index}][id]`, producto.id);
             }
@@ -690,6 +690,30 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluacion
                 descripcion: producto.descripcion,
                 imagen: producto.imagen // Solo incluimos imágenes existentes
             }));
+        }
+    };
+
+    // Definir el orden de las secciones para navegar automáticamente
+    const ordenSecciones = ['informacion', 'logos', 'licenciamiento', 'contactos', 'productos', 'finalizar'];
+
+    // Función para pasar a la siguiente sección
+    const pasarSiguienteSeccion = (seccionActual) => {
+        const indiceActual = ordenSecciones.indexOf(seccionActual);
+        if (indiceActual >= 0 && indiceActual < ordenSecciones.length - 1) {
+            const siguienteSeccion = ordenSecciones[indiceActual + 1];
+            // Expandir la siguiente sección y hacer scroll hacia ella
+            setSeccionesExpandidas(prev => ({
+                ...prev,
+                [siguienteSeccion]: true
+            }));
+
+            // Hacer scroll hacia la siguiente sección
+            setTimeout(() => {
+                const element = document.querySelector(`[data-seccion="${siguienteSeccion}"]`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
         }
     };
 
@@ -774,6 +798,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluacion
 
             if (productosData) {
                 formData.append('productos_data', JSON.stringify(productosData));
+                pasarSiguienteSeccion('productos');
             }
 
             // Agregar el resto de datos
@@ -807,18 +832,15 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluacion
                     tipo = 'warning';
                 }
 
-                // Si el formulario no está completo, mostrar un mensaje adicional
-                if (response.data.formulario_completo === false) {
-                    const camposFaltantesArray = Object.keys(response.data.campos_faltantes);
-                    setCamposFaltantes(camposFaltantesArray);
-
-                    /*const numCamposFaltantes = camposFaltantesArray.length;
-                    mensaje += ` Sin embargo, aún faltan ${numCamposFaltantes} campos obligatorios por completar para que el formulario se considere enviado completamente.`;
-                    tipo = 'warning';*/
-
-                    const numCamposFaltantes = camposFaltantesArray.length;
-                    mensaje += ``;
-                    tipo = 'success';
+                // Actualizar el estado local de autoEvaluationResult
+                if (autoEvaluationResult) {
+                    setData(prevData => ({
+                        ...prevData,
+                        autoEvaluationResult: {
+                            ...autoEvaluationResult,
+                            form_sended: 1
+                        }
+                    }));
                 }
 
                 setToast({
@@ -853,6 +875,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluacion
 
             //Redirigir al home sin navigate
             //window.location.href = route('dashboard');
+
         } catch (error) {
             console.error('Error en la petición:', error);
 
@@ -870,31 +893,11 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluacion
             }
             setLoading(false);
         }
+
+        router.reload({ only: ['autoEvaluationResult'] });
+        router.reload({ only: ['company'] });
     };
 
-    // Definir el orden de las secciones para navegar automáticamente
-    const ordenSecciones = ['informacion', 'logos', 'licenciamiento', 'contactos', 'productos'];
-
-    // Función para pasar a la siguiente sección
-    const pasarSiguienteSeccion = (seccionActual) => {
-        const indiceActual = ordenSecciones.indexOf(seccionActual);
-        if (indiceActual >= 0 && indiceActual < ordenSecciones.length - 1) {
-            const siguienteSeccion = ordenSecciones[indiceActual + 1];
-            // Expandir la siguiente sección y hacer scroll hacia ella
-            setSeccionesExpandidas(prev => ({
-                ...prev,
-                [siguienteSeccion]: true
-            }));
-
-            // Hacer scroll hacia la siguiente sección
-            setTimeout(() => {
-                const element = document.querySelector(`[data-seccion="${siguienteSeccion}"]`);
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }, 100);
-        }
-    };
 
     const agregarContacto = () => {
         setData('contactos', [...data.contactos, {
@@ -1748,7 +1751,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluacion
     const [notification, setNotification] = useState(null);
     const [modalStatus, setModalStatus] = useState('initial');
     const { auth } = usePage().props;
-    
+
     // Función para abrir el modal de confirmación
     const openFinalizarModal = () => {
         setModalStatus('initial');
@@ -3293,7 +3296,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluacion
                     </div>
 
                     {/* Sección de Productos */}
-                    <ProductosForm 
+                    <ProductosForm
                         data={data}
                         errors={errors}
                         imagenes={imagenes}
@@ -3310,39 +3313,58 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluacion
                         removeImagen={removeImagen}
                         handleDeleteProducto={handleDeleteProducto}
                         agregarProducto={agregarProducto}
+                        pasarSiguienteSeccion={pasarSiguienteSeccion}
+                        dataAutoEvaluationResult={data.autoEvaluationResult}
+                        autoEvaluationResult={autoEvaluationResult}
+                        company={company}
                     />
-                    
+
                 </form>
             </div>
 
-            {/* Sección para finalizar autoevaluación - Fuera del formulario */}
-            {autoEvaluacionResult.form_sended == 1 && company.estado_eval == "auto-evaluacion" && (
-            <div className="card bg-white shadow mt-8 mx-auto w-full px-4 sm:px-6 lg:px-8">
-                <div className="card-header p-6 border-b border-gray-200">
-                    <h2 className="text-xl font-semibold text-gray-800">Finalizar Autoevaluación</h2>
+            {((data.autoEvaluationResult && data.autoEvaluationResult.form_sended == 1) || (!data.autoEvaluationResult && autoEvaluationResult && autoEvaluationResult.form_sended == 1)) && company.estado_eval == "auto-evaluacion" && (
+                <div className="flex justify-center">
+                    <div>
+                        {/* Boton para ir hacia la seccion de finalizar, agregale un chevron hacia abajo */}
+                        <button
+                            onClick={() => pasarSiguienteSeccion('productos')}
+                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800"
+                        >
+                            Ir a finalizar autoevaluación
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M6 9l6 6l6 -6" /></svg>
+                        </button>
+                    </div>
                 </div>
-                <div className="p-6">
-                    <div className="space-y-4 bg-green-50/50 p-4 rounded-lg">
-                        <div className="flex items-center justify-start gap-2">
-                            <div className="flex-shrink-0">
-                                <svg
-                                    className="h-5 w-5 text-green-700"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                        clipRule="evenodd"
-                                    />
-                                </svg>
+            )}
+
+            {/* Sección para finalizar autoevaluación - Fuera del formulario */}
+            {((data.autoEvaluationResult && data.autoEvaluationResult.form_sended == 1) || (!data.autoEvaluationResult && autoEvaluationResult && autoEvaluationResult.form_sended == 1)) && company.estado_eval == "auto-evaluacion" && (
+                <div className="card bg-white shadow mt-8 mx-auto w-full px-4 sm:px-6 lg:px-8" data-seccion="finalizar">
+                    <div className="card-header p-6 border-b border-gray-200">
+                        <h2 className="text-xl font-semibold text-gray-800">Finalizar Autoevaluación</h2>
+                    </div>
+                    <div className="p-6">
+                        <div className="space-y-4 bg-green-50/50 p-4 rounded-lg">
+                            <div className="flex items-center justify-start gap-2">
+                                <div className="flex-shrink-0">
+                                    <svg
+                                        className="h-5 w-5 text-green-700"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                </div>
+                                <p className="text-sm text-green-700 font-medium">
+                                    Su empresa puede enviar la Autoevaluación finalizada.
+                                </p>
                             </div>
-                            <p className="text-sm text-green-700 font-medium">
-                                Su empresa puede enviar la Autoevaluación finalizada.
-                            </p>
-                        </div>
-                        
-                        {/* <div className="bg-white p-4 rounded-lg border border-green-200 mb-4">
+
+                            {/* <div className="bg-white p-4 rounded-lg border border-green-200 mb-4">
                             <h3 className="text-lg font-semibold text-gray-800 mb-2">Importante</h3>
                             <p className="text-gray-600 mb-2">
                                 Al finalizar la autoevaluación:
@@ -3353,27 +3375,27 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluacion
                                 <li>Su solicitud pasará a revisión por parte de la Marca País</li>
                             </ul>
                         </div> */}
-                        
-                        <button
-                            onClick={openFinalizarModal}
-                            disabled={isSubmitting}
-                            className="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75 w-full md:w-auto"
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Enviando...
-                                </>
-                            ) : (
-                                'FINALIZAR AUTOEVALUACIÓN'
-                            )}
-                        </button>
+
+                            <button
+                                onClick={openFinalizarModal}
+                                disabled={isSubmitting}
+                                className="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75 w-full md:w-auto"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Enviando...
+                                    </>
+                                ) : (
+                                    'FINALIZAR AUTOEVALUACIÓN'
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
             )}
 
             {toast.show && (
@@ -3410,7 +3432,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluacion
                 status={modalStatus}
                 isProcessing={isSubmitting}
             />
-            
+
             {/* Notificación */}
             {notification && (
                 <div className={`fixed top-4 right-4 px-4 py-3 rounded border ${notification.type === 'error' ? 'bg-red-100 border-red-400 text-red-700' : 'bg-green-100 border-green-400 text-green-700'} max-w-md z-50`} role="alert">
