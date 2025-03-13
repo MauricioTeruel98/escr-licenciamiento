@@ -827,7 +827,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             setLoading(false);
 
             //Redirigir al home sin navigate
-            window.location.href = route('dashboard');
+            //window.location.href = route('dashboard');
         } catch (error) {
             console.error('Error en la petición:', error);
 
@@ -844,6 +844,30 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 });
             }
             setLoading(false);
+        }
+    };
+
+    // Definir el orden de las secciones para navegar automáticamente
+    const ordenSecciones = ['informacion', 'logos', 'licenciamiento', 'contactos', 'productos'];
+
+    // Función para pasar a la siguiente sección
+    const pasarSiguienteSeccion = (seccionActual) => {
+        const indiceActual = ordenSecciones.indexOf(seccionActual);
+        if (indiceActual >= 0 && indiceActual < ordenSecciones.length - 1) {
+            const siguienteSeccion = ordenSecciones[indiceActual + 1];
+            // Expandir la siguiente sección y hacer scroll hacia ella
+            setSeccionesExpandidas(prev => ({
+                ...prev,
+                [siguienteSeccion]: true
+            }));
+
+            // Hacer scroll hacia la siguiente sección
+            setTimeout(() => {
+                const element = document.querySelector(`[data-seccion="${siguienteSeccion}"]`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
         }
     };
 
@@ -1700,7 +1724,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             <div className="mx-auto py-6">
                 <form onSubmit={submit} encType="multipart/form-data" className="space-y-8">
                     {/* Sección de Información de Empresa */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200" data-seccion="informacion">
                         <button
                             type="button"
                             onClick={() => toggleSeccion('informacion')}
@@ -2079,7 +2103,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     {/* Actividad comercial */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
-                                        Debe incluir la actividad principal de su negocio<span className="text-red-500">*</span>
+                                            Debe incluir la actividad principal de su negocio<span className="text-red-500">*</span>
                                         </label>
                                         <textarea
                                             value={data.actividad_comercial}
@@ -2243,6 +2267,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     <button
                                         type="submit"
                                         disabled={processing || loading}
+                                        onClick={() => pasarSiguienteSeccion('informacion')}
                                         className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800"
                                     >
                                         {loading ? (
@@ -2263,7 +2288,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     </div>
 
                     {/* Sección de Logos y Fotografías */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200" data-seccion="logos">
                         <button
                             type="button"
                             onClick={() => toggleSeccion('logos')}
@@ -2534,6 +2559,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     <button
                                         type="submit"
                                         disabled={processing || loading}
+                                        onClick={() => pasarSiguienteSeccion('logos')}
                                         className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800"
                                     >
                                         {loading ? (
@@ -2554,7 +2580,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     </div>
 
                     {/* Sección de Licenciamiento */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200" data-seccion="licenciamiento">
                         <button
                             type="button"
                             onClick={() => toggleSeccion('licenciamiento')}
@@ -2676,6 +2702,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     <button
                                         type="submit"
                                         disabled={processing || loading}
+                                        onClick={() => pasarSiguienteSeccion('licenciamiento')}
                                         className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800"
                                     >
                                         {loading ? (
@@ -2696,7 +2723,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     </div>
 
                     {/* Sección de Contactos */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200" data-seccion="contactos">
                         <button
                             type="button"
                             onClick={() => toggleSeccion('contactos')}
@@ -3172,6 +3199,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                                     <button
                                         type="submit"
                                         disabled={processing || loading}
+                                        onClick={() => pasarSiguienteSeccion('contactos')}
                                         className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800"
                                     >
                                         {loading ? (
@@ -3192,7 +3220,7 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                     </div>
 
                     {/* Sección de Productos */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200" data-seccion="productos">
                         <button
                             type="button"
                             onClick={() => toggleSeccion('productos')}
