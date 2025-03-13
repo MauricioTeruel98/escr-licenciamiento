@@ -768,7 +768,10 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
         // Verificar si todos los campos requeridos están completos
         const camposIncompletos = Object.entries(camposRequeridos)
-            .filter(([_, valor]) => !valor?.trim())
+            .filter(([_, valor]) => {
+                // Verificar si el valor es una cadena de texto antes de usar trim()
+                return typeof valor !== 'string' || !valor.trim();
+            })
             .map(([campo]) => campo);
 
         // Si hay campos incompletos o no hay producto válido, no permitir form_sended = 1
