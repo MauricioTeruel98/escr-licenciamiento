@@ -7,6 +7,8 @@ import Toast from '@/Components/ToastAdmin';
 import { TrashIcon } from '@heroicons/react/20/solid';
 import DeleteModal from '@/Components/Modals/DeleteModal';
 import EvaluacionProcessing from '@/Components/Modals/EvaluacionProcessing';
+import FinalizarAutoevaluacionModal from '@/Components/Modals/FinalizarAutoevaluacionModal';
+import { usePage, router } from '@inertiajs/react';
 
 /**
  * Mejoras implementadas:
@@ -17,7 +19,7 @@ import EvaluacionProcessing from '@/Components/Modals/EvaluacionProcessing';
  * 5. Mantenimiento del toast solo para mensajes generales de éxito o error no específicos de un campo
  */
 
-export default function CompanyProfile({ userName, infoAdicional }) {
+export default function CompanyProfile({ userName, infoAdicional, autoEvaluacionResult, company }) {
     const { data, setData, post, processing, errors: backendErrors } = useForm({
         nombre_comercial: infoAdicional?.nombre_comercial || '',
         nombre_legal: infoAdicional?.nombre_legal || '',
@@ -1740,6 +1742,54 @@ export default function CompanyProfile({ userName, infoAdicional }) {
         return camposFaltantes.includes(nombreCampo);
     };
 
+    const [isFinalizarAutoevaluacionModalOpen, setIsFinalizarAutoevaluacionModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [notification, setNotification] = useState(null);
+    const [modalStatus, setModalStatus] = useState('initial');
+    const { auth } = usePage().props;
+    
+    // Función para abrir el modal de confirmación
+    const openFinalizarModal = () => {
+        setModalStatus('initial');
+        setIsFinalizarAutoevaluacionModalOpen(true);
+    };
+
+    // Función para confirmar y enviar la autoevaluación
+    const confirmFinalizarAutoevaluacion = async () => {
+        try {
+            setModalStatus('processing');
+            setIsSubmitting(true);
+
+            const response = await axios.post(route('indicadores.finalizar-autoevaluacion'));
+
+            if (response.data.success) {
+                setModalStatus('completed');
+                // Recargar datos necesarios
+                router.reload({ only: ['autoEvaluationResult'] });
+                router.reload({ only: ['company'] });
+            } else {
+                throw new Error(response.data.message || 'Error al finalizar la autoevaluación');
+            }
+        } catch (error) {
+            setIsFinalizarAutoevaluacionModalOpen(false);
+            setNotification({
+                type: 'error',
+                message: error.response?.data?.message || error.message || 'Error al finalizar la autoevaluación'
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Función para cerrar el modal
+    const closeFinalizarModal = () => {
+        setIsFinalizarAutoevaluacionModalOpen(false);
+        // Resetear el estado del modal para la próxima vez
+        setTimeout(() => {
+            setModalStatus('initial');
+        }, 300);
+    };
+
     return (
         <DashboardLayout userName={userName} title="Perfil de Empresa">
             <h1 className="text-4xl font-bold mt-3">Perfil de Empresa</h1>
@@ -3428,10 +3478,69 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                             </div>
                         )}
                     </div>
-
-
                 </form>
             </div>
+
+            {/* Sección para finalizar autoevaluación - Fuera del formulario */}
+            {autoEvaluacionResult.form_sended == 1 && company.estado_eval == "auto-evaluacion" && (
+            <div className="card bg-white shadow mt-8 mx-auto w-full px-4 sm:px-6 lg:px-8">
+                <div className="card-header p-6 border-b border-gray-200">
+                    <h2 className="text-xl font-semibold text-gray-800">Finalizar Autoevaluación</h2>
+                </div>
+                <div className="p-6">
+                    <div className="space-y-4 bg-green-50/50 p-4 rounded-lg">
+                        <div className="flex items-center justify-start gap-2">
+                            <div className="flex-shrink-0">
+                                <svg
+                                    className="h-5 w-5 text-green-700"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                            </div>
+                            <p className="text-sm text-green-700 font-medium">
+                                Su empresa puede enviar la Autoevaluación finalizada.
+                            </p>
+                        </div>
+                        
+                        {/* <div className="bg-white p-4 rounded-lg border border-green-200 mb-4">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-2">Importante</h3>
+                            <p className="text-gray-600 mb-2">
+                                Al finalizar la autoevaluación:
+                            </p>
+                            <ul className="list-disc pl-5 text-gray-600 space-y-1">
+                                <li>Se enviará un resumen de sus respuestas a su correo electrónico</li>
+                                <li>No podrá modificar sus respuestas después de finalizar</li>
+                                <li>Su solicitud pasará a revisión por parte de la Marca País</li>
+                            </ul>
+                        </div> */}
+                        
+                        <button
+                            onClick={openFinalizarModal}
+                            disabled={isSubmitting}
+                            className="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75 w-full md:w-auto"
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Enviando...
+                                </>
+                            ) : (
+                                'FINALIZAR AUTOEVALUACIÓN'
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            )}
 
             {toast.show && (
                 <Toast
@@ -3460,6 +3569,27 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 title="Eliminar Producto"
                 description={`¿Está seguro de que desea eliminar el producto "${productoToDelete?.producto?.nombre || 'seleccionado'}"? Esta acción no se puede deshacer.`}
             />
+            <FinalizarAutoevaluacionModal
+                isOpen={isFinalizarAutoevaluacionModalOpen}
+                onClose={closeFinalizarModal}
+                onConfirm={confirmFinalizarAutoevaluacion}
+                status={modalStatus}
+                isProcessing={isSubmitting}
+            />
+            
+            {/* Notificación */}
+            {notification && (
+                <div className={`fixed top-4 right-4 px-4 py-3 rounded border ${notification.type === 'error' ? 'bg-red-100 border-red-400 text-red-700' : 'bg-green-100 border-green-400 text-green-700'} max-w-md z-50`} role="alert">
+                    <strong className="font-bold">{notification.type === 'error' ? 'Error: ' : 'Éxito: '}</strong>
+                    <span className="block sm:inline">{notification.message}</span>
+                    <button
+                        className="absolute top-0 bottom-0 right-0 px-4 py-3"
+                        onClick={() => setNotification(null)}
+                    >
+                        <span className="text-2xl">&times;</span>
+                    </button>
+                </div>
+            )}
         </DashboardLayout>
     );
 }
