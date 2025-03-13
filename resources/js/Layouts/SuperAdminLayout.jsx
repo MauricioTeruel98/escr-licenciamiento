@@ -73,12 +73,6 @@ export default function SuperAdminLayout({ children, title = null }) {
             href: route('super.progresos'),
             icon: FileText,
             active: route().current('super.progresos')
-        },
-        {
-            name: 'Importaciones',
-            href: route('super.importaciones'),
-            icon: Upload,
-            active: route().current('super.importaciones')
         }
     ];
 
