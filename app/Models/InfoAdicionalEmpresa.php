@@ -25,6 +25,7 @@ class InfoAdicionalEmpresa extends Model
         'cantidad_hombres',
         'cantidad_mujeres',
         'cantidad_otros',
+        'cantidad_total',
         'telefono_1',
         'telefono_2',
         'es_exportadora',

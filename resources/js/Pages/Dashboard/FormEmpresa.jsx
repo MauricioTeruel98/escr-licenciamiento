@@ -37,6 +37,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         cantidad_hombres: infoAdicional?.cantidad_hombres || '',
         cantidad_mujeres: infoAdicional?.cantidad_mujeres || '',
         cantidad_otros: infoAdicional?.cantidad_otros || '',
+        cantidad_total: infoAdicional?.cantidad_total || '',
         telefono_1: infoAdicional?.telefono_1 || '',
         telefono_2: infoAdicional?.telefono_2 || '',
         is_exporter: infoAdicional?.is_exporter || false,
@@ -1297,6 +1298,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 setData('cantidad_hombres', '');
                 setData('cantidad_mujeres', '');
                 setData('cantidad_otros', '');
+                setData('cantidad_total', '');
 
                 // Mostrar mensaje informativo
                 setErrors(prevErrors => ({
@@ -2213,6 +2215,17 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     min="0"
                                                 />
                                             </div>
+                                        </div>
+                                        {/* Agregar el total aquí */}
+                                        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                                            <p className="text-sm font-medium text-gray-700">
+                                                Total de empleados: {parseInt(data.cantidad_hombres || 0) + parseInt(data.cantidad_mujeres || 0) + parseInt(data.cantidad_otros || 0)}
+                                            </p>
+                                            <input 
+                                                type="hidden" 
+                                                name="cantidad_total" 
+                                                value={parseInt(data.cantidad_hombres || 0) + parseInt(data.cantidad_mujeres || 0) + parseInt(data.cantidad_otros || 0)} 
+                                            />
                                         </div>
                                     </div>
 

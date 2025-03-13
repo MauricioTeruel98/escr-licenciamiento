@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('company_products', function (Blueprint $table) {
-            $table->json('imagenes_paths')->nullable();
+        Schema::table('info_adicional_empresas', function (Blueprint $table) {
+            $table->integer('cantidad_total')->nullable();
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('company_products', function (Blueprint $table) {
-            $table->dropColumn('imagenes_paths');
+        Schema::table('info_adicional_empresas', function (Blueprint $table) {
+            $table->dropColumn('cantidad_total');
         });
     }
 };

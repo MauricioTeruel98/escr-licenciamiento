@@ -33,6 +33,11 @@ class CompanyProfileController extends Controller
             // Convertir valores booleanos a 1 o 0
             $allData['recomienda_marca_pais'] = filter_var($allData['recomienda_marca_pais'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
 
+            // Calcular cantidad_total
+            $allData['cantidad_total'] = ($allData['cantidad_hombres'] ?? 0) + 
+                                       ($allData['cantidad_mujeres'] ?? 0) + 
+                                       ($allData['cantidad_otros'] ?? 0);
+
             $allData['company_id'] = $companyId;
 
             // Obtener información adicional existente
@@ -948,11 +953,6 @@ class CompanyProfileController extends Controller
         $autoEvaluationResult = AutoEvaluationResult::where('company_id', $companyId)->first();
         $autoEvaluationResult->form_sended = 1;
         $autoEvaluationResult->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Formulario enviado correctamente'
-        ]);
     }
 }
 
