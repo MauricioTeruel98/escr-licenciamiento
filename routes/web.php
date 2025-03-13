@@ -39,6 +39,7 @@ use App\Http\Controllers\Commands\StorageCommandController;
 use App\Http\Controllers\UsersManagementSuperAdminController;
 use App\Http\Middleware\EnsureUserHasNoCompany;
 use App\Http\Controllers\ImportController;
+use App\Http\Middleware\EnsureApplicationSended;
 // Ruta principal
 Route::get('/', function () {
     if (Auth::check()) {
@@ -104,6 +105,11 @@ Route::middleware(['auth'])->group(function () {
     })->name('approval.pending');
 });
 
+Route::middleware(['auth', 'verified', EnsureApplicationSended::class, EnsureUserHasCompany::class])->group(function () {
+    Route::get('/form-empresa', [DashboardController::class, 'showFormEmpresa'])
+        ->name('form.empresa');
+});
+
 Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'showEvaluation'])
         ->name('dashboard');
@@ -112,9 +118,6 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
     // Otras rutas protegidas...
 
     Route::post('/evaluation/send-application', [EvaluationController::class, 'sendApplication'])->name('evaluation.send-application');
-
-    Route::get('/form-empresa', [DashboardController::class, 'showFormEmpresa'])
-        ->name('form.empresa');
         
     // Ruta para verificar el estado de la autoevaluación
     Route::get('/api/check-autoevaluation-status', [IndicadorAnswerController::class, 'checkAutoEvaluationStatus'])
@@ -380,6 +383,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/importaciones', [App\Http\Controllers\ImportController::class, 'index'])->name('import.index');
     Route::post('/import/companies', [App\Http\Controllers\ImportController::class, 'importCompanies'])->name('import.companies');
     Route::post('/import/users', [App\Http\Controllers\ImportController::class, 'importUsers'])->name('import.users');
+    Route::post('/import/companies-additional-info', [App\Http\Controllers\ImportController::class, 'importCompaniesAdditionalInfo'])->name('import.companies-additional-info');
 });
 
 require __DIR__ . '/auth.php';

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\User;
+use App\Models\InfoAdicionalEmpresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -112,7 +113,7 @@ class ImportController extends Controller
                 // Validar los datos
                 $validator = Validator::make($companyData, [
                     'legal_id' => 'required|string|max:255',
-                    'name' => 'required|string|max:255',
+                    'name' => 'nullable|string|max:255',
                     'website' => 'nullable|string|max:255',
                     'sector' => 'nullable|string|max:255',
                     'provincia' => 'nullable|string|max:255',
@@ -426,11 +427,20 @@ class ImportController extends Controller
                     }
                 }
                 
+                // Manejar campos numéricos vacíos
+                $camposNumericos = ['cedula', 'phone', 'mobile', 'form_sended', 'terms_accepted', 'from_migration'];
+                foreach ($camposNumericos as $campo) {
+                    if (isset($data[$campo]) && $data[$campo] === '') {
+                        $data[$campo] = ($campo === 'form_sended' || $campo === 'terms_accepted' || $campo === 'from_migration') ? 0 : null;
+                    }
+                }
+                
                 // Aplicar validaciones
                 $validator = Validator::make($data, [
-                    'name' => 'required|string|max:255',
+                    'name' => 'nullable|string|max:255',
                     'email' => 'required|string|email|max:255',
                     'password' => 'nullable|string|min:6',
+                    'cedula' => 'nullable|integer',
                 ]);
                 
                 if ($validator->fails()) {
@@ -457,6 +467,23 @@ class ImportController extends Controller
                 
                 // Fusionar datos con valores por defecto
                 $userData = array_merge($defaults, $data);
+                
+                // Establecer campos por defecto para valores nulos o vacíos
+                if (isset($userData['role']) && empty($userData['role'])) {
+                    $userData['role'] = 'user';
+                }
+                
+                // Asegurarnos que los campos booleanos sean 0 o 1
+                $camposBooleanos = ['form_sended', 'terms_accepted', 'from_migration'];
+                foreach ($camposBooleanos as $campo) {
+                    if (isset($userData[$campo])) {
+                        if (is_string($userData[$campo])) {
+                            $userData[$campo] = in_array(strtolower($userData[$campo]), ['1', 'true', 'yes', 'si', 's', 'y']) ? 1 : 0;
+                        }
+                    } else {
+                        $userData[$campo] = 0;
+                    }
+                }
                 
                 // Buscar la empresa por old_id si se proporciona old_company_id
                 $userData['company_id'] = null;
@@ -630,6 +657,170 @@ class ImportController extends Controller
     }
 
     /**
+     * Importar información adicional de compañías desde un archivo CSV
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function importCompaniesAdditionalInfo(Request $request)
+    {
+        // Validar que se haya enviado un archivo
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:10240', // Máximo 10MB
+        ]);
+
+        // Obtener el archivo
+        $file = $request->file('file');
+        
+        // Verificar si el archivo se puede abrir
+        if (($handle = fopen($file->getPathname(), 'r')) === false) {
+            return response()->json(['error' => 'No se pudo abrir el archivo'], 400);
+        }
+
+        // Leer la cabecera
+        $header = fgetcsv($handle, 0, ',');
+        
+        // Convertir cabeceras a minúsculas para facilitar la comparación
+        $header = array_map('strtolower', $header);
+        
+        // Verificar que las cabeceras esperadas estén presentes
+        $requiredColumns = ['old_id', 'email_notifications', 'location_exact', 'general_manager', 'legal_representative'];
+        
+        foreach ($requiredColumns as $column) {
+            if (!in_array($column, $header)) {
+                fclose($handle);
+                return response()->json(['error' => "Columna requerida no encontrada: {$column}"], 400);
+            }
+        }
+
+        // Preparar la estructura para el procesamiento
+        $importResults = [
+            'processed' => 0,
+            'success' => 0,
+            'errors' => 0,
+            'error_details' => []
+        ];
+
+        // Iniciar transacción
+        DB::beginTransaction();
+        
+        try {
+            // Procesar los datos
+            $rowNumber = 1; // Comenzamos desde 1 porque la cabecera ya fue leída
+            
+            while (($row = fgetcsv($handle, 0, ',')) !== false) {
+                $rowNumber++;
+                
+                // Si la fila está vacía, continuar con la siguiente
+                if (empty(array_filter($row))) {
+                    continue;
+                }
+                
+                // Mapear los datos del CSV a las columnas de la base de datos
+                $additionalData = [];
+                foreach ($header as $index => $column) {
+                    if (isset($row[$index])) {
+                        $additionalData[$column] = $row[$index];
+                    }
+                }
+                
+                // Verificar si existe el old_id
+                if (empty($additionalData['old_id'])) {
+                    $importResults['errors']++;
+                    $importResults['error_details'][] = [
+                        'row' => $rowNumber,
+                        'errors' => ['El campo old_id es obligatorio'],
+                        'data' => $additionalData
+                    ];
+                    continue;
+                }
+                
+                // Buscar la empresa por su old_id
+                $company = Company::where('old_id', $additionalData['old_id'])->first();
+                
+                if (!$company) {
+                    $importResults['errors']++;
+                    $importResults['error_details'][] = [
+                        'row' => $rowNumber,
+                        'errors' => ["No se encontró ninguna empresa con old_id: {$additionalData['old_id']}"],
+                        'data' => $additionalData
+                    ];
+                    Log::warning("Importación de info adicional: No se encontró empresa con old_id {$additionalData['old_id']} en la fila {$rowNumber}");
+                    continue;
+                }
+                
+                try {
+                    // Mapear los campos del CSV a los campos de la tabla info_adicional_empresas
+                    $infoAdicionalData = [
+                        'company_id' => $company->id,
+                        'contacto_notificacion_email' => $additionalData['email_notifications'] ?? null,
+                        'direccion_empresa' => $additionalData['location_exact'] ?? null,
+                        'asignado_proceso_nombre' => $additionalData['general_manager'] ?? null,
+                        'representante_nombre' => $additionalData['legal_representative'] ?? null,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                    
+                    // Verificar si ya existe un registro para esta empresa
+                    $infoAdicional = InfoAdicionalEmpresa::where('company_id', $company->id)->first();
+                    
+                    if ($infoAdicional) {
+                        // Actualizar solo los campos proporcionados
+                        foreach ($infoAdicionalData as $key => $value) {
+                            if ($value !== null && $key !== 'company_id' && $key !== 'created_at') {
+                                $infoAdicional->$key = $value;
+                            }
+                        }
+                        $infoAdicional->save();
+                    } else {
+                        // Crear un nuevo registro
+                        InfoAdicionalEmpresa::create($infoAdicionalData);
+                    }
+                    
+                    $importResults['success']++;
+                } catch (\Exception $e) {
+                    $importResults['errors']++;
+                    $importResults['error_details'][] = [
+                        'row' => $rowNumber,
+                        'errors' => [$e->getMessage()],
+                        'data' => $additionalData
+                    ];
+                    Log::error("Error procesando información adicional para empresa con old_id {$additionalData['old_id']} en fila $rowNumber: " . $e->getMessage());
+                }
+                
+                $importResults['processed']++;
+            }
+            
+            // Confirmar la transacción
+            DB::commit();
+            
+            // Cerrar el archivo
+            fclose($handle);
+            
+            return response()->json([
+                'message' => 'Importación de información adicional de empresas completada',
+                'results' => $importResults
+            ]);
+            
+        } catch (\Exception $e) {
+            // Revertir la transacción en caso de error
+            DB::rollBack();
+            
+            // Cerrar el archivo
+            if (isset($handle) && $handle) {
+                fclose($handle);
+            }
+            
+            // Registrar el error
+            Log::error("Error al importar información adicional de empresas: " . $e->getMessage());
+            
+            return response()->json([
+                'error' => 'Error al procesar el archivo: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Muestra la página de importaciones
      */
     public function index()
@@ -654,6 +845,10 @@ class ImportController extends Controller
             'company_id' => 'NULL si no se encuentra old_company_id',
             'created_at/updated_at' => 'Fecha y hora actual'
         ];
+        
+        $companiesAdditionalInfoColumns = [
+            'old_id', 'email_notifications', 'location_exact', 'general_manager', 'legal_representative'
+        ];
 
         return Inertia::render('SuperAdmin/Importaciones/Index', [
             'title' => 'Importación de Datos',
@@ -661,6 +856,7 @@ class ImportController extends Controller
             'usersColumns' => $usersColumns,
             'usersRequiredColumns' => $usersRequiredColumns,
             'usersOptionalDefaultValues' => $usersOptionalDefaultValues,
+            'companiesAdditionalInfoColumns' => $companiesAdditionalInfoColumns,
         ]);
     }
 } 
