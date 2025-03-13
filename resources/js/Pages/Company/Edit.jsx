@@ -76,11 +76,17 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
     // Efecto para filtrar provincias basado en el término de búsqueda
     useEffect(() => {
         if (searchTerm.trim() === '') {
-            setFilteredProvincias(provincias || []);
-        } else {
-            const filtered = (provincias || []).filter(provincia =>
-                provincia.name.toLowerCase().includes(searchTerm.toLowerCase())
+            // Ordenar provincias alfabéticamente por nombre
+            const provinciaOrdenadas = [...(provincias || [])].sort((a, b) =>
+                a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
             );
+            setFilteredProvincias(provinciaOrdenadas);
+        } else {
+            const filtered = (provincias || [])
+                .filter(provincia =>
+                    provincia.name.toLowerCase().includes(searchTerm.toLowerCase())
+                )
+                .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
             setFilteredProvincias(filtered);
         }
     }, [searchTerm, provincias]);
