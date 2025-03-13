@@ -230,7 +230,7 @@ export default function ProductosForm({
                             type="submit"
                             disabled={processing || loading}
                             onClick={() => pasarSiguienteSeccion('productos')}
-                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800"
+                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800 z-50"
                         >
                             {loading ? (
                                 <>

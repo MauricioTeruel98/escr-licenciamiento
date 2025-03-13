@@ -910,7 +910,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 setToast({
                     show: true,
                     message: mensaje,
-                    type: formularioCompleto ? 'success' : 'warning'
+                    type: formularioCompleto ? 'success' : 'info'
                 });
 
                 // Limpiar errores del cliente si la operación fue exitosa
@@ -3399,7 +3399,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
             <div className="relative">
                 {((data.autoEvaluationResult && data.autoEvaluationResult.form_sended == 1) || (!data.autoEvaluationResult && autoEvaluationResult && autoEvaluationResult.form_sended == 1)) && company.estado_eval == "auto-evaluacion" && (
-                    <div className="lg:absolute lg:z-50 w-full lg:bottom-12 flex justify-end lg:pr-24">
+                    <div className="lg:absolute lg:z-40 w-full lg:bottom-12 flex justify-end lg:pr-24">
                         <div>
                             {/* Boton para ir hacia la seccion de finalizar, agregale un chevron hacia abajo */}
                             <button
