@@ -110,7 +110,15 @@ class CompanyProfileController extends Controller
 
             // Procesar logo
             if ($request->has('logo_path')) {
-                $allData['logo_path'] = $request->logo_path;
+                try {
+                    $allData['logo_path'] = $request->logo_path;
+                } catch (\Exception $e) {
+                    Log::error('Error al procesar el logo:', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    // No detenemos el proceso, continuamos con el resto de datos
+                }
             } else if ($infoExistente && $infoExistente->logo_path) {
                 // Si no se envió ningún logo pero existe uno en la base de datos, mantenerlo
                 $allData['logo_path'] = $infoExistente->logo_path;
@@ -118,7 +126,15 @@ class CompanyProfileController extends Controller
 
             // Procesar fotografías
             if ($request->has('fotografias_paths')) {
-                $allData['fotografias_paths'] = $request->fotografias_paths;
+                try {
+                    $allData['fotografias_paths'] = $request->fotografias_paths;
+                } catch (\Exception $e) {
+                    Log::error('Error al procesar fotografías:', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    // No detenemos el proceso, continuamos con el resto de datos
+                }
             } else if ($infoExistente && $infoExistente->fotografias_paths) {
                 // Si no se enviaron fotografías pero existen en la base de datos, mantenerlas
                 $allData['fotografias_paths'] = $infoExistente->fotografias_paths;
@@ -126,7 +142,15 @@ class CompanyProfileController extends Controller
 
             // Procesar certificaciones
             if ($request->has('certificaciones_paths')) {
-                $allData['certificaciones_paths'] = $request->certificaciones_paths;
+                try {
+                    $allData['certificaciones_paths'] = $request->certificaciones_paths;
+                } catch (\Exception $e) {
+                    Log::error('Error al procesar certificaciones:', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    // No detenemos el proceso, continuamos con el resto de datos
+                }
             } else if ($infoExistente && $infoExistente->certificaciones_paths) {
                 // Si no se enviaron certificaciones pero existen en la base de datos, mantenerlas
                 $allData['certificaciones_paths'] = $infoExistente->certificaciones_paths;
@@ -206,27 +230,45 @@ class CompanyProfileController extends Controller
 
             // Procesar productos
             if ($request->has('productos_data')) {
-                $productos = json_decode($request->productos_data, true);
+                try {
+                    $productos = json_decode($request->productos_data, true);
 
-                if (is_array($productos)) {
-                    foreach ($productos as $producto) {
-                        $productoData = [
-                            'company_id' => $companyId,
-                            'info_adicional_empresa_id' => $infoAdicional->id,
-                            'nombre' => $producto['nombre'],
-                            'descripcion' => $producto['descripcion']
-                        ];
+                    if (is_array($productos)) {
+                        foreach ($productos as $producto) {
+                            try {
+                                $productoData = [
+                                    'company_id' => $companyId,
+                                    'info_adicional_empresa_id' => $infoAdicional->id,
+                                    'nombre' => $producto['nombre'],
+                                    'descripcion' => $producto['descripcion']
+                                ];
 
-                        if (isset($producto['imagen'])) {
-                            $productoData['imagen'] = $producto['imagen'];
+                                if (isset($producto['imagen'])) {
+                                    $productoData['imagen'] = $producto['imagen'];
+                                }
+
+                                // Crear o actualizar el producto
+                                CompanyProducts::updateOrCreate(
+                                    ['info_adicional_empresa_id' => $infoAdicional->id, 'nombre' => $producto['nombre']],
+                                    $productoData
+                                );
+                            } catch (\Exception $e) {
+                                Log::error('Error al procesar un producto individual:', [
+                                    'producto' => $producto['nombre'] ?? 'desconocido',
+                                    'error' => $e->getMessage(),
+                                    'trace' => $e->getTraceAsString()
+                                ]);
+                                // Continuamos con el siguiente producto
+                                continue;
+                            }
                         }
-
-                        // Crear o actualizar el producto
-                        CompanyProducts::updateOrCreate(
-                            ['info_adicional_empresa_id' => $infoAdicional->id, 'nombre' => $producto['nombre']],
-                            $productoData
-                        );
                     }
+                } catch (\Exception $e) {
+                    Log::error('Error al procesar productos:', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    // No detenemos el proceso, continuamos con el resto de datos
                 }
             }
 
@@ -525,12 +567,25 @@ class CompanyProfileController extends Controller
             // Validar tipos de archivos permitidos para el logo
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
             $maxSizeInBytes = 1 * 1024 * 1024; // 1 MB
+            $errores = [];
 
             if ($request->hasFile('logo')) {
                 $logo = $request->file('logo');
 
                 // Validar tipo
                 if (!in_array($logo->getMimeType(), $allowedTypes)) {
+                    $errores[] = 'El logo debe ser un archivo de tipo: jpg, jpeg o png.';
+                    
+                    // Si hay un logo existente, lo devolvemos
+                    if ($request->has('logo_existente')) {
+                        return response()->json([
+                            'success' => true,
+                            'path' => $request->logo_existente,
+                            'url' => asset('storage/' . $request->logo_existente),
+                            'warnings' => $errores
+                        ]);
+                    }
+                    
                     return response()->json([
                         'success' => false,
                         'message' => 'El logo debe ser un archivo de tipo: jpg, jpeg o png.',
@@ -540,6 +595,18 @@ class CompanyProfileController extends Controller
 
                 // Validar tamaño
                 if ($logo->getSize() > $maxSizeInBytes) {
+                    $errores[] = 'El logo no debe exceder 1 MB de tamaño.';
+                    
+                    // Si hay un logo existente, lo devolvemos
+                    if ($request->has('logo_existente')) {
+                        return response()->json([
+                            'success' => true,
+                            'path' => $request->logo_existente,
+                            'url' => asset('storage/' . $request->logo_existente),
+                            'warnings' => $errores
+                        ]);
+                    }
+                    
                     return response()->json([
                         'success' => false,
                         'message' => 'El logo no debe exceder 1 MB de tamaño.',
@@ -552,18 +619,35 @@ class CompanyProfileController extends Controller
                 // Crear directorio si no existe
                 Storage::disk('public')->makeDirectory("empresas/{$companyId}/logos");
 
-                // Guardar el logo
-                $logoPath = $logo->storeAs(
-                    "empresas/{$companyId}/logos",
-                    time() . '_' . $logo->getClientOriginalName(),
-                    'public'
-                );
+                try {
+                    // Guardar el logo
+                    $logoPath = $logo->storeAs(
+                        "empresas/{$companyId}/logos",
+                        time() . '_' . $logo->getClientOriginalName(),
+                        'public'
+                    );
 
-                return response()->json([
-                    'success' => true,
-                    'path' => $logoPath,
-                    'url' => asset('storage/' . $logoPath)
-                ]);
+                    return response()->json([
+                        'success' => true,
+                        'path' => $logoPath,
+                        'url' => asset('storage/' . $logoPath)
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Error al guardar el logo: ' . $e->getMessage());
+                    $errores[] = 'Error al guardar el logo: ' . $e->getMessage();
+                    
+                    // Si hay un logo existente, lo devolvemos
+                    if ($request->has('logo_existente')) {
+                        return response()->json([
+                            'success' => true,
+                            'path' => $request->logo_existente,
+                            'url' => asset('storage/' . $request->logo_existente),
+                            'warnings' => $errores
+                        ]);
+                    }
+                    
+                    throw $e; // Relanzar la excepción para que sea capturada por el catch exterior
+                }
             } else if ($request->has('logo_existente')) {
                 // Mantener el logo existente
                 return response()->json([
@@ -598,6 +682,7 @@ class CompanyProfileController extends Controller
             Storage::disk('public')->makeDirectory("empresas/{$companyId}/fotografias");
 
             $fotografiasPaths = [];
+            $errores = [];
 
             // Primero, agregar las fotografías existentes si se enviaron
             if ($request->has('fotografias_existentes')) {
@@ -610,40 +695,50 @@ class CompanyProfileController extends Controller
             // Luego, agregar las nuevas fotografías
             if ($request->hasFile('fotografias')) {
                 foreach ($request->file('fotografias') as $index => $foto) {
-                    // Validar tipo
-                    if (!in_array($foto->getMimeType(), $allowedTypes)) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'La fotografía debe ser un archivo de tipo: jpg, jpeg o png.',
-                            'errors' => ['fotografias.' . $index => ['La fotografía debe ser un archivo de tipo: jpg, jpeg o png.']]
-                        ], 422);
-                    }
+                    try {
+                        // Validar tipo
+                        if (!in_array($foto->getMimeType(), $allowedTypes)) {
+                            $errores[] = "La fotografía #{$index} debe ser un archivo de tipo: jpg, jpeg o png.";
+                            continue;
+                        }
 
-                    // Validar tamaño
-                    if ($foto->getSize() > $maxSizeInBytes) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'La fotografía no debe exceder los 3 MB de tamaño.',
-                            'errors' => ['fotografias.' . $index => ['La fotografía no debe exceder los 3 MB de tamaño.']]
-                        ], 422);
-                    }
+                        // Validar tamaño
+                        if ($foto->getSize() > $maxSizeInBytes) {
+                            $errores[] = "La fotografía #{$index} no debe exceder los 3 MB de tamaño.";
+                            continue;
+                        }
 
-                    $path = $foto->storeAs(
-                        "empresas/{$companyId}/fotografias",
-                        time() . '_' . $foto->getClientOriginalName(),
-                        'public'
-                    );
-                    $fotografiasPaths[] = $path;
+                        $path = $foto->storeAs(
+                            "empresas/{$companyId}/fotografias",
+                            time() . '_' . $foto->getClientOriginalName(),
+                            'public'
+                        );
+                        $fotografiasPaths[] = $path;
+                    } catch (\Exception $e) {
+                        Log::error("Error al procesar la fotografía #{$index}:", [
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                        $errores[] = "Error al procesar la fotografía #{$index}: " . $e->getMessage();
+                        continue;
+                    }
                 }
             }
 
-            return response()->json([
+            $response = [
                 'success' => true,
                 'paths' => $fotografiasPaths,
                 'urls' => array_map(function ($path) {
                     return asset('storage/' . $path);
                 }, $fotografiasPaths)
-            ]);
+            ];
+
+            // Si hubo errores, incluirlos en la respuesta pero no fallar
+            if (!empty($errores)) {
+                $response['warnings'] = $errores;
+            }
+
+            return response()->json($response);
         } catch (\Exception $e) {
             Log::error('Error al subir fotografías: ' . $e->getMessage());
             return response()->json([
@@ -665,6 +760,7 @@ class CompanyProfileController extends Controller
             Storage::disk('public')->makeDirectory("empresas/{$companyId}/certificaciones");
 
             $certificacionesPaths = [];
+            $errores = [];
 
             // Primero, agregar las certificaciones existentes si se enviaron
             if ($request->has('certificaciones_existentes')) {
@@ -677,40 +773,50 @@ class CompanyProfileController extends Controller
             // Luego, agregar las nuevas certificaciones
             if ($request->hasFile('certificaciones')) {
                 foreach ($request->file('certificaciones') as $index => $cert) {
-                    // Validar tipo
-                    if (!in_array($cert->getMimeType(), $allowedTypes)) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'La certificación debe ser un archivo de tipo: jpg, jpeg, png o pdf.',
-                            'errors' => ['certificaciones.' . $index => ['La certificación debe ser un archivo de tipo: jpg, jpeg, png o pdf.']]
-                        ], 422);
-                    }
+                    try {
+                        // Validar tipo
+                        if (!in_array($cert->getMimeType(), $allowedTypes)) {
+                            $errores[] = "La certificación #{$index} debe ser un archivo de tipo: jpg, jpeg, png o pdf.";
+                            continue;
+                        }
 
-                    // Validar tamaño
-                    if ($cert->getSize() > $maxSizeInBytes) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'La certificación no debe exceder los 1 MB de tamaño.',
-                            'errors' => ['certificaciones.' . $index => ['La certificación no debe exceder los 1 MB de tamaño.']]
-                        ], 422);
-                    }
+                        // Validar tamaño
+                        if ($cert->getSize() > $maxSizeInBytes) {
+                            $errores[] = "La certificación #{$index} no debe exceder 1 MB de tamaño.";
+                            continue;
+                        }
 
-                    $path = $cert->storeAs(
-                        "empresas/{$companyId}/certificaciones",
-                        time() . '_' . $cert->getClientOriginalName(),
-                        'public'
-                    );
-                    $certificacionesPaths[] = $path;
+                        $path = $cert->storeAs(
+                            "empresas/{$companyId}/certificaciones",
+                            time() . '_' . $cert->getClientOriginalName(),
+                            'public'
+                        );
+                        $certificacionesPaths[] = $path;
+                    } catch (\Exception $e) {
+                        Log::error("Error al procesar la certificación #{$index}:", [
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                        $errores[] = "Error al procesar la certificación #{$index}: " . $e->getMessage();
+                        continue;
+                    }
                 }
             }
 
-            return response()->json([
+            $response = [
                 'success' => true,
                 'paths' => $certificacionesPaths,
                 'urls' => array_map(function ($path) {
                     return asset('storage/' . $path);
                 }, $certificacionesPaths)
-            ]);
+            ];
+
+            // Si hubo errores, incluirlos en la respuesta pero no fallar
+            if (!empty($errores)) {
+                $response['warnings'] = $errores;
+            }
+
+            return response()->json($response);
         } catch (\Exception $e) {
             Log::error('Error al subir certificaciones: ' . $e->getMessage());
             return response()->json([
@@ -732,57 +838,99 @@ class CompanyProfileController extends Controller
             Storage::disk('public')->makeDirectory("empresas/{$companyId}/productos");
 
             $productos = [];
+            $errores = [];
 
             if ($request->has('productos')) {
                 foreach ($request->productos as $index => $producto) {
-                    $productoData = [
-                        'id' => $producto['id'] ?? null,
-                        'nombre' => $producto['nombre'] ?? '',
-                        'descripcion' => $producto['descripcion'] ?? ''
-                    ];
+                    try {
+                        $productoData = [
+                            'id' => $producto['id'] ?? null,
+                            'nombre' => $producto['nombre'] ?? '',
+                            'descripcion' => $producto['descripcion'] ?? ''
+                        ];
 
-                    // Procesar imagen del producto
-                    $imagenKey = "productos.{$index}.imagen";
-                    if ($request->hasFile($imagenKey)) {
-                        $imagen = $request->file($imagenKey);
+                        // Procesar imagen del producto
+                        $imagenKey = "productos.{$index}.imagen";
+                        if ($request->hasFile($imagenKey)) {
+                            $imagen = $request->file($imagenKey);
 
-                        // Validar tipo
-                        if (!in_array($imagen->getMimeType(), $allowedTypes)) {
-                            return response()->json([
-                                'success' => false,
-                                'message' => "La imagen del producto '{$producto['nombre']}' debe ser un archivo de tipo: jpg, jpeg o png.",
-                                'errors' => [$imagenKey => ["La imagen del producto '{$producto['nombre']}' debe ser un archivo de tipo: jpg, jpeg o png."]]
-                            ], 422);
+                            // Validar tipo
+                            if (!in_array($imagen->getMimeType(), $allowedTypes)) {
+                                $errores[] = "La imagen del producto '{$producto['nombre']}' debe ser un archivo de tipo: jpg, jpeg o png.";
+                                // Continuar con el siguiente producto o usar imagen existente si hay
+                                if (isset($producto['imagen_existente'])) {
+                                    $productoData['imagen'] = $producto['imagen_existente'];
+                                }
+                                $productos[] = $productoData;
+                                continue;
+                            }
+
+                            // Validar tamaño
+                            if ($imagen->getSize() > $maxSizeInBytes) {
+                                $errores[] = "La imagen del producto '{$producto['nombre']}' no debe exceder los 3 MB de tamaño.";
+                                // Continuar con el siguiente producto o usar imagen existente si hay
+                                if (isset($producto['imagen_existente'])) {
+                                    $productoData['imagen'] = $producto['imagen_existente'];
+                                }
+                                $productos[] = $productoData;
+                                continue;
+                            }
+
+                            try {
+                                $imagenPath = $imagen->storeAs(
+                                    "empresas/{$companyId}/productos",
+                                    time() . '_' . $imagen->getClientOriginalName(),
+                                    'public'
+                                );
+                                $productoData['imagen'] = $imagenPath;
+                            } catch (\Exception $e) {
+                                Log::error("Error al guardar la imagen del producto '{$producto['nombre']}':", [
+                                    'error' => $e->getMessage(),
+                                    'trace' => $e->getTraceAsString()
+                                ]);
+                                $errores[] = "Error al guardar la imagen del producto '{$producto['nombre']}': " . $e->getMessage();
+                                // Usar imagen existente si hay
+                                if (isset($producto['imagen_existente'])) {
+                                    $productoData['imagen'] = $producto['imagen_existente'];
+                                }
+                            }
+                        } else if (isset($producto['imagen_existente'])) {
+                            // Mantener la imagen existente si se envió
+                            $productoData['imagen'] = $producto['imagen_existente'];
                         }
 
-                        // Validar tamaño
-                        if ($imagen->getSize() > $maxSizeInBytes) {
-                            return response()->json([
-                                'success' => false,
-                                'message' => "La imagen del producto '{$producto['nombre']}' no debe exceder los 3 MB de tamaño.",
-                                'errors' => [$imagenKey => ["La imagen del producto '{$producto['nombre']}' no debe exceder los 3 MB de tamaño."]]
-                            ], 422);
+                        $productos[] = $productoData;
+                    } catch (\Exception $e) {
+                        Log::error("Error al procesar el producto #{$index}:", [
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                        $errores[] = "Error al procesar el producto #{$index}: " . $e->getMessage();
+                        // Intentamos guardar el producto con datos básicos
+                        if (isset($producto['nombre'])) {
+                            $productos[] = [
+                                'id' => $producto['id'] ?? null,
+                                'nombre' => $producto['nombre'],
+                                'descripcion' => $producto['descripcion'] ?? '',
+                                'imagen' => $producto['imagen_existente'] ?? null
+                            ];
                         }
-
-                        $imagenPath = $imagen->storeAs(
-                            "empresas/{$companyId}/productos",
-                            time() . '_' . $imagen->getClientOriginalName(),
-                            'public'
-                        );
-                        $productoData['imagen'] = $imagenPath;
-                    } else if (isset($producto['imagen_existente'])) {
-                        // Mantener la imagen existente si se envió
-                        $productoData['imagen'] = $producto['imagen_existente'];
+                        continue;
                     }
-
-                    $productos[] = $productoData;
                 }
             }
 
-            return response()->json([
+            $response = [
                 'success' => true,
                 'productos' => $productos
-            ]);
+            ];
+
+            // Si hubo errores, incluirlos en la respuesta pero no fallar
+            if (!empty($errores)) {
+                $response['warnings'] = $errores;
+            }
+
+            return response()->json($response);
         } catch (\Exception $e) {
             Log::error('Error al subir productos: ' . $e->getMessage());
             return response()->json([

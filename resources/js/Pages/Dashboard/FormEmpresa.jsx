@@ -568,7 +568,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             return response.data.success ? response.data.path : null;
         } catch (error) {
             console.error('Error al subir el logo:', error);
-            throw error;
+            // En lugar de propagar el error, devolvemos null y manejamos el error en el nivel superior
+            return null;
         }
     };
 
@@ -604,7 +605,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             return response.data.success ? response.data.paths : null;
         } catch (error) {
             console.error('Error al subir las fotografías:', error);
-            throw error;
+            // En lugar de propagar el error, devolvemos las fotografías existentes si hay alguna
+            return existingPhotos.length > 0 ? existingPhotos : null;
         }
     };
 
@@ -640,7 +642,8 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             return response.data.success ? response.data.paths : null;
         } catch (error) {
             console.error('Error al subir las certificaciones:', error);
-            throw error;
+            // En lugar de propagar el error, devolvemos las certificaciones existentes si hay alguna
+            return existingCerts.length > 0 ? existingCerts : null;
         }
     };
 
@@ -649,17 +652,20 @@ export default function CompanyProfile({ userName, infoAdicional }) {
 
         const formData = new FormData();
 
-        // Agregar productos
+        // Agregar cada producto al FormData
         data.productos.forEach((producto, index) => {
-            formData.append(`productos[${index}][id]`, producto.id || '');
             formData.append(`productos[${index}][nombre]`, producto.nombre || '');
             formData.append(`productos[${index}][descripcion]`, producto.descripcion || '');
+            
+            if (producto.id) {
+                formData.append(`productos[${index}][id]`, producto.id);
+            }
 
-            // Agregar imagen del producto si existe y es un nuevo archivo
+            // Agregar imagen si existe
             if (imagenes.productos && imagenes.productos[index] instanceof File) {
                 formData.append(`productos[${index}][imagen]`, imagenes.productos[index]);
             } else if (producto.imagen) {
-                // Mantener la imagen existente si no se sube una nueva
+                // Si hay una imagen existente, enviar su ruta
                 formData.append(`productos[${index}][imagen_existente]`, producto.imagen);
             }
         });
@@ -674,7 +680,13 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             return response.data.success ? response.data.productos : null;
         } catch (error) {
             console.error('Error al subir los productos:', error);
-            throw error;
+            // En lugar de propagar el error, devolvemos los productos sin imágenes nuevas
+            return data.productos.map(producto => ({
+                id: producto.id,
+                nombre: producto.nombre,
+                descripcion: producto.descripcion,
+                imagen: producto.imagen // Solo incluimos imágenes existentes
+            }));
         }
     };
 
@@ -707,34 +719,38 @@ export default function CompanyProfile({ userName, infoAdicional }) {
             let fotografiasPaths = null;
             let certificacionesPaths = null;
             let productosData = null;
+            let erroresImagenes = [];
 
+            // Subir logo
             try {
-                // Subir logo
                 logoPath = await uploadLogo();
+            } catch (error) {
+                console.error('Error al subir el logo:', error);
+                erroresImagenes.push('No se pudo subir el logo: ' + (error.response?.data?.message || error.message));
+            }
 
-                // Subir fotografías
+            // Subir fotografías
+            try {
                 fotografiasPaths = await uploadFotografias();
+            } catch (error) {
+                console.error('Error al subir las fotografías:', error);
+                erroresImagenes.push('No se pudieron subir algunas fotografías: ' + (error.response?.data?.message || error.message));
+            }
 
-                // Subir certificaciones
+            // Subir certificaciones
+            try {
                 certificacionesPaths = await uploadCertificaciones();
+            } catch (error) {
+                console.error('Error al subir las certificaciones:', error);
+                erroresImagenes.push('No se pudieron subir algunas certificaciones: ' + (error.response?.data?.message || error.message));
+            }
 
-                // Subir productos
+            // Subir productos
+            try {
                 productosData = await uploadProductos();
             } catch (error) {
-                console.error('Error al subir archivos:', error);
-
-                if (error.response && error.response.data && error.response.data.errors) {
-                    setErrors(error.response.data.errors);
-                } else {
-                    setToast({
-                        show: true,
-                        message: 'Error al subir archivos: ' + (error.response?.data?.message || error.message),
-                        type: 'error'
-                    });
-                }
-
-                setLoading(false);
-                return;
+                console.error('Error al subir los productos:', error);
+                erroresImagenes.push('No se pudieron subir algunos productos: ' + (error.response?.data?.message || error.message));
             }
 
             // Crear FormData para los datos principales
@@ -781,6 +797,12 @@ export default function CompanyProfile({ userName, infoAdicional }) {
                 // Mensaje de éxito básico
                 let mensaje = '¡Datos guardados exitosamente!';
                 let tipo = 'success';
+
+                // Si hubo errores con algunas imágenes, mostrar advertencia
+                if (erroresImagenes.length > 0) {
+                    mensaje += ' Sin embargo, hubo problemas con algunas imágenes: ' + erroresImagenes.join('. ');
+                    tipo = 'warning';
+                }
 
                 // Si el formulario no está completo, mostrar un mensaje adicional
                 if (response.data.formulario_completo === false) {
