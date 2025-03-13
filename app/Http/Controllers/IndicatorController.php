@@ -20,6 +20,9 @@ class IndicatorController extends Controller
                 $q->where('name', 'like', "%{$searchTerm}%")
                     ->orWhereHas('homologations', function ($q) use ($searchTerm) {
                         $q->where('nombre', 'like', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('value', function ($q) use ($searchTerm) {
+                        $q->where('name', 'like', "%{$searchTerm}%");
                     });
             });
         }

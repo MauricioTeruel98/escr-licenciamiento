@@ -16,7 +16,13 @@ class RequisitosController extends Controller
 
         if ($request->has('search')) {
             $searchTerm = $request->search;
-            $query->where('name', 'like', "%{$searchTerm}%");
+            //$query->where('name', 'like', "%{$searchTerm}%");
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                  ->orWhereHas('value', function($valueQuery) use ($searchTerm) {
+                      $valueQuery->where('name', 'like', "%{$searchTerm}%");
+                  });
+            });
         }
 
         $requisitos = $query->orderBy('created_at', 'desc')->paginate(10);

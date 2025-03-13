@@ -15,7 +15,12 @@ class SubcategoryController extends Controller
 
         if ($request->has('search')) {
             $searchTerm = $request->search;
-            $query->where('name', 'like', "%{$searchTerm}%");
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('subcategories.name', 'like', "%{$searchTerm}%")
+                  ->orWhereHas('value', function($valueQuery) use ($searchTerm) {
+                      $valueQuery->where('name', 'like', "%{$searchTerm}%");
+                  });
+            });
         }
 
         // Primero ordenar por value_id y luego por order de forma descendente

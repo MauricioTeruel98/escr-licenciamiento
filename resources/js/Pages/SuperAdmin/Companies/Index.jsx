@@ -27,6 +27,7 @@ export default function CompaniesIndex() {
         total: 0,
         perPage: 10
     });
+    const [searchTerm, setSearchTerm] = useState('');
 
     const columns = [
         { key: 'legal_id', label: 'Cedula' },
@@ -85,14 +86,15 @@ export default function CompaniesIndex() {
     useEffect(() => {
         fetchCompanies();
         fetchProvincias();
-    }, [pagination.currentPage, pagination.perPage]);
+    }, [pagination.currentPage, pagination.perPage, searchTerm]);
 
     const fetchCompanies = async () => {
         try {
             const response = await axios.get('/api/companies', {
                 params: {
                     page: pagination.currentPage,
-                    per_page: pagination.perPage
+                    per_page: pagination.perPage,
+                    search: searchTerm
                 }
             });
             setCompanies(response.data.data);
@@ -205,6 +207,11 @@ export default function CompaniesIndex() {
         }
     };
 
+    const handleSearch = (term) => {
+        setSearchTerm(term);
+        setPagination({...pagination, currentPage: 1});
+    };
+
     return (
         <SuperAdminLayout>
             <Head title="Gestión de Empresas" />
@@ -231,6 +238,7 @@ export default function CompaniesIndex() {
                         onPageChange={(page) => setPagination({...pagination, currentPage: page})}
                         onPerPageChange={(perPage) => setPagination({...pagination, perPage, currentPage: 1})}
                         onBulkDelete={handleBulkDelete}
+                        onSearch={handleSearch}
                     />
                 </div>
 
