@@ -16,7 +16,12 @@ class CompanyProducts extends Model
         'info_adicional_empresa_id',
         'nombre',
         'descripcion',
-        'imagen'
+        'imagen',
+        'imagenes_paths'
+    ];
+
+    protected $casts = [
+        'imagenes_paths' => 'array',
     ];
 
     public function infoAdicional()

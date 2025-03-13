@@ -893,6 +893,7 @@ class CompanyProfileController extends Controller
                                 if (isset($producto['imagen_existente'])) {
                                     $productoData['imagen'] = $producto['imagen_existente'];
                                 }
+
                             }
                         } else if (isset($producto['imagen_existente'])) {
                             // Mantener la imagen existente si se envió
@@ -940,3 +941,4 @@ class CompanyProfileController extends Controller
         }
     }
 }
+
