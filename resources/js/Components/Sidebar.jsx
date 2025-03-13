@@ -31,11 +31,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                 setIsAuthorized(newIsAuthorized);
                 setStatusChecked(true);
                 
-                console.log('Estado actualizado:', { 
-                    isApto: newIsApto, 
-                    isAuthorized: newIsAuthorized, 
-                    url: url 
-                });
+                // console.log('Estado actualizado:', { 
+                //     isApto: newIsApto, 
+                //     isAuthorized: newIsAuthorized, 
+                //     url: url 
+                // });
             } catch (error) {
                 console.error('Error al verificar estado:', error);
                 // Usar valores del auth como fallback solo si no se han establecido previamente
@@ -46,11 +46,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                     setIsApto(fallbackIsApto);
                     setIsAuthorized(fallbackIsAuthorized);
                     
-                    console.log('Usando valores fallback:', { 
-                        isApto: fallbackIsApto, 
-                        isAuthorized: fallbackIsAuthorized, 
-                        url: url 
-                    });
+                    // console.log('Usando valores fallback:', { 
+                    //     isApto: fallbackIsApto, 
+                    //     isAuthorized: fallbackIsAuthorized, 
+                    //     url: url 
+                    // });
                 }
             }
         };

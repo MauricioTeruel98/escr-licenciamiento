@@ -774,10 +774,10 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         // Si hay campos incompletos o no hay producto válido, no permitir form_sended = 1
         const formularioCompleto = camposIncompletos.length === 0 && tieneProductoValido;
 
-        console.log('formularioCompleto', formularioCompleto);
-        console.log('camposIncompletos', camposIncompletos);
-        console.log('tieneProductoValido', tieneProductoValido);
-        
+        // console.log('formularioCompleto', formularioCompleto);
+        // console.log('camposIncompletos', camposIncompletos);
+        // console.log('tieneProductoValido', tieneProductoValido);
+
 
         try {
             // Validar que la cantidad de empleados coincida con el tamaño de empresa
@@ -864,11 +864,11 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             });
 
             // Agregar información de depuración para ubicación
-            console.log('Enviando datos de ubicación:', {
+            /*console.log('Enviando datos de ubicación:', {
                 provincia: data.provincia,
                 canton: data.canton,
                 distrito: data.distrito
-            });
+            });*/
 
             // Agregar el estado de form_sended basado en la validación
             if (formularioCompleto) {
@@ -914,11 +914,11 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 setErrors({});
 
                 // Mostrar información sobre los datos de ubicación guardados
-                console.log('Datos de ubicación guardados:', {
+                /*console.log('Datos de ubicación guardados:', {
                     provincia: response.data.data.provincia_nombre || response.data.data.provincia,
                     canton: response.data.data.canton_nombre || response.data.data.canton,
                     distrito: response.data.data.distrito_nombre || response.data.data.distrito
-                });
+                });*/
             } else {
                 // Si hay errores en la respuesta, mostrarlos en los campos correspondientes
                 if (response.data.errors) {
@@ -1001,12 +1001,12 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                     provincias: provinciasOrdenadas
                 }));
 
-                console.log('Datos de ubicación cargados:', {
+                /*console.log('Datos de ubicación cargados:', {
                     provincias: provinciasOrdenadas.length,
                     provinciaSeleccionada: data.provincia,
                     cantonSeleccionado: data.canton,
                     distritoSeleccionado: data.distrito
-                });
+                });*/
             } catch (error) {
                 console.error('Error al cargar lugares:', error);
             }
@@ -1021,11 +1021,11 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             const provinciaSeleccionada = ubicaciones.provincias.find(p => p.id === data.provincia);
 
             if (provinciaSeleccionada) {
-                console.log('Provincia seleccionada:', {
-                    id: provinciaSeleccionada.id,
-                    name: provinciaSeleccionada.name,
-                    cantones: provinciaSeleccionada.cantones?.length || 0
-                });
+                /* console.log('Provincia seleccionada:', {
+                     id: provinciaSeleccionada.id,
+                     name: provinciaSeleccionada.name,
+                     cantones: provinciaSeleccionada.cantones?.length || 0
+                 });*/
 
                 setUbicaciones(prev => ({
                     ...prev,
@@ -1038,7 +1038,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
                 // Solo resetear cantón si no existe en la nueva lista de cantones
                 if (data.canton && !provinciaSeleccionada.cantones.some(c => c.id === data.canton)) {
-                    console.log('Reseteando cantón porque no existe en la nueva lista de cantones');
+                    //  console.log('Reseteando cantón porque no existe en la nueva lista de cantones');
                     setData('canton', '');
                     setData('distrito', '');
                 }
@@ -1053,11 +1053,11 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             const cantonSeleccionado = provinciaSeleccionada?.cantones.find(c => c.id === data.canton);
 
             if (cantonSeleccionado) {
-                console.log('Cantón seleccionado:', {
+                /*console.log('Cantón seleccionado:', {
                     id: cantonSeleccionado.id,
                     name: cantonSeleccionado.name,
                     distritos: cantonSeleccionado.distritos?.length || 0
-                });
+                });*/
 
                 setUbicaciones(prev => ({
                     ...prev,
@@ -1066,7 +1066,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
                 // Solo resetear distrito si no existe en la nueva lista de distritos
                 if (data.distrito && !cantonSeleccionado.distritos.some(d => d.id === data.distrito)) {
-                    console.log('Reseteando distrito porque no existe en la nueva lista de distritos');
+                    //console.log('Reseteando distrito porque no existe en la nueva lista de distritos');
                     setData('distrito', '');
                 }
             }
@@ -1078,11 +1078,11 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         const initializeLocationData = async () => {
             // Solo ejecutar si tenemos provincia y no tenemos cantones cargados
             if (data.provincia && ubicaciones.provincias.length > 0 && ubicaciones.cantones.length === 0) {
-                console.log('Inicializando datos de ubicación con valores existentes:', {
+                /*console.log('Inicializando datos de ubicación con valores existentes:', {
                     provincia: data.provincia,
                     canton: data.canton,
                     distrito: data.distrito
-                });
+                });*/
 
                 const provinciaSeleccionada = ubicaciones.provincias.find(p => p.id === data.provincia);
 
@@ -2221,10 +2221,10 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             <p className="text-sm font-medium text-gray-700">
                                                 Total de empleados: {parseInt(data.cantidad_hombres || 0) + parseInt(data.cantidad_mujeres || 0) + parseInt(data.cantidad_otros || 0)}
                                             </p>
-                                            <input 
-                                                type="hidden" 
-                                                name="cantidad_total" 
-                                                value={parseInt(data.cantidad_hombres || 0) + parseInt(data.cantidad_mujeres || 0) + parseInt(data.cantidad_otros || 0)} 
+                                            <input
+                                                type="hidden"
+                                                name="cantidad_total"
+                                                value={parseInt(data.cantidad_hombres || 0) + parseInt(data.cantidad_mujeres || 0) + parseInt(data.cantidad_otros || 0)}
                                             />
                                         </div>
                                     </div>
@@ -3404,7 +3404,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-amber-700 hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-800"
                             >
                                 Ir a finalizar autoevaluación
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M6 9l6 6l6 -6" /></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M6 9l6 6l6 -6" /></svg>
                             </button>
                         </div>
                     </div>

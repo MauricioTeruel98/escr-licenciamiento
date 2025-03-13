@@ -11,7 +11,7 @@ export default function StepIndicator({ steps, currentStep, onStepClick }) {
             <ol role="list" className="flex items-center min-w-max md:min-w-0">
                 {steps.map((step, index) => (
                     <li 
-                        key={step.title} 
+                        key={index} 
                         className={`
                             flex-1 relative
                             ${index !== steps.length - 1 ? 'flex items-center' : ''}

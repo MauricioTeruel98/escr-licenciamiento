@@ -34,7 +34,7 @@ export default function EmpresasEvaluadorIndex() {
             key: 'name',
             label: 'Nombre',
             render: (item) => (
-                <div className="font-medium text-gray-900">{item.name}{console.log(item)}</div>
+                <div className="font-medium text-gray-900">{item.name}</div>
             )
         },
         {
