@@ -118,6 +118,10 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class])->group(func
     // Otras rutas protegidas...
 
     Route::post('/evaluation/send-application', [EvaluationController::class, 'sendApplication'])->name('evaluation.send-application');
+
+    Route::post('/company/profile/update-form-sended', [CompanyProfileController::class, 'updateFormSended'])
+        ->name('company.profile.update-form-sended');
+        
         
     // Ruta para verificar el estado de la autoevaluación
     Route::get('/api/check-autoevaluation-status', [IndicadorAnswerController::class, 'checkAutoEvaluationStatus'])

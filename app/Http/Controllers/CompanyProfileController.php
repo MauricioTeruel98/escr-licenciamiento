@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AutoEvaluationResult;
 use App\Models\Company;
 use App\Models\InfoAdicionalEmpresa;
 use App\Models\CompanyProducts;
@@ -180,7 +181,7 @@ class CompanyProfileController extends Controller
                 'razon_licenciamiento_en',
                 'proceso_licenciamiento',
                 //'recomienda_marca_pais',
-                'observaciones',
+                //'observaciones',
                 'contacto_notificacion_nombre',
                 'contacto_notificacion_email',
                 'contacto_notificacion_puesto',
@@ -211,7 +212,7 @@ class CompanyProfileController extends Controller
             }
 
             // Solo actualizar el campo form_sended si todos los campos obligatorios están completos
-            if ($formularioCompleto) {
+            /*if ($formularioCompleto) {
                 DB::table('auto_evaluation_result')
                     ->where('company_id', $companyId)
                     ->update(['form_sended' => 1]);
@@ -226,7 +227,7 @@ class CompanyProfileController extends Controller
                         return empty($allData[$campo]);
                     })
                 ]);
-            }
+            }*/
 
             // Procesar productos
             if ($request->has('productos_data')) {
@@ -939,6 +940,19 @@ class CompanyProfileController extends Controller
                 'message' => 'Error al procesar productos: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function updateFormSended(Request $request)
+    {
+        $companyId = Auth::user()->company_id;
+        $autoEvaluationResult = AutoEvaluationResult::where('company_id', $companyId)->first();
+        $autoEvaluationResult->form_sended = 1;
+        $autoEvaluationResult->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Formulario enviado correctamente'
+        ]);
     }
 }
 

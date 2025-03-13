@@ -724,6 +724,60 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         setErrors({});
         setCamposFaltantes([]);
 
+        // Validar campos requeridos antes de permitir form_sended = 1
+        const camposRequeridos = {
+            nombre_comercial: data.nombre_comercial,
+            nombre_legal: data.nombre_legal,
+            descripcion_es: data.descripcion_es,
+            descripcion_en: data.descripcion_en,
+            anio_fundacion: data.anio_fundacion,
+            sitio_web: data.sitio_web,
+            tamano_empresa: data.tamano_empresa,
+            cantidad_hombres: data.cantidad_hombres,
+            cantidad_mujeres: data.cantidad_mujeres,
+            actividad_comercial: data.actividad_comercial,
+            razon_licenciamiento_es: data.razon_licenciamiento_es,
+            razon_licenciamiento_en: data.razon_licenciamiento_en,
+            proceso_licenciamiento: data.proceso_licenciamiento,
+            //observaciones: data.observaciones,
+            contacto_notificacion_nombre: data.contacto_notificacion_nombre,
+            contacto_notificacion_email: data.contacto_notificacion_email,
+            contacto_notificacion_puesto: data.contacto_notificacion_puesto,
+            contacto_notificacion_telefono: data.contacto_notificacion_telefono,
+            contacto_notificacion_celular: data.contacto_notificacion_celular,
+            asignado_proceso_nombre: data.asignado_proceso_nombre,
+            asignado_proceso_email: data.asignado_proceso_email,
+            asignado_proceso_puesto: data.asignado_proceso_puesto,
+            asignado_proceso_telefono: data.asignado_proceso_telefono,
+            asignado_proceso_celular: data.asignado_proceso_celular,
+            cedula_juridica: data.cedula_juridica,
+            // Datos del representante legal
+            representante_nombre: data.representante_nombre,
+            representante_email: data.representante_email,
+            representante_puesto: data.representante_puesto,
+            representante_cedula: data.representante_cedula,
+            representante_telefono: data.representante_telefono,
+            representante_celular: data.representante_celular
+        };
+
+        // Verificar si hay al menos un producto con nombre y descripción
+        const tieneProductoValido = data.productos && data.productos.some(
+            producto => producto.nombre?.trim() && producto.descripcion?.trim()
+        );
+
+        // Verificar si todos los campos requeridos están completos
+        const camposIncompletos = Object.entries(camposRequeridos)
+            .filter(([_, valor]) => !valor?.trim())
+            .map(([campo]) => campo);
+
+        // Si hay campos incompletos o no hay producto válido, no permitir form_sended = 1
+        const formularioCompleto = camposIncompletos.length === 0 && tieneProductoValido;
+
+        console.log('formularioCompleto', formularioCompleto);
+        console.log('camposIncompletos', camposIncompletos);
+        console.log('tieneProductoValido', tieneProductoValido);
+        
+
         try {
             // Validar que la cantidad de empleados coincida con el tamaño de empresa
             const limites = obtenerLimitesEmpleados(data.tamano_empresa);
@@ -815,24 +869,16 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 distrito: data.distrito
             });
 
-            const response = await axios.post(route('company.profile.store'), formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                }
-            });
+            // Agregar el estado de form_sended basado en la validación
+            if (formularioCompleto) {
+                formData.append('autoEvaluationResult', JSON.stringify({
+                    ...data.autoEvaluationResult,
+                    form_sended: 1
+                }));
 
-            if (response.data.success) {
-                // Mensaje de éxito básico
-                let mensaje = '¡Datos guardados exitosamente!';
-                let tipo = 'success';
+                // Actualizar el estado de form_sended en la base de datos mediante axios
+                const response = await axios.post(route('company.profile.update-form-sended'));
 
-                // Si hubo errores con algunas imágenes, mostrar advertencia
-                if (erroresImagenes.length > 0) {
-                    mensaje += ' Sin embargo, hubo problemas con algunas imágenes: ' + erroresImagenes.join('. ');
-                    tipo = 'warning';
-                }
-
-                // Actualizar el estado local de autoEvaluationResult
                 if (autoEvaluationResult) {
                     setData(prevData => ({
                         ...prevData,
@@ -842,11 +888,25 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                         }
                     }));
                 }
+            }
+
+            const response = await axios.post(route('company.profile.store'), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+
+            if (response.data.success) {
+                // Mensaje de éxito personalizado
+                let mensaje = '¡Datos guardados exitosamente!';
+                if (!formularioCompleto) {
+                    mensaje += ' Sin embargo, algunos campos importantes están pendientes de completar para finalizar la autoevaluación.';
+                }
 
                 setToast({
                     show: true,
                     message: mensaje,
-                    type: tipo
+                    type: formularioCompleto ? 'success' : 'warning'
                 });
 
                 // Limpiar errores del cliente si la operación fue exitosa
@@ -871,7 +931,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                     });
                 }
             }
-            setLoading(false);
 
             //Redirigir al home sin navigate
             //window.location.href = route('dashboard');
@@ -891,11 +950,11 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                     type: 'error'
                 });
             }
-            setLoading(false);
         }
 
         router.reload({ only: ['autoEvaluationResult'] });
         router.reload({ only: ['company'] });
+        setLoading(false);
     };
 
 
