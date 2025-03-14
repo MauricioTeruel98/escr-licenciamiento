@@ -37,7 +37,7 @@ export default function CompanyExists() {
                         >
                             Solicitar Acceso
                         </button>
-                        
+
                         <button
                             type="button"
                             onClick={() => window.history.back()}
@@ -49,7 +49,10 @@ export default function CompanyExists() {
 
                     <div className="text-sm text-gray-600">
                         ¿Necesita ayuda?{" "}
-                        <a href="#" className="text-green-700 hover:underline">
+                        <a
+                            href="mailto:licenciasmarcapais@procomer.com"
+                            className="text-green-600 hover:underline"
+                        >
                             Soporte técnico
                         </a>
                     </div>

@@ -734,8 +734,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             anio_fundacion: data.anio_fundacion,
             sitio_web: data.sitio_web,
             tamano_empresa: data.tamano_empresa,
-            cantidad_hombres: data.cantidad_hombres,
-            cantidad_mujeres: data.cantidad_mujeres,
+            //cantidad_hombres: data.cantidad_hombres,
+            //cantidad_mujeres: data.cantidad_mujeres,
+            //cantidad_otros: data.cantidad_otros,
             actividad_comercial: data.actividad_comercial,
             razon_licenciamiento_es: data.razon_licenciamiento_es,
             razon_licenciamiento_en: data.razon_licenciamiento_en,
@@ -777,9 +778,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         // Si hay campos incompletos o no hay producto válido, no permitir form_sended = 1
         const formularioCompleto = camposIncompletos.length === 0 && tieneProductoValido;
 
-        // console.log('formularioCompleto', formularioCompleto);
-        // console.log('camposIncompletos', camposIncompletos);
-        // console.log('tieneProductoValido', tieneProductoValido);
+        console.log('formularioCompleto', formularioCompleto);
+        console.log('camposIncompletos', camposIncompletos);
+        console.log('tieneProductoValido', tieneProductoValido);
 
 
         try {
@@ -1820,6 +1821,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
     const openFinalizarModal = () => {
         setModalStatus('initial');
         setIsFinalizarAutoevaluacionModalOpen(true);
+        setTimeout(() => {
+            window.location.href = route('dashboard');
+        }, 3000);
     };
 
     // Función para confirmar y enviar la autoevaluación

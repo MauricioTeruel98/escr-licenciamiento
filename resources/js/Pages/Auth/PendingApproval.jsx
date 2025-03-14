@@ -52,8 +52,11 @@ export default function PendingApproval({ status }) {
                     </div>
 
                     <div className="text-sm text-gray-600">
-                        Necesita ayuda?{' '}
-                        <a href={''} className="text-green-700 hover:underline">
+                        ¿Necesita ayuda?{' '}
+                        <a
+                            href="mailto:licenciasmarcapais@procomer.com"
+                            className="text-green-600 hover:underline"
+                        >
                             Soporte técnico
                         </a>
                     </div>
