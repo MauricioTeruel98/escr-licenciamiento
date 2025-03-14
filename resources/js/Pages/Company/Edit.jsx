@@ -205,7 +205,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                     <option value="">Escoger sector</option>
                                     <option value="agricola">Agrícola</option>
                                     <option value="alimentos">Alimentos</option>
-                                    <option value="especializada">Especializada</option>
+                                    <option value="especializada">Industria Especializada</option>
                                     <option value="servicios">Servicios</option>
                                 </select>
                                 <InputError message={errors.sector} className="mt-2" />

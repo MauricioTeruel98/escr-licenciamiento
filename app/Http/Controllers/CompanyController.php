@@ -34,7 +34,7 @@ class CompanyController extends Controller
             'sectors' => [
                 'Agrícola',
                 'Alimentos',
-                'Especializada',
+                'Industria especializada',
                 'Servicios',
                 // Agregar más sectores según necesites
             ],
