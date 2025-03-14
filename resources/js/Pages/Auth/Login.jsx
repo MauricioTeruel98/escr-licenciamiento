@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, EyeOff, X } from "lucide-react";
+import { Eye, EyeOff, Loader2, X } from "lucide-react";
 import { useForm } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import InstructionsLayout from '@/Layouts/InstructionsLayout';
@@ -121,7 +121,11 @@ export default function Login({ status: initialStatus, canResetPassword }) {
                             className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="nombre@empresa.com"
                         />
-                        <InputError message={isMigrated ? errors.email || validationErrors.email : ''} className="mt-2" />
+                        {
+                            isMigrated && (
+                                <InputError message={errors.email || validationErrors.email} className="mt-2" />
+                            )
+                        }
                     </div>
 
                     <div className="space-y-2">
@@ -161,9 +165,9 @@ export default function Login({ status: initialStatus, canResetPassword }) {
                     <button
                         type="submit"
                         disabled={processing}
-                        className="w-full bg-green-700 text-white py-2 px-4 rounded-md hover:bg-green-800 transition-colors"
+                        className="w-full bg-green-700 text-white py-2 px-4 rounded-md hover:bg-green-800 transition-colors flex items-center justify-center gap-2"
                     >
-                        Acceder
+                        {processing && (<Loader2 className="h-4 w-4 animate-spin" />)} Acceder
                     </button>
 
                     <div className="text-sm text-center">
