@@ -7,7 +7,7 @@ import axios from 'axios';
 import { router, usePage } from '@inertiajs/react';
 import EvaluacionProcessing from '@/Components/Modals/EvaluacionProcessing';
 
-export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, progress, totalSteps, value_id, company, numeroDePreguntasQueVaAResponderLaEmpresaPorValor, numeroDePreguntasQueRespondioLaEmpresa }) {
+export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, progress, totalSteps, value_id, company, numeroDePreguntasQueVaAResponderLaEmpresa, numeroDePreguntasQueRespondioLaEmpresa, numeroDePreguntasQueClificoElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor, numeroDePreguntasQueVaAResponderLaEmpresaPorValor, numeroDePreguntasQueRespondioLaEmpresaPorValor }) {
     const { auth } = usePage().props;
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [approvals, setApprovals] = useState(() => {
@@ -41,6 +41,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     const [loading, setLoading] = useState(false);
     const [currentProgress, setCurrentProgress] = useState(0);
     const [evaluatorProgress, setEvaluatorProgress] = useState(0);
+    const [dynamicScore, setDynamicScore] = useState(0);
+    const [dynamicScoreForValue, setDynamicScoreForValue] = useState(0);
+    const [totalEvaluatedQuestions, setTotalEvaluatedQuestions] = useState(numeroDePreguntasQueClificoElEvaluador);
+    const [totalApprovedQuestions, setTotalApprovedQuestions] = useState(numeroDePreguntasQueClificoPositivamenteElEvaluador);
+    const [totalApprovedQuestionsForValue, setTotalApprovedQuestionsForValue] = useState(numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor);
     const [validationErrors, setValidationErrors] = useState({});
 
     // Verificar si la empresa es exportadora
@@ -200,7 +205,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     // Verificar que la descripción no esté vacía después de quitar espacios
                     const hasDescription = answers[question.id]?.description?.trim() !== '' &&
                         answers[question.id]?.description !== undefined;
-                    
+
                     // Verificar que haya al menos un archivo
                     const hasFiles = answers[question.id]?.files?.length > 0;
 
@@ -299,9 +304,51 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }*/
 
         const newApprovals = { ...approvals };
+        const wasApproved = newApprovals[questionId];
+        const wasEvaluated = wasApproved !== undefined;
+        
         newApprovals[questionId] = value;
         setApprovals(newApprovals);
+        
+        // Actualizar contadores para la nota dinámica
+        if (!wasEvaluated) {
+            // Si es la primera evaluación de esta pregunta
+            setTotalEvaluatedQuestions(prev => prev + 1);
+            if (value) {
+                setTotalApprovedQuestions(prev => prev + 1);
+                setTotalApprovedQuestionsForValue(prev => prev + 1);
+            }
+        } else if (wasApproved !== value) {
+            // Si cambió la evaluación (de aprobado a desaprobado o viceversa)
+            if (value) {
+                // Si ahora es aprobado
+                setTotalApprovedQuestions(prev => prev + 1);
+                setTotalApprovedQuestionsForValue(prev => prev + 1);
+            } else {
+                // Si ahora es desaprobado
+                setTotalApprovedQuestions(prev => prev - 1);
+                setTotalApprovedQuestionsForValue(prev => prev - 1);
+            }
+        }
     };
+
+    // Efecto para calcular la nota dinámica
+    useEffect(() => {
+        if (totalEvaluatedQuestions > 0) {
+            // Calcular nota general
+            const newScore = Math.round((totalApprovedQuestions / totalEvaluatedQuestions) * 100);
+            setDynamicScore(newScore);
+            
+            // Calcular nota específica para este valor
+            const newScoreForValue = Math.round(
+                (totalApprovedQuestionsForValue / numeroDePreguntasQueRespondioLaEmpresaPorValor) * 100
+            );
+            setDynamicScoreForValue(newScoreForValue);
+        } else {
+            setDynamicScore(0);
+            setDynamicScoreForValue(0);
+        }
+    }, [totalEvaluatedQuestions, totalApprovedQuestions, totalApprovedQuestionsForValue, numeroDePreguntasQueRespondioLaEmpresaPorValor]);
 
     const areAllQuestionsAnswered = () => {
         if (isEvaluador) {
@@ -699,7 +746,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     )}
 
                     {/* Progreso específico para evaluadores */}
-                    {/* {isEvaluador && (
+                    {isEvaluador && (
                         <div className="lg:w-1/2 mt-5 lg:mt-0">
                             <div>
                                 <div className="flex">
@@ -710,12 +757,20 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                         <p className="text-2xl font-bold text-green-500">
                                             {evaluatorProgress}%
                                         </p>
+                                        <div className="flex mt-2 justify-between items-center text-sm">
+                                            <span>Calificadas: {numeroDePreguntasQueClificoElEvaluador}</span>
+                                            <span>de {numeroDePreguntasQueVaAResponderLaEmpresa}</span>
+                                        </div>
                                     </div>
                                     <div className="w-1/2 rounded-e-xl bg-green-800 px-6 p-4">
-                                        <h2 className="text-lg text-green-200 font-semibold mb-2">Total indicadores</h2>
+                                        <h2 className="text-lg text-green-200 font-semibold mb-2">Nota</h2>
                                         <p className="text-2xl text-green-200 font-bold">
-                                            {totalSteps}
+                                            {dynamicScoreForValue}%
                                         </p>
+                                        <div className="flex mt-2 justify-between items-center text-sm text-green-200">
+                                            <span>Aprobadas: {totalApprovedQuestionsForValue}</span>
+                                            <span>de {numeroDePreguntasQueRespondioLaEmpresaPorValor}</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
@@ -726,7 +781,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                 </div>
                             </div>
                         </div>
-                    )} */}
+                    )}
                 </div>
 
                 {/* Contenido Principal */}
@@ -748,14 +803,24 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             {subcategories[currentSubcategoryIndex].indicators.map(indicator => (
                                 <div key={indicator.id} className="space-y-8">
                                     {/* Cabecera del Indicador */}
-                                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 space-y-8">
+                                    <div className={`bg-gray-50 p-6 rounded-xl border border-gray-200 space-y-8 ${indicator.binding ? 'bg-red-50/70 ring-1 ring-red-100' : ''}`}>
                                         <div className="space-y-2">
                                             <div className="inline-block">
                                                 <span className="bg-green-50 text-green-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-green-600/20">
                                                     INDICADOR {indicator.name}
                                                 </span>
+                                                {indicator.binding && (
+                                                    <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 ml-2">
+                                                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                        </svg>
+                                                        Indicador descalificatório
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
+
+                                        {console.log(indicator)}
 
                                         {/* Preguntas de Evaluación */}
                                         {indicator.evaluation_questions.map((question, index) => (
@@ -889,9 +954,16 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                 {/* Checkbox de aprobación para evaluadores */}
                                                 {isEvaluador && (
                                                     <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200 space-y-4">
-                                                        <label className="text-sm font-medium text-gray-900">
-                                                            ¿Indicador aprobado?
-                                                        </label>
+                                                        <div className="flex items-center gap-2">
+                                                            <label className="text-sm font-medium text-gray-900">
+                                                                ¿Indicador aprobado?
+                                                            </label>
+                                                            {indicator.binding && (
+                                                                <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-red-700 ml-2">
+                                                                    Este indicador es descalificatório, en el caso de no aprobarlo la empresa no podrá licenciarse.
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         <div className="flex gap-4">
                                                             <label className="flex items-center gap-2">
                                                                 <input

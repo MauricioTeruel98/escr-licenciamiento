@@ -254,6 +254,18 @@
             border: 0;
             background-color: #f4f4f9;
         }
+
+        .descalificatorio {
+            display: inline-flex;
+            align-items: center;
+            background-color: #ffdfdf;
+            border: 1px solid #e24343;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #dc2626;
+        }
     </style>
 </head>
 
@@ -402,7 +414,8 @@
 
     @if ($company->infoAdicional->contacto_notificacion_nombre)
         <h3>Contacto para recibir Notificaciones de Marca País</h3>
-        <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->contacto_notificacion_nombre ?? 'N/A' }}</p>
+        <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->contacto_notificacion_nombre ?? 'N/A' }}
+        </p>
         <p><strong>Posición dentro de la organización:</strong>
             {{ $company->infoAdicional->contacto_notificacion_puesto ?? 'N/A' }}</p>
         <p><strong>Correo electrónico:</strong> {{ $company->infoAdicional->contacto_notificacion_email ?? 'N/A' }}</p>
@@ -435,7 +448,7 @@
             <strong>Celular:</strong> {{ $company->infoAdicional->representante_celular ?? 'N/A' }}
         </p>
     @endif
-    
+
     @if ($company->infoAdicional->vocero_nombre)
         <h3>Contacto Vocero de la empresa</h3>
         <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->vocero_nombre ?? 'N/A' }}</p>
@@ -513,15 +526,22 @@
                 <div class="indicator-section">
                     <h4>{{ $indicator->name }}</h4>
                     {{-- <p><strong>Valor:</strong> <span style="color: #157f3d;">{{ $indicator->value->name }}</span></p> --}}
-                    <p><strong>Componente:</strong> <span style="color: #157f3d;">{{ $indicator->subcategory->name }}</span></p>
-                    <p><strong>Requisito:</strong> <span style="color: #157f3d;">{{ $indicator->requisito->name }}</span></p>
+                    <p><strong>Componente:</strong> <span
+                            style="color: #157f3d;">{{ $indicator->subcategory->name }}</span></p>
+                    <p><strong>Requisito:</strong> <span
+                            style="color: #157f3d;">{{ $indicator->requisito->name }}</span></p>
 
                     <!-- Pregunta de autoevaluación -->
                     <div class="auto-evaluation-section">
-                        <h5>Autoevaluación</h5>
+                        <h5>Autoevaluación @if ($indicator->binding)
+                                <span class="descalificatorio">
+                                    Indicador descalificatório
+                                </span>
+                            @endif
+                        </h5>
                         @if ($indicator->self_evaluation_question)
                             <div class="question-box">
-                                <p><strong>Pregunta:</strong> {{ $indicator->self_evaluation_question }}</p>
+                                <p><strong>Pregunta:</strong> {{ $indicator->self_evaluation_question }} </p>
                             </div>
 
                             @if (isset($autoEvaluationAnswers[$indicator->id]))
@@ -554,7 +574,12 @@
                         @endif
                     </div>
 
-                    <h5>Evaluación</h5>
+                    <h5>Evaluación @if ($indicator->binding)
+                            <span class="descalificatorio">
+                                Indicador descalificatório
+                            </span>
+                        @endif
+                    </h5>
                     <table>
                         <tr>
                             <th>Pregunta</th>
@@ -585,7 +610,8 @@
                                                     <p>Comentario del evaluador: {{ $assessment->comment }}</p>
                                                 @else
                                                     <span class="not-approved">No</span>
-                                                    <p><strong>Comentario del evaluador:</strong> {{ $assessment->comment }}</p>
+                                                    <p><strong>Comentario del evaluador:</strong>
+                                                        {{ $assessment->comment }}</p>
                                                 @endif
                                             @endif
                                         @endforeach

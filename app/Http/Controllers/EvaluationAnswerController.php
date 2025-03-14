@@ -596,6 +596,8 @@ class EvaluationAnswerController extends Controller
 
             $numeroDePreguntasQueClificoElEvaluador = EvaluatorAssessment::where('company_id', $user->company_id)->count();
 
+            $numeroDePreguntasQueClificoPositivamenteElEvaluador = EvaluatorAssessment::where('company_id', $user->company_id)->where('approved', true)->count();
+
             $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
 
             // Enviar notificación al completar la evaluación

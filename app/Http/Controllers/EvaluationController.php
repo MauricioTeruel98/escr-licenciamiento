@@ -166,7 +166,23 @@ class EvaluationController extends Controller
 
         $numeroDePreguntasQueRespondioLaEmpresa = IndicatorAnswerEvaluation::where('company_id', $user->company_id)->count();
 
+        $numeroDePreguntasQueRespondioLaEmpresaPorValor = IndicatorAnswerEvaluation::where('company_id', $user->company_id)->get()
+        ->filter(function ($question) use ($value_id) {
+            $indicatorValueId = Indicator::find($question->indicator_id)->value_id;
+            return $indicatorValueId == $value_id;
+        })
+        ->count();
+
         $numeroDePreguntasQueClificoElEvaluador = EvaluatorAssessment::where('company_id', $user->company_id)->count();
+
+        $numeroDePreguntasQueClificoPositivamenteElEvaluador = EvaluatorAssessment::where('company_id', $user->company_id)->where('approved', true)->count();
+
+        $numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor = EvaluatorAssessment::where('company_id', $user->company_id)->where('approved', true)->get()
+        ->filter(function ($question) use ($value_id) {
+            $indicatorValueId = Indicator::find($question->indicator_id)->value_id;
+            return $indicatorValueId == $value_id;
+        })
+        ->count();
 
         return Inertia::render('Dashboard/Evaluacion/Evaluacion', [
             'valueData' => $valueData,
@@ -179,8 +195,11 @@ class EvaluationController extends Controller
             'company' => $company,
             'numeroDePreguntasQueVaAResponderLaEmpresa' => $numeroDePreguntasQueVaAResponderLaEmpresa,
             'numeroDePreguntasQueRespondioLaEmpresa' => $numeroDePreguntasQueRespondioLaEmpresa,
+            'numeroDePreguntasQueRespondioLaEmpresaPorValor' => $numeroDePreguntasQueRespondioLaEmpresaPorValor,
             'numeroDePreguntasQueClificoElEvaluador' => $numeroDePreguntasQueClificoElEvaluador,
-            'numeroDePreguntasQueVaAResponderLaEmpresaPorValor' => $numeroDePreguntasQueVaAResponderLaEmpresaPorValor
+            'numeroDePreguntasQueVaAResponderLaEmpresaPorValor' => $numeroDePreguntasQueVaAResponderLaEmpresaPorValor,
+            'numeroDePreguntasQueClificoPositivamenteElEvaluador' => $numeroDePreguntasQueClificoPositivamenteElEvaluador,
+            'numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor' => $numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor
         ]);
     }
 
