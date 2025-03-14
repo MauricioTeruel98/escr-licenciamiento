@@ -757,6 +757,13 @@ class ImportController extends Controller
                         'direccion_empresa' => $additionalData['location_exact'] ?? null,
                         'asignado_proceso_nombre' => $additionalData['general_manager'] ?? null,
                         'representante_nombre' => $additionalData['legal_representative'] ?? null,
+                        'nombre_comercial' => $company->name ?? null,
+                        'sitio_web' => $company->website ?? null,
+                        'sector' => $company->sector ?? null,
+                        'provincia' => $company->provincia ?? null,
+                        'actividad_comercial' => $company->commercial_activity ?? null,
+                        'telefono_1' => $company->phone ?? null,
+                        'telefono_2' => $company->mobile ?? null,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ];
