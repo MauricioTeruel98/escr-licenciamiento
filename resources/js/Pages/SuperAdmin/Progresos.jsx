@@ -16,19 +16,19 @@ export default function Progresos() {
     });
 
     const columns = [
-        { 
-            key: 'nombre', 
+        {
+            key: 'nombre',
             label: 'Nombre',
             render: (item) => (
                 <div className="font-medium text-gray-900">{item.nombre}</div>
             )
         },
-        { 
-            key: 'estado', 
+        {
+            key: 'estado',
             label: 'Estado',
             render: (item) => {
                 let colorClass = '';
-                
+
                 switch (item.estado) {
                     case 'Auto-evaluación':
                         colorClass = 'text-yellow-800 border-yellow-200 bg-yellow-50';
@@ -45,13 +45,16 @@ export default function Progresos() {
                     case 'Evaluación Completada':
                         colorClass = 'text-indigo-800 border-indigo-200 bg-indigo-50';
                         break;
+                    case 'Evaluación Calificada':
+                        colorClass = 'text-blue-800 border-blue-200 bg-blue-50';
+                        break;
                     case 'Evaluado':
                         colorClass = 'text-green-800 border-green-200 bg-green-50';
                         break;
                     default:
                         colorClass = 'text-gray-800 border-gray-200 bg-gray-50';
                 }
-                
+
                 return (
                     <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${colorClass}`}>
                         {item.estado}
@@ -199,7 +202,7 @@ export default function Progresos() {
                     columns={columns}
                     data={empresas}
                     onSearch={handleSearch}
-                    onSort={() => {}}
+                    onSort={() => { }}
                     pagination={pagination}
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}

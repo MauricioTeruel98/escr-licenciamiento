@@ -13,7 +13,7 @@ class ProgresosController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $query = Company::query()
-            ->select('id', 'name as nombre', 'authorized', 'estado_eval')
+            ->select('id', 'name as nombre', 'authorized', 'estado_eval', 'fecha_calificacion_evaluador')
             ->orderBy('id', 'desc')
             ->withCount(['indicatorAnswers', 'indicatorAnswersEvaluation'])
             ->with('autoEvaluationResult');
@@ -53,9 +53,8 @@ class ProgresosController extends Controller
                     $company->autoEvaluationResult->form_sended : false,
                 'fecha_inicio' => $company->autoEvaluationResult ? 
                     $company->autoEvaluationResult->created_at->format('d/m/Y') : null,
-                'fecha_fin' => $company->autoEvaluationResult && 
-                    $company->autoEvaluationResult->fecha_aprobacion ? 
-                    $company->autoEvaluationResult->fecha_aprobacion->format('d/m/Y') : null,
+                'fecha_fin' => $company->fecha_calificacion_evaluador ? 
+                    $company->fecha_calificacion_evaluador->format('d/m/Y') : null,
             ];
         }));
     }

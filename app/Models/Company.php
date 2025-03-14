@@ -25,12 +25,14 @@ class Company extends Model
         'autoeval_ended',
         'estado_eval',
         'authorized_by_super_admin',
-        'old_id'
+        'old_id',
+        'fecha_calificacion_evaluador'
     ];
 
     protected $casts = [
         'is_exporter' => 'boolean',
         'autoeval_ended' => 'boolean',
+        'fecha_calificacion_evaluador' => 'datetime',
     ];
 
     public function users()
@@ -104,6 +106,8 @@ class Company extends Model
                 return 'Evaluación Completada';
             case 'evaluado':
                 return 'Evaluado';
+            case 'evaluacion-calificada':
+                return 'Evaluación Calificada';
             default:
                 return 'No aplica';
         }

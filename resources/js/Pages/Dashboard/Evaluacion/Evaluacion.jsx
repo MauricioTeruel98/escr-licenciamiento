@@ -306,10 +306,10 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         const newApprovals = { ...approvals };
         const wasApproved = newApprovals[questionId];
         const wasEvaluated = wasApproved !== undefined;
-        
+
         newApprovals[questionId] = value;
         setApprovals(newApprovals);
-        
+
         // Actualizar contadores para la nota dinámica
         if (!wasEvaluated) {
             // Si es la primera evaluación de esta pregunta
@@ -338,7 +338,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             // Calcular nota general
             const newScore = Math.round((totalApprovedQuestions / totalEvaluatedQuestions) * 100);
             setDynamicScore(newScore);
-            
+
             // Calcular nota específica para este valor
             const newScoreForValue = Math.round(
                 (totalApprovedQuestionsForValue / numeroDePreguntasQueRespondioLaEmpresaPorValor) * 100
@@ -803,7 +803,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             {subcategories[currentSubcategoryIndex].indicators.map(indicator => (
                                 <div key={indicator.id} className="space-y-8">
                                     {/* Cabecera del Indicador */}
-                                    <div className={`bg-gray-50 p-6 rounded-xl border border-gray-200 space-y-8 ${indicator.binding ? 'bg-red-50/70 ring-1 ring-red-100' : ''}`}>
+                                    <div className={`bg-gray-50 p-6 rounded-xl border border-gray-200 space-y-8 ${indicator.binding ? 'bg-amber-50/60 ring-1 ring-amber-100' : ''}`}>
                                         <div className="space-y-2">
                                             <div className="inline-block">
                                                 <span className="bg-green-50 text-green-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-green-600/20">
@@ -836,8 +836,13 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 name={`question-${question.id}`}
                                                                 value="1"
                                                                 checked={answers[question.id]?.value === "1"}
-                                                                onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                                disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada'}
+                                                                onChange={(e) => handleAnswer(
+                                                                    question.id,
+                                                                    e.target.value,
+                                                                    answers[question.id]?.description || '',
+                                                                    answers[question.id]?.files || []
+                                                                )}
+                                                                disabled={isEvaluador ? (company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada') : (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada')}
                                                                 className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                             />
                                                             <span className="text-gray-900">Sí</span>
@@ -849,8 +854,13 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 name={`question-${question.id}`}
                                                                 value="0"
                                                                 checked={answers[question.id]?.value === "0"}
-                                                                onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                                disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada'}
+                                                                onChange={(e) => handleAnswer(
+                                                                    question.id,
+                                                                    e.target.value,
+                                                                    answers[question.id]?.description || '',
+                                                                    answers[question.id]?.files || []
+                                                                )}
+                                                                disabled={isEvaluador ? (company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada') : (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada')}
                                                                 className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                             />
                                                             <span className="text-gray-900">No</span>
@@ -884,7 +894,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     });
                                                                 }
                                                             }}
-                                                            disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada'}
+                                                            disabled={isEvaluador ? (company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada') : (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada')}
                                                             maxLength={240}
                                                             className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none disabled:bg-gray-100 disabled:text-gray-500 ${validationErrors[`description-${question.id}`] ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
                                                                 }`}
@@ -950,7 +960,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                 </div>
 
                                                 {/* Checkbox de aprobación para evaluadores */}
-                                                {isEvaluador && (
+                                                {isEvaluador || auth.user.role === 'super_admin' && (
                                                     <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200 space-y-4">
                                                         <div className="flex items-center gap-2">
                                                             <label className="text-sm font-medium text-gray-900">
@@ -1044,26 +1054,80 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                 </button>
                             )}
                             <div className="ml-auto">
-                                <button
-                                    onClick={isLastSubcategory ? handleFinish : handleContinue}
-                                    disabled={(isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()) || loading}
-                                    className={`inline-flex items-center px-4 py-2 rounded-md ${(isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()) || loading
-                                        ? 'bg-gray-400 cursor-not-allowed'
-                                        : 'bg-green-600 hover:bg-green-700'
-                                        } text-white`}
-                                >
-                                    {loading ? (
-                                        <>
-                                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            Procesando...
-                                        </>
+                                {
+                                    isEvaluador && (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluacion-calificada') ? (
+                                        <button
+                                            onClick={isLastSubcategory ? handleFinish : handleContinue}
+                                            disabled={(isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()) || loading}
+                                            className={`inline-flex items-center px-4 py-2 rounded-md ${(isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()) || loading
+                                                ? 'bg-gray-400 cursor-not-allowed'
+                                                : 'bg-green-600 hover:bg-green-700'
+                                                } text-white`}
+                                        >
+                                            {loading ? (
+                                                <>
+                                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Procesando...
+                                                </>
+                                            ) : (
+                                                isLastSubcategory ? 'Finalizar' : 'Continuar'
+                                            )}
+                                        </button>
                                     ) : (
-                                        isLastSubcategory ? 'Finalizar' : 'Continuar'
-                                    )}
-                                </button>
+                                        <>
+                                            {
+                                                isEvaluador && (
+                                                    <button
+                                                        disabled={true}
+                                                        className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 disabled:cursor-not-allowed"
+                                                    >
+                                                        Ya finalizaste la evaluación
+                                                    </button>
+                                                )
+                                            }
+                                        </>
+                                    )
+                                }
+                                {
+                                    !isEvaluador && (company.estado_eval === 'evaluacion' || company.estado_eval === 'evaluacion-pendiente') ? (
+                                        <button
+                                            onClick={isLastSubcategory ? handleFinish : handleContinue}
+                                            disabled={(isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()) || loading}
+                                            className={`inline-flex items-center px-4 py-2 rounded-md ${(isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()) || loading
+                                                ? 'bg-gray-400 cursor-not-allowed'
+                                                : 'bg-green-600 hover:bg-green-700'
+                                                } text-white`}
+                                        >
+                                            {loading ? (
+                                                <>
+                                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Procesando...
+                                                </>
+                                            ) : (
+                                                isLastSubcategory ? 'Finalizar' : 'Continuar'
+                                            )}
+                                        </button>
+                                    ) : (
+                                        <>
+                                            {
+                                                !isEvaluador && (
+                                                    <button
+                                                        disabled={true}
+                                                        className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 disabled:cursor-not-allowed"
+                                                    >
+                                                        Ya finalizaste la evaluación
+                                                    </button>
+                                                )
+                                            }
+                                        </>
+                                    )
+                                }
                             </div>
                         </div>
 

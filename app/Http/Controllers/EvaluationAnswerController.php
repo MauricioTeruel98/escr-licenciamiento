@@ -481,29 +481,74 @@ class EvaluationAnswerController extends Controller
                             'fecha_evaluacion' => now()
                         ]
                     );
-
-                    // Verificar si este es el último valor
-                    /*
-                    $isLastValue = Value::where('is_active', true)
-                        ->orderBy('id', 'desc')
-                        ->first()->id == $request->value_id;
-
-                    if ($isLastValue) {
-                        $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
-                        $superAdminUser = User::where('role', 'super_admin')->first();
-
-
-                        $companyName = $user->company->name; // Obtener el nombre de la empresa
-
-                        if ($adminUser) {
-                            $adminUser->notify(new EvaluationCalificatedNotification($user, $companyName));
+                    
+                    // NUEVO: Permitir que el evaluador actualice la respuesta, descripción y evidencias
+                    // Inicializar array de rutas de archivo
+                    $filePaths = [];
+                    
+                    // Obtener respuesta existente para preservar archivos si no hay nuevos
+                    $existingAnswer = IndicatorAnswerEvaluation::where('company_id', $user->company_id)
+                        ->where('evaluation_question_id', $questionId)
+                        ->first();
+                        
+                    if ($existingAnswer) {
+                        // Mantener archivos existentes si no se proporcionan nuevos
+                        if (empty($answerData['files']) && empty($answerData['existing_files'])) {
+                            $filePaths = json_decode($existingAnswer->file_path, true) ?: [];
+                        } else {
+                            // Mantener archivos existentes si se especifican
+                            if (isset($answerData['existing_files']) && is_array($answerData['existing_files'])) {
+                                foreach ($answerData['existing_files'] as $existingFile) {
+                                    $fileData = json_decode($existingFile, true);
+                                    if (isset($fileData['path'])) {
+                                        $filePaths[] = $fileData['path'];
+                                    }
+                                }
+                            }
+                            
+                            // Agregar nuevos archivos
+                            if (isset($answerData['files']) && is_array($answerData['files'])) {
+                                foreach ($answerData['files'] as $file) {
+                                    if ($file instanceof \Illuminate\Http\UploadedFile) {
+                                        $fileName = time() . '_' . $file->getClientOriginalName();
+                                        $path = $file->storeAs(
+                                            'evaluation-files/company_' . $user->company_id,
+                                            $fileName,
+                                            'public'
+                                        );
+                                        $filePaths[] = $path;
+                                    }
+                                }
+                            }
                         }
-                        if ($superAdminUser) {
-                            $superAdminUser->notify(new EvaluationCalificatedNotificationSuperAdmin($user, $companyName));
-                        }
-                    }*/
+                        
+                        // Actualizar la respuesta con los datos proporcionados por el evaluador
+                        $existingAnswer->update([
+                            'answer' => $answerData['value'] ?? $existingAnswer->answer,
+                            'description' => $answerData['description'] ?? $existingAnswer->description,
+                            'file_path' => json_encode($filePaths),
+                            'modified_by_evaluator' => true, // Marcar como modificado por evaluador
+                            'updated_at' => now()
+                        ]);
+                        
+                        // Guardar en $savedAnswers para devolver al frontend
+                        $savedAnswers[$questionId] = [
+                            'value' => $existingAnswer->answer,
+                            'description' => $existingAnswer->description,
+                            'files' => array_map(function ($path) {
+                                return [
+                                    'name' => basename($path),
+                                    'path' => $path,
+                                    'size' => file_exists(storage_path('app/public/' . $path)) ?
+                                        filesize(storage_path('app/public/' . $path)) : 0,
+                                    'type' => mime_content_type(storage_path('app/public/' . $path)) ?? 'application/octet-stream'
+                                ];
+                            }, $filePaths),
+                            'evaluator_comment' => $answerData['evaluator_comment'] ?? null,
+                            'approved' => $answerData['approved'] ?? null
+                        ];
+                    }
 
-                    // No continuar con el proceso de guardar respuestas si es evaluador
                     continue;
                 }
 
@@ -908,6 +953,7 @@ class EvaluationAnswerController extends Controller
             $this->markNotificationsAsSent($user->company_id, $request->value_id, 'evaluado');
         }
         $company->estado_eval = 'evaluado';
+        $company->fecha_calificacion_evaluador = now();
         $company->save();
 
         return response()->json([
