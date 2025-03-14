@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Models\Company;
 use Illuminate\Http\Request;
-
+use App\Models\InfoAdicionalEmpresa;
 class CompanyController extends Controller
 {
     public function edit()
@@ -76,6 +76,19 @@ class CompanyController extends Controller
 
         $company = Company::find(auth()->user()->company_id);
         $company->update($validated);
+
+        $info_adicional = InfoAdicionalEmpresa::where('company_id', $company->id)->first();
+
+        if ($info_adicional) {
+            $info_adicional->nombre_comercial = $validated['name'];
+            $info_adicional->sitio_web = $validated['website'];
+            $info_adicional->sector = $validated['sector'];
+            $info_adicional->provincia = $validated['provincia'];
+            $info_adicional->actividad_comercial = $validated['commercial_activity'];
+            $info_adicional->telefono_1 = $validated['phone'];
+            $info_adicional->telefono_2 = $validated['mobile'];
+            $info_adicional->save();
+        }
 
         return redirect()->back()->with('success', 'La información de la empresa ha sido actualizada exitosamente.');
     }

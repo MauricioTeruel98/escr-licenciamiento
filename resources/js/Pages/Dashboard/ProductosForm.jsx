@@ -65,7 +65,10 @@ export default function ProductosForm({
                 className="w-full p-6 flex justify-between items-center text-left"
             >
                 <div>
-                    <h2 className="text-xl font-semibold">Licencia de producto</h2>
+                    <div className="flex items-center">
+                        <h2 className="text-xl font-semibold">Licencia de producto</h2>
+                        <p className="text-xs text-gray-600 ml-3"><span className="text-red-500">*</span>(Debe subir al menos un producto para poder continuar)</p>
+                    </div>
                     <p className="text-xs text-gray-600 mt-2">Si su empresa desea utilizar el sello de esencial COSTA RICA en sus productos, complete la siguiente información</p>
                 </div>
                 <svg
@@ -77,7 +80,7 @@ export default function ProductosForm({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
             </button>
-            
+
             {/* Contenido de la sección (visible solo cuando está expandida) */}
             {seccionesExpandidas.productos && (
                 <div className="p-6 pt-0">
@@ -247,7 +250,7 @@ export default function ProductosForm({
                         {
                             ((dataAutoEvaluationResult && dataAutoEvaluationResult.form_sended == 1) || (!dataAutoEvaluationResult && autoEvaluationResult && autoEvaluationResult.form_sended == 1)) && company.estado_eval == "auto-evaluacion" && (
                                 <div>
-                                    
+
                                 </div>
                             )
                         }

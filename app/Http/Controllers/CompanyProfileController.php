@@ -280,6 +280,19 @@ class CompanyProfileController extends Controller
 
             DB::commit();
 
+            $company = Company::find($companyId);
+
+            if ($company) {
+                $company->name = $allData['nombre_comercial'];
+                $company->website = $allData['sitio_web'];
+                $company->sector = $allData['sector'];
+                //$company->provincia = $allData['provincia'];
+                $company->commercial_activity = $allData['actividad_comercial'];
+                $company->phone = $allData['telefono_1'];
+                $company->mobile = $allData['telefono_2'];
+                $company->save();
+            }
+
             // Modificar cómo retornamos los datos para incluir las URLs
             $responseData = $allData;
             if (isset($responseData['logo_path'])) {
