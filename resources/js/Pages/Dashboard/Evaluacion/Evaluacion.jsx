@@ -820,8 +820,6 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                             </div>
                                         </div>
 
-                                        {console.log(indicator)}
-
                                         {/* Preguntas de Evaluación */}
                                         {indicator.evaluation_questions.map((question, index) => (
                                             <div key={index} className="space-y-6 border-b border-gray-200 pb-6 last:border-b-0">
@@ -839,7 +837,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 value="1"
                                                                 checked={answers[question.id]?.value === "1"}
                                                                 onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                                disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
+                                                                disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada'}
                                                                 className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                             />
                                                             <span className="text-gray-900">Sí</span>
@@ -852,7 +850,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 value="0"
                                                                 checked={answers[question.id]?.value === "0"}
                                                                 onChange={(e) => handleAnswer(question.id, e.target.value)}
-                                                                disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
+                                                                disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada'}
                                                                 className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                             />
                                                             <span className="text-gray-900">No</span>
@@ -886,7 +884,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     });
                                                                 }
                                                             }}
-                                                            disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
+                                                            disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada'}
                                                             maxLength={240}
                                                             className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none disabled:bg-gray-100 disabled:text-gray-500 ${validationErrors[`description-${question.id}`] ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
                                                                 }`}
@@ -941,7 +939,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     );
                                                                 }
                                                             }}
-                                                            disabled={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado'}
+                                                            readOnly={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada'}
                                                         />
                                                         {validationErrors[`files-${question.id}`] && (
                                                             <p className="mt-1 text-sm text-red-600">
