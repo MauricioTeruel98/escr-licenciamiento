@@ -19,7 +19,8 @@ class ProgresosController extends Controller
             ->with('autoEvaluationResult');
 
         if ($search) {
-            $query->where('name', 'like', "%{$search}%");
+            $query->where('name', 'like', "%{$search}%")
+                ->orWhere('estado_eval', 'like', "%{$search}%");
         }
 
         $companies = $query->paginate($perPage);
