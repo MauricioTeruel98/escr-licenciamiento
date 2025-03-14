@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\MigratedPasswordController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -33,6 +34,12 @@ Route::middleware('guest')->group(function () {
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
+
+    Route::get('check-migration', [MigratedPasswordController::class, 'checkMigration'])
+        ->name('users.check-migration');
+
+    Route::post('mark-user-migrated', [MigratedPasswordController::class, 'markUserAsMigrated'])
+        ->name('users.mark-migrated');
 });
 
 Route::middleware('auth')->group(function () {

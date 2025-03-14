@@ -61,6 +61,13 @@ export default function ForgotPassword({ status }) {
                     y te enviaremos un enlace para que puedas crear una nueva contraseña.
                 </div>
 
+                <div className="mb-6 text-sm text-gray-700 bg-blue-50 p-3 rounded-md border border-blue-200">
+                    <p className="font-medium">Medida de seguridad:</p>
+                    <p>Por tu seguridad, una vez que inicies el proceso de recuperación, el correo electrónico
+                    no podrá ser modificado en los pasos siguientes.</p>
+                    <p>Abre el correo en el mismo navegador que usaste para iniciar sesión.</p>
+                </div>
+
                 {status && (
                     <div className="mb-4 text-sm font-medium text-green-600">
                         {status}

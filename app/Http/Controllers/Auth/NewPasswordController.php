@@ -19,11 +19,21 @@ class NewPasswordController extends Controller
 {
     /**
      * Display the password reset view.
+     *
+     * @return \Inertia\Response|\Illuminate\Http\RedirectResponse
      */
-    public function create(Request $request): Response
+    public function create(Request $request)
     {
         $token = $request->route('token');
-        $email = $request->email;
+        
+        // Primero intenta obtener el email de la sesión, si no está disponible, usa el del request
+        $email = session('password_reset_email', $request->email);
+        
+        // Si no hay un email en la sesión ni en el request, redirigir a la página de solicitud de restablecimiento
+        if (!$email) {
+            return redirect()->route('password.request')
+                ->with('error', 'Por razones de seguridad, debe iniciar el proceso de restablecimiento de contraseña desde el principio.');
+        }
         
         // Verificar si el token existe y no ha expirado
         $tokenRecord = DB::table(config('auth.passwords.users.table'))
@@ -53,7 +63,6 @@ class NewPasswordController extends Controller
     {
         $request->validate([
             'token' => 'required',
-            'email' => 'required|email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ], [
             'password.confirmed' => 'La confirmación de la contraseña no coincide.',
@@ -62,9 +71,19 @@ class NewPasswordController extends Controller
             'password.numbers' => 'La contraseña debe contener al menos un número.',
         ]);
 
+        // Obtener el email de la sesión para mayor seguridad
+        $email = session('password_reset_email');
+        
+        // Si no hay un email en la sesión, devolver un error
+        if (!$email) {
+            throw ValidationException::withMessages([
+                'email' => ['Por razones de seguridad, debe iniciar el proceso de restablecimiento de contraseña desde el principio.'],
+            ]);
+        }
+
         // Verificar si el token existe y no ha expirado
         $tokenRecord = DB::table(config('auth.passwords.users.table'))
-            ->where('email', $request->email)
+            ->where('email', $email)
             ->first();
             
         // Si no se encuentra el token o ha expirado
@@ -74,11 +93,19 @@ class NewPasswordController extends Controller
             ]);
         }
 
+        // Reemplazar el email del request con el de la sesión para mayor seguridad
+        $resetData = [
+            'email' => $email,
+            'password' => $request->password,
+            'password_confirmation' => $request->password_confirmation,
+            'token' => $request->token,
+        ];
+
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
         // database. Otherwise we will parse the error and return the response.
         $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
+            $resetData,
             function ($user) use ($request) {
                 $user->forceFill([
                     'password' => Hash::make($request->password),
@@ -86,6 +113,15 @@ class NewPasswordController extends Controller
                 ])->save();
 
                 event(new PasswordReset($user));
+                
+                // Limpiar la sesión después de un restablecimiento exitoso
+                session()->forget('password_reset_email');
+                
+                // Marcar al usuario como migrado si corresponde
+                if ($user->from_migration) {
+                    $user->from_migration = 0;
+                    $user->save();
+                }
             }
         );
 

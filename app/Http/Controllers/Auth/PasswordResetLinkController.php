@@ -35,6 +35,9 @@ class PasswordResetLinkController extends Controller
             'email.regex' => 'El correo no puede contener espacios ni caracteres especiales excepto guiones, arroba y punto.'
         ]);
 
+        // Guardar el email en la sesión para usarlo en el proceso de restablecimiento
+        $request->session()->put('password_reset_email', $request->email);
+
         $status = Password::sendResetLink(
             $request->only('email')
         );

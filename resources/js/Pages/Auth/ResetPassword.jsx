@@ -63,9 +63,9 @@ export default function ResetPassword({ token, email, tokenExpired }) {
                                 type="email"
                                 name="email"
                                 value={data.email}
-                                className="w-full rounded-md border border-gray-300 p-2"
+                                className="w-full rounded-md border border-gray-300 p-2 bg-gray-100"
                                 autoComplete="username"
-                                onChange={(e) => setData('email', e.target.value)}
+                                readOnly
                             />
                             <InputError message={errors.email} className="mt-2" />
                         </div>
