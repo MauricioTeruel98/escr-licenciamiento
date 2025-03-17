@@ -1699,18 +1699,23 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 }
             }
         }
-        // Validar año (no puede ser mayor a 2025)
-        else if (valorFormateado.length > 6) {
+        // Validar que la fecha no sea posterior a la actual
+        else if (valorFormateado.length >= 10) {
             const partes = valorFormateado.split('/');
-            if (partes.length > 2) {
-                const año = partes[2];
-                if (año.length === 4 && parseInt(año) > 2025) {
-                    const dia = partes[0];
-                    const mes = partes[1];
-                    fechaFormateada = dia + '/' + mes + '/2025';
+            if (partes.length === 3) {
+                const fechaIngresada = new Date(partes[2], partes[1] - 1, partes[0]);
+                const fechaActual = new Date();
+                
+                if (fechaIngresada > fechaActual) {
+                    // Si la fecha es posterior a la actual, usar la fecha actual
+                    const diaActual = fechaActual.getDate().toString().padStart(2, '0');
+                    const mesActual = (fechaActual.getMonth() + 1).toString().padStart(2, '0');
+                    const anioActual = fechaActual.getFullYear();
+                    
+                    fechaFormateada = `${diaActual}/${mesActual}/${anioActual}`;
                     setErrors(prevErrors => ({
                         ...prevErrors,
-                        [name]: 'El año no puede ser mayor a 2025'
+                        [name]: 'No se permite una fecha posterior a la actual. Se ha establecido la fecha actual.'
                     }));
                 }
             }
@@ -1901,7 +1906,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
     const isEmptyField = (fieldName) => {
         const value = data[fieldName];
-        return !value || value.trim() === '';
+        return !value;
     };
 
     // Agregar después de la definición de camposRequeridos
@@ -3502,7 +3507,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                         company={company}
                     />
 
-                    {getCamposFaltantes().length > 0 && (
+                    {/* {getCamposFaltantes().length > 0 && (
                         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 my-4">
                             <div className="flex">
                                 <div className="flex-shrink-0">
@@ -3524,7 +3529,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                 </div>
                             </div>
                         </div>
-                    )}
+                    )} */}
                 </form>
             </div>
 
