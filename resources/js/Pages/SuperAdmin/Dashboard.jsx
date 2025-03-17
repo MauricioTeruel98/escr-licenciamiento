@@ -15,21 +15,43 @@ export default function SuperAdminDashboard({ auth }) {
     const [selectedCompany, setSelectedCompany] = useState(null);
     const [activeCompany, setActiveCompany] = useState(null);
     const [query, setQuery] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         fetchDashboardStats();
-        fetchCompanies();
         fetchActiveCompany();
     }, []);
 
-    const filteredCompanies = query === ''
-        ? companies
-        : companies.filter((company) =>
-            company.name
-                .toLowerCase()
-                .replace(/\s+/g, '')
-                .includes(query.toLowerCase().replace(/\s+/g, ''))
-        );
+    useEffect(() => {
+        const searchTimeout = setTimeout(() => {
+            if (query.length >= 2) {
+                searchCompanies(query);
+            } else {
+                setCompanies([]);
+            }
+        }, 300);
+
+        return () => clearTimeout(searchTimeout);
+    }, [query]);
+
+    const searchCompanies = async (searchQuery) => {
+        if (!searchQuery) return;
+        
+        setIsLoading(true);
+        try {
+            const response = await axios.get(`/api/companies/search`, {
+                params: {
+                    query: searchQuery,
+                    limit: 100
+                }
+            });
+            setCompanies(response.data);
+        } catch (error) {
+            console.error('Error al buscar empresas:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const fetchDashboardStats = async () => {
         try {
@@ -37,15 +59,6 @@ export default function SuperAdminDashboard({ auth }) {
             setStats(response.data);
         } catch (error) {
             console.error('Error al cargar estadísticas:', error);
-        }
-    };
-
-    const fetchCompanies = async () => {
-        try {
-            const response = await axios.get('/api/companies/list');
-            setCompanies(response.data);
-        } catch (error) {
-            console.error('Error al cargar empresas:', error);
         }
     };
 
@@ -118,7 +131,7 @@ export default function SuperAdminDashboard({ auth }) {
                                                 className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
                                                 displayValue={(company) => company?.name || ''}
                                                 onChange={(event) => setQuery(event.target.value)}
-                                                placeholder="Buscar empresa..."
+                                                placeholder="Escriba al menos 2 caracteres para buscar..."
                                             />
                                             <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
                                                 <ChevronUpDownIcon
@@ -135,12 +148,16 @@ export default function SuperAdminDashboard({ auth }) {
                                             afterLeave={() => setQuery('')}
                                         >
                                             <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-10">
-                                                {filteredCompanies.length === 0 && query !== '' ? (
+                                                {isLoading ? (
+                                                    <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
+                                                        Buscando...
+                                                    </div>
+                                                ) : companies.length === 0 && query !== '' ? (
                                                     <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
                                                         No se encontraron empresas.
                                                     </div>
                                                 ) : (
-                                                    filteredCompanies.map((company) => (
+                                                    companies.map((company) => (
                                                         <Combobox.Option
                                                             key={company.id}
                                                             className={({ active }) =>

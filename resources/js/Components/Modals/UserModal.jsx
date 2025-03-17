@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, CheckIcon } from 'lucide-react';
 import axios from 'axios';
 
 export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
@@ -22,6 +22,8 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
     const [errors, setErrors] = useState({});
     const [assignedCompanies, setAssignedCompanies] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [companySearchTerm, setCompanySearchTerm] = useState('');
+    const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
 
     const roles = [
         { id: 'user', name: 'Usuario' },
@@ -134,6 +136,12 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
     const filteredCompanies = searchTerm 
         ? companies.filter(company => 
             company.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        : companies;
+
+    // Filtrar empresas para el buscador
+    const filteredCompaniesForSelect = companySearchTerm
+        ? companies.filter(company =>
+            company.name.toLowerCase().includes(companySearchTerm.toLowerCase()))
         : companies;
 
     if (!isOpen) return null;
@@ -298,25 +306,75 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
 
                                 {/* Empresa - Solo mostrar si NO es evaluador */}
                                 {formData.role !== 'evaluador' && (
-                                    <div>
+                                    <div className="relative">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Empresa
                                         </label>
-                                        <select
-                                            value={formData.company_id}
-                                            onChange={(e) => setFormData({...formData, company_id: e.target.value})}
-                                            className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm ${
-                                                errors.company_id ? 'border-red-300' : ''
-                                            }`}
-                                            required
-                                        >
-                                            <option value="">Seleccione una empresa</option>
-                                            {companies.map((company) => (
-                                                <option key={company.id} value={company.id}>
-                                                    {company.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm ${
+                                                    errors.company_id ? 'border-red-300' : ''
+                                                }`}
+                                                placeholder="Buscar empresa..."
+                                                value={companySearchTerm}
+                                                onChange={(e) => {
+                                                    setCompanySearchTerm(e.target.value);
+                                                    setShowCompanyDropdown(true);
+                                                }}
+                                                onFocus={() => setShowCompanyDropdown(true)}
+                                            />
+                                            {/* Mostrar el nombre de la empresa seleccionada */}
+                                            {formData.company_id && !showCompanyDropdown && (
+                                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setFormData({...formData, company_id: ''});
+                                                            setCompanySearchTerm('');
+                                                        }}
+                                                        className="text-gray-400 hover:text-gray-500"
+                                                    >
+                                                        <X className="h-5 w-5" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Dropdown de resultados */}
+                                        {showCompanyDropdown && (
+                                            <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                                                {filteredCompaniesForSelect.length > 0 ? (
+                                                    filteredCompaniesForSelect.map((company) => (
+                                                        <div
+                                                            key={company.id}
+                                                            className={`cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-green-50 ${
+                                                                formData.company_id === company.id ? 'bg-green-50' : ''
+                                                            }`}
+                                                            onClick={() => {
+                                                                setFormData({...formData, company_id: company.id});
+                                                                setCompanySearchTerm(company.name);
+                                                                setShowCompanyDropdown(false);
+                                                            }}
+                                                        >
+                                                            <span className="block truncate">
+                                                                {company.name}
+                                                            </span>
+                                                            {formData.company_id === company.id && (
+                                                                <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-green-600">
+                                                                    <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
+                                                        No se encontraron empresas
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                        
                                         {errors.company_id && (
                                             <p className="mt-1 text-sm text-red-600">{errors.company_id}</p>
                                         )}

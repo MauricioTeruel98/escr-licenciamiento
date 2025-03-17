@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ValueController;
+use App\Models\Company;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -54,3 +55,9 @@ Route::get('/provincias', function () {
 // Route::patch('companies/{company}/authorize', [CompanyAuthorizationController::class, 'authorizeCompany'])
 //     ->middleware(['auth'])
 //     ->name('companies.authorize');
+
+Route::get('/companies/search', function (Request $request) {
+    return Company::where('name', 'LIKE', '%' . $request->query('query') . '%')
+        ->limit($request->query('limit', 100))
+        ->get(['id', 'name']);
+});
