@@ -834,15 +834,13 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         // Si hay campos incompletos o no hay producto válido, no permitir form_sended = 1
         // Valida si hay al menos una foto, ya que cuando la variable fotografias no tiene elementos, se convierte en undefined
 
-        const fotografiasLength = fotografias ? fotografias.length : 0;
-
         const formularioCompleto = camposIncompletos.length === 0 && tieneProductoValido && fotografiasLength > 0 && logo;
 
-        console.log('formularioCompleto', formularioCompleto);
-        console.log('camposIncompletos', camposIncompletos);
-        console.log('tieneProductoValido', tieneProductoValido);
-        console.log('fotografiasLength', fotografiasLength);
-        console.log('logo', logo);
+        // console.log('formularioCompleto', formularioCompleto);
+        // console.log('camposIncompletos', camposIncompletos);
+        // console.log('tieneProductoValido', tieneProductoValido);
+        // console.log('fotografiasLength', fotografiasLength);
+        // console.log('logo', logo);
 
 
         try {
@@ -1971,24 +1969,75 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
     // Agregar después de la definición de isEmptyField
     const getCamposFaltantes = () => {
+        // Verificar si hay fotografías (ya sea nuevas o existentes)
+        const tieneFotografias = (imagenes.fotografias && imagenes.fotografias.length > 0) || 
+                                (infoAdicional?.fotografias_urls && infoAdicional.fotografias_urls.length > 0);
 
-        const fotografiasRequeridas = fotografiasLength > 0 ? "Fotografías" : "";
-        const logoRequerido = logo || logoActual ? "Logo" : "";
+        // Verificar si hay logo (ya sea nuevo o existente)
+        const tieneLogo = imagenes.logo || infoAdicional?.logo_url;
 
+        // Verificar si hay al menos un producto válido
+        const tieneProductoValido = data.productos && data.productos.some(
+            producto => producto.nombre?.trim() && producto.descripcion?.trim()
+        );
+
+        // Crear objeto con todos los campos requeridos
         const camposRequeridosTotales = {
             ...camposRequeridos,
-            fotografias: fotografiasRequeridas,
-            logo: logoRequerido
+            fotografias: tieneFotografias ? "ok" : "",  // Si hay fotos, marcamos como "ok"
+            logo: tieneLogo ? "ok" : "",                // Si hay logo, marcamos como "ok"
+            productos: tieneProductoValido ? "ok" : ""  // Si hay al menos un producto válido, marcamos como "ok"
         };
 
+        // Filtrar campos vacíos y mapear a sus etiquetas
         return Object.entries(camposRequeridosTotales)
-            .filter(([campo, valor]) => isEmptyField(campo))
-            .map(([campo]) => camposRequeridosEtiquetas[campo]);
+            .filter(([campo, valor]) => {
+                if (campo === 'fotografias') {
+                    return !tieneFotografias;
+                }
+                if (campo === 'logo') {
+                    return !tieneLogo;
+                }
+                if (campo === 'productos') {
+                    return !tieneProductoValido;
+                }
+                return isEmptyField(campo);
+            })
+            .map(([campo]) => {
+                // Si es el campo productos, personalizar el mensaje
+                if (campo === 'productos') {
+                    return "Al menos un producto con nombre, descripción e imagen";
+                }
+                return camposRequeridosEtiquetas[campo];
+            });
     };
 
     return (
         <DashboardLayout userName={userName} title="Perfil de Empresa">
-            <h1 className="text-4xl font-bold mt-3">Perfil de Empresa</h1>
+            <h1 className="text-4xl font-bold mt-3 flex items-center gap-4">
+                Perfil de Empresa
+                {getCamposFaltantes().length > 0 && (
+                    <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                            {getCamposFaltantes().length} campos obligatorios pendientes
+                        </span>
+                        <button
+                            onClick={() => {
+                                const element = document.querySelector('#campos-faltantes');
+                                if (element) {
+                                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }
+                            }}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                        >
+                            Ver campos
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
+            </h1>
             <div className="mx-auto py-6">
                 <form onSubmit={submit} encType="multipart/form-data" className="space-y-8">
                     {/* Sección de Información de Empresa */}
@@ -3546,8 +3595,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                         company={company}
                     />
 
-                    {/* {getCamposFaltantes().length > 0 && (
-                        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 my-4">
+                    {getCamposFaltantes().length > 0 && (
+                        <div id="campos-faltantes" className="bg-yellow-50 border-l-4 border-yellow-400 p-4 my-4">
                             <div className="flex">
                                 <div className="flex-shrink-0">
                                     <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
@@ -3568,7 +3617,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                 </div>
                             </div>
                         </div>
-                    )} */}
+                    )}
                 </form>
             </div>
 
