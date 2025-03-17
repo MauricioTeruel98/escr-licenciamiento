@@ -59,7 +59,7 @@ export default function IndicatorsIndex() {
         },
         {
             key: 'binding',
-            label: 'Vinculante',
+            label: 'Descalificatório',
             render: (item) => (
                 <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${
                     item.binding 
