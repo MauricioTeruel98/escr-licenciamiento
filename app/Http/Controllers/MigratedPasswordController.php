@@ -43,6 +43,9 @@ class MigratedPasswordController extends Controller
             return Password::INVALID_USER;
         }
 
+        // Guardar el email en la sesión antes de enviar el enlace
+        session(['password_reset_email' => $email]);
+
         // Enviar el enlace de restablecimiento utilizando el broker de contraseñas integrado de Laravel
         return Password::sendResetLink(['email' => $email]);
     }

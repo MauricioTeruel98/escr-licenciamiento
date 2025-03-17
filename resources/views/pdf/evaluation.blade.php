@@ -607,11 +607,11 @@
                                             @if ($assessment->evaluation_question_id == $question->id)
                                                 @if ($assessment->approved)
                                                     <span class="approved">Sí</span>
-                                                    <p>Comentario del evaluador: {{ $assessment->comment }}</p>
+                                                    {{-- <p>Comentario del evaluador: {{ $assessment->comment }}</p> --}}
                                                 @else
                                                     <span class="not-approved">No</span>
-                                                    <p><strong>Comentario del evaluador:</strong>
-                                                        {{ $assessment->comment }}</p>
+                                                    {{-- <p><strong>Comentario del evaluador:</strong>
+                                                        {{ $assessment->comment }}</p> --}}
                                                 @endif
                                             @endif
                                         @endforeach
@@ -620,10 +620,10 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if (isset($companyAnswers[$indicator->id]))
-                                        @foreach ($companyAnswers[$indicator->id] as $answer)
-                                            @if ($answer->evaluation_question_id == $question->id)
-                                                <p>{{ $answer->description }}</p>
+                                    @if (isset($evaluatorAssessments[$indicator->id]))
+                                        @foreach ($evaluatorAssessments[$indicator->id] as $assessment)
+                                            @if ($assessment->evaluation_question_id == $question->id)
+                                                <p>{{ $assessment->comment }}</p>
                                             @endif
                                         @endforeach
                                     @else
