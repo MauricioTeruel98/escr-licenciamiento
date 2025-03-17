@@ -495,7 +495,7 @@
             <th>Teléfono</th>
         </tr>
         <tr>
-            <td></td>
+            <td>{{ $evaluador->organismo ?? 'N/A' }}</td>
             <td>{{ $evaluador->name }} {{ $evaluador->lastname }}</td>
             <td>{{ $evaluador->cedula }}</td>
             <td>{{ $evaluador->email }}</td>

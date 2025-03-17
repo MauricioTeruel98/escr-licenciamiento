@@ -718,6 +718,43 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         }
     };
 
+    // Validar campos requeridos antes de permitir form_sended = 1
+    const camposRequeridos = {
+        nombre_comercial: data.nombre_comercial,
+        nombre_legal: data.nombre_legal,
+        descripcion_es: data.descripcion_es,
+        descripcion_en: data.descripcion_en,
+        anio_fundacion: data.anio_fundacion,
+        sitio_web: data.sitio_web,
+        tamano_empresa: data.tamano_empresa,
+        //cantidad_hombres: data.cantidad_hombres,
+        //cantidad_mujeres: data.cantidad_mujeres,
+        //cantidad_otros: data.cantidad_otros,
+        actividad_comercial: data.actividad_comercial,
+        razon_licenciamiento_es: data.razon_licenciamiento_es,
+        razon_licenciamiento_en: data.razon_licenciamiento_en,
+        proceso_licenciamiento: data.proceso_licenciamiento,
+        //observaciones: data.observaciones,
+        contacto_notificacion_nombre: data.contacto_notificacion_nombre,
+        contacto_notificacion_email: data.contacto_notificacion_email,
+        contacto_notificacion_puesto: data.contacto_notificacion_puesto,
+        contacto_notificacion_telefono: data.contacto_notificacion_telefono,
+        contacto_notificacion_celular: data.contacto_notificacion_celular,
+        asignado_proceso_nombre: data.asignado_proceso_nombre,
+        asignado_proceso_email: data.asignado_proceso_email,
+        asignado_proceso_puesto: data.asignado_proceso_puesto,
+        asignado_proceso_telefono: data.asignado_proceso_telefono,
+        asignado_proceso_celular: data.asignado_proceso_celular,
+        cedula_juridica: data.cedula_juridica,
+        // Datos del representante legal
+        representante_nombre: data.representante_nombre,
+        representante_email: data.representante_email,
+        representante_puesto: data.representante_puesto,
+        representante_cedula: data.representante_cedula,
+        representante_telefono: data.representante_telefono,
+        representante_celular: data.representante_celular
+    };
+
     const submit = async (e) => {
         e.preventDefault();
 
@@ -1862,6 +1899,49 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         }, 300);
     };
 
+    const isEmptyField = (fieldName) => {
+        const value = data[fieldName];
+        return !value || value.trim() === '';
+    };
+
+    // Agregar después de la definición de camposRequeridos
+    const camposRequeridosEtiquetas = {
+        nombre_comercial: "Nombre comercial",
+        nombre_legal: "Nombre legal",
+        descripcion_es: "Descripción en español",
+        descripcion_en: "Descripción en inglés", 
+        anio_fundacion: "Año de fundación",
+        sitio_web: "Sitio web",
+        tamano_empresa: "Tamaño de empresa",
+        actividad_comercial: "Actividad comercial",
+        razon_licenciamiento_es: "Razón de licenciamiento (Español)",
+        razon_licenciamiento_en: "Razón de licenciamiento (Inglés)",
+        proceso_licenciamiento: "Proceso de licenciamiento",
+        contacto_notificacion_nombre: "Nombre del contacto para notificaciones",
+        contacto_notificacion_email: "Email del contacto para notificaciones",
+        contacto_notificacion_puesto: "Puesto del contacto para notificaciones",
+        contacto_notificacion_telefono: "Teléfono del contacto para notificaciones",
+        contacto_notificacion_celular: "Celular del contacto para notificaciones",
+        asignado_proceso_nombre: "Nombre del contacto para proceso",
+        asignado_proceso_email: "Email del contacto para proceso",
+        asignado_proceso_puesto: "Puesto del contacto para proceso",
+        asignado_proceso_telefono: "Teléfono del contacto para proceso",
+        asignado_proceso_celular: "Celular del contacto para proceso",
+        representante_nombre: "Nombre del representante legal",
+        representante_email: "Email del representante legal",
+        representante_puesto: "Puesto del representante legal",
+        representante_cedula: "Cédula del representante legal",
+        representante_telefono: "Teléfono del representante legal",
+        representante_celular: "Celular del representante legal"
+    };
+
+    // Agregar después de la definición de isEmptyField
+    const getCamposFaltantes = () => {
+        return Object.entries(camposRequeridos)
+            .filter(([campo, valor]) => isEmptyField(campo))
+            .map(([campo]) => camposRequeridosEtiquetas[campo]);
+    };
+
     return (
         <DashboardLayout userName={userName} title="Perfil de Empresa">
             <h1 className="text-4xl font-bold mt-3">Perfil de Empresa</h1>
@@ -1898,7 +1978,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             value={data.nombre_comercial}
                                             onChange={handleChange}
                                             name="nombre_comercial"
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('nombre_comercial') ? 'border-red-500' : 'border-gray-300'
+                                                }`}
 
                                         />
                                         <InputError message={errors.nombre_comercial} />
@@ -1914,7 +1995,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             value={data.nombre_legal}
                                             onChange={handleChange}
                                             name="nombre_legal"
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 ${isEmptyField('nombre_legal') ? 'border-red-500' : 'border-gray-300'
+                                                }`}
 
                                         />
                                         <InputError message={errors.nombre_legal} />
@@ -1930,7 +2012,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             onChange={handleChange}
                                             name="descripcion_es"
                                             rows={3}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('descripcion_es') ? 'border-red-500' : 'border-gray-300'
+                                                }`}
 
                                         />
                                         <InputError message={errors.descripcion_es} />
@@ -1946,7 +2029,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             onChange={handleChange}
                                             name="descripcion_en"
                                             rows={3}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('descripcion_en') ? 'border-red-500' : 'border-gray-300'
+                                                }`}
                                         />
                                         <InputError message={errors.descripcion_en} />
                                     </div>
@@ -1960,7 +2044,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             value={data.anio_fundacion}
                                             onChange={handleAnioFundacionChange}
                                             name="anio_fundacion"
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('anio_fundacion') ? 'border-red-500' : 'border-gray-300'
+                                                }`}
                                             placeholder="DD/MM/AAAA"
                                             maxLength={10}
                                         />
@@ -1980,7 +2065,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             value={data.sitio_web}
                                             onChange={handleURLChange}
                                             name="sitio_web"
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('sitio_web') ? 'border-red-500' : 'border-gray-300'
+                                                }`}
 
                                         />
                                         <InputError message={errors.sitio_web} />
@@ -2165,7 +2251,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             value={data.tamano_empresa}
                                             onChange={handleChange}
                                             name="tamano_empresa"
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('tamano_empresa') ? 'border-red-500' : 'border-gray-300'
+                                                }`}
                                         >
                                             <option value="">Selecciona un tamaño</option>
                                             <option value="1-5">1-5</option>
@@ -2196,7 +2283,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     value={data.cantidad_hombres}
                                                     onChange={handleChange}
                                                     name="cantidad_hombres"
-                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('cantidad_hombres') ? 'border-red-500' : 'border-gray-300'
+                                                        }`}
                                                     min="0"
                                                 />
                                             </div>
@@ -2207,7 +2295,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     value={data.cantidad_mujeres}
                                                     onChange={handleChange}
                                                     name="cantidad_mujeres"
-                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('cantidad_mujeres') ? 'border-red-500' : 'border-gray-300'
+                                                        }`}
                                                     min="0"
                                                 />
                                             </div>
@@ -2218,7 +2307,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     value={data.cantidad_otros}
                                                     onChange={handleChange}
                                                     name="cantidad_otros"
-                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('cantidad_otros') ? 'border-red-500' : 'border-gray-300'
+                                                        }`}
                                                     min="0"
                                                 />
                                             </div>
@@ -2264,7 +2354,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             value={data.actividad_comercial}
                                             onChange={handleChange}
                                             name="actividad_comercial"
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none"
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('actividad_comercial') ? 'border-red-500' : 'border-gray-300'
+                                                }`}
                                             placeholder="Actividad comercial"
                                             maxLength={100}
                                             rows={2}
@@ -2340,7 +2431,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             {/* Países de exportación */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">
-                                                    ¿A qué países?<span className="text-red-500">*</span>
+                                                    ¿A qué países?
                                                 </label>
                                                 <div className="mb-2">
                                                     <input
@@ -2363,7 +2454,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             {/* Producto o servicio */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">
-                                                    Mencione el producto o servicio<span className="text-red-500">*</span>
+                                                    Mencione el producto o servicio
                                                 </label>
                                                 <input
                                                     type="text"
@@ -2379,7 +2470,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             {/* Rango de exportaciones */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">
-                                                    ¿En qué rango se ubica su empresa en exportaciones anuales medidas en dólares?<span className="text-red-500">*</span>
+                                                    ¿En qué rango se ubica su empresa en exportaciones anuales medidas en dólares?
                                                 </label>
                                                 <select
                                                     value={data.rango_exportaciones}
@@ -2401,7 +2492,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             {/* Planes de expansión */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">
-                                                    ¿Cuáles son los planes de la empresa en los próximos 5 años para la expansión y/o internacionalización?<span className="text-red-500">*</span>
+                                                    ¿Cuáles son los planes de la empresa en los próximos 5 años para la expansión y/o internacionalización?
                                                 </label>
                                                 <textarea
                                                     value={data.planes_expansion}
@@ -2471,7 +2562,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                         <div className="mt-2">
                                             <label
                                                 htmlFor="fotografias-input"
-                                                className="border border-gray-300 rounded-md p-4 block cursor-pointer"
+                                                className={`border border-gray-300 rounded-md p-4 block cursor-pointer`}
                                                 onDragOver={handleDragOver}
                                                 onDragLeave={handleDragLeave}
                                                 onDrop={(e) => handleDrop(e, 'fotografias')}
@@ -2539,7 +2630,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                         <div className="mt-2">
                                             <label
                                                 htmlFor="logo-input"
-                                                className="border border-gray-300 rounded-md p-4 block cursor-pointer"
+                                                className={`border border-gray-300 rounded-md p-4 block cursor-pointer`}
                                                 onDragOver={handleDragOver}
                                                 onDragLeave={handleDragLeave}
                                                 onDrop={(e) => handleDrop(e, 'logo')}
@@ -2765,7 +2856,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             onChange={handleChange}
                                             name="razon_licenciamiento_es"
                                             rows={4}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('razon_licenciamiento_es') ? 'border-red-500' : 'border-gray-300'
+                                                }`}
                                             placeholder="Respuesta"
 
                                         />
@@ -2781,7 +2873,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             onChange={handleChange}
                                             name="razon_licenciamiento_en"
                                             rows={4}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('razon_licenciamiento_en') ? 'border-red-500' : 'border-gray-300'
+                                                }`}
                                             placeholder="Answer"
 
                                         />
@@ -2797,7 +2890,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             onChange={handleChange}
                                             name="proceso_licenciamiento"
                                             rows={4}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('proceso_licenciamiento') ? 'border-red-500' : 'border-gray-300'
+                                                }`}
                                             placeholder="Respuesta"
 
                                         />
@@ -2837,7 +2931,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">
-                                                Observaciones<span className="text-red-500">*</span>
+                                                Observaciones
                                             </label>
                                             <textarea
                                                 value={data.observaciones}
@@ -2908,7 +3002,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 value={data.contacto_notificacion_nombre}
                                                 onChange={handleChange}
                                                 name="contacto_notificacion_nombre"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('contacto_notificacion_nombre') ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
 
                                             />
                                             <InputError message={errors.contacto_notificacion_nombre} />
@@ -2920,7 +3015,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 value={data.contacto_notificacion_email}
                                                 onChange={handleChange}
                                                 name="contacto_notificacion_email"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('contacto_notificacion_email') ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
 
                                             />
                                             <InputError message={errors.contacto_notificacion_email} />
@@ -2932,7 +3028,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 value={data.contacto_notificacion_puesto}
                                                 onChange={handleChange}
                                                 name="contacto_notificacion_puesto"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('contacto_notificacion_puesto') ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
 
                                             />
                                             <InputError message={errors.contacto_notificacion_puesto} />
@@ -2962,11 +3059,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     value={data.contacto_notificacion_telefono}
                                                     onChange={handleChange}
                                                     name="contacto_notificacion_telefono"
-                                                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 ${esCampoFaltante('contacto_notificacion_telefono') ? 'border-red-500 bg-red-50' : ''}`}
+                                                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('contacto_notificacion_telefono') ? 'border-red-500' : 'border-gray-300'
+                                                        }`}
                                                 />
-                                                {esCampoFaltante('contacto_notificacion_telefono') && (
-                                                    <p className="mt-1 text-sm text-red-500">Este campo es obligatorio para completar el formulario</p>
-                                                )}
                                                 <InputError message={errors.contacto_notificacion_telefono} />
                                             </div>
                                             <div>
@@ -2976,11 +3071,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     value={data.contacto_notificacion_celular}
                                                     onChange={handleChange}
                                                     name="contacto_notificacion_celular"
-                                                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 ${esCampoFaltante('contacto_notificacion_celular') ? 'border-red-500 bg-red-50' : ''}`}
+                                                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('contacto_notificacion_celular') ? 'border-red-500' : 'border-gray-300'
+                                                        }`}
                                                 />
-                                                {esCampoFaltante('contacto_notificacion_celular') && (
-                                                    <p className="mt-1 text-sm text-red-500">Este campo es obligatorio para completar el formulario</p>
-                                                )}
                                                 <InputError message={errors.contacto_notificacion_celular} />
                                             </div>
                                         </div>
@@ -2998,7 +3091,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 value={data.asignado_proceso_nombre}
                                                 onChange={handleChange}
                                                 name="asignado_proceso_nombre"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('asignado_proceso_nombre') ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
 
                                             />
                                             <InputError message={errors.asignado_proceso_nombre} />
@@ -3010,7 +3104,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 value={data.asignado_proceso_email}
                                                 onChange={handleChange}
                                                 name="asignado_proceso_email"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('asignado_proceso_email') ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
 
                                             />
                                             <InputError message={errors.asignado_proceso_email} />
@@ -3022,7 +3117,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 value={data.asignado_proceso_puesto}
                                                 onChange={handleChange}
                                                 name="asignado_proceso_puesto"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('asignado_proceso_puesto') ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
 
                                             />
                                             <InputError message={errors.asignado_proceso_puesto} />
@@ -3052,7 +3148,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     value={data.asignado_proceso_telefono}
                                                     onChange={handleChange}
                                                     name="asignado_proceso_telefono"
-                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('asignado_proceso_telefono') ? 'border-red-500' : 'border-gray-300'
+                                                        }`}
 
                                                 />
                                                 <InputError message={errors.asignado_proceso_telefono} />
@@ -3064,7 +3161,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     value={data.asignado_proceso_celular}
                                                     onChange={handleChange}
                                                     name="asignado_proceso_celular"
-                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('asignado_proceso_celular') ? 'border-red-500' : 'border-gray-300'
+                                                        }`}
 
                                                 />
                                                 <InputError message={errors.asignado_proceso_celular} />
@@ -3084,7 +3182,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 value={data.representante_nombre}
                                                 onChange={handleChange}
                                                 name="representante_nombre"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('representante_nombre') ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
 
                                             />
                                             <InputError message={errors.representante_nombre} />
@@ -3096,7 +3195,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 value={data.representante_email}
                                                 onChange={handleChange}
                                                 name="representante_email"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('representante_email') ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
 
                                             />
                                             <InputError message={errors.representante_email} />
@@ -3108,7 +3208,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 value={data.representante_puesto}
                                                 onChange={handleChange}
                                                 name="representante_puesto"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('representante_puesto') ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
 
                                             />
                                             <InputError message={errors.representante_puesto} />
@@ -3125,7 +3226,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     setData('representante_cedula', valorNumerico);
                                                 }}
                                                 name="representante_cedula"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('representante_cedula') ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
 
                                             />
                                             <InputError message={errors.representante_cedula} />
@@ -3137,7 +3239,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 value={data.representante_telefono}
                                                 onChange={handleChange}
                                                 name="representante_telefono"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('representante_telefono') ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
 
                                             />
                                             <InputError message={errors.representante_telefono} />
@@ -3149,7 +3252,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 value={data.representante_celular}
                                                 onChange={handleChange}
                                                 name="representante_celular"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('representante_celular') ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
 
                                             />
                                             <InputError message={errors.representante_celular} />
@@ -3398,6 +3502,29 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                         company={company}
                     />
 
+                    {getCamposFaltantes().length > 0 && (
+                        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 my-4">
+                            <div className="flex">
+                                <div className="flex-shrink-0">
+                                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div className="ml-3">
+                                    <h3 className="text-sm font-medium text-yellow-800">
+                                        Campos pendientes por completar
+                                    </h3>
+                                    <div className="mt-2 text-sm text-yellow-700">
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            {getCamposFaltantes().map((campo, index) => (
+                                                <li key={index}>{campo}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </form>
             </div>
 

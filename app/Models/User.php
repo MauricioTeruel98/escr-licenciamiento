@@ -33,7 +33,8 @@ class User extends Authenticatable
         'terms_accepted',
         'from_migration',
         'cedula',
-        'old_id_company'
+        'old_id_company',
+        'organismo'
     ];
 
     /**

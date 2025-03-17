@@ -13,7 +13,8 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
         password: '',
         password_confirmation: '',
         puesto: '',
-        phone: ''
+        phone: '',
+        organismo: ''
     };
 
     const [formData, setFormData] = useState(initialFormData);
@@ -45,16 +46,30 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                     password: '',
                     password_confirmation: '',
                     puesto: user.puesto || '',
-                    phone: user.phone || ''
+                    phone: user.phone || '',
+                    organismo: user.organismo || ''
                 });
                 setAssignedCompanies(assignedCompanyIds);
             } else {
-                setFormData(initialFormData);
+                setFormData(prev => ({
+                    ...initialFormData,
+                    company_id: formData.role === 'evaluador' ? '1' : ''
+                }));
                 setAssignedCompanies([]);
             }
             fetchCompanies();
         }
     }, [isOpen, user]);
+
+    useEffect(() => {
+        if (formData.role === 'evaluador') {
+            setFormData(prev => ({
+                ...prev,
+                company_id: '1',
+                status: 'approved'
+            }));
+        }
+    }, [formData.role]);
 
     const fetchCompanies = async () => {
         try {
@@ -74,7 +89,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
         if (!formData.name.trim()) newErrors.name = 'El nombre es requerido';
         if (!formData.lastname.trim()) newErrors.lastname = 'El apellido es requerido';
         if (!formData.email.trim()) newErrors.email = 'El email es requerido';
-        if (!formData.company_id) newErrors.company_id = 'La empresa es requerida';
+        if (formData.role !== 'evaluador' && !formData.company_id) newErrors.company_id = 'La empresa es requerida';
         if (!formData.puesto.trim()) newErrors.puesto = 'El puesto es requerido';
         if (!formData.phone.trim()) newErrors.phone = 'El teléfono es requerido';
         
@@ -260,46 +275,71 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                     </select>
                                 </div>
 
-                                {/* Empresa */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Empresa
-                                    </label>
-                                    <select
-                                        value={formData.company_id}
-                                        onChange={(e) => setFormData({...formData, company_id: e.target.value})}
-                                        className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm ${
-                                            errors.company_id ? 'border-red-300' : ''
-                                        }`}
-                                        required
-                                    >
-                                        <option value="">Seleccione una empresa</option>
-                                        {companies.map((company) => (
-                                            <option key={company.id} value={company.id}>
-                                                {company.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.company_id && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.company_id}</p>
-                                    )}
-                                </div>
+                                {/* Organismo */}
+                                {formData.role === 'evaluador' && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Organismo
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.organismo}
+                                            onChange={(e) => setFormData({...formData, organismo: e.target.value})}
+                                            className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm ${
+                                                errors.organismo ? 'border-red-300' : ''
+                                            }`}
+                                            placeholder="Nombre del organismo"
+                                        />
+                                        {errors.organismo && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.organismo}</p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Empresa - Solo mostrar si NO es evaluador */}
+                                {formData.role !== 'evaluador' && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Empresa
+                                        </label>
+                                        <select
+                                            value={formData.company_id}
+                                            onChange={(e) => setFormData({...formData, company_id: e.target.value})}
+                                            className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm ${
+                                                errors.company_id ? 'border-red-300' : ''
+                                            }`}
+                                            required
+                                        >
+                                            <option value="">Seleccione una empresa</option>
+                                            {companies.map((company) => (
+                                                <option key={company.id} value={company.id}>
+                                                    {company.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.company_id && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.company_id}</p>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Estado */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Estado
-                                    </label>
-                                    <select
-                                        value={formData.status}
-                                        onChange={(e) => setFormData({...formData, status: e.target.value})}
-                                        className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
-                                    >
-                                        <option value="pending">Pendiente</option>
-                                        <option value="approved">Aprobado</option>
-                                        <option value="rejected">Rechazado</option>
-                                    </select>
-                                </div>
+                                {formData.role !== 'evaluador' && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Estado
+                                        </label>
+                                        <select
+                                            value={formData.status}
+                                            onChange={(e) => setFormData({...formData, status: e.target.value})}
+                                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
+                                        >
+                                            <option value="pending">Pendiente</option>
+                                            <option value="approved">Aprobado</option>
+                                            <option value="rejected">Rechazado</option>
+                                        </select>
+                                    </div>
+                                )}
 
                                 {/* Contraseña */}
                                 <div>

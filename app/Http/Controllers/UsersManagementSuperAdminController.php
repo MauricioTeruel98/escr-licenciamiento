@@ -54,7 +54,7 @@ class UsersManagementSuperAdminController extends Controller
             'phone' => trim($request->phone),
         ]);
 
-        $validated = $request->validate([
+        $validationRules = [
             'name' => [
                 'required',
                 'string',
@@ -82,10 +82,18 @@ class UsersManagementSuperAdminController extends Controller
                 'regex:/^[0-9+\-\s]+$/'
             ],
             'role' => 'required|in:user,admin,evaluador',
-            'company_id' => 'required|exists:companies,id',
-            'assigned_companies' => 'required_if:role,evaluador|array',
-            'assigned_companies.*' => 'exists:companies,id'
-        ], [
+        ];
+
+        // Agregar validaciones específicas según el rol
+        if ($request->input('role') === 'evaluador') {
+            $validationRules['assigned_companies'] = 'required|array';
+            $validationRules['assigned_companies.*'] = 'exists:companies,id';
+            $validationRules['organismo'] = 'required|string|max:100';
+        } else {
+            $validationRules['company_id'] = 'required|exists:companies,id';
+        }
+
+        $validated = $request->validate($validationRules, [
             'email.unique' => 'El correo electrónico ya está en uso por otro usuario.',
             'name.regex' => 'El nombre solo debe contener letras y espacios',
             'name.max' => 'El nombre no debe exceder los 50 caracteres',
@@ -96,6 +104,8 @@ class UsersManagementSuperAdminController extends Controller
             'puesto.max' => 'El puesto no debe exceder los 50 caracteres',
             'phone.regex' => 'El teléfono solo debe contener números, +, - y espacios',
             'phone.max' => 'El teléfono no debe exceder los 20 caracteres',
+            'organismo.required_if' => 'El organismo es requerido para evaluadores',
+            'organismo.max' => 'El organismo no debe exceder los 100 caracteres'
         ]);
 
         // Eliminar espacios al final
@@ -104,17 +114,25 @@ class UsersManagementSuperAdminController extends Controller
         $validated['puesto'] = rtrim($validated['puesto']);
         $validated['phone'] = rtrim($validated['phone']);
 
-        $user = User::create([
+        // Preparar los datos del usuario
+        $userData = [
             'name' => $validated['name'],
             'lastname' => $validated['lastname'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
-            'company_id' => $validated['company_id'],
             'puesto' => $validated['puesto'],
             'phone' => $validated['phone'],
-            'status' => 'approved'
-        ]);
+            'company_id' => $validated['role'] === 'evaluador' ? 1 : $validated['company_id'],
+            'status' => $validated['role'] === 'evaluador' ? 'approved' : ($validated['status'] ?? 'pending'),
+        ];
+
+        // Agregar organismo si es evaluador
+        if ($validated['role'] === 'evaluador') {
+            $userData['organismo'] = $validated['organismo'];
+        }
+
+        $user = User::create($userData);
 
         if ($validated['role'] === 'evaluador' && isset($validated['assigned_companies'])) {
             foreach ($validated['assigned_companies'] as $companyId) {
@@ -177,10 +195,16 @@ class UsersManagementSuperAdminController extends Controller
                 'regex:/^[0-9+\-\s]+$/'
             ],
             'role' => 'required|in:user,admin,evaluador',
-            'company_id' => 'required|exists:companies,id',
-            'assigned_companies' => 'required_if:role,evaluador|array',
-            'assigned_companies.*' => 'exists:companies,id'
         ];
+
+        // Modificar las validaciones según el rol
+        if ($request->input('role') === 'evaluador') {
+            $validationRules['assigned_companies'] = 'required|array';
+            $validationRules['assigned_companies.*'] = 'exists:companies,id';
+            $validationRules['organismo'] = 'required|string|max:100';
+        } else {
+            $validationRules['company_id'] = 'required|exists:companies,id';
+        }
 
         // Agregar validación de contraseña solo si se proporciona
         if ($request->filled('password')) {
@@ -199,6 +223,8 @@ class UsersManagementSuperAdminController extends Controller
             'phone.regex' => 'El teléfono solo debe contener números, +, - y espacios',
             'phone.max' => 'El teléfono no debe exceder los 20 caracteres',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres',
+            'organismo.required_if' => 'El organismo es requerido para evaluadores',
+            'organismo.max' => 'El organismo no debe exceder los 100 caracteres'
         ]);
 
         // Eliminar espacios al final
@@ -210,6 +236,12 @@ class UsersManagementSuperAdminController extends Controller
         // Preparar datos para actualizar
         $userData = $validated;
         
+        // Establecer valores por defecto para evaluadores
+        if ($validated['role'] === 'evaluador') {
+            $userData['company_id'] = 1;
+            $userData['status'] = 'approved';
+        }
+
         // Si se proporcionó una nueva contraseña, hashearla
         if ($request->filled('password')) {
             $userData['password'] = Hash::make($request->password);
