@@ -466,7 +466,7 @@ const ImportacionesPage = ({ auth, title, companiesColumns, usersColumns, usersR
                                                     type="button"
                                                     className="bg-indigo-600 hover:bg-indigo-700 flex items-center"
                                                     onClick={() => handleImport('file1', 'companies')}
-                                                    disabled={isLoading.file1 || !files.file1}
+                                                    //disabled={isLoading.file1 || !files.file1}
                                                 >
                                                     {isLoading.file1 ? (
                                                         <>
@@ -612,7 +612,7 @@ const ImportacionesPage = ({ auth, title, companiesColumns, usersColumns, usersR
                                                     accept=".csv"
                                                     onChange={(e) => handleFileChange(e, 'file2')}
                                                     className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 w-full"
-                                                    disabled={importProgress.importing}
+                                                    //disabled={importProgress.importing}
                                                 />
                                             </div>
                                             
@@ -658,7 +658,7 @@ const ImportacionesPage = ({ auth, title, companiesColumns, usersColumns, usersR
                                                     type="button"
                                                     className="bg-indigo-600 hover:bg-indigo-700 flex items-center"
                                                     onClick={() => handleImport('file2', 'users')}
-                                                    disabled={isLoading.file2 || !files.file2 || importProgress.importing}
+                                                    //disabled={isLoading.file2 || !files.file2 || importProgress.importing}
                                                 >
                                                     {isLoading.file2 || importProgress.importing ? (
                                                         <>
@@ -796,7 +796,7 @@ const ImportacionesPage = ({ auth, title, companiesColumns, usersColumns, usersR
                                                     type="button"
                                                     className="bg-indigo-600 hover:bg-indigo-700 flex items-center"
                                                     onClick={() => handleImport('file3', 'companies-additional-info')}
-                                                    disabled={isLoading.file3 || !files.file3}
+                                                    //disabled={isLoading.file3 || !files.file3}
                                                 >
                                                     {isLoading.file3 ? (
                                                         <>
