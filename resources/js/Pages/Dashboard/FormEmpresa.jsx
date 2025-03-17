@@ -718,7 +718,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         }
     };
 
-    // Validar campos requeridos antes de permitir form_sended = 1
+    // Campos requeridos para el formulario
     const camposRequeridos = {
         nombre_comercial: data.nombre_comercial,
         nombre_legal: data.nombre_legal,
@@ -754,6 +754,17 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         representante_telefono: data.representante_telefono,
         representante_celular: data.representante_celular
     };
+
+    // Verificar si hay al menos un producto con nombre y descripción
+    const tieneProductoValido = data.productos && data.productos.some(
+        producto => producto.nombre?.trim() && producto.descripcion?.trim()
+    );
+
+    const fotografias = imagenes.fotografias;
+    const certificaciones = imagenes.certificaciones;
+    const logo = imagenes.logo;
+
+    const fotografiasLength = fotografias ? fotografias.length : 0;
 
     const submit = async (e) => {
         e.preventDefault();
@@ -804,6 +815,14 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             producto => producto.nombre?.trim() && producto.descripcion?.trim()
         );
 
+        const fotografias = imagenes.fotografias;
+        const certificaciones = imagenes.certificaciones;
+        let logo = imagenes.logo;
+
+        if(infoAdicional.logo_path) {
+            logo = infoAdicional.logo_path;
+        }
+
         // Verificar si todos los campos requeridos están completos
         const camposIncompletos = Object.entries(camposRequeridos)
             .filter(([_, valor]) => {
@@ -813,11 +832,17 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             .map(([campo]) => campo);
 
         // Si hay campos incompletos o no hay producto válido, no permitir form_sended = 1
-        const formularioCompleto = camposIncompletos.length === 0 && tieneProductoValido;
+        // Valida si hay al menos una foto, ya que cuando la variable fotografias no tiene elementos, se convierte en undefined
+
+        const fotografiasLength = fotografias ? fotografias.length : 0;
+
+        const formularioCompleto = camposIncompletos.length === 0 && tieneProductoValido && fotografiasLength > 0 && logo;
 
         console.log('formularioCompleto', formularioCompleto);
         console.log('camposIncompletos', camposIncompletos);
         console.log('tieneProductoValido', tieneProductoValido);
+        console.log('fotografiasLength', fotografiasLength);
+        console.log('logo', logo);
 
 
         try {
@@ -1705,13 +1730,13 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             if (partes.length === 3) {
                 const fechaIngresada = new Date(partes[2], partes[1] - 1, partes[0]);
                 const fechaActual = new Date();
-                
+
                 if (fechaIngresada > fechaActual) {
                     // Si la fecha es posterior a la actual, usar la fecha actual
                     const diaActual = fechaActual.getDate().toString().padStart(2, '0');
                     const mesActual = (fechaActual.getMonth() + 1).toString().padStart(2, '0');
                     const anioActual = fechaActual.getFullYear();
-                    
+
                     fechaFormateada = `${diaActual}/${mesActual}/${anioActual}`;
                     setErrors(prevErrors => ({
                         ...prevErrors,
@@ -1914,10 +1939,12 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         nombre_comercial: "Nombre comercial",
         nombre_legal: "Nombre legal",
         descripcion_es: "Descripción en español",
-        descripcion_en: "Descripción en inglés", 
+        descripcion_en: "Descripción en inglés",
         anio_fundacion: "Año de fundación",
         sitio_web: "Sitio web",
         tamano_empresa: "Tamaño de empresa",
+        fotografias: "Al menos una fotografía de la empresa",
+        logo: "Logo de la empresa",
         actividad_comercial: "Actividad comercial",
         razon_licenciamiento_es: "Razón de licenciamiento (Español)",
         razon_licenciamiento_en: "Razón de licenciamiento (Inglés)",
@@ -1937,12 +1964,24 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         representante_puesto: "Puesto del representante legal",
         representante_cedula: "Cédula del representante legal",
         representante_telefono: "Teléfono del representante legal",
-        representante_celular: "Celular del representante legal"
+        representante_celular: "Celular del representante legal",
     };
+
+    const logoActual = infoAdicional.logo_path;
 
     // Agregar después de la definición de isEmptyField
     const getCamposFaltantes = () => {
-        return Object.entries(camposRequeridos)
+
+        const fotografiasRequeridas = fotografiasLength > 0 ? "Fotografías" : "";
+        const logoRequerido = logo || logoActual ? "Logo" : "";
+
+        const camposRequeridosTotales = {
+            ...camposRequeridos,
+            fotografias: fotografiasRequeridas,
+            logo: logoRequerido
+        };
+
+        return Object.entries(camposRequeridosTotales)
             .filter(([campo, valor]) => isEmptyField(campo))
             .map(([campo]) => camposRequeridosEtiquetas[campo]);
     };
@@ -2724,7 +2763,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                 {/* Logos de certificaciones */}
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium text-gray-700">
-                                        Logos de certificaciones<span className="text-red-500">*</span>
+                                        Logos de certificaciones
                                     </label>
                                     <div className="mt-2">
                                         <label
