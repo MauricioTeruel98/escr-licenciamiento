@@ -7,7 +7,7 @@ import axios from 'axios';
 import { router, usePage } from '@inertiajs/react';
 import EvaluacionProcessing from '@/Components/Modals/EvaluacionProcessing';
 
-export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, progress, totalSteps, value_id, company, numeroDePreguntasQueVaAResponderLaEmpresa, numeroDePreguntasQueRespondioLaEmpresa, numeroDePreguntasQueClificoElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor, numeroDePreguntasQueVaAResponderLaEmpresaPorValor, numeroDePreguntasQueRespondioLaEmpresaPorValor }) {
+export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, isSuperAdmin = false, progress, totalSteps, value_id, company, numeroDePreguntasQueVaAResponderLaEmpresa, numeroDePreguntasQueRespondioLaEmpresa, numeroDePreguntasQueClificoElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor, numeroDePreguntasQueVaAResponderLaEmpresaPorValor, numeroDePreguntasQueRespondioLaEmpresaPorValor }) {
     const { auth } = usePage().props;
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [approvals, setApprovals] = useState(() => {
@@ -803,7 +803,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             {subcategories[currentSubcategoryIndex].indicators.map(indicator => (
                                 <div key={indicator.id} className="space-y-8">
                                     {/* Cabecera del Indicador */}
-                                    <div className={`bg-gray-50 p-6 rounded-xl border border-gray-200 space-y-8 ${indicator.binding ? 'bg-amber-50/60 ring-1 ring-amber-100' : ''}`}>
+                                    <div className={`p-6 rounded-xl border space-y-8 ${indicator.binding ? 'bg-amber-50/50 ring-1 ring-amber-100' : 'bg-gray-50 border-gray-200'}`}>
                                         <div className="space-y-2">
                                             <div className="inline-block">
                                                 <span className="bg-green-50 text-green-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-green-600/20">
@@ -960,7 +960,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                 </div>
 
                                                 {/* Checkbox de aprobación para evaluadores */}
-                                                {isEvaluador || auth.user.role === 'super_admin' && (
+                                                {(isEvaluador || isSuperAdmin) && (
                                                     <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200 space-y-4">
                                                         <div className="flex items-center gap-2">
                                                             <label className="text-sm font-medium text-gray-900">

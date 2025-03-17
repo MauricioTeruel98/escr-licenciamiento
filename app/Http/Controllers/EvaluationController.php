@@ -24,6 +24,7 @@ class EvaluationController extends Controller
         $user = Auth::user();
         $company_id = $user->company_id;
         $isEvaluador = $user->role === 'evaluador';
+        $isSuperAdmin = $user->role === 'super_admin';
 
         // Obtener los IDs de los indicadores donde la empresa respondió "sí"
         $indicatorIds = IndicatorAnswer::where('company_id', $company_id)
@@ -189,6 +190,7 @@ class EvaluationController extends Controller
             'userName' => $user->name,
             'savedAnswers' => $savedAnswers,
             'isEvaluador' => $isEvaluador,
+            'isSuperAdmin' => $isSuperAdmin,
             'progress' => $progress,
             'totalSteps' => $valueData->subcategories->count(),
             'value_id' => $value_id,
