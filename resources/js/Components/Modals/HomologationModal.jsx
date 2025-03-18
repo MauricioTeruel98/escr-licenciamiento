@@ -62,7 +62,7 @@ export default function HomologationModal({ isOpen, onClose, onSubmit, certifica
                                 {/* Nombre */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Nombre
+                                        Nombre <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"

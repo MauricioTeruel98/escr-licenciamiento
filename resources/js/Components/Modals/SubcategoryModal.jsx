@@ -64,7 +64,7 @@ export default function SubcategoryModal({ isOpen, onClose, onSubmit, subcategor
                                 {/* Nombre */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Nombre
+                                        Nombre <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -91,7 +91,7 @@ export default function SubcategoryModal({ isOpen, onClose, onSubmit, subcategor
                                 {/* Valor */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Valor
+                                        Valor <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                         value={formData.value_id}

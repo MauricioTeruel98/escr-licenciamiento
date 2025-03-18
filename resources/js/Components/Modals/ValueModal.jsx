@@ -66,7 +66,7 @@ export default function ValueModal({ isOpen, onClose, onSubmit, value = null }) 
                                 {/* Nombre */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Nombre
+                                        Nombre <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -78,7 +78,7 @@ export default function ValueModal({ isOpen, onClose, onSubmit, value = null }) 
                                 </div>
 
                                 {/* Slug */}
-                                <div>
+                                {/* <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Slug
                                     </label>
@@ -89,12 +89,12 @@ export default function ValueModal({ isOpen, onClose, onSubmit, value = null }) 
                                         className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
                                         required
                                     />
-                                </div>
+                                </div> */}
 
                                 {/* Puntaje mínimo */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Puntaje mínimo
+                                        Puntaje mínimo <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="number"

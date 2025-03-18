@@ -279,7 +279,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                 />
                                 <p className="mt-1 text-sm text-gray-500">
                                     Para cambiar la cédula jurídica, favor comunicarse con{' '}
-                                    <a href="#" className="text-green-600 hover:underline">
+                                    <a href="mailto:licenciasmarcapais@procomer.com" className="text-green-600 hover:underline">
                                         soporte técnico
                                     </a>
                                     .

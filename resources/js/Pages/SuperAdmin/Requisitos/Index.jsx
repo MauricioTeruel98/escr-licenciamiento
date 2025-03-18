@@ -170,8 +170,10 @@ export default function RequisitosIndex() {
             loadRequisitos(pagination.currentPage, pagination.perPage, searchTerm);
             showNotification('success', `${ids.length} ${ids.length === 1 ? 'requisito eliminado' : 'requisitos eliminados'} exitosamente`);
         } catch (error) {
-            console.error('Error al eliminar requisitos:', error);
-            showNotification('error', 'Error al eliminar los requisitos');
+            showNotification(
+                'error', 
+                error.response?.data?.error || 'Error al eliminar los requisitos'
+            );
         }
     };
 
@@ -183,8 +185,12 @@ export default function RequisitosIndex() {
             setRequisitoToDelete(null);
             showNotification('success', 'Requisito eliminado exitosamente');
         } catch (error) {
-            console.error('Error al eliminar:', error);
-            showNotification('error', 'Error al eliminar el requisito');
+            setDeleteModalOpen(false);
+            setRequisitoToDelete(null);
+            showNotification(
+                'error', 
+                error.response?.data?.error || 'Error al eliminar el requisito'
+            );
         }
     };
 

@@ -492,7 +492,7 @@ export default function IndicatorModal({
                                         {/* Nombre */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Nombre (E1, E2,...)
+                                                Nombre (E1, E2,...) <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -540,7 +540,7 @@ export default function IndicatorModal({
                                         {/* Valor */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Valor al que pertenece *
+                                                Valor al que pertenece <span className="text-red-500">*</span>
                                             </label>
                                             <select
                                                 value={formData.value_id}
@@ -560,7 +560,7 @@ export default function IndicatorModal({
                                         {/* Subcategoría */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Sub-categoría *
+                                                Sub-categoría <span className="text-red-500">*</span>
                                             </label>
                                             <select
                                                 value={formData.subcategory_id}
@@ -590,7 +590,7 @@ export default function IndicatorModal({
                                         {/* Requisito */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Requisito *
+                                                Requisito <span className="text-red-500">*</span>
                                             </label>
                                             <select
                                                 value={formData.requisito_id}
@@ -620,7 +620,7 @@ export default function IndicatorModal({
                                         {/* Pregunta de autoevaluación */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Pregunta de autoevaluación
+                                                Pregunta de autoevaluación <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -634,7 +634,7 @@ export default function IndicatorModal({
                                         {/* Preguntas de evaluación */}
                                         <div className="sm:col-span-2 evaluation-questions-section">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Preguntas de evaluación
+                                                Preguntas de evaluación <span className="text-red-500">*</span>
                                             </label>
                                             
                                             {validationError && (

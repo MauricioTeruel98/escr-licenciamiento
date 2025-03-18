@@ -68,6 +68,12 @@ class RequisitosController extends Controller
 
     public function destroy(Requisitos $requisito)
     {
+        if ($requisito->indicators()->count() > 0) {
+            return response()->json([
+                'error' => 'No se puede eliminar el requisito porque tiene indicadores asociados'
+            ], 422);
+        }
+
         $requisito->delete();
         return response()->json(['message' => 'Requisito eliminado exitosamente']);
     }
@@ -79,6 +85,18 @@ class RequisitosController extends Controller
                 'ids' => 'required|array',
                 'ids.*' => 'exists:requisitos,id'
             ]);
+
+            // Verificar si algún requisito tiene indicadores asociados
+            $requisitosConIndicadores = Requisitos::whereIn('id', $request->ids)
+                ->withCount('indicators')
+                ->having('indicators_count', '>', 0)
+                ->get();
+
+            if ($requisitosConIndicadores->isNotEmpty()) {
+                return response()->json([
+                    'error' => 'No se pueden eliminar algunos requisitos porque tienen indicadores asociados'
+                ], 422);
+            }
 
             $count = Requisitos::whereIn('id', $request->ids)->delete();
 

@@ -170,7 +170,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {/* Nombre */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Nombre
+                                        Nombre <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -189,7 +189,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {/* Apellido */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Apellido
+                                        Apellido <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -208,7 +208,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {/* Email */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Email
+                                        Email <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="email"
@@ -227,7 +227,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {/* Puesto */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Puesto
+                                        Puesto <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -246,7 +246,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {/* Teléfono */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Teléfono
+                                        Teléfono <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="tel"
@@ -265,7 +265,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {/* Rol */}
                                 <div>
                                     <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                                        Rol
+                                        Rol <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                         id="role"
@@ -287,7 +287,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {formData.role === 'evaluador' && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Organismo
+                                            Organismo <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -308,7 +308,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {formData.role !== 'evaluador' && (
                                     <div className="relative">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Empresa
+                                            Empresa <span className="text-red-500">*</span>
                                         </label>
                                         <div className="relative">
                                             <input
@@ -385,7 +385,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {formData.role !== 'evaluador' && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Estado
+                                            Estado <span className="text-red-500">*</span>
                                         </label>
                                         <select
                                             value={formData.status}
@@ -402,7 +402,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {/* Contraseña */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Contraseña {user && '(dejar en blanco para mantener la actual)'}
+                                        Contraseña {user && '(dejar en blanco para mantener la actual)'} <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="password"
@@ -421,7 +421,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {/* Confirmar Contraseña */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Confirmar Contraseña
+                                        Confirmar Contraseña <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="password"
@@ -441,7 +441,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {formData.role === 'evaluador' && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Empresas asignadas para evaluar
+                                            Empresas asignadas para evaluar <span className="text-red-500">*</span>
                                         </label>
                                         
                                         {/* Buscador de empresas */}

@@ -30,8 +30,8 @@ class Requisitos extends Model
         return $this->belongsTo(Subcategory::class);
     }
 
-    public function indicators(): HasMany
+    public function indicators()
     {
-        return $this->hasMany(Indicator::class);
+        return $this->hasMany(Indicator::class, 'requisito_id');
     }
 } 

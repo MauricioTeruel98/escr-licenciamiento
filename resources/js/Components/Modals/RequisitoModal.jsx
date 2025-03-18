@@ -85,7 +85,7 @@ export default function RequisitoModal({ isOpen, onClose, onSubmit, requisito = 
                                 {/* Nombre */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Nombre
+                                        Nombre <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -112,7 +112,7 @@ export default function RequisitoModal({ isOpen, onClose, onSubmit, requisito = 
                                 {/* Valor */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Valor
+                                        Valor <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                         value={formData.value_id}
@@ -132,7 +132,7 @@ export default function RequisitoModal({ isOpen, onClose, onSubmit, requisito = 
                                 {/* Subcategoría */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Subcategoría
+                                        Subcategoría <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                         value={formData.subcategory_id}
