@@ -63,7 +63,7 @@ class DashboardController extends Controller
         $numeroDePreguntasQueRespondioLaEmpresa = 0;
         $progresoEvaluacion = 0;
 
-        if ($company->estado_eval == 'evaluacion') {
+        if ($company->estado_eval != 'auto-evaluacion' && $company->estado_eval != 'auto-evaluacion-completed') {
             $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)->count();
 
             $numeroDePreguntasQueRespondioLaEmpresa = IndicatorAnswerEvaluation::where('company_id', $user->company_id)->count();

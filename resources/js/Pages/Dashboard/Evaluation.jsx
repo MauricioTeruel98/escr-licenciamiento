@@ -784,7 +784,7 @@ export default function Evaluation({
 
                         {/* Progress evaluation Section */}
                         {
-                            company.estado_eval == 'evaluacion' && (
+                            (company.estado_eval != 'auto-evaluacion' && company.estado_eval != 'auto-evaluacion-completed') && (
                                 <div className="card bg-white shadow">
                                     <div className="card-body">
                                         <h2 className="card-title">Progreso evaluación</h2>
