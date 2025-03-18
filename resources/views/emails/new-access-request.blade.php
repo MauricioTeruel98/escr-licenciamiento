@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,11 +12,13 @@
             color: #333;
             line-height: 1.6;
         }
+
         .container {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
         }
+
         .header {
             background-color: #15803d;
             color: white;
@@ -23,12 +26,14 @@
             text-align: center;
             border-radius: 8px 8px 0 0;
         }
+
         .content {
             background-color: #ffffff;
             padding: 30px;
             border: 1px solid #e5e7eb;
             border-radius: 0 0 8px 8px;
         }
+
         .button {
             display: inline-block;
             background-color: #15803d;
@@ -38,6 +43,7 @@
             border-radius: 6px;
             margin: 20px 0;
         }
+
         .footer {
             text-align: center;
             margin-top: 20px;
@@ -46,32 +52,33 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <h1>Nueva Solicitud de Acceso</h1>
         </div>
-        
+
         <div class="content">
-            <p>Hola Administrador,</p>
-            
-            <p>Has recibido una nueva solicitud de acceso para tu empresa.</p>
-            
+            <p>Ha recibido una nueva solicitud de acceso al perfil de su empresa en la plataforma de licenciamiento
+                corporativo de la marca país <i>esencial</i> Costa Rica.</p>
+
             <p><strong>Detalles del solicitante:</strong></p>
             <ul>
                 <li>Nombre: {{ $requestingUser->name }}</li>
                 <li>Email: {{ $requestingUser->email }}</li>
                 <li>Fecha de solicitud: {{ $requestingUser->created_at->format('d/m/Y H:i') }}</li>
             </ul>
-            
+
             <div style="text-align: center;">
                 <a href="{{ route('dashboard') }}" class="button">Revisar Solicitud</a>
             </div>
         </div>
-        
+
         <div class="footer">
             <p>Este es un correo automático, por favor no responder.</p>
         </div>
     </div>
 </body>
-</html> 
+
+</html>

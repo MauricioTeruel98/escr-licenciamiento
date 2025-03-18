@@ -40,17 +40,13 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Solicitud de Acceso Enviada</h1>
+            <h1>Solicitud de acceso enviada</h1>
         </div>
         
         <div class="content">
-            <p>Hola {{ $user->name }},</p>
+            <p>Su solicitud de acceso al perfil de la empresa {{ $company->name }} ha sido enviada satisfactoriamente.</p>
             
-            <p>Tu solicitud de acceso a {{ $company->name }} ha sido enviada correctamente.</p>
-            
-            <p>El administrador de la empresa revisará tu solicitud y recibirás una notificación cuando sea aprobada o rechazada.</p>
-            
-            <p>Gracias por tu paciencia.</p>
+            <p>El administrador de la empresa revisará su solicitud y, una vez aprobada, se le notificará el resultado por correo electrónico.</p>
         </div>
         
         <div class="footer">

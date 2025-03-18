@@ -94,6 +94,7 @@ export default function EvaluadorDashboard({ auth }) {
             if (response.data.success) {
                 setModalStatus('completed');
                 router.reload({ only: ['activeCompany'] });
+                router.reload({ only: ['companyStatusEval'] });
             } else {
                 throw new Error(response.data.message || 'Error al finalizar la evaluación');
             }
@@ -105,6 +106,10 @@ export default function EvaluadorDashboard({ auth }) {
                 message: error.response?.data?.message || error.message || 'Error al finalizar la evaluación'
             });
         }
+        setIsSubmitting(false);
+        setTimeout(() => {
+            window.location.reload();
+        }, 3000);
     };
 
     return (
