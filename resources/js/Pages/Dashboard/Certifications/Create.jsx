@@ -92,10 +92,10 @@ export default function Certifications({ certifications: initialCertifications, 
         if (value === undefined || value === null || typeof value !== 'string') {
             return value;
         }
-        
+
         // Eliminar espacios al inicio para todos los campos
         let valorLimpio = value.trimStart();
-        
+
         switch (tipo) {
             case 'nombre':
                 // No permitir comillas simples o dobles, barras o barras invertidas
@@ -112,7 +112,7 @@ export default function Certifications({ certifications: initialCertifications, 
             default:
                 break;
         }
-        
+
         return valorLimpio;
     };
 
@@ -177,6 +177,40 @@ export default function Certifications({ certifications: initialCertifications, 
         return true;
     };
 
+    // Agregar estado para el error de fecha de obtención
+    const [fechaObtencionError, setFechaObtencionError] = useState("");
+    const [fechaObtencionErrores, setFechaObtencionErrores] = useState({}); // Para manejar errores por certificación
+
+    // Función para validar la fecha de obtención
+    const validarFechaObtencion = (fecha, id = null) => {
+        if (!fecha) return false;
+
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        if (fecha > hoy) {
+            if (id) {
+                setFechaObtencionErrores(prev => ({
+                    ...prev,
+                    [id]: "La fecha de obtención no puede ser posterior a la fecha actual."
+                }));
+            } else {
+                setFechaObtencionError("La fecha de obtención no puede ser posterior a la fecha actual.");
+            }
+            return false;
+        }
+
+        if (id) {
+            setFechaObtencionErrores(prev => ({
+                ...prev,
+                [id]: ""
+            }));
+        } else {
+            setFechaObtencionError("");
+        }
+        return true;
+    };
+
     // Agregar después de los estados existentes
     const [notification, setNotification] = useState({ type: '', message: '' });
 
@@ -194,6 +228,9 @@ export default function Certifications({ certifications: initialCertifications, 
         e.preventDefault();
         if (!selectedCertification || !nuevaCertificacion.fechaObtencion || !nuevaCertificacion.fechaExpiracion) return;
 
+        if (!validarFechaObtencion(nuevaCertificacion.fechaObtencion)) return;
+        if (!validarFechaExpiracion(nuevaCertificacion.fechaExpiracion)) return;
+
         // Validar que la certificación seleccionada existe
         if (!availableCertifications.some(cert => cert.id === selectedCertification.id)) {
             showNotification('error', 'Por favor seleccione una certificación válida de la lista');
@@ -204,7 +241,7 @@ export default function Certifications({ certifications: initialCertifications, 
         const certificacionExistente = certificaciones.find(
             cert => cert.nombre.toLowerCase() === selectedCertification.nombre.toLowerCase()
         );
-        
+
         if (certificacionExistente) {
             showNotification('error', 'Ya existe una certificación con este nombre para su empresa');
             // Resaltar el campo de nombre de certificación
@@ -218,8 +255,6 @@ export default function Certifications({ certifications: initialCertifications, 
             }
             return;
         }
-
-        if (!validarFechaExpiracion(nuevaCertificacion.fechaExpiracion)) return;
 
         setLoading(true); // Iniciar el estado de carga
 
@@ -272,6 +307,7 @@ export default function Certifications({ certifications: initialCertifications, 
     const handleSave = async (id) => {
         const cert = certificaciones.find(c => c.id === id);
 
+        if (!validarFechaObtencion(cert.fecha_obtencion, id)) return;
         if (!validarFechaExpiracion(cert.fecha_expiracion, id)) return;
 
         try {
@@ -359,9 +395,9 @@ export default function Certifications({ certifications: initialCertifications, 
     const handleCancelEdit = (id) => {
         // Obtener la certificación original de initialCertifications
         const certOriginal = initialCertifications.find(c => c.id === id);
-        
+
         if (!certOriginal) return;
-        
+
         // Restaurar los valores originales y desactivar el modo de edición
         setCertificaciones(certificaciones.map(cert =>
             cert.id === id ? {
@@ -372,7 +408,7 @@ export default function Certifications({ certifications: initialCertifications, 
                 editando: false
             } : cert
         ));
-        
+
         // Limpiar cualquier error asociado a esta certificación
         setFechaErrores(prev => ({
             ...prev,
@@ -422,8 +458,8 @@ export default function Certifications({ certifications: initialCertifications, 
                                         onChange={handleSearchChange}
                                         onFocus={() => setIsDropdownOpen(true)}
                                         className={`pl-10 pr-8 py-2 w-full border-none rounded-md shadow-sm focus:border-green-500 focus:ring-green-500 ${nombreCertificacion && !availableCertifications.includes(nombreCertificacion)
-                                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                                                : ''
+                                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                                            : ''
                                             }`}
                                         required
                                     />
@@ -466,20 +502,27 @@ export default function Certifications({ certifications: initialCertifications, 
                             </div>
 
                             <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text text-sm font-medium">
+                                <label className={`label ${fechaObtencionError ? 'text-red-600' : ''}`}>
+                                    <span className={`label-text text-sm font-medium ${fechaObtencionError ? 'text-red-600 font-bold' : ''}`}>
                                         Fecha de obtención<span className="text-red-500">*</span>
                                     </span>
                                 </label>
                                 <DatePicker
                                     selected={nuevaCertificacion.fechaObtencion}
-                                    onChange={(date) => setNuevaCertificacion({
-                                        ...nuevaCertificacion,
-                                        fechaObtencion: date
-                                    })}
+                                    onChange={(date) => {
+                                        setNuevaCertificacion({
+                                            ...nuevaCertificacion,
+                                            fechaObtencion: date
+                                        });
+                                        validarFechaObtencion(date);
+                                    }}
                                     locale={es}
                                     dateFormat="dd/MM/yyyy"
-                                    className="w-full px-3 py-2 border rounded-md border-gray-300"
+                                    className={`w-full px-3 py-2 border rounded-md ${
+                                        fechaObtencionError
+                                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                                            : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                    }`}
                                     required
                                     showMonthDropdown
                                     showYearDropdown
@@ -487,11 +530,16 @@ export default function Certifications({ certifications: initialCertifications, 
                                     yearDropdownItemNumber={10}
                                     scrollableYearDropdown
                                 />
+                                {fechaObtencionError && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {fechaObtencionError}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="form-control">
-                                <label className={`label ${fechaError ? 'text-red-600' : ''}`}>
-                                    <span className={`label-text text-sm ${fechaError ? 'text-red-600 font-bold' : ''}`}>
+                                <label className="label">
+                                    <span className="label-text text-sm font-medium">
                                         Fecha de expiración<span className="text-red-500">*</span>
                                     </span>
                                 </label>
@@ -587,7 +635,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                         type="text"
                                                                         value={cert.organismo_certificador || ''}
                                                                         onChange={(e) => handleChange(cert.id, 'organismo_certificador', e.target.value)}
-                                                                        className="ml-2 px-2 py-1 border rounded-md text-sm"
+                                                                        className="ml-2 px-2 py-1 border rounded-md text-sm w-56"
                                                                     />
                                                                 ) : (
                                                                     <span className="ml-2 text-sm">{cert.organismo_certificador || 'N/A'}</span>
@@ -610,22 +658,34 @@ export default function Certifications({ certifications: initialCertifications, 
                                                         {cert.editando ? (
                                                             <div className="grid xl:grid-cols-2 gap-8">
                                                                 <div>
-                                                                    <label className="block text-md font-semibold">
+                                                                    <label className={`block text-md font-semibold ${fechaObtencionErrores[cert.id] ? 'text-red-600' : ''}`}>
                                                                         Fecha de obtención<span className="text-red-500">*</span>
                                                                     </label>
                                                                     <div className="flex flex-col justify-center xl:items-center h-16">
                                                                         <DatePicker
                                                                             selected={cert.fecha_obtencion}
-                                                                            onChange={(date) => handleChange(cert.id, 'fecha_obtencion', date)}
+                                                                            onChange={(date) => {
+                                                                                handleChange(cert.id, 'fecha_obtencion', date);
+                                                                                validarFechaObtencion(date, cert.id);
+                                                                            }}
                                                                             locale={es}
                                                                             dateFormat="dd/MM/yyyy"
-                                                                            className="w-full px-3 py-2 border rounded-md border-gray-300"
+                                                                            className={`w-full px-3 py-2 border rounded-md ${
+                                                                                fechaObtencionErrores[cert.id]
+                                                                                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                                                                                    : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                                                            }`}
                                                                             showMonthDropdown
                                                                             showYearDropdown
                                                                             dropdownMode="select"
                                                                             yearDropdownItemNumber={10}
                                                                             scrollableYearDropdown
                                                                         />
+                                                                        {fechaObtencionErrores[cert.id] && (
+                                                                            <p className="mt-1 text-sm text-red-600">
+                                                                                {fechaObtencionErrores[cert.id]}
+                                                                            </p>
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                                 <div>
@@ -662,6 +722,8 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                     <span className="text-md font-semibold">Fecha de obtención:</span>
                                                                     <div className="flex items-center h-16">
                                                                         <span className="text-center rounded-md bg-green-50/50 px-2 py-1 text-sm font-semibold text-green-700 ring-1 ring-inset ring-green-600/20">
+                                                                        {console.log(cert.fecha_obtencion.toLocaleDateString('es-ES'))}
+                                                                        {console.log(cert.fecha_obtencion)}
                                                                             {cert.fecha_obtencion.toLocaleDateString('es-ES', {
                                                                                 year: 'numeric',
                                                                                 month: 'short',
@@ -732,16 +794,17 @@ export default function Certifications({ certifications: initialCertifications, 
                                                     </div>
 
                                                 </div>
-                                                {
-                                                    certificadoExpirado && (
-                                                        <div>
-                                                            <p className="text-sm text-red-700">
-                                                                Este certificado ha expirado.
-                                                            </p>
-                                                        </div>
-                                                    )
-                                                }
                                             </div>
+                                            {
+                                                certificadoExpirado && (
+                                                    <div>
+                                                        <p className="text-sm text-red-700">
+                                                            Este certificado ha expirado.
+                                                        </p>
+                                                    </div>
+                                                )
+                                            }
+                                            <div className="divider"></div>
                                         </>
                                     );
                                 })}
