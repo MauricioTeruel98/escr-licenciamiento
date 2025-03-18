@@ -16,6 +16,8 @@ use App\Models\Certification;
 use App\Models\IndicatorHomologation;
 use App\Models\Company;
 use App\Models\Value;
+use App\Models\EvaluationQuestion;
+use App\Models\IndicatorAnswerEvaluation;
 
 class DashboardController extends Controller
 {
@@ -49,19 +51,39 @@ class DashboardController extends Controller
         // Calcular el porcentaje de progreso
         $progreso = $totalIndicadores > 0 ? round(($indicadoresRespondidos / $totalIndicadores) * 100) : 0;
 
+        // Obtener los IDs de los indicadores respondidos con "sí"
+        $indicatorIds = IndicatorAnswer::where('company_id', $user->company_id)
+            ->where(function ($query) {
+                $query->whereIn('answer', ['1', 'si', 'sí', 'yes', 1, true]);
+            })
+            ->pluck('indicator_id'); // Obtener solo los IDs
+
+
+        $numeroDePreguntasQueVaAResponderLaEmpresa = 0;
+        $numeroDePreguntasQueRespondioLaEmpresa = 0;
+        $progresoEvaluacion = 0;
+
+        if ($company->estado_eval == 'evaluacion') {
+            $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)->count();
+
+            $numeroDePreguntasQueRespondioLaEmpresa = IndicatorAnswerEvaluation::where('company_id', $user->company_id)->count();
+
+            $progresoEvaluacion = $numeroDePreguntasQueRespondioLaEmpresa / $numeroDePreguntasQueVaAResponderLaEmpresa * 100;
+        }
+
         // Calcular indicadores homologados por certificaciones
         $indicadoresHomologados = 0;
         $certificaciones = Certification::where('company_id', $user->company_id)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->whereNull('fecha_expiracion')
-                      ->orWhere('fecha_expiracion', '>=', now()->startOfDay());
+                    ->orWhere('fecha_expiracion', '>=', now()->startOfDay());
             })
             ->get();
-            
+
         if ($certificaciones->count() > 0) {
             // Obtener IDs de las certificaciones disponibles asociadas
             $homologationIds = $certificaciones->pluck('homologation_id')->filter()->toArray();
-            
+
             if (!empty($homologationIds)) {
                 // Obtener indicadores homologados únicos (sin duplicados)
                 $indicadoresHomologados = IndicatorHomologation::whereIn('homologation_id', $homologationIds)
@@ -130,7 +152,10 @@ class DashboardController extends Controller
             'totalIndicadores' => $totalIndicadores,
             'indicadoresRespondidos' => $indicadoresRespondidos,
             'indicadoresHomologados' => $indicadoresHomologados,
+            'numeroDePreguntasQueVaAResponderLaEmpresa' => $numeroDePreguntasQueVaAResponderLaEmpresa,
+            'numeroDePreguntasQueRespondioLaEmpresa' => $numeroDePreguntasQueRespondioLaEmpresa,
             'progreso' => $progreso,
+            'progresoEvaluacion' => $progresoEvaluacion,
             'companyName' => $user->company->name,
             'status' => $status,
             'failedBindingIndicators' => $failedBindingIndicators,
@@ -163,22 +188,22 @@ class DashboardController extends Controller
         // Cargar el archivo de lugares para obtener los IDs correspondientes a los nombres
         $lugaresJson = Storage::disk('public')->get('lugares.json');
         $lugares = json_decode($lugaresJson, true);
-        
+
         // Buscar los IDs correspondientes a los nombres guardados en la base de datos
         $provinciaId = '';
         $cantonId = '';
         $distritoId = '';
-        
+
         if ($company->provincia) {
             foreach ($lugares[0]['provincias'] as $provincia) {
                 if ($provincia['name'] === $company->provincia) {
                     $provinciaId = $provincia['id'];
-                    
+
                     if ($company->canton) {
                         foreach ($provincia['cantones'] as $canton) {
                             if ($canton['name'] === $company->canton) {
                                 $cantonId = $canton['id'];
-                                
+
                                 if ($company->distrito) {
                                     foreach ($canton['distritos'] as $distrito) {
                                         if ($distrito['name'] === $company->distrito) {
@@ -195,17 +220,17 @@ class DashboardController extends Controller
                 }
             }
         }
-        
+
         // Agregar los IDs de ubicación a los datos de la empresa
         $companyData['provincia_id'] = $provinciaId;
         $companyData['canton_id'] = $cantonId;
         $companyData['distrito_id'] = $distritoId;
-        
+
         // Agregar los nombres de ubicación para referencia
         $companyData['provincia_nombre'] = $company->provincia;
         $companyData['canton_nombre'] = $company->canton;
         $companyData['distrito_nombre'] = $company->distrito;
-        
+
         // Log para depuración
         Log::info('Datos de ubicación cargados', [
             'provincia' => $company->provincia,
