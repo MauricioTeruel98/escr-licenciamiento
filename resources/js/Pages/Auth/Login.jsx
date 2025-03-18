@@ -120,6 +120,7 @@ export default function Login({ status: initialStatus, canResetPassword }) {
                             onChange={handleEmailChange}
                             className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="nombre@empresa.com"
+                            maxLength={100}
                         />
                         {
                             isMigrated && (
@@ -140,6 +141,7 @@ export default function Login({ status: initialStatus, canResetPassword }) {
                                 value={data.password}
                                 onChange={handlePasswordChange}
                                 className="w-full rounded-md border border-gray-300 p-2 pr-10"
+                                maxLength={100}
                             />
                             <button
                                 type="button"

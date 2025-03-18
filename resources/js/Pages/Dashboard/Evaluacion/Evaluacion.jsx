@@ -1011,6 +1011,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 )}
                                                                 className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none"
                                                                 placeholder="Agregue un comentario sobre su evaluación..."
+                                                                maxLength={240}
                                                             />
                                                         </div>
 

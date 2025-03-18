@@ -188,6 +188,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                               : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
                         }`}
                         placeholder={wantsToAnswer ? (isHomologated || isHomologatedFromCert) ? "Justificación automática..." : "Respuesta..." : "Respuesta..."}
+                        maxLength={240}
                     ></textarea>
                     {wantsToAnswer && !justification && !(isHomologated || isHomologatedFromCert) && (
                         <p className="mt-1 text-sm text-red-600 font-medium">

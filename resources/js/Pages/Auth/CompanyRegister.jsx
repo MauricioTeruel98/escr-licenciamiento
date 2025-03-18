@@ -185,6 +185,7 @@ export default function CompanyRegister({ legalId, provincias }) {
                                 onChange={e => handleInputChange(e, 'name')}
                                 className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="Nombre de la empresa"
+                                maxLength={100}
                             />
                             <InputError message={errors.name} />
                         </div>
@@ -201,6 +202,7 @@ export default function CompanyRegister({ legalId, provincias }) {
                                 onChange={e => handleInputChange(e, 'website')}
                                 className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="https://www.ejemplo.com"
+                                maxLength={100}
                             />
                             {/* <p className="text-xs text-gray-500 mt-1">
                                 Debe incluir "https://" o "http://" al inicio de la dirección (ejemplo: https://www.miempresa.com)
@@ -248,6 +250,7 @@ export default function CompanyRegister({ legalId, provincias }) {
                                     placeholder="Buscar provincia"
                                     onFocus={() => setShowDropdown(true)}
                                     onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                                    maxLength={100}
                                 />
                                 <input
                                     type="hidden"
@@ -296,6 +299,7 @@ export default function CompanyRegister({ legalId, provincias }) {
                                 className={`w-full rounded-md border border-gray-300 p-2 ${legalId ? 'bg-gray-100' : ''}`}
                                 placeholder="#-###-######"
                                 readOnly={!!legalId}
+                                maxLength={100}
                             />
                             {legalId && (
                                 <p className="text-xs text-gray-500 mt-1">
@@ -335,6 +339,7 @@ export default function CompanyRegister({ legalId, provincias }) {
                                 onChange={e => handlePhoneChange(e, 'phone')}
                                 className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="2222-2222"
+                                maxLength={100}
                             />
                             <InputError message={errors.phone || validationErrors.phone} />
                         </div>
@@ -351,6 +356,7 @@ export default function CompanyRegister({ legalId, provincias }) {
                                 onChange={e => handlePhoneChange(e, 'mobile')}
                                 className="w-full rounded-md border border-gray-300 p-2"
                                 placeholder="2222-2222"
+                                maxLength={100}
                             />
                             <InputError message={errors.mobile || validationErrors.mobile} />
                         </div>

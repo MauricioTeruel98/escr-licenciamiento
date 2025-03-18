@@ -181,6 +181,7 @@ export default function Register() {
                             className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="Juan Pérez"
                             required
+                            maxLength={100}
                         />
                         <InputError message={errors.name || validationErrors.name} className="mt-2" />
                     </div>
@@ -198,6 +199,7 @@ export default function Register() {
                             className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="Pérez"
                             required
+                            maxLength={100}
                         />
                         <InputError message={errors.lastname || validationErrors.lastname} className="mt-2" />
                     </div>
@@ -215,6 +217,7 @@ export default function Register() {
                             className="w-full rounded-md border border-gray-300 p-2"
                             placeholder="nombre@empresa.com"
                             required
+                            maxLength={100}
                         />
                         <InputError message={errors.email || validationErrors.email} className="mt-2" />
                     </div>
@@ -232,6 +235,7 @@ export default function Register() {
                                 onChange={handlePasswordChange}
                                 className="w-full rounded-md border border-gray-300 p-2 pr-10"
                                 required
+                                maxLength={100}
                             />
                             <button
                                 type="button"
@@ -261,6 +265,7 @@ export default function Register() {
                                 onChange={handleConfirmPasswordChange}
                                 className="w-full rounded-md border border-gray-300 p-2 pr-10"
                                 required
+                                maxLength={100}
                             />
                             <button
                                 type="button"
@@ -287,6 +292,7 @@ export default function Register() {
                                     onChange={(e) => setData('terms_accepted', e.target.checked)}
                                     className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-green-300"
                                     required
+                                    maxLength={100}
                                 />
                             </div>
                             <div className="ml-3 text-sm">

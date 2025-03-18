@@ -2073,6 +2073,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             name="nombre_comercial"
                                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('nombre_comercial') ? 'border-red-500' : 'border-gray-300'
                                                 }`}
+                                            maxLength={100}
 
                                         />
                                         <InputError message={errors.nombre_comercial} />
@@ -2090,7 +2091,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             name="nombre_legal"
                                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 ${isEmptyField('nombre_legal') ? 'border-red-500' : 'border-gray-300'
                                                 }`}
-
+                                            maxLength={100}
                                         />
                                         <InputError message={errors.nombre_legal} />
                                     </div>
@@ -2107,7 +2108,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             rows={3}
                                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('descripcion_es') ? 'border-red-500' : 'border-gray-300'
                                                 }`}
-
+                                            maxLength={240}
                                         />
                                         <InputError message={errors.descripcion_es} />
                                     </div>
@@ -2124,6 +2125,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             rows={3}
                                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('descripcion_en') ? 'border-red-500' : 'border-gray-300'
                                                 }`}
+                                            maxLength={240}
                                         />
                                         <InputError message={errors.descripcion_en} />
                                     </div>
@@ -2160,7 +2162,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             name="sitio_web"
                                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('sitio_web') ? 'border-red-500' : 'border-gray-300'
                                                 }`}
-
+                                            maxLength={50}
                                         />
                                         <InputError message={errors.sitio_web} />
                                     </div>
@@ -2267,6 +2269,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     onChange={handleURLChange}
                                                     name="facebook"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    maxLength={50}
                                                 />
                                                 <InputError message={errors.facebook} />
                                             </div>
@@ -2281,6 +2284,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     onChange={handleURLChange}
                                                     name="linkedin"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    maxLength={50}
                                                 />
                                                 <InputError message={errors.linkedin} />
                                             </div>
@@ -2295,6 +2299,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     onChange={handleURLChange}
                                                     name="instagram"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    maxLength={50}
                                                 />
                                                 <InputError message={errors.instagram} />
                                             </div>
@@ -2309,6 +2314,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     onChange={handleURLChange}
                                                     name="otra_red_social"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    maxLength={50}
                                                 />
                                                 <InputError message={errors.otra_red_social} />
                                             </div>
@@ -2468,6 +2474,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             onChange={handleChange}
                                             name="telefono_1"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            maxLength={20}
                                         />
                                         <InputError message={errors.telefono_1} />
                                     </div>
@@ -2482,6 +2489,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             onChange={handleChange}
                                             name="telefono_2"
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            maxLength={20}
                                         />
                                         <InputError message={errors.telefono_2} />
                                     </div>
@@ -2556,6 +2564,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     name="producto_servicio"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                     placeholder="Producto o servicio"
+                                                    maxLength={100}
                                                 />
                                                 <InputError message={errors.producto_servicio} />
                                             </div>
@@ -2594,6 +2603,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     rows={3}
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                     placeholder="Describa los planes de expansión de su empresa"
+                                                    maxLength={240}
                                                 ></textarea>
                                                 <InputError message={errors.planes_expansion} />
                                             </div>
@@ -2952,7 +2962,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('razon_licenciamiento_es') ? 'border-red-500' : 'border-gray-300'
                                                 }`}
                                             placeholder="Respuesta"
-
+                                            maxLength={240}
                                         />
                                     </div>
 
@@ -2969,7 +2979,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('razon_licenciamiento_en') ? 'border-red-500' : 'border-gray-300'
                                                 }`}
                                             placeholder="Answer"
-
+                                            maxLength={240}
                                         />
                                     </div>
 
@@ -2986,7 +2996,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('proceso_licenciamiento') ? 'border-red-500' : 'border-gray-300'
                                                 }`}
                                             placeholder="Respuesta"
-
+                                            maxLength={240}
                                         />
                                     </div>
 
@@ -3033,7 +3043,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 rows={4}
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 placeholder="Respuesta"
-
+                                                maxLength={240}
                                             />
                                         </div>
                                     </div>
@@ -3110,7 +3120,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 name="contacto_notificacion_email"
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('contacto_notificacion_email') ? 'border-red-500' : 'border-gray-300'
                                                     }`}
-
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.contacto_notificacion_email} />
                                         </div>
@@ -3123,7 +3133,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 name="contacto_notificacion_puesto"
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('contacto_notificacion_puesto') ? 'border-red-500' : 'border-gray-300'
                                                     }`}
-
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.contacto_notificacion_puesto} />
                                         </div>
@@ -3140,7 +3150,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 }}
                                                 name="contacto_notificacion_cedula"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.contacto_notificacion_cedula} />
                                         </div> */}
@@ -3154,6 +3164,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     name="contacto_notificacion_telefono"
                                                     className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('contacto_notificacion_telefono') ? 'border-red-500' : 'border-gray-300'
                                                         }`}
+                                                    maxLength={20}
                                                 />
                                                 <InputError message={errors.contacto_notificacion_telefono} />
                                             </div>
@@ -3166,6 +3177,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     name="contacto_notificacion_celular"
                                                     className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('contacto_notificacion_celular') ? 'border-red-500' : 'border-gray-300'
                                                         }`}
+                                                    maxLength={20}
                                                 />
                                                 <InputError message={errors.contacto_notificacion_celular} />
                                             </div>
@@ -3186,7 +3198,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 name="asignado_proceso_nombre"
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('asignado_proceso_nombre') ? 'border-red-500' : 'border-gray-300'
                                                     }`}
-
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.asignado_proceso_nombre} />
                                         </div>
@@ -3199,7 +3211,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 name="asignado_proceso_email"
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('asignado_proceso_email') ? 'border-red-500' : 'border-gray-300'
                                                     }`}
-
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.asignado_proceso_email} />
                                         </div>
@@ -3212,7 +3224,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 name="asignado_proceso_puesto"
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('asignado_proceso_puesto') ? 'border-red-500' : 'border-gray-300'
                                                     }`}
-
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.asignado_proceso_puesto} />
                                         </div>
@@ -3229,7 +3241,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 }}
                                                 name="asignado_proceso_cedula"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                
+
                                             />
                                             <InputError message={errors.asignado_proceso_cedula} />
                                         </div> */}
@@ -3243,7 +3255,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     name="asignado_proceso_telefono"
                                                     className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('asignado_proceso_telefono') ? 'border-red-500' : 'border-gray-300'
                                                         }`}
-
+                                                    maxLength={20}
                                                 />
                                                 <InputError message={errors.asignado_proceso_telefono} />
                                             </div>
@@ -3256,7 +3268,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     name="asignado_proceso_celular"
                                                     className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('asignado_proceso_celular') ? 'border-red-500' : 'border-gray-300'
                                                         }`}
-
+                                                    maxLength={20}
                                                 />
                                                 <InputError message={errors.asignado_proceso_celular} />
                                             </div>
@@ -3277,7 +3289,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 name="representante_nombre"
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('representante_nombre') ? 'border-red-500' : 'border-gray-300'
                                                     }`}
-
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.representante_nombre} />
                                         </div>
@@ -3290,7 +3302,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 name="representante_email"
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('representante_email') ? 'border-red-500' : 'border-gray-300'
                                                     }`}
-
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.representante_email} />
                                         </div>
@@ -3303,7 +3315,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 name="representante_puesto"
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('representante_puesto') ? 'border-red-500' : 'border-gray-300'
                                                     }`}
-
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.representante_puesto} />
                                         </div>
@@ -3321,7 +3333,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 name="representante_cedula"
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('representante_cedula') ? 'border-red-500' : 'border-gray-300'
                                                     }`}
-
+                                                maxLength={15}
                                             />
                                             <InputError message={errors.representante_cedula} />
                                         </div>
@@ -3334,7 +3346,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 name="representante_telefono"
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('representante_telefono') ? 'border-red-500' : 'border-gray-300'
                                                     }`}
-
+                                                maxLength={20}
                                             />
                                             <InputError message={errors.representante_telefono} />
                                         </div>
@@ -3347,7 +3359,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 name="representante_celular"
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('representante_celular') ? 'border-red-500' : 'border-gray-300'
                                                     }`}
-
+                                                maxLength={20}
                                             />
                                             <InputError message={errors.representante_celular} />
                                         </div>
@@ -3366,6 +3378,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 onChange={handleChange}
                                                 name="mercadeo_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.mercadeo_nombre} />
                                         </div>
@@ -3377,6 +3390,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 onChange={handleChange}
                                                 name="mercadeo_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.mercadeo_email} />
                                         </div>
@@ -3388,6 +3402,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 onChange={handleChange}
                                                 name="mercadeo_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.mercadeo_puesto} />
                                         </div>
@@ -3400,6 +3415,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     onChange={handleChange}
                                                     name="mercadeo_telefono"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    maxLength={20}
                                                 />
                                                 <InputError message={errors.mercadeo_telefono} />
                                             </div>
@@ -3411,6 +3427,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     onChange={handleChange}
                                                     name="mercadeo_celular"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    maxLength={20}
                                                 />
                                                 <InputError message={errors.mercadeo_celular} />
                                             </div>
@@ -3430,6 +3447,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 onChange={handleChange}
                                                 name="micrositio_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.micrositio_nombre} />
                                         </div>
@@ -3441,6 +3459,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 onChange={handleChange}
                                                 name="micrositio_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.micrositio_email} />
                                         </div>
@@ -3452,6 +3471,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 onChange={handleChange}
                                                 name="micrositio_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.micrositio_puesto} />
                                         </div>
@@ -3464,6 +3484,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     onChange={handleChange}
                                                     name="micrositio_telefono"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    maxLength={20}
                                                 />
                                                 <InputError message={errors.micrositio_telefono} />
                                             </div>
@@ -3475,6 +3496,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     onChange={handleChange}
                                                     name="micrositio_celular"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    maxLength={20}
                                                 />
                                                 <InputError message={errors.micrositio_celular} />
                                             </div>
@@ -3494,6 +3516,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 onChange={handleChange}
                                                 name="vocero_nombre"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.vocero_nombre} />
                                         </div>
@@ -3505,6 +3528,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 onChange={handleChange}
                                                 name="vocero_email"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.vocero_email} />
                                         </div>
@@ -3516,6 +3540,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 onChange={handleChange}
                                                 name="vocero_puesto"
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                maxLength={100}
                                             />
                                             <InputError message={errors.vocero_puesto} />
                                         </div>
@@ -3528,6 +3553,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     onChange={handleChange}
                                                     name="vocero_telefono"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    maxLength={20}
                                                 />
                                                 <InputError message={errors.vocero_telefono} />
                                             </div>
@@ -3539,6 +3565,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     onChange={handleChange}
                                                     name="vocero_celular"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                    maxLength={20}
                                                 />
                                                 <InputError message={errors.vocero_celular} />
                                             </div>
