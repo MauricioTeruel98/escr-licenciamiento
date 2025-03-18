@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\CompanyProducts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -81,10 +82,13 @@ class CompanyManagementController extends Controller
     {
         // Cargar la relación infoAdicional
         $company->load('infoAdicional');
+
+        $productos = CompanyProducts::where('company_id', $company->id)->get();
         
         return response()->json([
             'company' => $company,
-            'info_adicional' => $company->infoAdicional
+            'info_adicional' => $company->infoAdicional,
+            'productos' => $productos
         ]);
     }
 
