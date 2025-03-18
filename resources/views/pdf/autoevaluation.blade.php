@@ -174,17 +174,13 @@
 
             <table>
                 <tr>
-                    <th>Componente</th>
-                    <th>Requisito</th>
                     <th>Indicador</th>
+                    <th>Pregunta</th>
                     <th>Cumplimiento</th>
-                    <th>Justificación</th>
                 </tr>
                 @foreach($value->subcategories as $subcategory)
                     @foreach($subcategory->indicators as $indicator)
                         <tr>
-                            <td>{{ $subcategory->name }}</td>
-                            <td>{{ $indicator->requisito->name ?? 'N/A' }}</td>
                             <td>
                                 {{ $indicator->name }}
                                 @if($indicator->binding)
@@ -192,17 +188,13 @@
                                 @endif
                             </td>
                             <td>
+                                {{ $indicator->self_evaluation_question }}
+                            </td>
+                            <td>
                                 @if(isset($answers[$value->id]))
                                     {{ $answers[$value->id]->firstWhere('indicator_id', $indicator->id)->answer === "1" ? 'Sí' : 'No' }}
                                 @else
                                     No respondida
-                                @endif
-                            </td>
-                            <td>
-                                @if(isset($answers[$value->id]))
-                                    {{ $answers[$value->id]->firstWhere('indicator_id', $indicator->id)->justification }}
-                                @else
-                                    Sin justificación
                                 @endif
                             </td>
                         </tr>
