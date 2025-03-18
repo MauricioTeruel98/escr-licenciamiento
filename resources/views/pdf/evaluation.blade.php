@@ -584,7 +584,7 @@
                         <tr>
                             <th>Pregunta</th>
                             {{-- <th>Respuesta</th> --}}
-                            <th>Cumplimiento</th>
+                            <th>Cumple</th>
                             <th>Justificación</th>
                         </tr>
                         @foreach ($indicator->evaluationQuestions as $question)
