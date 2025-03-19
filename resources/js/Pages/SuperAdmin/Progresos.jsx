@@ -46,7 +46,7 @@ export default function Progresos() {
                         colorClass = 'text-indigo-800 border-indigo-200 bg-indigo-50';
                         break;
                     case 'Evaluación Calificada':
-                        colorClass = 'text-blue-800 border-blue-200 bg-blue-50';
+                        colorClass = 'text-amber-800 border-amber-200 bg-amber-50';
                         break;
                     case 'Evaluado':
                         colorClass = 'text-green-800 border-green-200 bg-green-50';

@@ -22,7 +22,7 @@ class EvaluadorController extends Controller
     {
         try {
             $user = auth()->user();
-            $companies = $user->evaluatedCompanies()->withCount('users')->get();
+            $companies = $user->evaluatedCompanies()->withCount('users')->orderBy('created_at', 'desc')->get();
             return response()->json($companies);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al obtener las empresas'], 500);
