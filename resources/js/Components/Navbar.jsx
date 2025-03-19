@@ -12,13 +12,11 @@ export default function Navbar({ userName, onMenuClick }) {
         post(route('logout'));
     };
 
-    console.log(solicitudesPendientes);
-
     useEffect(() => {
         if (auth.user.role === 'admin' || auth.user.role === 'super_admin') {
             cargarSolicitudesPendientes();
         }
-    }, []);
+    }, [solicitudesPendientes]);
 
     const cargarSolicitudesPendientes = async () => {
         try {
@@ -33,7 +31,6 @@ export default function Navbar({ userName, onMenuClick }) {
         post(route('user.approve', userId), {}, {
             onSuccess: () => {
                 cargarSolicitudesPendientes();
-                router.reload({ only: ['solicitudesPendientes'] });
             }
         });
     };
@@ -42,7 +39,6 @@ export default function Navbar({ userName, onMenuClick }) {
         post(route('user.reject', userId), {}, {
             onSuccess: () => {
                 cargarSolicitudesPendientes();
-                router.reload({ only: ['solicitudesPendientes'] });
             }
         });
     };
