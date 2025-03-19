@@ -18,6 +18,7 @@ use App\Models\Company;
 use App\Models\Value;
 use App\Models\EvaluationQuestion;
 use App\Models\IndicatorAnswerEvaluation;
+use App\Models\EvaluatorAssessment;
 
 class DashboardController extends Controller
 {
@@ -145,6 +146,30 @@ class DashboardController extends Controller
                 ->get();
         }
 
+        // Obtener preguntas descalificatorias respondidas con NO
+        $preguntasDescalificatoriasRechazadas = EvaluatorAssessment::with(['indicator', 'evaluationQuestion'])
+            ->whereHas('indicator', function ($query) {
+                $query->where('binding', true); // Filtrar indicadores descalificatorios
+            })
+            ->where('approved', false) // Filtrar respuestas NO
+            ->where('company_id', $user->company_id)
+            ->get()
+            ->map(function ($assessment) {
+                return [
+                    'indicator_name' => $assessment->indicator->name,
+                    'indicator_id' => $assessment->indicator_id,
+                    'question' => $assessment->evaluationQuestion->question,
+                    'question_id' => $assessment->evaluation_question_id,
+                    'evaluator_comment' => $assessment->comment
+                ];
+            });
+
+        // Para debug
+        /*dd([
+            'company_id' => $user->company_id,
+            'preguntas_descalificatorias_rechazadas' => $preguntasDescalificatoriasRechazadas
+        ]);*/
+
         return Inertia::render('Dashboard/Evaluation', [
             'userName' => $user->name,
             'isAdmin' => $isAdmin,
@@ -161,7 +186,8 @@ class DashboardController extends Controller
             'failedBindingIndicators' => $failedBindingIndicators,
             'failedValues' => $failedValues,
             'autoEvaluationResult' => $autoEvaluationResult,
-            'company' => $company
+            'company' => $company,
+            'preguntasDescalificatoriasRechazadas' => $preguntasDescalificatoriasRechazadas
         ]);
     }
 

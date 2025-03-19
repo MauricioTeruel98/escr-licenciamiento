@@ -108,6 +108,8 @@ class Company extends Model
                 return 'Evaluado';
             case 'evaluacion-calificada':
                 return 'Evaluación Calificada';
+            case 'evaluacion-desaprobada':
+                return 'Evaluación Desaprobada';
             default:
                 return 'No aplica';
         }

@@ -819,7 +819,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         const certificaciones = imagenes.certificaciones;
         let logo = imagenes.logo;
 
-        if(infoAdicional.logo_path) {
+        if (infoAdicional.logo_path) {
             logo = infoAdicional.logo_path;
         }
 
@@ -1970,8 +1970,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
     // Agregar después de la definición de isEmptyField
     const getCamposFaltantes = () => {
         // Verificar si hay fotografías (ya sea nuevas o existentes)
-        const tieneFotografias = (imagenes.fotografias && imagenes.fotografias.length > 0) || 
-                                (infoAdicional?.fotografias_urls && infoAdicional.fotografias_urls.length > 0);
+        const tieneFotografias = (imagenes.fotografias && imagenes.fotografias.length > 0) ||
+            (infoAdicional?.fotografias_urls && infoAdicional.fotografias_urls.length > 0);
 
         // Verificar si hay logo (ya sea nuevo o existente)
         const tieneLogo = imagenes.logo || infoAdicional?.logo_url;
@@ -2415,7 +2415,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                         {/* Agregar el total aquí */}
                                         <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                                             <p className="text-sm font-medium text-gray-700">
-                                                Total de empleados: {parseInt(data.cantidad_hombres || 0) + parseInt(data.cantidad_mujeres || 0) + parseInt(data.cantidad_otros || 0)}
+                                                Cantidad de colaboradores: {parseInt(data.cantidad_hombres || 0) + parseInt(data.cantidad_mujeres || 0) + parseInt(data.cantidad_otros || 0)}
                                             </p>
                                             <input
                                                 type="hidden"

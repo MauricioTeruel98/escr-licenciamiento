@@ -417,12 +417,12 @@ export default function CompanyRegister({ legalId, provincias }) {
                         Registrar Empresa
                     </button>
 
-                    <div className="text-sm text-center">
+                    {/* <div className="text-sm text-center">
                         ¿Su empresa ya fue registrada?{" "}
                         <a href="" className="text-green-700 hover:underline">
                             Solicitar acceso
                         </a>
-                    </div>
+                    </div> */}
                 </form>
             </div>
         </ImageLayout>

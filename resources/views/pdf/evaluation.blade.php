@@ -266,6 +266,67 @@
             font-weight: bold;
             color: #dc2626;
         }
+
+        .evaluation-status {
+            margin: 20px 0;
+        }
+
+        .evaluation-result {
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .evaluation-result.failed {
+            background-color: #FEE2E2;
+            border: 2px solid #DC2626;
+        }
+
+        .evaluation-result.passed {
+            background-color: #DCFCE7;
+            border: 2px solid #16A34A;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .result-header h2 {
+            margin: 0;
+            color: inherit;
+        }
+
+        .icon-warning {
+            color: #DC2626;
+        }
+
+        .icon-success {
+            color: #16A34A;
+        }
+
+        .evaluation-result.failed h2 {
+            color: #DC2626;
+        }
+
+        .evaluation-result.passed h2 {
+            color: #16A34A;
+        }
+
+        .evaluation-result p {
+            margin: 0;
+            font-size: 0.9em;
+        }
+
+        .evaluation-result.failed p {
+            color: #7F1D1D;
+        }
+
+        .evaluation-result.passed p {
+            color: #166534;
+        }
     </style>
 </head>
 
@@ -274,6 +335,52 @@
         <img src="/public/assets/img/logo_esc.png" alt="Logo">
         <h1>Informe de Evaluación del Protocolo Marca País</h1>
     </header>
+
+    <div class="evaluation-status">
+        @php
+            $hasFailedBindingIndicators = false;
+            foreach ($values as $value) {
+                if (isset($indicatorsByValue[$value->id])) {
+                    foreach ($indicatorsByValue[$value->id] as $indicator) {
+                        if ($indicator->binding) {
+                            foreach ($indicator->evaluationQuestions as $question) {
+                                if (isset($evaluatorAssessments[$indicator->id])) {
+                                    foreach ($evaluatorAssessments[$indicator->id] as $assessment) {
+                                        if ($assessment->evaluation_question_id == $question->id && !$assessment->approved) {
+                                            $hasFailedBindingIndicators = true;
+                                            break 4;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        @endphp
+
+        @if ($hasFailedBindingIndicators)
+            <div class="evaluation-result failed">
+                <div class="result-header">
+                    <svg class="icon-warning" viewBox="0 0 20 20" fill="currentColor" width="24" height="24">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    <h2>EVALUACIÓN NO APROBADA</h2>
+                </div>
+                <p>La empresa no ha aprobado uno o más indicadores descalificatorios, lo cual impide la obtención de la licencia.</p>
+            </div>
+        @else
+            <div class="evaluation-result passed">
+                <div class="result-header">
+                    <svg class="icon-success" viewBox="0 0 20 20" fill="currentColor" width="24" height="24">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <h2>EVALUACIÓN APROBADA</h2>
+                </div>
+                <p>La empresa ha cumplido con todos los indicadores descalificatorios requeridos.</p>
+                </div>
+        @endif
+    </div>
 
     <div class="evaluation-info">
         <p><strong>Fecha de evaluación:</strong> {{ $date }}</p>

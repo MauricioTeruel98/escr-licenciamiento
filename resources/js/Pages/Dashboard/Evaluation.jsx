@@ -121,7 +121,8 @@ export default function Evaluation({
     failedBindingIndicators,
     failedValues,
     autoEvaluationResult,
-    company
+    company,
+    preguntasDescalificatoriasRechazadas
 }) {
     const { post } = useForm();
     const { auth } = usePage().props;
@@ -575,6 +576,26 @@ export default function Evaluation({
                                             </div>
                                         )
                                     }
+
+                                    {
+                                        company.estado_eval == 'evaluacion-desaprobada' && (
+                                            <div className="space-y-4 bg-red-50/50 p-4 rounded-lg">
+                                                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 mb-4">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-600">
+                                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                                    </svg>
+                                                </div>
+                                                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                                    Evaluación desaprobada
+                                                </h3>
+                                                <p className="text-sm text-gray-500">
+                                                    Su empresa sido calificada pero ha desaprobado los indicadores descalificatorios. Debe ponerse en contacto con <a href="mailto:licenciasmarcapais@procomer.com" className="text-red-500">licencias@marca-pais.com</a> para poder continuar con el proceso de licenciamiento.
+                                                </p>
+                                            </div>
+                                        )
+                                    }
                                 </div>
                             </>
                         )
@@ -710,7 +731,51 @@ export default function Evaluation({
                         )
                     }
 
+                </div>
 
+                <div>
+                    {
+                        (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-desaprobada') &&
+                        preguntasDescalificatoriasRechazadas &&
+                        preguntasDescalificatoriasRechazadas.length > 0 && (
+                            <div className="card bg-white shadow mt-8">
+                                <div className="card-body">
+                                    <h2 className="card-title text-red-600 flex items-center gap-2">
+                                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                                            />
+                                        </svg>
+                                        Indicadores Descalificatorios No Aprobados
+                                    </h2>
+                                    <div className="mt-4 space-y-4">
+                                        {preguntasDescalificatoriasRechazadas.map((pregunta, index) => (
+                                            <div key={index} className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                                <h3 className="font-medium text-red-800">
+                                                    Indicador: {pregunta.indicator_name}
+                                                </h3>
+                                                <p className="mt-2 text-sm text-red-700">
+                                                    Pregunta: {pregunta.question}
+                                                </p>
+                                                {pregunta.evaluator_comment && (
+                                                    <div className="mt-2 text-sm">
+                                                        <span className="font-medium text-red-800">Comentario del evaluador: </span>
+                                                        <span className="text-red-700">{pregunta.evaluator_comment}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                        {/* <div className="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
+                                            <p className="text-sm text-red-800 font-medium">
+                                                Importante: Los indicadores descalificatorios no aprobados impiden que la empresa pueda obtener la licencia.
+                                                Por favor, revise los comentarios del evaluador y tome las acciones necesarias.
+                                            </p>
+                                        </div> */}
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
                 </div>
 
                 <div className="card bg-white shadow">

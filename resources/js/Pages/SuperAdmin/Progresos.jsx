@@ -51,6 +51,9 @@ export default function Progresos() {
                     case 'Evaluado':
                         colorClass = 'text-green-800 border-green-200 bg-green-50';
                         break;
+                    case 'Evaluación Desaprobada':
+                        colorClass = 'text-red-800 border-red-200 bg-red-50';
+                        break;
                     default:
                         colorClass = 'text-gray-800 border-gray-200 bg-gray-50';
                 }

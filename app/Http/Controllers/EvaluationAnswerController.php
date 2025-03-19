@@ -481,16 +481,16 @@ class EvaluationAnswerController extends Controller
                             'fecha_evaluacion' => now()
                         ]
                     );
-                    
+
                     // NUEVO: Permitir que el evaluador actualice la respuesta, descripción y evidencias
                     // Inicializar array de rutas de archivo
                     $filePaths = [];
-                    
+
                     // Obtener respuesta existente para preservar archivos si no hay nuevos
                     $existingAnswer = IndicatorAnswerEvaluation::where('company_id', $user->company_id)
                         ->where('evaluation_question_id', $questionId)
                         ->first();
-                        
+
                     if ($existingAnswer) {
                         // Mantener archivos existentes si no se proporcionan nuevos
                         if (empty($answerData['files']) && empty($answerData['existing_files'])) {
@@ -505,7 +505,7 @@ class EvaluationAnswerController extends Controller
                                     }
                                 }
                             }
-                            
+
                             // Agregar nuevos archivos
                             if (isset($answerData['files']) && is_array($answerData['files'])) {
                                 foreach ($answerData['files'] as $file) {
@@ -521,7 +521,7 @@ class EvaluationAnswerController extends Controller
                                 }
                             }
                         }
-                        
+
                         // Actualizar la respuesta con los datos proporcionados por el evaluador
                         $existingAnswer->update([
                             'answer' => $answerData['value'] ?? $existingAnswer->answer,
@@ -530,7 +530,7 @@ class EvaluationAnswerController extends Controller
                             'modified_by_evaluator' => true, // Marcar como modificado por evaluador
                             'updated_at' => now()
                         ]);
-                        
+
                         // Guardar en $savedAnswers para devolver al frontend
                         $savedAnswers[$questionId] = [
                             'value' => $existingAnswer->answer,
@@ -652,7 +652,12 @@ class EvaluationAnswerController extends Controller
             }
             // Si el usuario es evaluador y es el último valor, generar PDF con los resultados
             if ($user->role === 'evaluador' && $numeroDePreguntasQueClificoElEvaluador == $numeroDePreguntasQueVaAResponderLaEmpresa) {
-                $company->estado_eval = 'evaluacion-calificada';
+                // Verificar si hay indicadores vinculantes no aprobados
+                $hasFailedBindingIndicators = $this->hasFailedBindingIndicators($user->company_id);
+
+                $company->estado_eval = $hasFailedBindingIndicators ?
+                    'evaluacion-desaprobada' :
+                    'evaluacion-calificada';
                 $company->save();
             }
 
@@ -896,6 +901,9 @@ class EvaluationAnswerController extends Controller
             ->get()
             ->groupBy('subcategory.value.id');
 
+        // Verificar si hay indicadores vinculantes no aprobados
+        $hasFailedBindingIndicators = $this->hasFailedBindingIndicators($user->company_id);
+
         if (!$this->notificationsAlreadySent($user->company_id, $request->value_id, 'evaluado')) {
 
             // Generar PDF con los resultados
@@ -950,15 +958,68 @@ class EvaluationAnswerController extends Controller
             }
 
             // Registrar que se enviaron las notificaciones
-            $this->markNotificationsAsSent($user->company_id, $request->value_id, 'evaluado');
+            if (!$hasFailedBindingIndicators) {
+                $this->markNotificationsAsSent($user->company_id, $request->value_id, 'evaluado');
+            }
         }
-        $company->estado_eval = 'evaluado';
+
+        // Actualizar el estado según el resultado de la evaluación
+        if ($hasFailedBindingIndicators) {
+            $company->estado_eval = 'evaluacion-desaprobada';
+        } else {
+            $company->estado_eval = 'evaluado';
+        }
+
         $company->fecha_calificacion_evaluador = now();
         $company->save();
 
         return response()->json([
             'success' => true,
-            'message' => 'Evaluación calificada exitosamente'
+            'message' => $hasFailedBindingIndicators ?
+                'Evaluación calificada. La empresa no aprobó indicadores vinculantes.' :
+                'Evaluación calificada exitosamente'
         ]);
+    }
+
+    private function hasFailedBindingIndicators($companyId)
+    {
+        return EvaluatorAssessment::where('company_id', $companyId)
+            ->where('approved', false)
+            ->whereHas('indicator', function ($query) {
+                $query->where('binding', true);
+            })
+            ->exists();
+    }
+
+    /**
+     * Califica nuevamente la empresa
+     * 
+     * Se cambia el estado de estado_eval a 'evaluacion-completada'
+     * 
+     */
+    public function calificarNuevamente(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
+
+            $company->estado_eval = 'evaluacion-completada';
+            $company->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'La empresa ha sido habilitada para ser calificada nuevamente'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al calificar nuevamente:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al calificar nuevamente: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -20,6 +20,7 @@ export default function EvaluadorDashboard({ auth }) {
     const [modalStatus, setModalStatus] = useState('initial');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [notification, setNotification] = useState(null);
+    const [isCalificarNuevamenteModalOpen, setIsCalificarNuevamenteModalOpen] = useState(false);
 
     useEffect(() => {
         fetchCompanies();
@@ -78,7 +79,6 @@ export default function EvaluadorDashboard({ auth }) {
 
     const closeFinalizarEvaluacionModal = () => {
         setIsFinalizarEvaluacionModalOpen(false);
-        // Resetear el estado del modal para la próxima vez
         setTimeout(() => {
             setModalStatus('initial');
         }, 300);
@@ -105,11 +105,54 @@ export default function EvaluadorDashboard({ auth }) {
                 type: 'error',
                 message: error.response?.data?.message || error.message || 'Error al finalizar la evaluación'
             });
+        } finally {
+            setIsSubmitting(false);
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
         }
-        setIsSubmitting(false);
+
+    };
+
+    const openCalificarNuevamenteModal = () => {
+        setModalStatus('initial');
+        setIsCalificarNuevamenteModalOpen(true);
+    };
+
+    const closeCalificarNuevamenteModal = () => {
+        setIsCalificarNuevamenteModalOpen(false);
         setTimeout(() => {
-            window.location.reload();
-        }, 3000);
+            setModalStatus('initial');
+        }, 300);
+    };
+
+    const confirmCalificarNuevamente = async () => {
+        try {
+            setModalStatus('processing');
+            setIsSubmitting(true);
+
+            const response = await axios.post(route('evaluacion.calificar-nuevamente'));
+
+            if (response.data.success) {
+                setModalStatus('completed');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            } else {
+                throw new Error(response.data.message || 'Error al calificar nuevamente');
+            }
+        } catch (error) {
+            setIsCalificarNuevamenteModalOpen(false);
+            setNotification({
+                type: 'error',
+                message: error.response?.data?.message || error.message || 'Error al calificar nuevamente'
+            });
+        } finally {
+            setIsSubmitting(false);
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        }
     };
 
     return (
@@ -227,6 +270,31 @@ export default function EvaluadorDashboard({ auth }) {
                         </div>
                     )}
 
+                    {/* Mensaje de advertencia cuando la empresa está desaprobada, agregando un boton para poder calificar la empresa nuevamente */}
+                    {companyStatusEval === 'evaluacion-desaprobada' && (
+                        <div className="mb-8 bg-red-50 border border-red-200 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                                <div className="mt-0.5">
+                                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                                </div>
+                                <div className="flex items-center justify-between gap-3 w-full">
+                                    <div>
+                                        <h3 className="text-md font-semibold text-red-800">La empresa ha sido desaprobada</h3>
+                                        <p className="text-sm text-red-700 mt-1">
+                                            La empresa no aprobó los indicadores descalificatorios y ha sido desaprobada.
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={openCalificarNuevamenteModal}
+                                        className="bg-red-700 text-white px-4 py-2 rounded-lg hover:bg-red-800 transition-colors"
+                                    >
+                                        Calificar nuevamente
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Mensaje de advertencia cuando la empresa no está autorizada */}
                     {activeCompany && !isCompanyAuthorized && (
                         <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -317,7 +385,7 @@ export default function EvaluadorDashboard({ auth }) {
                         </div>
 
                         {
-                            activeCompany && companyStatusEval === 'evaluacion-calificada' && (
+                            (activeCompany && (companyStatusEval === 'evaluacion-calificada' || companyStatusEval === 'evaluacion-desaprobada')) && (
                                 <div className="">
                                     <button
                                         onClick={openFinalizarEvaluacionModal}
@@ -383,6 +451,16 @@ export default function EvaluadorDashboard({ auth }) {
                 onConfirm={confirmFinalizarEvaluacion}
                 status={modalStatus}
                 isProcessing={isSubmitting}
+            />
+            <CalificarEvaluacionModal
+                isOpen={isCalificarNuevamenteModalOpen}
+                onClose={closeCalificarNuevamenteModal}
+                onConfirm={confirmCalificarNuevamente}
+                status={modalStatus}
+                isProcessing={isSubmitting}
+                title="Calificar nuevamente"
+                message="¿Está seguro que desea calificar nuevamente la evaluación de esta empresa?"
+                successMessage="La empresa ha sido habilitada para ser calificada nuevamente"
             />
         </EvaluadorLayout>
     );

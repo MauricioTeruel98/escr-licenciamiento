@@ -154,6 +154,8 @@ Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
     Route::get('/evaluador/empresas', [EvaluadorController::class, 'companies'])->name('evaluador.empresas');
     Route::get('/api/evaluador/active-company', [EvaluadorController::class, 'getActiveCompany']);
     Route::post('/api/evaluador/switch-company', [EvaluadorController::class, 'switchCompany']);
+    Route::post('/api/evaluacion/calificar-nuevamente', [EvaluationAnswerController::class, 'calificarNuevamente'])
+        ->name('evaluacion.calificar-nuevamente');
 });
 
 Route::middleware(['auth', EnsureUserIsEvaluador::class, EnsureCompanyIsAuthorized::class])->group(function () {
@@ -333,6 +335,8 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
 
 Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
     Route::get('/api/empresas-reportes-evaluador', [ReportController::class, 'getCompaniesEmpresa']);
+    Route::post('/api/evaluacion/calificar-nuevamente', [EvaluationAnswerController::class, 'calificarNuevamente'])
+        ->name('evaluacion.calificar-nuevamente');
 });
 
 // Rutas para progresos

@@ -1,6 +1,15 @@
 import { X } from 'lucide-react';
 
-export default function CalificarEvaluacionModal({ isOpen, onClose, onConfirm, status = 'initial', isProcessing = false }) {
+export default function CalificarEvaluacionModal({ 
+    isOpen, 
+    onClose, 
+    onConfirm, 
+    status = 'initial', 
+    isProcessing = false,
+    title = "Calificar evaluación",
+    message = "¿Está seguro que desea calificar la evaluación de esta empresa?",
+    successMessage = "¡Evaluación calificada con éxito!"
+}) {
     if (!isOpen) return null;
 
     // Contenido según el estado
@@ -19,7 +28,7 @@ export default function CalificarEvaluacionModal({ isOpen, onClose, onConfirm, s
                             Procesando su solicitud
                         </h3>
                         <p className="text-sm text-gray-500">
-                            Estamos calificando la evaluación de esta empresa, por favor espere un momento...
+                            Por favor espere un momento...
                         </p>
                     </>
                 );
@@ -27,31 +36,28 @@ export default function CalificarEvaluacionModal({ isOpen, onClose, onConfirm, s
                 return (
                     <>
                         <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-100 mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon icon-tabler icons-tabler-filled icon-tabler-rosette-discount-check text-green-700"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12.01 2.011a3.2 3.2 0 0 1 2.113 .797l.154 .145l.698 .698a1.2 1.2 0 0 0 .71 .341l.135 .008h1a3.2 3.2 0 0 1 3.195 3.018l.005 .182v1c0 .27 .092 .533 .258 .743l.09 .1l.697 .698a3.2 3.2 0 0 1 .147 4.382l-.145 .154l-.698 .698a1.2 1.2 0 0 0 -.341 .71l-.008 .135v1a3.2 3.2 0 0 1 -3.018 3.195l-.182 .005h-1a1.2 1.2 0 0 0 -.743 .258l-.1 .09l-.698 .697a3.2 3.2 0 0 1 -4.382 .147l-.154 -.145l-.698 -.698a1.2 1.2 0 0 0 -.71 -.341l-.135 -.008h-1a3.2 3.2 0 0 1 -3.195 -3.018l-.005 -.182v-1a1.2 1.2 0 0 0 -.258 -.743l-.09 -.1l-.697 -.698a3.2 3.2 0 0 1 -.147 -4.382l.145 -.154l.698 -.698a1.2 1.2 0 0 0 .341 -.71l.008 -.135v-1l.005 -.182a3.2 3.2 0 0 1 3.013 -3.013l.182 -.005h1a1.2 1.2 0 0 0 .743 -.258l.1 -.09l.698 -.697a3.2 3.2 0 0 1 2.269 -.944zm3.697 7.282a1 1 0 0 0 -1.414 0l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.32 1.497l2 2l.094 .083a1 1 0 0 0 1.32 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z" /></svg>
-                        </div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                            ¡Evaluación calificada con éxito!
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                            La evaluación ha sido calificada con éxito.
-                        </p>
-                    </>
-                );
-            default: // 'initial'
-                return (
-                    <>
-                        <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-yellow-100 mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-600">
-                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                                <line x1="12" y1="9" x2="12" y2="13"></line>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            <svg className="h-6 w-6 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                            Calificar evaluación
+                            {successMessage}
+                        </h3>
+                    </>
+                );
+            default:
+                return (
+                    <>
+                        <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-yellow-100 mb-4">
+                            <svg className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                            {title}
                         </h3>
                         <p className="text-sm text-gray-500">
-                            ¿Está seguro que desea calificar la evaluación de esta empresa?
+                            {message}
                         </p>
                     </>
                 );
