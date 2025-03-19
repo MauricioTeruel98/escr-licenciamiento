@@ -355,6 +355,8 @@ class IndicadorAnswerController extends Controller
                 $fileName = "autoevaluation_{$user->company_id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
                 $fullPath = "{$companyPath}/{$fileName}";
 
+                $evaluationPath = "{$company->id}-{$companySlug}";
+
                 // Guardar PDF
                 $pdf->save($fullPath);
 
@@ -373,10 +375,13 @@ class IndicadorAnswerController extends Controller
                     Log::error('Error al enviar el correo de resultados de evaluación al superadmin: ' . $e->getMessage());
                 }
 
+                $finalAutoEvaluationPath = "{$evaluationPath}/{$fileName}";
+
                 // Actualizar la columna autoeval_ended en la tabla companies
                 $company->update([
                     'autoeval_ended' => true,
-                    'estado_eval' => 'auto-evaluacion-completed'
+                    'estado_eval' => 'auto-evaluacion-completed',
+                    'auto_evaluation_document_path' => $finalAutoEvaluationPath
                 ]);
 
                 return response()->json([

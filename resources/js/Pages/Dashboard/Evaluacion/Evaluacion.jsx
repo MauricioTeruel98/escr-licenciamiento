@@ -1070,7 +1070,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             )}
                             <div className="ml-auto">
                                 {
-                                    isEvaluador && (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluacion-calificada') ? (
+                                    isEvaluador && (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluacion-calificada' || company.estado_eval === 'evaluacion-desaprobada') ? (
                                         <button
                                             onClick={isLastSubcategory ? handleFinish : handleContinue}
                                             disabled={(isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()) || loading}
@@ -1107,7 +1107,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                     )
                                 }
                                 {
-                                    !isEvaluador && (company.estado_eval === 'evaluacion' || company.estado_eval === 'evaluacion-pendiente') ? (
+                                    !isEvaluador && (company.estado_eval === 'evaluacion' || company.estado_eval === 'evaluacion-pendiente' || company.estado_eval === 'evaluacion-desaprobada') ? (
                                         <button
                                             onClick={isLastSubcategory ? handleFinish : handleContinue}
                                             disabled={(isLastSubcategory ? !areAllQuestionsAnswered() : !areCurrentSubcategoryQuestionsAnswered()) || loading}

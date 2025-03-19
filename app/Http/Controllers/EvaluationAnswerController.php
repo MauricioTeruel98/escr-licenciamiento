@@ -646,7 +646,7 @@ class EvaluationAnswerController extends Controller
             $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
 
             // Enviar notificación al completar la evaluación
-            if ($numeroDePreguntasQueRespondioLaEmpresa == $numeroDePreguntasQueVaAResponderLaEmpresa && $user->role !== 'evaluador') {
+            if ($numeroDePreguntasQueRespondioLaEmpresa == $numeroDePreguntasQueVaAResponderLaEmpresa && $user->role !== 'evaluador' && $company->estado_eval !== 'evaluacion-desaprobada') {
                 $company->estado_eval = 'evaluacion-pendiente';
                 $company->save();
             }
@@ -924,6 +924,8 @@ class EvaluationAnswerController extends Controller
             $basePath = storage_path('app/public/evaluations');
             $companyPath = "{$basePath}/{$company->id}-{$companySlug}";
 
+            $evaluationPath = "{$company->id}-{$companySlug}";
+
             // Crear carpetas si no existen
             if (!file_exists($basePath)) {
                 mkdir($basePath, 0755, true);
@@ -938,6 +940,11 @@ class EvaluationAnswerController extends Controller
 
             // Guardar PDF
             $pdf->save($fullPath);
+
+            $finalEvaluationPath = "{$evaluationPath}/{$fileName}";
+
+            $company->evaluation_document_path = $finalEvaluationPath;
+            $company->save();
 
             // Enviar email con PDF al usuario administrador de la empresa
             if ($adminUser) {

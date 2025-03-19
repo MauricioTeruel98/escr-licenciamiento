@@ -26,7 +26,9 @@ class Company extends Model
         'estado_eval',
         'authorized_by_super_admin',
         'old_id',
-        'fecha_calificacion_evaluador'
+        'fecha_calificacion_evaluador',
+        'auto_evaluation_document_path',
+        'evaluation_document_path'
     ];
 
     protected $casts = [
