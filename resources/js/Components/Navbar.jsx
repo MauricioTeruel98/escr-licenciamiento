@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useForm, usePage } from "@inertiajs/react";
+import { Link, useForm, usePage, router } from "@inertiajs/react";
 import axios from 'axios';
 import { CheckCircle, XCircle } from 'lucide-react';
 
@@ -11,6 +11,8 @@ export default function Navbar({ userName, onMenuClick }) {
     const handleLogout = () => {
         post(route('logout'));
     };
+
+    console.log(solicitudesPendientes);
 
     useEffect(() => {
         if (auth.user.role === 'admin' || auth.user.role === 'super_admin') {
@@ -31,6 +33,7 @@ export default function Navbar({ userName, onMenuClick }) {
         post(route('user.approve', userId), {}, {
             onSuccess: () => {
                 cargarSolicitudesPendientes();
+                router.reload({ only: ['solicitudesPendientes'] });
             }
         });
     };
@@ -39,6 +42,7 @@ export default function Navbar({ userName, onMenuClick }) {
         post(route('user.reject', userId), {}, {
             onSuccess: () => {
                 cargarSolicitudesPendientes();
+                router.reload({ only: ['solicitudesPendientes'] });
             }
         });
     };

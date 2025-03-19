@@ -65,15 +65,24 @@ class IndicadoresController extends Controller
             ->get()
             ->groupBy('homologation_id')
             ->map(function ($group) {
+                // Verificar que availableCertification existe antes de acceder a sus propiedades
+                $certificationName = $group->first()->availableCertification ? 
+                    $group->first()->availableCertification->nombre : 'Certificación no disponible';
+                
                 return [
-                    'certification_name' => $group->first()->availableCertification->nombre,
+                    'certification_name' => $certificationName,
                     'indicators' => $group->map(function ($homologation) {
+                        // Verificar que indicator existe antes de acceder a sus propiedades
+                        if (!$homologation->indicator) {
+                            return null;
+                        }
+                        
                         return [
                             'id' => $homologation->indicator->id,
                             'name' => $homologation->indicator->name,
                             // Agrega aquí cualquier otra información del indicador que necesites
                         ];
-                    })
+                    })->filter() // Eliminar los valores nulos
                 ];
             });
 
