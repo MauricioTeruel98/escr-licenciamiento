@@ -31,4 +31,9 @@ class Value extends Model
     {
         return $this->hasMany(Requisitos::class);
     }
+
+    public function indicators(): HasMany
+    {
+        return $this->hasMany(Indicator::class);
+    }
 } 
