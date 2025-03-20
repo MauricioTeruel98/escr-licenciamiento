@@ -36,15 +36,33 @@ class DashboardController extends Controller
 
         $company = Company::find($companyId);
 
-        // Obtener el total de indicadores activos
-        $totalIndicadores = Indicator::where('is_active', true)->count();
+        // Verificar si la empresa ha iniciado su auto-evaluación
+        /*if (!$company->fecha_inicio_auto_evaluacion) {
+            return Inertia::render('Dashboard/Evaluation', [
+                'userName' => $user->name,
+                'isAdmin' => $isAdmin,
+                'error' => 'La empresa no ha iniciado su auto-evaluación'
+            ]);
+        }*/
+
+        // Obtener el total de indicadores activos que existían antes de la fecha de inicio
+        $totalIndicadores = Indicator::where('is_active', true)
+            ->where(function($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
+            ->count();
 
         //Resultados de la autoevaluación
         $autoEvaluationResult = AutoEvaluationResult::where('company_id', $user->company_id)->first();
 
         // Obtener el número de respuestas de la empresa
-        $indicadoresRespondidos = IndicatorAnswer::whereHas('indicator', function ($query) {
-            $query->where('is_active', true);
+        $indicadoresRespondidos = IndicatorAnswer::whereHas('indicator', function ($query) use ($company) {
+            $query->where('is_active', true)
+                ->where(function($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                });
         })
             ->where('company_id', $user->company_id)
             ->count();
@@ -54,20 +72,39 @@ class DashboardController extends Controller
 
         // Obtener los IDs de los indicadores respondidos con "sí"
         $indicatorIds = IndicatorAnswer::where('company_id', $user->company_id)
+            ->whereHas('indicator', function ($query) use ($company) {
+                $query->where(function($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                });
+            })
             ->where(function ($query) {
                 $query->whereIn('answer', ['1', 'si', 'sí', 'yes', 1, true]);
             })
-            ->pluck('indicator_id'); // Obtener solo los IDs
-
+            ->pluck('indicator_id');
 
         $numeroDePreguntasQueVaAResponderLaEmpresa = 0;
         $numeroDePreguntasQueRespondioLaEmpresa = 0;
         $progresoEvaluacion = 0;
 
         if ($company->estado_eval != 'auto-evaluacion' && $company->estado_eval != 'auto-evaluacion-completed') {
-            $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)->count();
+            $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)
+                ->whereHas('indicator', function ($query) use ($company) {
+                    $query->where(function($q) use ($company) {
+                        $q->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    });
+                })
+                ->count();
 
-            $numeroDePreguntasQueRespondioLaEmpresa = IndicatorAnswerEvaluation::where('company_id', $user->company_id)->count();
+            $numeroDePreguntasQueRespondioLaEmpresa = IndicatorAnswerEvaluation::where('company_id', $user->company_id)
+                ->whereHas('evaluationQuestion.indicator', function ($query) use ($company) {
+                    $query->where(function($q) use ($company) {
+                        $q->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    });
+                })
+                ->count();
 
             $progresoEvaluacion = $numeroDePreguntasQueRespondioLaEmpresa / $numeroDePreguntasQueVaAResponderLaEmpresa * 100;
         }
@@ -88,8 +125,12 @@ class DashboardController extends Controller
             if (!empty($homologationIds)) {
                 // Obtener indicadores homologados únicos (sin duplicados)
                 $indicadoresHomologados = IndicatorHomologation::whereIn('homologation_id', $homologationIds)
-                    ->whereHas('indicator', function ($query) {
-                        $query->where('is_active', true);
+                    ->whereHas('indicator', function ($query) use ($company) {
+                        $query->where('is_active', true)
+                            ->where(function($q) use ($company) {
+                                $q->whereNull('created_at')
+                                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                            });
                     })
                     ->distinct('indicator_id')
                     ->count('indicator_id');
@@ -100,6 +141,12 @@ class DashboardController extends Controller
         $failedBindingIndicators = IndicatorAnswer::where('company_id', $user->company_id)
             ->where('is_binding', true)
             ->where('answer', 0)
+            ->whereHas('indicator', function ($query) use ($company) {
+                $query->where(function($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                });
+            })
             ->with('indicator:id,name,self_evaluation_question')
             ->get()
             ->map(function ($answer) {
@@ -112,6 +159,12 @@ class DashboardController extends Controller
         // Obtener valores con nota insuficiente (menor a 70)
         $failedValues = AutoEvaluationValorResult::where('company_id', $user->company_id)
             ->where('nota', '<', 70)
+            ->whereHas('value', function ($query) use ($company) {
+                $query->where(function($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                });
+            })
             ->with('value:id,name')
             ->get()
             ->map(function ($result) {
@@ -125,7 +178,12 @@ class DashboardController extends Controller
         $status = 'en_proceso';
         $autoEvaluationResult = \App\Models\AutoEvaluationResult::where('company_id', $user->company_id)->first();
 
-        $activeValues = Value::where('is_active', true)->count();
+        $activeValues = Value::where('is_active', true)
+            ->where(function($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
+            ->count();
         $evaluatedValues = AutoEvaluationValorResult::where('company_id', $user->company_id)->count();
 
         if ($autoEvaluationResult) {
@@ -148,10 +206,14 @@ class DashboardController extends Controller
 
         // Obtener preguntas descalificatorias respondidas con NO
         $preguntasDescalificatoriasRechazadas = EvaluatorAssessment::with(['indicator', 'evaluationQuestion'])
-            ->whereHas('indicator', function ($query) {
-                $query->where('binding', true); // Filtrar indicadores descalificatorios
+            ->whereHas('indicator', function ($query) use ($company) {
+                $query->where('binding', true)
+                    ->where(function($q) use ($company) {
+                        $q->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    });
             })
-            ->where('approved', false) // Filtrar respuestas NO
+            ->where('approved', false)
             ->where('company_id', $user->company_id)
             ->get()
             ->map(function ($assessment) {
@@ -163,12 +225,6 @@ class DashboardController extends Controller
                     'evaluator_comment' => $assessment->comment
                 ];
             });
-
-        // Para debug
-        /*dd([
-            'company_id' => $user->company_id,
-            'preguntas_descalificatorias_rechazadas' => $preguntasDescalificatoriasRechazadas
-        ]);*/
 
         return Inertia::render('Dashboard/Evaluation', [
             'userName' => $user->name,
