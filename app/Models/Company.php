@@ -28,13 +28,17 @@ class Company extends Model
         'old_id',
         'fecha_calificacion_evaluador',
         'auto_evaluation_document_path',
-        'evaluation_document_path'
+        'evaluation_document_path',
+        'fecha_inicio_auto_evaluacion',
+        'fecha_inicio_evaluacion'
     ];
 
     protected $casts = [
         'is_exporter' => 'boolean',
         'autoeval_ended' => 'boolean',
         'fecha_calificacion_evaluador' => 'datetime',
+        'fecha_inicio_auto_evaluacion' => 'datetime',
+        'fecha_inicio_evaluacion' => 'datetime',
     ];
 
     public function users()
