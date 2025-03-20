@@ -15,7 +15,7 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
             try {
                 const response = await axios.get('/api/evaluador/active-company');
                 setActiveCompany(response.data);
-                setIsCompanyAuthorized(response.data?.authorized === 1);
+                setIsCompanyAuthorized(response.data?.authorized === 1 && (response.data?.estado_eval === "evaluacion-completada" || response.data?.estado_eval === "evaluacion-calificada" || response.data?.estado_eval === "evaluacion-desaprobada" || response.data?.estado_eval === "evaluado"));
             } catch (error) {
                 console.error('Error al cargar empresa activa:', error);
                 setActiveCompany(null);

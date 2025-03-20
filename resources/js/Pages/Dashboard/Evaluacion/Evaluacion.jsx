@@ -2,7 +2,7 @@ import DashboardLayout from '@/Layouts/DashboardLayout';
 import StepIndicator from '@/Components/StepIndicator';
 import FileManager from '@/Components/FileManager';
 import Toast from '@/Components/Toast';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { router, usePage } from '@inertiajs/react';
 import EvaluacionProcessing from '@/Components/Modals/EvaluacionProcessing';
@@ -47,6 +47,8 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     const [totalApprovedQuestions, setTotalApprovedQuestions] = useState(numeroDePreguntasQueClificoPositivamenteElEvaluador);
     const [totalApprovedQuestionsForValue, setTotalApprovedQuestionsForValue] = useState(numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor);
     const [validationErrors, setValidationErrors] = useState({});
+    const [failedBindingIndicators, setFailedBindingIndicators] = useState([]);
+    const [bindingWarning, setBindingWarning] = useState(false);
 
     // Verificar si la empresa es exportadora
     const isExporter = auth.user.company?.is_exporter === true;
@@ -259,16 +261,46 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         return totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
     };
 
-    const handleAnswer = (questionId, value, description = '', files = [], evaluator_comment = '') => {
-        // Si la empresa no es exportadora y no es evaluador, no permitir cambios
-        /*if (!isExporter && !isEvaluador) {
-            setNotification({
-                type: 'error',
-                message: 'Su empresa debe ser exportadora para poder realizar la evaluación.'
+    // Agregar función para verificar indicadores descalificatorios
+    const checkBindingAnswers = useCallback((questionId, value) => {
+        if (!isEvaluador) {
+            const newFailedIndicators = [...failedBindingIndicators];
+            
+            // Encontrar el indicador al que pertenece la pregunta
+            let foundIndicator = null;
+            subcategories.forEach(subcategory => {
+                subcategory.indicators.forEach(indicator => {
+                    indicator.evaluation_questions.forEach(question => {
+                        if (question.id === questionId && indicator.binding) {
+                            foundIndicator = indicator;
+                        }
+                    });
+                });
             });
-            return;
-        }*/
 
+            if (foundIndicator && value === "0") {
+                // Agregar el indicador si no está ya en la lista
+                if (!newFailedIndicators.some(ind => ind.id === foundIndicator.id)) {
+                    newFailedIndicators.push({
+                        id: foundIndicator.id,
+                        code: foundIndicator.name,
+                    });
+                }
+            } else if (foundIndicator) {
+                // Remover el indicador si existe en la lista
+                const index = newFailedIndicators.findIndex(ind => ind.id === foundIndicator.id);
+                if (index !== -1) {
+                    newFailedIndicators.splice(index, 1);
+                }
+            }
+
+            setFailedBindingIndicators(newFailedIndicators);
+            setBindingWarning(newFailedIndicators.length > 0);
+        }
+    }, [failedBindingIndicators, isEvaluador, subcategories]);
+
+    // Modificar la función handleAnswer para incluir la verificación de indicadores descalificatorios
+    const handleAnswer = (questionId, value, description = '', files = [], evaluator_comment = '') => {
         const newAnswers = { ...answers };
         newAnswers[questionId] = {
             value,
@@ -277,6 +309,9 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             evaluator_comment
         };
         setAnswers(newAnswers);
+
+        // Verificar indicadores descalificatorios
+        checkBindingAnswers(questionId, value);
 
         // Validar si hay archivos
         if (files.length === 0) {
@@ -664,6 +699,34 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }
     }, [answers, approvals, isEvaluador]);
 
+    // Agregar un efecto para verificar indicadores descalificatorios al cargar la página
+    useEffect(() => {
+        if (!isEvaluador && savedAnswers) {
+            const newFailedIndicators = [];
+            
+            // Revisar todas las respuestas guardadas
+            subcategories.forEach(subcategory => {
+                subcategory.indicators.forEach(indicator => {
+                    indicator.evaluation_questions.forEach(question => {
+                        const answer = savedAnswers[question.id];
+                        if (indicator.binding && answer?.value === "0") {
+                            // Agregar el indicador si no está ya en la lista
+                            if (!newFailedIndicators.some(ind => ind.id === indicator.id)) {
+                                newFailedIndicators.push({
+                                    id: indicator.id,
+                                    code: indicator.name,
+                                });
+                            }
+                        }
+                    });
+                });
+            });
+
+            setFailedBindingIndicators(newFailedIndicators);
+            setBindingWarning(newFailedIndicators.length > 0);
+        }
+    }, [savedAnswers, subcategories, isEvaluador]);
+
     return (
         <DashboardLayout userName={userName} title="Evaluación">
             <div className="space-y-8">
@@ -719,11 +782,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                         <div className="lg:w-1/2 mt-5 lg:mt-0">
                             <div>
                                 <div className="flex">
-                                    <div className="w-1/2 rounded-l-xl px-6 p-4 bg-blue-100/50 text-blue-700">
-                                        <h2 className="text-lg font-semibold mb-2 text-blue-700">
+                                    <div className={`w-1/2 rounded-l-xl px-6 p-4 ${!isEvaluador && bindingWarning ? 'bg-red-100/50 text-red-700' : 'bg-blue-100/50 text-blue-700'}`}>
+                                        <h2 className={`text-lg font-semibold mb-2 ${!isEvaluador && bindingWarning ? 'text-red-700' : 'text-blue-700'}`}>
                                             Progreso actual
                                         </h2>
-                                        <p className="text-2xl font-bold text-blue-500">
+                                        <p className={`text-2xl font-bold ${!isEvaluador && bindingWarning ? 'text-red-500' : 'text-blue-500'}`}>
                                             {currentProgress}%
                                         </p>
                                     </div>
@@ -741,6 +804,16 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                         style={{ width: `${currentProgress}%` }}
                                     ></div>
                                 </div>
+                                {!isEvaluador && bindingWarning && failedBindingIndicators.length > 0 && (
+                                    <div className="mt-2 px-6">
+                                        <p className="text-red-600 text-sm font-medium flex items-center gap-2">
+                                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                            </svg>
+                                            Indicadores {failedBindingIndicators.map(ind => ind.code).join(', ')} son descalificatorios
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

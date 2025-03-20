@@ -273,7 +273,10 @@ export default function Evaluation({
                                 </div>
                                 <div className="flex gap-2">
                                     <button
-                                        onClick={() => post(route('user.approve', request.id))}
+                                        onClick={() => {
+                                            post(route('user.approve', request.id));
+                                            window.location.reload();
+                                        }}
                                         className="flex items-center justify-center w-6 h-6 rounded-full bg-green-600 hover:bg-green-700"
                                         title="Aprobar"
                                     >
@@ -282,7 +285,10 @@ export default function Evaluation({
                                         </svg>
                                     </button>
                                     <button
-                                        onClick={() => post(route('user.reject', request.id))}
+                                        onClick={() => {
+                                            post(route('user.reject', request.id));
+                                            window.location.reload();
+                                        }}
                                         className="flex items-center justify-center w-6 h-6 rounded-full bg-red-600 hover:bg-red-700"
                                         title="Rechazar"
                                     >

@@ -621,6 +621,13 @@ export default function CompanyInfoModal({ isOpen, onClose, companyId }) {
                                                                     </p>
                                                                 </div>
                                                             )}
+
+                                                            {infoAdicional.observaciones && (
+                                                                <div>
+                                                                    <p className="text-sm font-medium text-gray-500">Observaciones</p>
+                                                                    <p className="mt-1 whitespace-pre-line">{infoAdicional.observaciones}</p>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}
