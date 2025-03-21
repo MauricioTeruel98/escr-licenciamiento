@@ -144,6 +144,7 @@ class DashboardController extends Controller
                 $indicadoresHomologados = IndicatorHomologation::whereIn('homologation_id', $homologationIds)
                     ->whereHas('indicator', function ($query) use ($company) {
                         $query->where('is_active', true)
+                            ->where('deleted', false)
                             ->where(function($q) use ($company) {
                                 $q->whereNull('created_at')
                                     ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);

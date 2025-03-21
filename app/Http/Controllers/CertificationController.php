@@ -47,8 +47,10 @@ class CertificationController extends Controller
         ]);
 
         try {
+            $company = Auth::user()->company;
+            
             // Verificar si ya existe una certificación con el mismo nombre para esta empresa
-            $existingCertification = Auth::user()->company->certifications()
+            $existingCertification = $company->certifications()
                 ->where('nombre', $validated['nombre'])
                 ->first();
             
@@ -58,16 +60,19 @@ class CertificationController extends Controller
                 ], 422);
             }
             
-            // Agregar logs para depuración
-            Log::info('Datos validados:', $validated);
-            
             // Obtener el número de indicadores homologados para esta certificación
             $indicadoresCount = IndicatorHomologation::where('homologation_id', $validated['homologation_id'])
+                ->whereHas('indicator', function ($query) use ($company) {
+                    $query->where('is_active', true)
+                        ->where('deleted', false)
+                        ->where(function($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        });
+                })
                 ->count();
-            
-            Log::info('Número de indicadores encontrados:', ['count' => $indicadoresCount]);
 
-            $certification = Auth::user()->company->certifications()->create([
+            $certification = $company->certifications()->create([
                 'nombre' => $validated['nombre'],
                 'homologation_id' => $validated['homologation_id'],
                 'fecha_obtencion' => $validated['fecha_obtencion'],
@@ -83,7 +88,6 @@ class CertificationController extends Controller
                 'message' => 'Certificación creada exitosamente'
             ]);
         } catch (\Exception $e) {
-            // Agregar log del error específico
             Log::error('Error al crear certificación:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
