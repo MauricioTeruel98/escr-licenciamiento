@@ -18,6 +18,7 @@ class CompanyManagementController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('legal_id', 'like', "%{$search}%")
+                  ->orWhere('provincia', 'like', "%{$search}%")
                   ->orWhere('sector', 'like', "%{$search}%");
             });
         })

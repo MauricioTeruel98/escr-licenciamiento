@@ -16,16 +16,18 @@ class ValueController extends Controller
         }]);
 
         // Búsqueda
-        if ($request->has('search')) {
+        if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', "%{$searchTerm}%")
-                  ->orWhere('slug', 'like', "%{$searchTerm}%")
-                  ->orWhere('deleted', false);
+                  ->orWhereHas('subcategories', function ($subQuery) use ($searchTerm) {
+                      $subQuery->where('name', 'like', "%{$searchTerm}%")
+                              ->where('deleted', false);
+                  });
             });
         }
 
-        // Ordenamiento (si lo necesitas)
+        // Ordenamiento
         $query->orderBy('created_at', 'desc')
             ->where('deleted', false);
 

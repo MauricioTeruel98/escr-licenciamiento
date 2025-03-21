@@ -24,6 +24,9 @@ export default function HomologationsIndex() {
         total: 0,
         perPage: 10
     });
+    const [isLoading, setIsLoading] = useState(false);
+    const [abortController, setAbortController] = useState(null);
+    const [searchTimeout, setSearchTimeout] = useState(null);
 
     const TIPOS = {
         'INTE': 'INTE',
@@ -95,17 +98,26 @@ export default function HomologationsIndex() {
     ];
 
     useEffect(() => {
-        loadHomologations();
-    }, []);
+        fetchHomologations();
+    }, [pagination.currentPage, pagination.perPage, searchTerm]);
 
-    const loadHomologations = async (page = 1, perPage = 10, search = '') => {
+    const fetchHomologations = async () => {
+        if (abortController) {
+            abortController.abort();
+        }
+
+        const controller = new AbortController();
+        setAbortController(controller);
+
+        setIsLoading(true);
         try {
             const response = await axios.get('/api/homologations', {
                 params: {
-                    page,
-                    per_page: perPage,
-                    search
-                }
+                    page: pagination.currentPage,
+                    per_page: pagination.perPage,
+                    search: searchTerm
+                },
+                signal: controller.signal
             });
             setHomologations(response.data.data);
             setPagination({
@@ -115,8 +127,13 @@ export default function HomologationsIndex() {
                 perPage: response.data.per_page
             });
         } catch (error) {
-            console.error('Error al cargar homologaciones:', error);
-            showNotification('error', 'Error al cargar las homologaciones');
+            if (!axios.isCancel(error)) {
+                console.error('Error al cargar homologaciones:', error);
+                showNotification('error', 'Error al cargar las homologaciones');
+            }
+        } finally {
+            setIsLoading(false);
+            setAbortController(null);
         }
     };
 
@@ -140,25 +157,35 @@ export default function HomologationsIndex() {
     };
 
     const handleSearch = (term) => {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
         setSearchTerm(term);
-        setPagination(prev => ({ ...prev, currentPage: 1 }));
-        loadHomologations(1, pagination.perPage, term);
+        
+        const timeout = setTimeout(() => {
+            setPagination({...pagination, currentPage: 1});
+        }, 500);
+
+        setSearchTimeout(timeout);
     };
 
-    const handlePageChange = (page) => {
-        setPagination(prev => ({ ...prev, currentPage: page }));
-        loadHomologations(page, pagination.perPage, searchTerm);
+    const handlePageChange = (newPage) => {
+        setPagination({ ...pagination, currentPage: newPage });
     };
 
-    const handlePerPageChange = (perPage) => {
-        setPagination(prev => ({ ...prev, perPage, currentPage: 1 }));
-        loadHomologations(1, perPage, searchTerm);
+    const handlePerPageChange = (newPerPage) => {
+        setPagination({
+            ...pagination,
+            perPage: newPerPage,
+            currentPage: 1
+        });
     };
 
     const handleBulkDelete = async (ids) => {
         try {
             await axios.post('/api/homologations/bulk-delete', { ids });
-            loadHomologations(pagination.currentPage, pagination.perPage, searchTerm);
+            fetchHomologations();
             showNotification('success', `${ids.length} ${ids.length === 1 ? 'homologación eliminada' : 'homologaciones eliminadas'} exitosamente`);
         } catch (error) {
             console.error('Error al eliminar homologaciones:', error);
@@ -169,7 +196,7 @@ export default function HomologationsIndex() {
     const confirmDelete = async () => {
         try {
             await axios.delete(`/api/homologations/${homologationToDelete.id}`);
-            loadHomologations(pagination.currentPage, pagination.perPage, searchTerm);
+            fetchHomologations();
             setDeleteModalOpen(false);
             setHomologationToDelete(null);
             showNotification('success', 'Homologación eliminada exitosamente');
@@ -188,13 +215,25 @@ export default function HomologationsIndex() {
                 await axios.post('/api/homologations', formData);
                 showNotification('success', 'Homologación creada exitosamente');
             }
-            loadHomologations(pagination.currentPage, pagination.perPage, searchTerm);
+            fetchHomologations();
             setModalOpen(false);
         } catch (error) {
             console.error('Error al guardar homologación:', error);
             showNotification('error', 'Error al guardar la homologación');
         }
     };
+
+    // Cleanup effect
+    useEffect(() => {
+        return () => {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            if (abortController) {
+                abortController.abort();
+            }
+        };
+    }, [searchTimeout, abortController]);
 
     return (
         <SuperAdminLayout>
@@ -228,6 +267,7 @@ export default function HomologationsIndex() {
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}
                     onBulkDelete={handleBulkDelete}
+                    isLoading={isLoading}
                 />
             </div>
 

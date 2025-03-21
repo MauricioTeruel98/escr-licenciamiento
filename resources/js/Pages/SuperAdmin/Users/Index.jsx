@@ -25,6 +25,9 @@ export default function UsersIndex() {
         perPage: 10
     });
     const [activeFilter, setActiveFilter] = useState('todos');
+    const [isLoading, setIsLoading] = useState(false);
+    const [abortController, setAbortController] = useState(null);
+    const [searchTimeout, setSearchTimeout] = useState(null);
 
     const columns = [
         { key: 'name', label: 'Nombre' },
@@ -173,6 +176,14 @@ export default function UsersIndex() {
     }, [pagination.currentPage, pagination.perPage, searchTerm, activeFilter]);
 
     const fetchUsers = async () => {
+        if (abortController) {
+            abortController.abort();
+        }
+
+        const controller = new AbortController();
+        setAbortController(controller);
+
+        setIsLoading(true);
         try {
             const response = await axios.get('/api/users', {
                 params: {
@@ -180,20 +191,27 @@ export default function UsersIndex() {
                     per_page: pagination.perPage,
                     search: searchTerm,
                     role: activeFilter === 'todos' ? null : activeFilter
-                }
+                },
+                signal: controller.signal
             });
             setUsers(response.data.data);
             setPagination({
-                ...pagination,
+                currentPage: response.data.current_page,
+                lastPage: response.data.last_page,
                 total: response.data.total,
-                lastPage: response.data.last_page
+                perPage: response.data.per_page
             });
         } catch (error) {
-            console.error('Error al cargar usuarios:', error);
-            setNotification({
-                type: 'error',
-                message: 'Error al cargar los usuarios'
-            });
+            if (!axios.isCancel(error)) {
+                console.error('Error al cargar usuarios:', error);
+                setNotification({
+                    type: 'error',
+                    message: 'Error al cargar los usuarios'
+                });
+            }
+        } finally {
+            setIsLoading(false);
+            setAbortController(null);
         }
     };
 
@@ -266,8 +284,17 @@ export default function UsersIndex() {
     };
 
     const handleSearch = (term) => {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
         setSearchTerm(term);
-        setPagination({ ...pagination, currentPage: 1 });
+        
+        const timeout = setTimeout(() => {
+            setPagination({...pagination, currentPage: 1});
+        }, 500);
+
+        setSearchTimeout(timeout);
     };
 
     const handlePageChange = (newPage) => {
@@ -303,6 +330,17 @@ export default function UsersIndex() {
         setActiveFilter(filter);
         setPagination({ ...pagination, currentPage: 1 });
     };
+
+    useEffect(() => {
+        return () => {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            if (abortController) {
+                abortController.abort();
+            }
+        };
+    }, [searchTimeout, abortController]);
 
     return (
         <SuperAdminLayout>
@@ -361,6 +399,7 @@ export default function UsersIndex() {
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}
                     onBulkDelete={handleBulkDelete}
+                    isLoading={isLoading}
                 />
             </div>
 

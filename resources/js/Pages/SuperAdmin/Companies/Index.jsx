@@ -28,6 +28,10 @@ export default function CompaniesIndex() {
         perPage: 10
     });
     const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [abortController, setAbortController] = useState(null);
+    const [searchTimeout, setSearchTimeout] = useState(null);
+    const [isSearching, setIsSearching] = useState(false);
 
     const columns = [
         { key: 'legal_id', label: 'Cedula' },
@@ -89,13 +93,23 @@ export default function CompaniesIndex() {
     }, [pagination.currentPage, pagination.perPage, searchTerm]);
 
     const fetchCompanies = async () => {
+        if (abortController) {
+            abortController.abort();
+        }
+
+        const controller = new AbortController();
+        setAbortController(controller);
+
+        setIsLoading(true);
+
         try {
             const response = await axios.get('/api/companies', {
                 params: {
                     page: pagination.currentPage,
                     per_page: pagination.perPage,
                     search: searchTerm
-                }
+                },
+                signal: controller.signal
             });
             setCompanies(response.data.data);
             setPagination({
@@ -105,11 +119,16 @@ export default function CompaniesIndex() {
                 perPage: response.data.per_page
             });
         } catch (error) {
-            console.error('Error al cargar empresas:', error);
-            setNotification({
-                type: 'error',
-                message: 'Error al cargar las empresas'
-            });
+            if (!axios.isCancel(error)) {
+                console.error('Error al cargar empresas:', error);
+                setNotification({
+                    type: 'error',
+                    message: 'Error al cargar las empresas'
+                });
+            }
+        } finally {
+            setIsLoading(false);
+            setAbortController(null);
         }
     };
 
@@ -208,9 +227,29 @@ export default function CompaniesIndex() {
     };
 
     const handleSearch = (term) => {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
         setSearchTerm(term);
-        setPagination({...pagination, currentPage: 1});
+        
+        const timeout = setTimeout(() => {
+            setPagination({...pagination, currentPage: 1});
+        }, 500);
+
+        setSearchTimeout(timeout);
     };
+
+    useEffect(() => {
+        return () => {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            if (abortController) {
+                abortController.abort();
+            }
+        };
+    }, [searchTimeout, abortController]);
 
     return (
         <SuperAdminLayout>
@@ -239,6 +278,7 @@ export default function CompaniesIndex() {
                         onPerPageChange={(perPage) => setPagination({...pagination, perPage, currentPage: 1})}
                         onBulkDelete={handleBulkDelete}
                         onSearch={handleSearch}
+                        isLoading={isLoading}
                     />
                 </div>
 

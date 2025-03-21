@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Search, Trash2 } from 'lucide-react';
 import DeleteModal from '@/Components/Modals/DeleteModal';
 
@@ -10,10 +10,16 @@ export default function TableList({
     pagination,
     onPageChange,
     onPerPageChange,
-    onBulkDelete 
+    onBulkDelete,
+    isLoading
 }) {
     const [selectedItems, setSelectedItems] = useState([]);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [pageInputValue, setPageInputValue] = useState(pagination.currentPage);
+
+    useEffect(() => {
+        setPageInputValue(pagination.currentPage);
+    }, [pagination.currentPage]);
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
@@ -41,6 +47,22 @@ export default function TableList({
         onBulkDelete(selectedItems);
         clearSelection();
         setShowDeleteModal(false);
+    };
+
+    const handlePageInputChange = (e) => {
+        const value = e.target.value;
+        setPageInputValue(value);
+
+        const pageNumber = parseInt(value);
+        if (pageNumber >= 1 && pageNumber <= pagination.lastPage) {
+            onPageChange(pageNumber);
+        }
+    };
+
+    const handlePageInputBlur = () => {
+        if (!pageInputValue || pageInputValue < 1 || pageInputValue > pagination.lastPage) {
+            setPageInputValue(pagination.currentPage);
+        }
     };
 
     return (
@@ -88,8 +110,13 @@ export default function TableList({
                 </div>
             </div>
 
-            {/* Tabla */}
-            <div className="overflow-x-auto">
+            {/* Tabla con loader */}
+            <div className="relative overflow-x-auto">
+                {isLoading && (
+                    <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                    </div>
+                )}
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
@@ -137,7 +164,7 @@ export default function TableList({
                 </table>
             </div>
 
-            {/* Paginación */}
+            {/* Paginación actualizada */}
             <div className="px-4 py-3 border-t border-gray-200">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
@@ -154,22 +181,64 @@ export default function TableList({
                         <span className="text-sm text-gray-700">por página</span>
                     </div>
                     <div className="flex items-center space-x-2">
+                        {/* Botón Primera Página */}
+                        <button
+                            onClick={() => onPageChange(1)}
+                            disabled={pagination.currentPage === 1 || isLoading}
+                            className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Primera página"
+                        >
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                            </svg>
+                        </button>
+
+                        {/* Botón Página Anterior */}
                         <button
                             onClick={() => onPageChange(pagination.currentPage - 1)}
-                            disabled={pagination.currentPage === 1}
-                            className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50"
+                            disabled={pagination.currentPage === 1 || isLoading}
+                            className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Página anterior"
                         >
                             <ChevronLeft className="h-5 w-5" />
                         </button>
-                        <span className="text-sm text-gray-700">
-                            Página {pagination.currentPage} de {pagination.lastPage}
-                        </span>
+
+                        {/* Input de Página */}
+                        <div className="flex items-center space-x-1">
+                            <input
+                                type="number"
+                                min="1"
+                                max={pagination.lastPage}
+                                value={pageInputValue}
+                                onChange={handlePageInputChange}
+                                onBlur={handlePageInputBlur}
+                                className="w-16 border-gray-300 rounded-md text-sm text-center"
+                            />
+                            <span className="text-sm text-gray-700">
+                                de {pagination.lastPage}
+                            </span>
+                        </div>
+
+                        {/* Botón Página Siguiente */}
                         <button
                             onClick={() => onPageChange(pagination.currentPage + 1)}
-                            disabled={pagination.currentPage === pagination.lastPage}
-                            className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50"
+                            disabled={pagination.currentPage === pagination.lastPage || isLoading}
+                            className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Página siguiente"
                         >
                             <ChevronRight className="h-5 w-5" />
+                        </button>
+
+                        {/* Botón Última Página */}
+                        <button
+                            onClick={() => onPageChange(pagination.lastPage)}
+                            disabled={pagination.currentPage === pagination.lastPage || isLoading}
+                            className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Última página"
+                        >
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                            </svg>
                         </button>
                     </div>
                 </div>

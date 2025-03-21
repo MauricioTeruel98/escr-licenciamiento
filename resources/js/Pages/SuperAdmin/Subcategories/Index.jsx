@@ -25,6 +25,9 @@ export default function SubcategoriesIndex() {
         total: 0,
         perPage: 10
     });
+    const [isLoading, setIsLoading] = useState(false);
+    const [abortController, setAbortController] = useState(null);
+    const [searchTimeout, setSearchTimeout] = useState(null);
 
     const columns = [
         { key: 'name', label: 'Nombre' },
@@ -76,18 +79,27 @@ export default function SubcategoriesIndex() {
     ];
 
     useEffect(() => {
-        loadSubcategories();
+        fetchSubcategories();
         loadValues();
-    }, []);
+    }, [pagination.currentPage, pagination.perPage, searchTerm]);
 
-    const loadSubcategories = async (page = 1, perPage = 10, search = '') => {
+    const fetchSubcategories = async () => {
+        if (abortController) {
+            abortController.abort();
+        }
+
+        const controller = new AbortController();
+        setAbortController(controller);
+
+        setIsLoading(true);
         try {
             const response = await axios.get('/api/subcategories', {
                 params: {
-                    page,
-                    per_page: perPage,
-                    search
-                }
+                    page: pagination.currentPage,
+                    per_page: pagination.perPage,
+                    search: searchTerm
+                },
+                signal: controller.signal
             });
             setSubcategories(response.data.data);
             setPagination({
@@ -97,8 +109,13 @@ export default function SubcategoriesIndex() {
                 perPage: response.data.per_page
             });
         } catch (error) {
-            console.error('Error al cargar subcategorías:', error);
-            showNotification('error', 'Error al cargar las subcategorías');
+            if (!axios.isCancel(error)) {
+                console.error('Error al cargar subcategorías:', error);
+                showNotification('error', 'Error al cargar las subcategorías');
+            }
+        } finally {
+            setIsLoading(false);
+            setAbortController(null);
         }
     };
 
@@ -132,25 +149,35 @@ export default function SubcategoriesIndex() {
     };
 
     const handleSearch = (term) => {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
         setSearchTerm(term);
-        setPagination(prev => ({ ...prev, currentPage: 1 }));
-        loadSubcategories(1, pagination.perPage, term);
+        
+        const timeout = setTimeout(() => {
+            setPagination({...pagination, currentPage: 1});
+        }, 500);
+
+        setSearchTimeout(timeout);
     };
 
-    const handlePageChange = (page) => {
-        setPagination(prev => ({ ...prev, currentPage: page }));
-        loadSubcategories(page, pagination.perPage, searchTerm);
+    const handlePageChange = (newPage) => {
+        setPagination({ ...pagination, currentPage: newPage });
     };
 
-    const handlePerPageChange = (perPage) => {
-        setPagination(prev => ({ ...prev, perPage, currentPage: 1 }));
-        loadSubcategories(1, perPage, searchTerm);
+    const handlePerPageChange = (newPerPage) => {
+        setPagination({
+            ...pagination,
+            perPage: newPerPage,
+            currentPage: 1
+        });
     };
 
     const handleBulkDelete = async (ids) => {
         try {
             await axios.post('/api/subcategories/bulk-delete', { ids });
-            loadSubcategories(pagination.currentPage, pagination.perPage, searchTerm);
+            fetchSubcategories();
             showNotification('success', `${ids.length} ${ids.length === 1 ? 'componente eliminado' : 'componentes eliminados'} exitosamente`);
         } catch (error) {
             console.error('Error al eliminar subcategorías:', error);
@@ -161,7 +188,7 @@ export default function SubcategoriesIndex() {
     const confirmDelete = async () => {
         try {
             await axios.delete(`/api/subcategories/${subcategoryToDelete.id}`);
-            loadSubcategories(pagination.currentPage, pagination.perPage, searchTerm);
+            fetchSubcategories();
             setDeleteModalOpen(false);
             setSubcategoryToDelete(null);
             showNotification('success', 'Subcategoría eliminada exitosamente');
@@ -180,13 +207,25 @@ export default function SubcategoriesIndex() {
                 await axios.post('/api/subcategories', formData);
                 showNotification('success', 'Subcategoría creada exitosamente');
             }
-            loadSubcategories(pagination.currentPage, pagination.perPage, searchTerm);
+            fetchSubcategories();
             setModalOpen(false);
         } catch (error) {
             console.error('Error al guardar subcategoría:', error);
             showNotification('error', 'Error al guardar la subcategoría');
         }
     };
+
+    // Cleanup effect
+    useEffect(() => {
+        return () => {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            if (abortController) {
+                abortController.abort();
+            }
+        };
+    }, [searchTimeout, abortController]);
 
     return (
         <SuperAdminLayout>
@@ -229,6 +268,7 @@ export default function SubcategoriesIndex() {
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}
                     onBulkDelete={handleBulkDelete}
+                    isLoading={isLoading}
                 />
             </div>
 

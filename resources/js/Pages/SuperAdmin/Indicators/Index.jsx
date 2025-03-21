@@ -32,7 +32,9 @@ export default function IndicatorsIndex() {
     });
     const [viewQuestionsModalOpen, setViewQuestionsModalOpen] = useState(false);
     const [selectedIndicatorForQuestions, setSelectedIndicatorForQuestions] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [abortController, setAbortController] = useState(null);
+    const [searchTimeout, setSearchTimeout] = useState(null);
 
     const columns = [
         { key: 'name', label: 'Nombre' },
@@ -131,27 +133,35 @@ export default function IndicatorsIndex() {
     ];
 
     useEffect(() => {
-        loadIndicators();
+        fetchIndicators();
         loadRelatedData();
-    }, []);
+    }, [pagination.currentPage, pagination.perPage, searchTerm]);
 
-    const loadIndicators = async (page = 1, perPage = 10, search = '') => {
-        setLoading(true);
+    const fetchIndicators = async () => {
+        if (abortController) {
+            abortController.abort();
+        }
+
+        const controller = new AbortController();
+        setAbortController(controller);
+
+        setIsLoading(true);
         try {
             const response = await axios.get('/api/indicators', {
                 params: {
-                    page,
-                    per_page: perPage,
-                    search
-                }
+                    page: pagination.currentPage,
+                    per_page: pagination.perPage,
+                    search: searchTerm
+                },
+                signal: controller.signal
             });
             
             setIndicators(response.data.data);
             setPagination({
                 currentPage: response.data.current_page,
-                perPage: response.data.per_page,
+                lastPage: response.data.last_page,
                 total: response.data.total,
-                lastPage: response.data.last_page
+                perPage: response.data.per_page
             });
             
             // Si hay un indicador seleccionado, actualizamos su información
@@ -161,12 +171,14 @@ export default function IndicatorsIndex() {
                     setSelectedIndicator(updatedIndicator);
                 }
             }
-            
-            setLoading(false);
         } catch (error) {
-            console.error('Error al cargar indicadores:', error);
-            setLoading(false);
-            showNotification('error', 'Error al cargar los indicadores');
+            if (!axios.isCancel(error)) {
+                console.error('Error al cargar indicadores:', error);
+                showNotification('error', 'Error al cargar los indicadores');
+            }
+        } finally {
+            setIsLoading(false);
+            setAbortController(null);
         }
     };
 
@@ -200,25 +212,35 @@ export default function IndicatorsIndex() {
     };
 
     const handleSearch = (term) => {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
         setSearchTerm(term);
-        setPagination(prev => ({ ...prev, currentPage: 1 }));
-        loadIndicators(1, pagination.perPage, term);
+        
+        const timeout = setTimeout(() => {
+            setPagination({...pagination, currentPage: 1});
+        }, 500);
+
+        setSearchTimeout(timeout);
     };
 
-    const handlePageChange = (page) => {
-        setPagination(prev => ({ ...prev, currentPage: page }));
-        loadIndicators(page, pagination.perPage, searchTerm);
+    const handlePageChange = (newPage) => {
+        setPagination({ ...pagination, currentPage: newPage });
     };
 
-    const handlePerPageChange = (perPage) => {
-        setPagination(prev => ({ ...prev, perPage, currentPage: 1 }));
-        loadIndicators(1, perPage, searchTerm);
+    const handlePerPageChange = (newPerPage) => {
+        setPagination({
+            ...pagination,
+            perPage: newPerPage,
+            currentPage: 1
+        });
     };
 
     const handleBulkDelete = async (ids) => {
         try {
             await axios.post('/api/indicators/bulk-delete', { ids });
-            loadIndicators(pagination.currentPage, pagination.perPage, searchTerm);
+            fetchIndicators();
             showNotification('success', `${ids.length} ${ids.length === 1 ? 'indicador eliminado' : 'indicadores eliminados'} exitosamente`);
         } catch (error) {
             console.error('Error al eliminar indicadores:', error);
@@ -229,7 +251,7 @@ export default function IndicatorsIndex() {
     const confirmDelete = async () => {
         try {
             await axios.delete(`/api/indicators/${indicatorToDelete.id}`);
-            loadIndicators(pagination.currentPage, pagination.perPage, searchTerm);
+            fetchIndicators();
             setDeleteModalOpen(false);
             setIndicatorToDelete(null);
             showNotification('success', 'Indicador eliminado exitosamente');
@@ -246,7 +268,7 @@ export default function IndicatorsIndex() {
                 // Manejar eventos personalizados
                 if (formData.type === 'question_deleted') {
                     // Ya se ha eliminado la pregunta en el backend, solo necesitamos recargar los datos
-                    await loadIndicators(pagination.currentPage, pagination.perPage, searchTerm);
+                    await fetchIndicators();
                     showNotification('success', 'Pregunta eliminada exitosamente');
                     return;
                 } else if (formData.type === 'indicator_updated' || formData.type === 'indicator_created') {
@@ -272,7 +294,7 @@ export default function IndicatorsIndex() {
             }
             
             // Recargar los indicadores para reflejar los cambios
-            await loadIndicators(pagination.currentPage, pagination.perPage, searchTerm);
+            await fetchIndicators();
             setModalOpen(false);
         } catch (error) {
             console.error('Error al guardar indicador:', error);
@@ -301,6 +323,18 @@ export default function IndicatorsIndex() {
         setSelectedIndicatorForQuestions(indicator);
         setViewQuestionsModalOpen(true);
     };
+
+    // Cleanup effect
+    useEffect(() => {
+        return () => {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            if (abortController) {
+                abortController.abort();
+            }
+        };
+    }, [searchTimeout, abortController]);
 
     return (
         <SuperAdminLayout>
@@ -334,6 +368,7 @@ export default function IndicatorsIndex() {
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}
                     onBulkDelete={handleBulkDelete}
+                    isLoading={isLoading}
                 />
             </div>
 

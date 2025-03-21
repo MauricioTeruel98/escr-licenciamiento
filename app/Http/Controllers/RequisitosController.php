@@ -19,6 +19,10 @@ class RequisitosController extends Controller
             //$query->where('name', 'like', "%{$searchTerm}%");
             $query->where(function($q) use ($searchTerm) {
                 $q->where('name', 'like', "%{$searchTerm}%")
+                  ->orWhereHas('subcategory', function($subcategoryQuery) use ($searchTerm) {
+                      $subcategoryQuery->where('name', 'like', "%{$searchTerm}%")
+                                ->where('deleted', false);
+                  })
                   ->orWhereHas('value', function($valueQuery) use ($searchTerm) {
                       $valueQuery->where('name', 'like', "%{$searchTerm}%")
                                 ->where('deleted', false);

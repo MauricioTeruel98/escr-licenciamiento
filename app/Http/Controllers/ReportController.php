@@ -19,8 +19,11 @@ class ReportController extends Controller
                 $query->select('id', 'company_id', 'status');
             }]);
 
-        if ($search) {
-            $query->where('name', 'like', "%{$search}%");
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('estado_eval', 'like', "%{$search}%");
+            });
         }
 
         $companies = $query->paginate($perPage);

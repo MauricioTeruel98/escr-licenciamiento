@@ -26,6 +26,9 @@ export default function RequisitosIndex() {
         perPage: 10
     });
     const [subcategories, setSubcategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [abortController, setAbortController] = useState(null);
+    const [searchTimeout, setSearchTimeout] = useState(null);
 
     const columns = [
         { key: 'name', label: 'Nombre' },
@@ -82,19 +85,28 @@ export default function RequisitosIndex() {
     ];
 
     useEffect(() => {
-        loadRequisitos();
+        fetchRequisitos();
         loadValues();
         loadSubcategories();
-    }, []);
+    }, [pagination.currentPage, pagination.perPage, searchTerm]);
 
-    const loadRequisitos = async (page = 1, perPage = 10, search = '') => {
+    const fetchRequisitos = async () => {
+        if (abortController) {
+            abortController.abort();
+        }
+
+        const controller = new AbortController();
+        setAbortController(controller);
+
+        setIsLoading(true);
         try {
             const response = await axios.get('/api/requisitos', {
                 params: {
-                    page,
-                    per_page: perPage,
-                    search
-                }
+                    page: pagination.currentPage,
+                    per_page: pagination.perPage,
+                    search: searchTerm
+                },
+                signal: controller.signal
             });
             setRequisitos(response.data.data);
             setPagination({
@@ -104,8 +116,13 @@ export default function RequisitosIndex() {
                 perPage: response.data.per_page
             });
         } catch (error) {
-            console.error('Error al cargar requisitos:', error);
-            showNotification('error', 'Error al cargar los requisitos');
+            if (!axios.isCancel(error)) {
+                console.error('Error al cargar requisitos:', error);
+                showNotification('error', 'Error al cargar los requisitos');
+            }
+        } finally {
+            setIsLoading(false);
+            setAbortController(null);
         }
     };
 
@@ -149,25 +166,47 @@ export default function RequisitosIndex() {
     };
 
     const handleSearch = (term) => {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
         setSearchTerm(term);
-        setPagination(prev => ({ ...prev, currentPage: 1 }));
-        loadRequisitos(1, pagination.perPage, term);
+        
+        const timeout = setTimeout(() => {
+            setPagination({...pagination, currentPage: 1});
+        }, 500);
+
+        setSearchTimeout(timeout);
     };
 
-    const handlePageChange = (page) => {
-        setPagination(prev => ({ ...prev, currentPage: page }));
-        loadRequisitos(page, pagination.perPage, searchTerm);
+    const handlePageChange = (newPage) => {
+        setPagination({ ...pagination, currentPage: newPage });
     };
 
-    const handlePerPageChange = (perPage) => {
-        setPagination(prev => ({ ...prev, perPage, currentPage: 1 }));
-        loadRequisitos(1, perPage, searchTerm);
+    const handlePerPageChange = (newPerPage) => {
+        setPagination({
+            ...pagination,
+            perPage: newPerPage,
+            currentPage: 1
+        });
     };
+
+    // Cleanup effect
+    useEffect(() => {
+        return () => {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            if (abortController) {
+                abortController.abort();
+            }
+        };
+    }, [searchTimeout, abortController]);
 
     const handleBulkDelete = async (ids) => {
         try {
             await axios.post('/api/requisitos/bulk-delete', { ids });
-            loadRequisitos(pagination.currentPage, pagination.perPage, searchTerm);
+            fetchRequisitos();
             showNotification('success', `${ids.length} ${ids.length === 1 ? 'requisito eliminado' : 'requisitos eliminados'} exitosamente`);
         } catch (error) {
             showNotification(
@@ -180,7 +219,7 @@ export default function RequisitosIndex() {
     const confirmDelete = async () => {
         try {
             await axios.delete(`/api/requisitos/${requisitoToDelete.id}`);
-            loadRequisitos(pagination.currentPage, pagination.perPage, searchTerm);
+            fetchRequisitos();
             setDeleteModalOpen(false);
             setRequisitoToDelete(null);
             showNotification('success', 'Requisito eliminado exitosamente');
@@ -203,7 +242,7 @@ export default function RequisitosIndex() {
                 await axios.post('/api/requisitos', formData);
                 showNotification('success', 'Requisito creado exitosamente');
             }
-            loadRequisitos(pagination.currentPage, pagination.perPage, searchTerm);
+            fetchRequisitos();
             setModalOpen(false);
         } catch (error) {
             console.error('Error al guardar requisito:', error);
@@ -243,6 +282,7 @@ export default function RequisitosIndex() {
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}
                     onBulkDelete={handleBulkDelete}
+                    isLoading={isLoading}
                 />
             </div>
 

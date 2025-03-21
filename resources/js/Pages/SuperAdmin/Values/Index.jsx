@@ -220,6 +220,13 @@ export default function ValuesIndex() {
         }
     };
 
+    // Agregar un mensaje cuando no hay resultados
+    const NoResultsMessage = () => (
+        <div className="text-center py-4 text-gray-500">
+            No se encontraron valores que coincidan con "{searchTerm}"
+        </div>
+    );
+
     return (
         <SuperAdminLayout>
             <Head title="Listado de Valores" />
@@ -268,6 +275,10 @@ export default function ValuesIndex() {
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}
                     onBulkDelete={handleBulkDelete}
+                    noResultsMessage={
+                        searchTerm && values.length === 0 ? <NoResultsMessage /> : null
+                    }
+                    searchPlaceholder="Buscar por nombre del valor o componente..."
                 />
             </div>
 

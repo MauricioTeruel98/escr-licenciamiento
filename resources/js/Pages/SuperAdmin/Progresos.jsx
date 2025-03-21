@@ -14,6 +14,9 @@ export default function Progresos() {
         total: 0,
         perPage: 10
     });
+    const [isLoading, setIsLoading] = useState(false);
+    const [abortController, setAbortController] = useState(null);
+    const [searchTimeout, setSearchTimeout] = useState(null);
 
     const columns = [
         {
@@ -135,17 +138,26 @@ export default function Progresos() {
     ];
 
     useEffect(() => {
-        loadEmpresas();
-    }, []);
+        fetchEmpresas(pagination.currentPage, pagination.perPage, searchTerm);
+    }, [pagination.currentPage, pagination.perPage, searchTerm]);
 
-    const loadEmpresas = async (page = 1, perPage = 10, search = '') => {
+    const fetchEmpresas = async (page = pagination.currentPage, perPage = pagination.perPage, search = searchTerm) => {
+        if (abortController) {
+            abortController.abort();
+        }
+
+        const controller = new AbortController();
+        setAbortController(controller);
+
+        setIsLoading(true);
         try {
             const response = await axios.get('/api/empresas-progresos', {
                 params: {
                     page,
                     per_page: perPage,
                     search
-                }
+                },
+                signal: controller.signal
             });
             setEmpresas(response.data.data);
             setPagination({
@@ -155,37 +167,65 @@ export default function Progresos() {
                 perPage: response.data.per_page
             });
         } catch (error) {
-            console.error('Error al cargar empresas:', error);
+            if (!axios.isCancel(error)) {
+                console.error('Error al cargar empresas:', error);
+            }
+        } finally {
+            setIsLoading(false);
+            setAbortController(null);
         }
     };
 
     const handleSearch = (term) => {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
         setSearchTerm(term);
-        setPagination(prev => ({ ...prev, currentPage: 1 }));
-        loadEmpresas(1, pagination.perPage, term);
+        
+        const timeout = setTimeout(() => {
+            setPagination(prev => ({ ...prev, currentPage: 1 }));
+            fetchEmpresas(1, pagination.perPage, term);
+        }, 500);
+
+        setSearchTimeout(timeout);
     };
 
-    const handlePageChange = (page) => {
-        setPagination(prev => ({ ...prev, currentPage: page }));
-        loadEmpresas(page, pagination.perPage, searchTerm);
+    const handlePageChange = (newPage) => {
+        setPagination({ ...pagination, currentPage: newPage });
     };
 
-    const handlePerPageChange = (perPage) => {
-        setPagination(prev => ({ ...prev, perPage, currentPage: 1 }));
-        loadEmpresas(1, perPage, searchTerm);
+    const handlePerPageChange = (newPerPage) => {
+        setPagination({
+            ...pagination,
+            perPage: newPerPage,
+            currentPage: 1
+        });
     };
 
     const handleAuthorize = async (companyId) => {
         setIsProcessing(true);
         try {
             await axios.patch(`/api/companies/${companyId}/authorize`);
-            loadEmpresas(pagination.currentPage, pagination.perPage, searchTerm);
+            fetchEmpresas();
         } catch (error) {
             console.error('Error al autorizar empresa:', error);
         } finally {
             setIsProcessing(false);
         }
     };
+
+    // Cleanup effect
+    useEffect(() => {
+        return () => {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            if (abortController) {
+                abortController.abort();
+            }
+        };
+    }, [searchTimeout, abortController]);
 
     return (
         <SuperAdminLayout>
@@ -205,10 +245,11 @@ export default function Progresos() {
                     columns={columns}
                     data={empresas}
                     onSearch={handleSearch}
-                    onSort={() => { }}
+                    onSort={() => {}}
                     pagination={pagination}
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}
+                    isLoading={isLoading}
                 />
             </div>
         </SuperAdminLayout>

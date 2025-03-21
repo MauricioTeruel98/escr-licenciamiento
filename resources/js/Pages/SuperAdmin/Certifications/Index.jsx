@@ -24,6 +24,9 @@ export default function CertificationsIndex() {
         perPage: 10
     });
     const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [abortController, setAbortController] = useState(null);
+    const [searchTimeout, setSearchTimeout] = useState(null);
 
     const columns = [
         { key: 'nombre', label: 'Nombre' },
@@ -73,16 +76,25 @@ export default function CertificationsIndex() {
 
     useEffect(() => {
         fetchCertifications();
-    }, [pagination.currentPage, pagination.perPage]);
+    }, [pagination.currentPage, pagination.perPage, searchTerm]);
 
-    const fetchCertifications = async (page = pagination.currentPage, perPage = pagination.perPage, search = searchTerm) => {
+    const fetchCertifications = async () => {
+        if (abortController) {
+            abortController.abort();
+        }
+
+        const controller = new AbortController();
+        setAbortController(controller);
+
+        setIsLoading(true);
         try {
             const response = await axios.get('/api/certifications', {
                 params: {
-                    page,
-                    per_page: perPage,
-                    search
-                }
+                    page: pagination.currentPage,
+                    per_page: pagination.perPage,
+                    search: searchTerm
+                },
+                signal: controller.signal
             });
             setCertifications(response.data.data);
             setPagination({
@@ -92,19 +104,55 @@ export default function CertificationsIndex() {
                 perPage: response.data.per_page
             });
         } catch (error) {
-            console.error('Error al cargar certificaciones:', error);
-            setNotification({
-                type: 'error',
-                message: 'Error al cargar las certificaciones'
-            });
+            if (!axios.isCancel(error)) {
+                console.error('Error al cargar certificaciones:', error);
+                setNotification({
+                    type: 'error',
+                    message: 'Error al cargar las certificaciones'
+                });
+            }
+        } finally {
+            setIsLoading(false);
+            setAbortController(null);
         }
     };
 
     const handleSearch = (term) => {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
         setSearchTerm(term);
-        setPagination(prev => ({ ...prev, currentPage: 1 }));
-        fetchCertifications(1, pagination.perPage, term);
+        
+        const timeout = setTimeout(() => {
+            setPagination({...pagination, currentPage: 1});
+        }, 500);
+
+        setSearchTimeout(timeout);
     };
+
+    const handlePageChange = (newPage) => {
+        setPagination({ ...pagination, currentPage: newPage });
+    };
+
+    const handlePerPageChange = (newPerPage) => {
+        setPagination({
+            ...pagination,
+            perPage: newPerPage,
+            currentPage: 1
+        });
+    };
+
+    useEffect(() => {
+        return () => {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            if (abortController) {
+                abortController.abort();
+            }
+        };
+    }, [searchTimeout, abortController]);
 
     const handleCreate = () => {
         setSelectedCertification(null);
@@ -206,9 +254,10 @@ export default function CertificationsIndex() {
                         data={certifications}
                         pagination={pagination}
                         onSearch={handleSearch}
-                        onPageChange={(page) => fetchCertifications(page, pagination.perPage)}
-                        onPerPageChange={(perPage) => fetchCertifications(1, perPage)}
+                        onPageChange={handlePageChange}
+                        onPerPageChange={handlePerPageChange}
                         onBulkDelete={handleBulkDelete}
+                        isLoading={isLoading}
                     />
                 </div>
 
