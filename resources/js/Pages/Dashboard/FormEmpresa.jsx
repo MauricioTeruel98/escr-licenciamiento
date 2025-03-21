@@ -107,7 +107,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 id: p.id,
                 nombre: p.nombre,
                 descripcion: p.descripcion,
-                imagen: p.imagen
+                imagen: p.imagen,
+                imagen_2: p.imagen_2,
+                imagen_3: p.imagen_3
             }))
             : []
     });
@@ -413,7 +415,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             logo: 1 * 1024 * 1024, // 1 MB para logo
             fotografias: 3 * 1024 * 1024, // 3 MB para fotografías
             certificaciones: 1 * 1024 * 1024, // 1 MB para certificaciones
-            productos: 3 * 1024 * 1024 // 3 MB para productos
+            productos: 3 * 1024 * 1024, // 3 MB para productos
+            producto_2: 3 * 1024 * 1024, // 3 MB para imagen adicional 1
+            producto_3: 3 * 1024 * 1024  // 3 MB para imagen adicional 2
         };
 
         // Validar tamaño máximo según el tipo
@@ -433,7 +437,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             logo: 1,
             fotografias: 3,
             certificaciones: 10,
-            productos: 1
+            productos: 1,
+            producto_2: 1,
+            producto_3: 1
         };
 
         if (tipo === 'logo') {
@@ -527,6 +533,68 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                     productos: newProductos
                 };
             });
+        } else if (tipo === 'producto_2') {
+            // Para imagen adicional 1, solo se permite 1 imagen por producto
+            if (files.length > maxFiles.producto_2) {
+                alert(`Solo se permite ${maxFiles.producto_2} imagen adicional 1 por producto.`);
+                files = [files[0]]; // Tomar solo el primer archivo
+            }
+
+            setImagenes(prev => {
+                const newProductos2 = [...(prev.productos_2 || [])];
+                if (!newProductos2[productoIndex]) {
+                    newProductos2[productoIndex] = [];
+                }
+                newProductos2[productoIndex] = files[0];
+                return { ...prev, productos_2: newProductos2 };
+            });
+
+            // También actualizar la referencia en el estado de data para mantener la consistencia
+            setData(prevData => {
+                const newProductos = [...prevData.productos];
+                if (newProductos[productoIndex]) {
+                    // Marcar que este producto tiene una nueva imagen adicional 1
+                    newProductos[productoIndex] = {
+                        ...newProductos[productoIndex],
+                        imagen_2_cambiada: true
+                    };
+                }
+                return {
+                    ...prevData,
+                    productos: newProductos
+                };
+            });
+        } else if (tipo === 'producto_3') {
+            // Para imagen adicional 2, solo se permite 1 imagen por producto
+            if (files.length > maxFiles.producto_3) {
+                alert(`Solo se permite ${maxFiles.producto_3} imagen adicional 2 por producto.`);
+                files = [files[0]]; // Tomar solo el primer archivo
+            }
+
+            setImagenes(prev => {
+                const newProductos3 = [...(prev.productos_3 || [])];
+                if (!newProductos3[productoIndex]) {
+                    newProductos3[productoIndex] = [];
+                }
+                newProductos3[productoIndex] = files[0];
+                return { ...prev, productos_3: newProductos3 };
+            });
+
+            // También actualizar la referencia en el estado de data para mantener la consistencia
+            setData(prevData => {
+                const newProductos = [...prevData.productos];
+                if (newProductos[productoIndex]) {
+                    // Marcar que este producto tiene una nueva imagen adicional 2
+                    newProductos[productoIndex] = {
+                        ...newProductos[productoIndex],
+                        imagen_3_cambiada: true
+                    };
+                }
+                return {
+                    ...prevData,
+                    productos: newProductos
+                };
+            });
         } else {
             setImagenes(prev => ({ ...prev, [tipo]: [...(prev[tipo] || []), ...files] }));
         }
@@ -540,6 +608,18 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 const newProductos = [...prev.productos];
                 newProductos[productoIndex] = null;
                 return { ...prev, productos: newProductos };
+            });
+        } else if (tipo === 'producto_2') {
+            setImagenes(prev => {
+                const newProductos2 = [...(prev.productos_2 || [])];
+                newProductos2[productoIndex] = null;
+                return { ...prev, productos_2: newProductos2 };
+            });
+        } else if (tipo === 'producto_3') {
+            setImagenes(prev => {
+                const newProductos3 = [...(prev.productos_3 || [])];
+                newProductos3[productoIndex] = null;
+                return { ...prev, productos_3: newProductos3 };
             });
         } else {
             setImagenes(prev => ({
@@ -714,7 +794,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
     // Verificar si hay al menos un producto con nombre y descripción
     const tieneProductoValido = data.productos && data.productos.some(
-        producto => producto.nombre?.trim() && producto.descripcion?.trim()
+        producto => producto.nombre?.trim() && producto.descripcion?.trim() && 
+        (producto.imagen || (imagenes.productos && imagenes.productos[data.productos.indexOf(producto)]))
     );
 
     const fotografias = imagenes.fotografias;
@@ -725,6 +806,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
     const submit = async (e) => {
         e.preventDefault();
+
+        console.log('submit');
 
         setLoading(true);
         setErrors({});
@@ -767,9 +850,10 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             representante_celular: data.representante_celular
         };
 
-        // Verificar si hay al menos un producto con nombre y descripción
+        // Verificar si hay al menos un producto con nombre, descripción e imagen
         const tieneProductoValido = data.productos && data.productos.some(
-            producto => producto.nombre?.trim() && producto.descripcion?.trim()
+            producto => producto.nombre?.trim() && producto.descripcion?.trim() && 
+            (producto.imagen || (imagenes.productos && imagenes.productos[data.productos.indexOf(producto)]))
         );
 
         const fotografias = imagenes.fotografias;
@@ -1927,7 +2011,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
         // Verificar si hay al menos un producto válido
         const tieneProductoValido = data.productos && data.productos.some(
-            producto => producto.nombre?.trim() && producto.descripcion?.trim()
+            producto => producto.nombre?.trim() && producto.descripcion?.trim() && 
+            (producto.imagen || (imagenes.productos && imagenes.productos[data.productos.indexOf(producto)]))
         );
 
         // Crear objeto con todos los campos requeridos
@@ -3571,6 +3656,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                         company={company}
                         setData={setData}
                         setLoading={setLoading}
+                        infoAdicional={infoAdicional}  // Agregar esta prop
+                        submit={submit}  // Agregar esta prop para acceder al submit del formulario principal
                     />
 
                     {getCamposFaltantes().length > 0 && (

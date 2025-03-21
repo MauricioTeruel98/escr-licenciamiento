@@ -878,7 +878,7 @@ class CompanyProfileController extends Controller
                             'descripcion' => $producto['descripcion'] ?? ''
                         ];
 
-                        // Procesar imagen del producto
+                        // Procesar imagen principal del producto
                         $imagenKey = "productos.{$index}.imagen";
                         if ($request->hasFile($imagenKey)) {
                             $imagen = $request->file($imagenKey);
@@ -904,15 +904,80 @@ class CompanyProfileController extends Controller
                         } elseif (isset($producto['imagen_existente'])) {
                             $productoData['imagen'] = $producto['imagen_existente'];
                         }
+                        
+                        // Procesar imagen adicional 1 (opcional)
+                        $imagen2Key = "productos.{$index}.imagen_2";
+                        if ($request->hasFile($imagen2Key)) {
+                            $imagen2 = $request->file($imagen2Key);
+
+                            // Validar tipo y tamaño
+                            if (!in_array($imagen2->getMimeType(), $allowedTypes)) {
+                                $errores[] = "La imagen adicional 1 del producto '{$producto['nombre']}' debe ser un archivo de tipo: jpg, jpeg o png.";
+                                continue;
+                            }
+
+                            if ($imagen2->getSize() > $maxSizeInBytes) {
+                                $errores[] = "La imagen adicional 1 del producto '{$producto['nombre']}' no debe exceder los 3 MB de tamaño.";
+                                continue;
+                            }
+
+                            // Guardar la nueva imagen adicional 1
+                            $imagen2Path = $imagen2->storeAs(
+                                "empresas/{$companyId}/productos",
+                                time() . '_adicional1_' . $imagen2->getClientOriginalName(),
+                                'public'
+                            );
+                            $productoData['imagen_2'] = $imagen2Path;
+                        } elseif (isset($producto['imagen_2_existente'])) {
+                            $productoData['imagen_2'] = $producto['imagen_2_existente'];
+                        }
+                        
+                        // Procesar imagen adicional 2 (opcional)
+                        $imagen3Key = "productos.{$index}.imagen_3";
+                        if ($request->hasFile($imagen3Key)) {
+                            $imagen3 = $request->file($imagen3Key);
+
+                            // Validar tipo y tamaño
+                            if (!in_array($imagen3->getMimeType(), $allowedTypes)) {
+                                $errores[] = "La imagen adicional 2 del producto '{$producto['nombre']}' debe ser un archivo de tipo: jpg, jpeg o png.";
+                                continue;
+                            }
+
+                            if ($imagen3->getSize() > $maxSizeInBytes) {
+                                $errores[] = "La imagen adicional 2 del producto '{$producto['nombre']}' no debe exceder los 3 MB de tamaño.";
+                                continue;
+                            }
+
+                            // Guardar la nueva imagen adicional 2
+                            $imagen3Path = $imagen3->storeAs(
+                                "empresas/{$companyId}/productos",
+                                time() . '_adicional2_' . $imagen3->getClientOriginalName(),
+                                'public'
+                            );
+                            $productoData['imagen_3'] = $imagen3Path;
+                        } elseif (isset($producto['imagen_3_existente'])) {
+                            $productoData['imagen_3'] = $producto['imagen_3_existente'];
+                        }
 
                         // Guardar o actualizar el producto en la base de datos
                         if (isset($producto['id'])) {
                             $productoModel = CompanyProducts::find($producto['id']);
                             if ($productoModel) {
-                                // Si hay una nueva imagen y existe una imagen anterior, eliminar la anterior
+                                // Si hay una nueva imagen principal y existe una imagen anterior, eliminar la anterior
                                 if (isset($productoData['imagen']) && $productoModel->imagen && $productoModel->imagen !== $productoData['imagen']) {
                                     Storage::disk('public')->delete($productoModel->imagen);
                                 }
+                                
+                                // Si hay una nueva imagen adicional 1 y existe una imagen anterior, eliminar la anterior
+                                if (isset($productoData['imagen_2']) && $productoModel->imagen_2 && $productoModel->imagen_2 !== $productoData['imagen_2']) {
+                                    Storage::disk('public')->delete($productoModel->imagen_2);
+                                }
+                                
+                                // Si hay una nueva imagen adicional 2 y existe una imagen anterior, eliminar la anterior
+                                if (isset($productoData['imagen_3']) && $productoModel->imagen_3 && $productoModel->imagen_3 !== $productoData['imagen_3']) {
+                                    Storage::disk('public')->delete($productoModel->imagen_3);
+                                }
+                                
                                 $productoModel->update($productoData);
                                 $productosGuardados[] = $productoModel;
                             }
@@ -941,16 +1006,33 @@ class CompanyProfileController extends Controller
             if (count($productosGuardados) > 0) {
                 DB::commit();
                 
+                // Cargar las URLs de las imágenes para cada producto
+                $productosConUrls = collect($productosGuardados)->map(function ($producto) {
+                    $data = $producto->toArray();
+                    
+                    // Añadir URLs para las imágenes
+                    if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
+                        $data['imagen_url'] = asset('storage/' . $producto->imagen);
+                    }
+                    
+                    if ($producto->imagen_2 && Storage::disk('public')->exists($producto->imagen_2)) {
+                        $data['imagen_2_url'] = asset('storage/' . $producto->imagen_2);
+                    }
+                    
+                    if ($producto->imagen_3 && Storage::disk('public')->exists($producto->imagen_3)) {
+                        $data['imagen_3_url'] = asset('storage/' . $producto->imagen_3);
+                    }
+                    
+                    return $data;
+                })->toArray();
+                
                 $response = [
                     'success' => true,
                     'message' => 'Productos guardados correctamente',
-                    'productos' => $productos
+                    'productos' => $productosConUrls,
+                    'warnings' => empty($errores) ? null : $errores
                 ];
-
-                if (!empty($errores)) {
-                    $response['warnings'] = $errores;
-                }
-
+                
                 return response()->json($response);
             } else {
                 DB::rollBack();

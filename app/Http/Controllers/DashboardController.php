@@ -414,11 +414,48 @@ class DashboardController extends Controller
             // Verificar que productos existe antes de usar map
             if ($infoAdicional->productos) {
                 $infoAdicional->productos = $infoAdicional->productos->map(function ($producto) {
+                    // Crear un array con todos los atributos que queremos asegurar que estén incluidos
+                    $productoData = [
+                        'id' => $producto->id,
+                        'nombre' => $producto->nombre,
+                        'descripcion' => $producto->descripcion,
+                        'imagen' => $producto->imagen,
+                        'imagen_2' => $producto->imagen_2,
+                        'imagen_3' => $producto->imagen_3
+                    ];
+                    
+                    // Añadir URLs para las imágenes si existen
                     if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
-                        $producto->imagen_url = asset('storage/' . $producto->imagen);
+                        $productoData['imagen_url'] = asset('storage/' . $producto->imagen);
                     }
-                    return $producto;
+                    
+                    if ($producto->imagen_2 && Storage::disk('public')->exists($producto->imagen_2)) {
+                        $productoData['imagen_2_url'] = asset('storage/' . $producto->imagen_2);
+                    }
+                    
+                    if ($producto->imagen_3 && Storage::disk('public')->exists($producto->imagen_3)) {
+                        $productoData['imagen_3_url'] = asset('storage/' . $producto->imagen_3);
+                    }
+                    
+                    // Convertir el array a objeto para mantener consistencia con el código existente
+                    return (object)$productoData;
                 });
+                
+                // Agregar un log para depurar las imágenes de productos
+                Log::info('Productos cargados con sus imágenes:', 
+                    $infoAdicional->productos->map(function ($producto) {
+                        return [
+                            'id' => $producto->id,
+                            'nombre' => $producto->nombre,
+                            'imagen' => $producto->imagen,
+                            'imagen_url' => $producto->imagen_url ?? null,
+                            'imagen_2' => $producto->imagen_2,
+                            'imagen_2_url' => $producto->imagen_2_url ?? null,
+                            'imagen_3' => $producto->imagen_3,
+                            'imagen_3_url' => $producto->imagen_3_url ?? null,
+                        ];
+                    })->toArray()
+                );
             }
 
             // Debug

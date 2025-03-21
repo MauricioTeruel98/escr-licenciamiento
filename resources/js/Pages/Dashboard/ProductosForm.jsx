@@ -38,6 +38,8 @@ import Toast from '@/Components/ToastAdmin';
  * @param {Object} props.company - Datos de la empresa
  * @param {Function} props.setData - Función para actualizar los datos del formulario
  * @param {Function} props.setLoading - Función para actualizar el estado de carga
+ * @param {Object} props.infoAdicional - Información adicional del formulario
+ * @param {Function} props.submit - Función para ejecutar el submit del formulario principal
  */
 export default function ProductosForm({
     data,
@@ -61,7 +63,9 @@ export default function ProductosForm({
     autoEvaluationResult,
     company,
     setData,
-    setLoading
+    setLoading,
+    infoAdicional,
+    submit,
 }) {
     // Agregar estado para el toast
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
@@ -109,8 +113,8 @@ export default function ProductosForm({
 
         // Verificar si hay logo y fotografías
         const tieneLogo = data.logo_path || (imagenes.logo && imagenes.logo instanceof File);
-        const tieneFotografias = (data.fotografias_paths && JSON.parse(data.fotografias_paths).length > 0) || 
-                                (imagenes.fotografias && imagenes.fotografias.length > 0);
+        const tieneFotografias = (data.fotografias_paths && JSON.parse(data.fotografias_paths).length > 0) ||
+            (imagenes.fotografias && imagenes.fotografias.length > 0);
 
         return camposCompletos && tieneProductoValido && tieneLogo && tieneFotografias;
     };
@@ -119,7 +123,7 @@ export default function ProductosForm({
     const actualizarFormSended = async () => {
         try {
             await axios.post(route('company.profile.update-form-sended'));
-            
+
             // Actualizar el estado local
             if (autoEvaluationResult) {
                 setData(prevData => ({
@@ -151,12 +155,28 @@ export default function ProductosForm({
                 formData.append(`productos[${index}][id]`, producto.id);
             }
 
-            // Agregar imagen si existe
+            // Agregar imagen principal si existe
             if (imagenes.productos && imagenes.productos[index] instanceof File) {
                 formData.append(`productos[${index}][imagen]`, imagenes.productos[index]);
             } else if (producto.imagen) {
                 // Si hay una imagen existente, enviar su ruta
                 formData.append(`productos[${index}][imagen_existente]`, producto.imagen);
+            }
+
+            // Agregar imagen adicional 1 si existe
+            if (imagenes.productos_2 && imagenes.productos_2[index] instanceof File) {
+                formData.append(`productos[${index}][imagen_2]`, imagenes.productos_2[index]);
+            } else if (producto.imagen_2) {
+                // Si hay una imagen existente, enviar su ruta
+                formData.append(`productos[${index}][imagen_2_existente]`, producto.imagen_2);
+            }
+
+            // Agregar imagen adicional 2 si existe
+            if (imagenes.productos_3 && imagenes.productos_3[index] instanceof File) {
+                formData.append(`productos[${index}][imagen_3]`, imagenes.productos_3[index]);
+            } else if (producto.imagen_3) {
+                // Si hay una imagen existente, enviar su ruta
+                formData.append(`productos[${index}][imagen_3_existente]`, producto.imagen_3);
             }
         });
 
@@ -170,9 +190,23 @@ export default function ProductosForm({
             if (response.data.success) {
                 // Actualizar el estado con los productos actualizados
                 if (response.data.productos) {
-                    setData('productos', response.data.productos);
+                    // Log para depuración
+
+                    // Asegurarnos de que los productos recibidos contengan todas las propiedades necesarias
+                    const productosActualizados = response.data.productos.map(producto => ({
+                        ...producto,
+                        // Asegurarnos de que estos campos existan, aunque sea como null
+                        imagen_2: producto.imagen_2 || null,
+                        imagen_3: producto.imagen_3 || null,
+                        // Si las URLs no vienen del servidor, construirlas aquí si existe la imagen
+                        imagen_url: producto.imagen_url || (producto.imagen ? `storage/${producto.imagen}` : null),
+                        imagen_2_url: producto.imagen_2_url || (producto.imagen_2 ? `storage/${producto.imagen_2}` : null),
+                        imagen_3_url: producto.imagen_3_url || (producto.imagen_3 ? `storage/${producto.imagen_3}` : null)
+                    }));
+
+                    setData('productos', productosActualizados);
                 }
-                
+
                 // Mostrar mensaje de éxito
                 setToast({
                     show: true,
@@ -199,7 +233,7 @@ export default function ProductosForm({
                 // Recargar datos necesarios
                 router.reload({ only: ['autoEvaluationResult'] });
                 router.reload({ only: ['company'] });
-                
+
                 // Pasar a la siguiente sección si es necesario
                 pasarSiguienteSeccion('productos');
             }
@@ -221,7 +255,12 @@ export default function ProductosForm({
     // Manejador para el botón de guardar productos
     const handleGuardarProductos = async (e) => {
         e.preventDefault();
+        
+        // Primero guardar los productos
         await uploadProductos();
+        
+        // Luego ejecutar el submit del formulario principal
+        await submit(e);
     };
 
     return (
@@ -346,7 +385,7 @@ export default function ProductosForm({
                                                     </div>
                                                     <div className="flex items-center">
                                                         <img
-                                                            src={`storage/${producto.imagen}`}
+                                                            src={producto.imagen_url ? producto.imagen_url : `storage/${producto.imagen}`}
                                                             alt={`Producto ${index + 1}`}
                                                             className="w-10 h-10 object-cover rounded"
                                                         />
@@ -380,6 +419,158 @@ export default function ProductosForm({
                                                 </div>
                                             )}
                                         </div>
+
+                                        <div className="lg:flex gap-4">
+                                            {/* NUEVA SECCIÓN: Fotografía adicional 1 (opcional) */}
+                                            <div className="mt-4 w-full lg:w-1/2">
+                                                <div className="mt-1">
+                                                    <label
+                                                        htmlFor={`producto-input-2-${index}`}
+                                                        className="border border-gray-300 rounded-md p-4 block cursor-pointer"
+                                                        onDragOver={handleDragOver}
+                                                        onDragLeave={handleDragLeave}
+                                                        onDrop={(e) => handleDrop(e, 'producto_2', index)}
+                                                    >
+                                                        <div className="text-center text-gray-600">
+                                                            <p className="text-sm mt-1">Imagen opcional. Solo formatos jpg, jpeg o png.</p>
+                                                        </div>
+                                                        <input
+                                                            id={`producto-input-2-${index}`}
+                                                            type="file"
+                                                            className="hidden"
+                                                            accept=".png,.jpg,.jpeg"
+                                                            onChange={(e) => handleImagenChange(e, 'producto_2', index)}
+                                                        />
+                                                    </label>
+
+                                                    {/* Mostrar imagen adicional 1 existente */}
+                                                    {producto.imagen_2 && (
+                                                        <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                            <div className="flex items-center">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeExistingImage('producto_2', producto.imagen_2, index)}
+                                                                    className="mr-2"
+                                                                >
+                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                </button>
+                                                                <span className="text-sm">Imagen adicional 1</span>
+                                                            </div>
+                                                            <div className="flex items-center">
+                                                                <img
+                                                                    src={producto.imagen_2_url ? producto.imagen_2_url : `storage/${producto.imagen_2}`}
+                                                                    alt={`Producto ${index + 1} - Adicional 1`}
+                                                                    className="w-10 h-10 object-cover rounded"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Mostrar nueva imagen adicional 1 si se ha seleccionado */}
+                                                    {imagenes.productos_2 && imagenes.productos_2[index] && !producto.imagen_2 && (
+                                                        <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                            <div className="flex items-center">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeImagen('producto_2', null, index)}
+                                                                    className="mr-2"
+                                                                >
+                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                </button>
+                                                                <span className="text-sm">{imagenes.productos_2[index].name}</span>
+                                                            </div>
+                                                            <div className="flex items-center">
+                                                                <span className="text-sm mr-2">{Math.round(imagenes.productos_2[index].size / 1024)} KB</span>
+                                                                <img
+                                                                    src={URL.createObjectURL(imagenes.productos_2[index])}
+                                                                    alt={`Producto ${index + 1} - Adicional 1`}
+                                                                    className="w-10 h-10 object-cover rounded"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* NUEVA SECCIÓN: Fotografía adicional 2 (opcional) */}
+                                            <div className="mt-4 w-full lg:w-1/2">
+                                                <div className="mt-1">
+                                                    <label
+                                                        htmlFor={`producto-input-3-${index}`}
+                                                        className="border border-gray-300 rounded-md p-4 block cursor-pointer"
+                                                        onDragOver={handleDragOver}
+                                                        onDragLeave={handleDragLeave}
+                                                        onDrop={(e) => handleDrop(e, 'producto_3', index)}
+                                                    >
+                                                        <div className="text-center text-gray-600">
+                                                            <p className="text-sm mt-1">Imagen opcional. Solo formatos jpg, jpeg o png.</p>
+                                                        </div>
+                                                        <input
+                                                            id={`producto-input-3-${index}`}
+                                                            type="file"
+                                                            className="hidden"
+                                                            accept=".png,.jpg,.jpeg"
+                                                            onChange={(e) => handleImagenChange(e, 'producto_3', index)}
+                                                        />
+                                                    </label>
+
+                                                    {/* Mostrar imagen adicional 2 existente */}
+                                                    {producto.imagen_3 && (
+                                                        <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                            <div className="flex items-center">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeExistingImage('producto_3', producto.imagen_3, index)}
+                                                                    className="mr-2"
+                                                                >
+                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                </button>
+                                                                <span className="text-sm">Imagen adicional 2</span>
+                                                            </div>
+                                                            <div className="flex items-center">
+                                                                <img
+                                                                    src={producto.imagen_3_url ? producto.imagen_3_url : `storage/${producto.imagen_3}`}
+                                                                    alt={`Producto ${index + 1} - Adicional 2`}
+                                                                    className="w-10 h-10 object-cover rounded"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Mostrar nueva imagen adicional 2 si se ha seleccionado */}
+                                                    {imagenes.productos_3 && imagenes.productos_3[index] && !producto.imagen_3 && (
+                                                        <div className="mt-2 bg-gray-500 rounded-md text-white flex justify-between items-center px-3 py-2">
+                                                            <div className="flex items-center">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeImagen('producto_3', null, index)}
+                                                                    className="mr-2"
+                                                                >
+                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                </button>
+                                                                <span className="text-sm">{imagenes.productos_3[index].name}</span>
+                                                            </div>
+                                                            <div className="flex items-center">
+                                                                <span className="text-sm mr-2">{Math.round(imagenes.productos_3[index].size / 1024)} KB</span>
+                                                                <img
+                                                                    src={URL.createObjectURL(imagenes.productos_3[index])}
+                                                                    alt={`Producto ${index + 1} - Adicional 2`}
+                                                                    className="w-10 h-10 object-cover rounded"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -400,9 +591,9 @@ export default function ProductosForm({
                         <div className="flex mt-6">
                             <button
                                 type="submit"
-                                disabled={processing || loading}
+                                disabled={processing || loading || !infoAdicional}
                                 onClick={handleGuardarProductos}
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800 z-50"
+                                className={`inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white ${!infoAdicional ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-700 hover:bg-green-800'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800 z-50`}
                             >
                                 {loading ? (
                                     <>
@@ -412,6 +603,8 @@ export default function ProductosForm({
                                         </svg>
                                         Procesando...
                                     </>
+                                ) : !infoAdicional ? (
+                                    'Complete la información de la empresa primero'
                                 ) : (
                                     'Guardar productos'
                                 )}
@@ -427,7 +620,7 @@ export default function ProductosForm({
                     </div>
                 )}
             </div>
-            
+
             {/* Agregar el componente Toast */}
             {toast.show && (
                 <Toast
@@ -438,4 +631,4 @@ export default function ProductosForm({
             )}
         </>
     );
-} 
+}
