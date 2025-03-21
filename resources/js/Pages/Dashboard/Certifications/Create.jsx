@@ -722,8 +722,6 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                     <span className="text-md font-semibold">Fecha de obtención:</span>
                                                                     <div className="flex items-center h-16">
                                                                         <span className="text-center rounded-md bg-green-50/50 px-2 py-1 text-sm font-semibold text-green-700 ring-1 ring-inset ring-green-600/20">
-                                                                        {console.log(cert.fecha_obtencion.toLocaleDateString('es-ES'))}
-                                                                        {console.log(cert.fecha_obtencion)}
                                                                             {cert.fecha_obtencion.toLocaleDateString('es-ES', {
                                                                                 year: 'numeric',
                                                                                 month: 'short',

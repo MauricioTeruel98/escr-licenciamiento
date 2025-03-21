@@ -651,49 +651,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         }
     };
 
-    const uploadProductos = async () => {
-        if (!data.productos || data.productos.length === 0) return null;
-
-        const formData = new FormData();
-
-        // Agregar cada producto al FormData
-        data.productos.forEach((producto, index) => {
-            formData.append(`productos[${index}][nombre]`, producto.nombre || '');
-            formData.append(`productos[${index}][descripcion]`, producto.descripcion || '');
-
-            if (producto.id) {
-                formData.append(`productos[${index}][id]`, producto.id);
-            }
-
-            // Agregar imagen si existe
-            if (imagenes.productos && imagenes.productos[index] instanceof File) {
-                formData.append(`productos[${index}][imagen]`, imagenes.productos[index]);
-            } else if (producto.imagen) {
-                // Si hay una imagen existente, enviar su ruta
-                formData.append(`productos[${index}][imagen_existente]`, producto.imagen);
-            }
-        });
-
-        try {
-            const response = await axios.post(route('company.profile.upload-productos'), formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                }
-            });
-
-            return response.data.success ? response.data.productos : null;
-        } catch (error) {
-            console.error('Error al subir los productos:', error);
-            // En lugar de propagar el error, devolvemos los productos sin imágenes nuevas
-            return data.productos.map(producto => ({
-                id: producto.id,
-                nombre: producto.nombre,
-                descripcion: producto.descripcion,
-                imagen: producto.imagen // Solo incluimos imágenes existentes
-            }));
-        }
-    };
-
     // Definir el orden de las secciones para navegar automáticamente
     const ordenSecciones = ['informacion', 'logos', 'licenciamiento', 'contactos', 'productos', 'finalizar'];
 
@@ -836,11 +793,11 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
         const formularioCompleto = camposIncompletos.length === 0 && tieneProductoValido && fotografiasLength > 0 && logo;
 
-        // console.log('formularioCompleto', formularioCompleto);
-        // console.log('camposIncompletos', camposIncompletos);
-        // console.log('tieneProductoValido', tieneProductoValido);
-        // console.log('fotografiasLength', fotografiasLength);
-        // console.log('logo', logo);
+        //console.log('formularioCompleto', formularioCompleto);
+        //console.log('camposIncompletos', camposIncompletos);
+        //console.log('tieneProductoValido', tieneProductoValido);
+        //console.log('fotografiasLength', fotografiasLength);
+        //console.log('logo', logo);
 
 
         try {
@@ -889,14 +846,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             } catch (error) {
                 console.error('Error al subir las certificaciones:', error);
                 erroresImagenes.push('No se pudieron subir algunas certificaciones: ' + (error.response?.data?.message || error.message));
-            }
-
-            // Subir productos
-            try {
-                productosData = await uploadProductos();
-            } catch (error) {
-                console.error('Error al subir los productos:', error);
-                erroresImagenes.push('No se pudieron subir algunos productos: ' + (error.response?.data?.message || error.message));
             }
 
             // Crear FormData para los datos principales
@@ -3620,6 +3569,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                         dataAutoEvaluationResult={data.autoEvaluationResult}
                         autoEvaluationResult={autoEvaluationResult}
                         company={company}
+                        setData={setData}
+                        setLoading={setLoading}
                     />
 
                     {getCamposFaltantes().length > 0 && (

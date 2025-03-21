@@ -848,22 +848,32 @@ class CompanyProfileController extends Controller
     public function uploadProductos(Request $request)
     {
         try {
+            DB::beginTransaction();
+            
             // Validar tipos de archivos permitidos para imágenes de productos
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
             $maxSizeInBytes = 3 * 1024 * 1024; // 3 MB (mismo que fotografías)
             $companyId = Auth::user()->company_id;
+            
+            // Obtener la info adicional de la empresa
+            $infoAdicional = InfoAdicionalEmpresa::where('company_id', $companyId)->first();
+            if (!$infoAdicional) {
+                throw new \Exception('No se encontró la información adicional de la empresa');
+            }
 
             // Crear directorio si no existe
             Storage::disk('public')->makeDirectory("empresas/{$companyId}/productos");
 
             $productos = [];
             $errores = [];
+            $productosGuardados = [];
 
             if ($request->has('productos')) {
                 foreach ($request->productos as $index => $producto) {
                     try {
                         $productoData = [
-                            'id' => $producto['id'] ?? null,
+                            'company_id' => $companyId,
+                            'info_adicional_empresa_id' => $infoAdicional->id,
                             'nombre' => $producto['nombre'] ?? '',
                             'descripcion' => $producto['descripcion'] ?? ''
                         ];
@@ -873,85 +883,86 @@ class CompanyProfileController extends Controller
                         if ($request->hasFile($imagenKey)) {
                             $imagen = $request->file($imagenKey);
 
-                            // Validar tipo
+                            // Validar tipo y tamaño
                             if (!in_array($imagen->getMimeType(), $allowedTypes)) {
                                 $errores[] = "La imagen del producto '{$producto['nombre']}' debe ser un archivo de tipo: jpg, jpeg o png.";
-                                // Continuar con el siguiente producto o usar imagen existente si hay
-                                if (isset($producto['imagen_existente'])) {
-                                    $productoData['imagen'] = $producto['imagen_existente'];
-                                }
-                                $productos[] = $productoData;
                                 continue;
                             }
 
-                            // Validar tamaño
                             if ($imagen->getSize() > $maxSizeInBytes) {
                                 $errores[] = "La imagen del producto '{$producto['nombre']}' no debe exceder los 3 MB de tamaño.";
-                                // Continuar con el siguiente producto o usar imagen existente si hay
-                                if (isset($producto['imagen_existente'])) {
-                                    $productoData['imagen'] = $producto['imagen_existente'];
-                                }
-                                $productos[] = $productoData;
                                 continue;
                             }
 
-                            try {
-                                $imagenPath = $imagen->storeAs(
-                                    "empresas/{$companyId}/productos",
-                                    time() . '_' . $imagen->getClientOriginalName(),
-                                    'public'
-                                );
-                                $productoData['imagen'] = $imagenPath;
-                            } catch (\Exception $e) {
-                                Log::error("Error al guardar la imagen del producto '{$producto['nombre']}':", [
-                                    'error' => $e->getMessage(),
-                                    'trace' => $e->getTraceAsString()
-                                ]);
-                                $errores[] = "Error al guardar la imagen del producto '{$producto['nombre']}': " . $e->getMessage();
-                                // Usar imagen existente si hay
-                                if (isset($producto['imagen_existente'])) {
-                                    $productoData['imagen'] = $producto['imagen_existente'];
-                                }
-
-                            }
-                        } else if (isset($producto['imagen_existente'])) {
-                            // Mantener la imagen existente si se envió
+                            // Guardar la nueva imagen
+                            $imagenPath = $imagen->storeAs(
+                                "empresas/{$companyId}/productos",
+                                time() . '_' . $imagen->getClientOriginalName(),
+                                'public'
+                            );
+                            $productoData['imagen'] = $imagenPath;
+                        } elseif (isset($producto['imagen_existente'])) {
                             $productoData['imagen'] = $producto['imagen_existente'];
                         }
 
-                        $productos[] = $productoData;
+                        // Guardar o actualizar el producto en la base de datos
+                        if (isset($producto['id'])) {
+                            $productoModel = CompanyProducts::find($producto['id']);
+                            if ($productoModel) {
+                                // Si hay una nueva imagen y existe una imagen anterior, eliminar la anterior
+                                if (isset($productoData['imagen']) && $productoModel->imagen && $productoModel->imagen !== $productoData['imagen']) {
+                                    Storage::disk('public')->delete($productoModel->imagen);
+                                }
+                                $productoModel->update($productoData);
+                                $productosGuardados[] = $productoModel;
+                            }
+                        } else {
+                            $productoModel = CompanyProducts::create($productoData);
+                            $productosGuardados[] = $productoModel;
+                        }
+
+                        $productos[] = array_merge(
+                            $productoData,
+                            ['id' => $productoModel->id]
+                        );
+
                     } catch (\Exception $e) {
                         Log::error("Error al procesar el producto #{$index}:", [
                             'error' => $e->getMessage(),
                             'trace' => $e->getTraceAsString()
                         ]);
                         $errores[] = "Error al procesar el producto #{$index}: " . $e->getMessage();
-                        // Intentamos guardar el producto con datos básicos
-                        if (isset($producto['nombre'])) {
-                            $productos[] = [
-                                'id' => $producto['id'] ?? null,
-                                'nombre' => $producto['nombre'],
-                                'descripcion' => $producto['descripcion'] ?? '',
-                                'imagen' => $producto['imagen_existente'] ?? null
-                            ];
-                        }
                         continue;
                     }
                 }
             }
 
-            $response = [
-                'success' => true,
-                'productos' => $productos
-            ];
+            // Si hay productos guardados exitosamente, hacer commit
+            if (count($productosGuardados) > 0) {
+                DB::commit();
+                
+                $response = [
+                    'success' => true,
+                    'message' => 'Productos guardados correctamente',
+                    'productos' => $productos
+                ];
 
-            // Si hubo errores, incluirlos en la respuesta pero no fallar
-            if (!empty($errores)) {
-                $response['warnings'] = $errores;
+                if (!empty($errores)) {
+                    $response['warnings'] = $errores;
+                }
+
+                return response()->json($response);
+            } else {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se pudo guardar ningún producto',
+                    'errors' => $errores
+                ], 422);
             }
 
-            return response()->json($response);
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Error al subir productos: ' . $e->getMessage());
             return response()->json([
                 'success' => false,

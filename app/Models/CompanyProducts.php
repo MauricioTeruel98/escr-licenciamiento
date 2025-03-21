@@ -17,6 +17,8 @@ class CompanyProducts extends Model
         'nombre',
         'descripcion',
         'imagen',
+        'imagen_2',
+        'imagen_3',
         'imagenes_paths'
     ];
 
