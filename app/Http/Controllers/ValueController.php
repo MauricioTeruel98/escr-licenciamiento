@@ -62,7 +62,7 @@ class ValueController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:values,slug,' . $value->id,
+            'slug' => 'nullable|string|max:255|unique:values,slug,' . $value->id,
             'minimum_score' => 'required|integer|min:0',
             'is_active' => 'boolean'
         ]);
