@@ -274,7 +274,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             logo: 1 * 1024 * 1024, // 1 MB para logo
             fotografias: 3 * 1024 * 1024, // 3 MB para fotografías
             certificaciones: 1 * 1024 * 1024, // 1 MB para certificaciones
-            productos: 3 * 1024 * 1024 // 3 MB para productos
+            productos: 5 * 1024 * 1024 // 5 MB para productos
         };
 
         // Validar tamaño de archivo
@@ -415,9 +415,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             logo: 1 * 1024 * 1024, // 1 MB para logo
             fotografias: 3 * 1024 * 1024, // 3 MB para fotografías
             certificaciones: 1 * 1024 * 1024, // 1 MB para certificaciones
-            productos: 3 * 1024 * 1024, // 3 MB para productos
-            producto_2: 3 * 1024 * 1024, // 3 MB para imagen adicional 1
-            producto_3: 3 * 1024 * 1024  // 3 MB para imagen adicional 2
+            productos: 5 * 1024 * 1024, // 5 MB para productos
+            producto_2: 5 * 1024 * 1024, // 5 MB para imagen adicional 1
+            producto_3: 5 * 1024 * 1024  // 5 MB para imagen adicional 2
         };
 
         // Validar tamaño máximo según el tipo
@@ -426,7 +426,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         if (oversizedFiles.length > 0) {
             const sizeText = tipo === 'logo' ? '1 MB' :
                 tipo === 'fotografias' ? '3 MB' :
-                    tipo === 'certificaciones' ? '1 MB' : '3 MB';
+                    tipo === 'certificaciones' ? '1 MB' : '5 MB';
             alert(`El tamaño máximo permitido por ${tipo === 'logo' ? 'el logo' : 'imagen'} es de ${sizeText}.`);
             e.target.value = null; // Limpiar el input
             return;

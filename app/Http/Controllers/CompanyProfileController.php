@@ -852,7 +852,7 @@ class CompanyProfileController extends Controller
             
             // Validar tipos de archivos permitidos para imágenes de productos
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-            $maxSizeInBytes = 3 * 1024 * 1024; // 3 MB (mismo que fotografías)
+            $maxSizeInBytes = 5 * 1024 * 1024; // 5 MB (mismo que fotografías)
             $companyId = Auth::user()->company_id;
             
             // Obtener la info adicional de la empresa
