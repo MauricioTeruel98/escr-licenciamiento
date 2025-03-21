@@ -1087,7 +1087,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 Comentario del evaluador
                                                             </label>
                                                             <textarea
-                                                                rows={3}
+                                                                rows={6}
                                                                 value={answers[question.id]?.evaluator_comment || ''}
                                                                 onChange={(e) => handleAnswer(
                                                                     question.id,
