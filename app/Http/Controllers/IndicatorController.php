@@ -105,7 +105,9 @@ class IndicatorController extends Controller
             'guide' => 'nullable|string',
             'is_active' => 'boolean',
             'requisito_id' => 'required|exists:requisitos,id',
-            'is_binary' => 'required|boolean'
+            'is_binary' => 'required|boolean',
+            'questions_to_delete' => 'nullable|array',
+            'questions_to_delete.*' => 'exists:evaluation_questions,id'
         ]);
 
         // Actualizar los datos del indicador
@@ -124,40 +126,31 @@ class IndicatorController extends Controller
         // Sincronizar homologations
         $indicator->homologations()->sync($request->homologation_ids);
 
-        // Obtener preguntas existentes
-        $existingQuestionIds = $indicator->evaluationQuestions()->pluck('id')->toArray();
-        
-        // Obtener IDs de preguntas enviadas desde el frontend
-        $sentQuestionIds = $request->input('evaluation_question_ids', []);
-        
-        // Encontrar IDs de preguntas que ya no están en la lista
-        $questionIdsToDelete = array_diff($existingQuestionIds, $sentQuestionIds);
-        
-        // Eliminar preguntas que ya no están en la lista
-        if (!empty($questionIdsToDelete)) {
-            $indicator->evaluationQuestions()->whereIn('id', $questionIdsToDelete)->delete();
+        // Eliminar las preguntas marcadas para eliminación
+        if ($request->has('questions_to_delete')) {
+            $indicator->evaluationQuestions()
+                ->whereIn('id', $request->questions_to_delete)
+                ->delete();
         }
 
-        // Filtrar y procesar solo las preguntas no vacías
+        // Procesar las preguntas existentes y nuevas
         $evaluationQuestions = $request->input('evaluation_questions', []);
         $evaluationQuestionsBinary = $request->input('evaluation_questions_binary', []);
+        $evaluationQuestionIds = $request->input('evaluation_question_ids', []);
 
         foreach ($evaluationQuestions as $index => $question) {
-            // Verificar que la pregunta no esté vacía
             if (!empty(trim($question))) {
                 $is_binary = isset($evaluationQuestionsBinary[$index]) ? $evaluationQuestionsBinary[$index] : false;
-                
-                // Obtener el ID de la pregunta si existe
-                $questionId = isset($sentQuestionIds[$index]) ? $sentQuestionIds[$index] : null;
-                
-                if ($questionId && in_array($questionId, $existingQuestionIds)) {
-                    // Si la pregunta ya existe, actualizarla
+                $questionId = isset($evaluationQuestionIds[$index]) ? $evaluationQuestionIds[$index] : null;
+
+                if ($questionId && $indicator->evaluationQuestions()->where('id', $questionId)->exists()) {
+                    // Actualizar pregunta existente
                     $indicator->evaluationQuestions()->where('id', $questionId)->update([
                         'question' => $question,
                         'is_binary' => $is_binary
                     ]);
                 } else {
-                    // Si la pregunta es nueva, crearla
+                    // Crear nueva pregunta
                     $indicator->evaluationQuestions()->create([
                         'question' => $question,
                         'is_binary' => $is_binary
