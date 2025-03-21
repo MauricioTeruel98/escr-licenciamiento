@@ -18,7 +18,34 @@ class IndicadoresController extends Controller
     {
         $user = Auth::user();
         $company = Company::find($user->company_id);
-        $value = Value::with(['subcategories.indicators'])->findOrFail($id);
+
+        // Verificar si la empresa ha iniciado su auto-evaluación
+        /*if (!$company->fecha_inicio_auto_evaluacion) {
+            return Inertia::render('Dashboard/Indicadores/Indicadores', [
+                'error' => 'La empresa no ha iniciado su auto-evaluación'
+            ]);
+        }*/
+
+        $value = Value::with(['subcategories' => function ($query) use ($company) {
+            $query->where('deleted', false)
+                ->where(function ($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })->with(['indicators' => function ($query) use ($company) {
+                    $query->where('deleted', false)
+                        ->where(function ($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        })->with(['evaluationQuestions' => function($query) {
+                            $query->where('deleted', false);
+                        }]);
+                }]);
+        }])
+            ->where('deleted', false)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })->findOrFail($id);
 
         // Obtener las certificaciones de la empresa
         $certifications = $company->certifications;
@@ -27,10 +54,10 @@ class IndicadoresController extends Controller
 
         $autoevaluationResultFormSended = false;
         $autoevaluationResultApplicationSended = false;
-        
+
         $rolSuperAdmin = $user->role == 'super_admin';
 
-        if($autoevaluationResult) {
+        if ($autoevaluationResult) {
             $autoevaluationResultFormSended = $autoevaluationResult->form_sended;
             $autoevaluationResultApplicationSended = $autoevaluationResult->application_sended;
         }
@@ -44,12 +71,12 @@ class IndicadoresController extends Controller
         }
 
         // Filtrar certificaciones para excluir las vencidas
-        $validCertifications = $certifications->filter(function($certification) {
+        $validCertifications = $certifications->filter(function ($certification) {
             return !$certification->isExpired();
         });
 
         // Obtener certificaciones vencidas
-        $expiredCertifications = $certifications->filter(function($certification) {
+        $expiredCertifications = $certifications->filter(function ($certification) {
             return $certification->isExpired();
         });
 
@@ -62,13 +89,19 @@ class IndicadoresController extends Controller
         // Obtener los indicadores homologados
         $homologatedIndicators = IndicatorHomologation::whereIn('homologation_id', $homologationIds)
             ->with(['indicator', 'availableCertification'])
+            ->whereHas('indicator', function ($query) use ($company) {
+                $query->where(function ($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                });
+            })
             ->get()
             ->groupBy('homologation_id')
             ->map(function ($group) {
                 // Verificar que availableCertification existe antes de acceder a sus propiedades
-                $certificationName = $group->first()->availableCertification ? 
+                $certificationName = $group->first()->availableCertification ?
                     $group->first()->availableCertification->nombre : 'Certificación no disponible';
-                
+
                 return [
                     'certification_name' => $certificationName,
                     'indicators' => $group->map(function ($homologation) {
@@ -76,7 +109,7 @@ class IndicadoresController extends Controller
                         if (!$homologation->indicator) {
                             return null;
                         }
-                        
+
                         return [
                             'id' => $homologation->indicator->id,
                             'name' => $homologation->indicator->name,
@@ -89,6 +122,12 @@ class IndicadoresController extends Controller
         // Obtener los indicadores que estaban homologados pero ya no lo están debido a certificaciones vencidas
         $previouslyHomologatedIndicators = IndicatorHomologation::whereIn('homologation_id', $expiredHomologationIds)
             ->with(['indicator'])
+            ->whereHas('indicator', function ($query) use ($company) {
+                $query->where(function ($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                });
+            })
             ->get()
             ->pluck('indicator.id')
             ->unique()
@@ -98,8 +137,14 @@ class IndicadoresController extends Controller
         // Obtener las respuestas guardadas del usuario
         $savedAnswers = IndicatorAnswer::where('company_id', $user->company_id)
             ->whereIn('indicator_id', $value->subcategories->flatMap->indicators->pluck('id'))
+            ->whereHas('indicator', function ($query) use ($company) {
+                $query->where(function ($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                });
+            })
             ->get();
-            
+
         // Formatear las respuestas para el componente React
         $formattedAnswers = [];
         $formattedJustifications = [];
@@ -120,15 +165,22 @@ class IndicadoresController extends Controller
             $formattedAnswers[$indicatorId] = "1";
         }
 
-        $numeroDeIndicadoresAResponder = Indicator::where('is_active', true)->count();
-
-        $numeroDeIndicadoresRespondidos = IndicatorAnswer::where('company_id', $user->company_id)
-            ->whereHas('indicator', function($query) {
-                $query->where('is_active', true);
+        $numeroDeIndicadoresAResponder = Indicator::where('is_active', true)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
             })
             ->count();
 
-        //dd($numeroDeIndicadoresAResponder, $numeroDeIndicadoresRespondidos);
+        $numeroDeIndicadoresRespondidos = IndicatorAnswer::where('company_id', $user->company_id)
+            ->whereHas('indicator', function ($query) use ($company) {
+                $query->where('is_active', true)
+                    ->where(function ($q) use ($company) {
+                        $q->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    });
+            })
+            ->count();
 
         // Obtener la nota actual
         $currentScore = \App\Models\AutoEvaluationValorResult::where('company_id', $user->company_id)
@@ -144,12 +196,13 @@ class IndicadoresController extends Controller
             'savedJustifications' => $formattedJustifications,
             'homologatedIndicatorIds' => $homologatedIndicatorIds,
             'currentScore' => $currentScore,
-            'autoEvalCompleted' => $company->estado_eval === 'auto-evaluacion-completed'
+            'autoEvalCompleted' => $company->estado_eval === 'auto-evaluacion-completed',
+            'fecha_inicio_auto_evaluacion' => $company->fecha_inicio_auto_evaluacion
         ]);
 
         return Inertia::render('Dashboard/Indicadores/Indicadores', [
             'valueData' => $value,
-            'userName' => $user->name,  
+            'userName' => $user->name,
             'user' => $user,
             'savedAnswers' => $formattedAnswers,
             'savedJustifications' => $formattedJustifications,

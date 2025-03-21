@@ -238,6 +238,9 @@ class CompanyAuthController extends Controller
             DB::beginTransaction();
             
             $company = Company::create($validated);
+
+            $company->fecha_inicio_auto_evaluacion = now();
+            $company->save();
     
             // Vincular la empresa al usuario actual y establecerlo como admin
             $user = Auth::user();

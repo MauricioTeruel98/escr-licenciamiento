@@ -13,12 +13,15 @@ class Subcategory extends Model
         'description',
         'value_id',
         'is_active',
-        'order'
+        'order',
+        'deleted',
+        'deleted_at'
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
-        'order' => 'integer'
+        'order' => 'integer',
+        'deleted' => 'boolean'
     ];
 
     public function value(): BelongsTo

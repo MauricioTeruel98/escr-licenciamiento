@@ -12,7 +12,10 @@ class IndicatorController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Indicator::with(['homologations', 'value', 'subcategory', 'evaluationQuestions', 'requisito']);
+        $query = Indicator::with(['homologations', 'value', 'subcategory', 'evaluationQuestions' => function($query) {
+            $query->where('deleted', false);
+        }, 'requisito'])
+            ->where('deleted', false);
 
         if ($request->has('search')) {
             $searchTerm = $request->search;
@@ -22,6 +25,9 @@ class IndicatorController extends Controller
                         $q->where('nombre', 'like', "%{$searchTerm}%");
                     })
                     ->orWhereHas('value', function ($q) use ($searchTerm) {
+                        $q->where('name', 'like', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('subcategory', function ($q) use ($searchTerm) {
                         $q->where('name', 'like', "%{$searchTerm}%");
                     });
             });
@@ -126,11 +132,14 @@ class IndicatorController extends Controller
         // Sincronizar homologations
         $indicator->homologations()->sync($request->homologation_ids);
 
-        // Eliminar las preguntas marcadas para eliminación
+        // Marcar como eliminadas las preguntas que se van a eliminar
         if ($request->has('questions_to_delete')) {
             $indicator->evaluationQuestions()
                 ->whereIn('id', $request->questions_to_delete)
-                ->delete();
+                ->update([
+                    'deleted' => true,
+                    'deleted_at' => now()
+                ]);
         }
 
         // Procesar las preguntas existentes y nuevas
@@ -153,14 +162,17 @@ class IndicatorController extends Controller
                     // Crear nueva pregunta
                     $indicator->evaluationQuestions()->create([
                         'question' => $question,
-                        'is_binary' => $is_binary
+                        'is_binary' => $is_binary,
+                        'deleted' => false
                     ]);
                 }
             }
         }
 
-        // Recargar relaciones
-        $indicator->load(['homologations', 'value', 'subcategory', 'evaluationQuestions']);
+        // Recargar relaciones filtrando las preguntas eliminadas
+        $indicator->load(['homologations', 'value', 'subcategory', 'evaluationQuestions' => function($query) {
+            $query->where('deleted', false);
+        }]);
 
         return response()->json([
             'message' => 'Indicador actualizado exitosamente',
@@ -173,10 +185,17 @@ class IndicatorController extends Controller
         try {
             $indicator = Indicator::findOrFail($indicatorId);
             $question = $indicator->evaluationQuestions()->findOrFail($questionId);
-            $question->delete();
+            
+            // Implementar borrado lógico
+            $question->update([
+                'deleted' => true,
+                'deleted_at' => now()
+            ]);
             
             // Recargar el indicador con sus relaciones para devolver datos actualizados
-            $indicator = Indicator::with(['homologations', 'value', 'subcategory', 'evaluationQuestions', 'requisito'])
+            $indicator = Indicator::with(['homologations', 'value', 'subcategory', 'evaluationQuestions' => function($query) {
+                $query->where('deleted', false);
+            }, 'requisito'])
                 ->findOrFail($indicatorId);
             
             return response()->json([
@@ -192,7 +211,18 @@ class IndicatorController extends Controller
 
     public function destroy(Indicator $indicator)
     {
-        $indicator->delete();
+        // Marcar el indicador como eliminado
+        $indicator->update([
+            'deleted' => true,
+            'deleted_at' => now()
+        ]);
+
+        // Marcar todas las preguntas de evaluación asociadas como eliminadas
+        $indicator->evaluationQuestions()->update([
+            'deleted' => true,
+            'deleted_at' => now()
+        ]);
+
         return response()->json(['message' => 'Indicador eliminado exitosamente']);
     }
 
@@ -204,10 +234,24 @@ class IndicatorController extends Controller
                 'ids.*' => 'exists:indicators,id'
             ]);
 
-            $count = Indicator::whereIn('id', $request->ids)->delete();
+            // Marcar los indicadores como eliminados
+            $indicators = Indicator::whereIn('id', $request->ids)->get();
+            
+            foreach ($indicators as $indicator) {
+                $indicator->update([
+                    'deleted' => true,
+                    'deleted_at' => now()
+                ]);
+
+                // Marcar todas las preguntas de evaluación asociadas como eliminadas
+                $indicator->evaluationQuestions()->update([
+                    'deleted' => true,
+                    'deleted_at' => now()
+                ]);
+            }
 
             return response()->json([
-                'message' => "{$count} indicadores eliminados exitosamente"
+                'message' => count($request->ids) . " indicadores eliminados exitosamente"
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -218,9 +262,14 @@ class IndicatorController extends Controller
 
     public function getRelatedData()
     {
-        $values = Value::where('is_active', true)->get(['id', 'name']);
-        $subcategories = Subcategory::where('is_active', true)->get(['id', 'name']);
-        $homologations = AvailableCertification::where('activo', true)->get(['id', 'nombre']);
+        $values = Value::where('is_active', true)
+            ->where('deleted', false)
+            ->get(['id', 'name']);
+        $subcategories = Subcategory::where('is_active', true)
+            ->where('deleted', false)
+            ->get(['id', 'name']);
+        $homologations = AvailableCertification::where('activo', true)
+            ->get(['id', 'nombre']);
 
         return response()->json([
             'values' => $values,
@@ -233,6 +282,7 @@ class IndicatorController extends Controller
     {
         $subcategories = Subcategory::where('value_id', $valueId)
             ->where('is_active', true)
+            ->where('deleted', false)
             ->get(['id', 'name']);
 
         return response()->json($subcategories);

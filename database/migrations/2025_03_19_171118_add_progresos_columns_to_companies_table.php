@@ -15,8 +15,8 @@ return new class extends Migration
             $table->integer('progreso_evaluacion')->default(0);
             $table->integer('progreso_auto_evaluacion')->default(0);
             // Fecha de inicio de la autoevaluacion y evaluacion
-            $table->date('fecha_inicio_auto_evaluacion')->nullable();
-            $table->date('fecha_inicio_evaluacion')->nullable();
+            $table->timestamp('fecha_inicio_auto_evaluacion')->nullable();
+            $table->timestamp('fecha_inicio_evaluacion')->nullable();
         });
     }
 

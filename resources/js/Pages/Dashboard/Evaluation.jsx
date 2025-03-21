@@ -701,13 +701,14 @@ export default function Evaluation({
                                                             </div>
                                                             <div className="ml-3">
                                                                 <h3 className="text-sm font-medium text-red-800">
-                                                                    Valores que no alcanzan la nota mínima requerida (70%)
+                                                                    Valores que no alcanzan la nota mínima requerida
                                                                 </h3>
                                                                 <div className="mt-2 text-sm text-red-700">
                                                                     <ul className="list-disc pl-5 space-y-1">
                                                                         {failedValues.map((value, index) => (
                                                                             <li key={index}>
-                                                                                <span className="font-medium">{value.name}:</span> Nota actual: {value.nota}%
+                                                                                <span className="font-medium">{value.name}:</span> Nota actual: {value.nota}% 
+                                                                                <span className="text-red-600"> (Nota mínima requerida: {value.nota_minima}%)</span>
                                                                             </li>
                                                                         ))}
                                                                     </ul>

@@ -13,7 +13,9 @@ class Requisitos extends Model
         'description',
         'value_id',
         'subcategory_id',
-        'is_active'
+        'is_active',
+        'deleted',
+        'deleted_at'
     ];
 
     protected $casts = [

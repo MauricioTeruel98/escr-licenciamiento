@@ -11,11 +11,11 @@ class CertificationManagementController extends Controller
 {
     public function index(Request $request)
     {
-        $certifications = Certification::with('company')
+        $query = Certification::with('company')
             ->when($request->search, function($query, $search) {
                 $query->where(function($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('type', 'like', "%{$search}%")
+                    $q->where('nombre', 'like', "%{$search}%")
+                      ->orWhere('organismo_certificador', 'like', "%{$search}%")
                       ->orWhereHas('company', function($q) use ($search) {
                           $q->where('name', 'like', "%{$search}%");
                       });
@@ -24,7 +24,7 @@ class CertificationManagementController extends Controller
             ->orderBy($request->sort_by ?? 'created_at', $request->sort_order ?? 'desc')
             ->paginate($request->per_page ?? 10);
 
-        return response()->json($certifications);
+        return response()->json($query);
     }
 
     public function store(Request $request)

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Company;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,6 +43,13 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
         $request->session()->regenerate();
         $user = auth()->user();
+        $company = Company::find($user->company_id);
+
+        if($company->fecha_inicio_auto_evaluacion === null){
+            $company->fecha_inicio_auto_evaluacion = $company->created_at;
+            $company->save();
+        }
+
 
         // Si el usuario es super_admin y está intentando acceder a escr-admin
         if ($user->role === 'super_admin' && str_contains($request->path(), 'escr-admin')) {

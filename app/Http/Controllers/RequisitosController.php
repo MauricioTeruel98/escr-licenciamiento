@@ -20,12 +20,15 @@ class RequisitosController extends Controller
             $query->where(function($q) use ($searchTerm) {
                 $q->where('name', 'like', "%{$searchTerm}%")
                   ->orWhereHas('value', function($valueQuery) use ($searchTerm) {
-                      $valueQuery->where('name', 'like', "%{$searchTerm}%");
+                      $valueQuery->where('name', 'like', "%{$searchTerm}%")
+                                ->where('deleted', false);
                   });
             });
         }
 
-        $requisitos = $query->orderBy('created_at', 'desc')->paginate(10);
+        $requisitos = $query->orderBy('created_at', 'desc')
+            ->where('deleted', false)
+            ->paginate(10);
 
         return response()->json($requisitos);
     }
@@ -74,7 +77,10 @@ class RequisitosController extends Controller
             ], 422);
         }
 
-        $requisito->delete();
+        $requisito->update([
+            'deleted' => true,
+            'deleted_at' => now()
+        ]);
         return response()->json(['message' => 'Requisito eliminado exitosamente']);
     }
 
@@ -98,7 +104,10 @@ class RequisitosController extends Controller
                 ], 422);
             }
 
-            $count = Requisitos::whereIn('id', $request->ids)->delete();
+            $count = Requisitos::whereIn('id', $request->ids)->update([
+                'deleted' => true,
+                'deleted_at' => now()
+            ]);
 
             return response()->json([
                 'message' => "{$count} requisitos eliminados exitosamente"
@@ -115,6 +124,7 @@ class RequisitosController extends Controller
         try {
             $valueId = $request->query('value_id');
             $subcategories = Subcategory::where('is_active', true)
+                ->where('deleted', false)
                 ->when($valueId, function ($query, $valueId) {
                     return $query->where('value_id', $valueId);
                 })
@@ -133,6 +143,7 @@ class RequisitosController extends Controller
     {
         $requisitos = Requisitos::where('subcategory_id', $subcategoryId)
             ->where('is_active', true)
+            ->where('deleted', false)
             ->get(['id', 'name']);
 
         return response()->json($requisitos);

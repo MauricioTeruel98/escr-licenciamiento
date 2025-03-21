@@ -6,7 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class EvaluationQuestion extends Model
 {
-    protected $fillable = ['indicator_id', 'question', 'is_binary'];
+    protected $fillable = [
+        'question',
+        'is_binary',
+        'deleted',
+        'deleted_at'
+    ];
+
+    protected $casts = [
+        'is_binary' => 'boolean',
+        'deleted' => 'boolean'
+    ];
 
     public function indicator()
     {

@@ -40,14 +40,29 @@ class IndicadorAnswerController extends Controller
                 return response()->json(['message' => 'No se recibieron respuestas válidas'], 422);
             }
 
-            // Obtener los indicadores para verificar cuáles son vinculantes y binarios
+            // Obtener la empresa y su fecha de inicio de auto-evaluación
+            $company = Company::find($user->company_id);
+            if (!$company->fecha_inicio_auto_evaluacion) {
+                return response()->json(['message' => 'La empresa no ha iniciado su auto-evaluación'], 400);
+            }
+
+            // Obtener los indicadores que existían antes de la fecha de inicio
             $indicators = Indicator::whereIn('id', array_keys($request->answers))
+                ->where('deleted', false)
+                ->where(function ($query) use ($company) {
+                    $query->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })
                 ->select('id', 'binding', 'is_binary')
                 ->get()
                 ->keyBy('id');
 
+            // Verificar si hay indicadores válidos
+            if ($indicators->isEmpty()) {
+                return response()->json(['message' => 'No hay indicadores válidos para responder'], 400);
+            }
+
             // Obtener las certificaciones válidas de la empresa
-            $company = Company::find($user->company_id);
             $validCertifications = $company->certifications()
                 ->whereRaw('fecha_expiracion > NOW() OR fecha_expiracion IS NULL')
                 ->get();
@@ -65,23 +80,23 @@ class IndicadorAnswerController extends Controller
 
             // Guardar respuestas individuales
             foreach ($request->answers as $indicatorId => $answer) {
-                // Verificar que el indicatorId sea un número válido
-                if (!is_numeric($indicatorId) || $indicatorId <= 0) {
+                // Verificar que el indicatorId sea un número válido y exista en los indicadores válidos
+                if (!is_numeric($indicatorId) || $indicatorId <= 0 || !isset($indicators[$indicatorId])) {
                     Log::error('ID de indicador no válido:', [
                         'indicator_id' => $indicatorId,
                         'answer' => $answer
                     ]);
                     continue; // Saltar este indicador
                 }
-                
+
                 // Si el indicador está homologado, forzar la respuesta a "1" (Sí)
                 if (in_array($indicatorId, $homologatedIndicators)) {
                     $answer = "1";
                 }
-                
+
                 // Obtener la justificación si existe
                 $justification = isset($request->justifications[$indicatorId]) ? $request->justifications[$indicatorId] : null;
-                
+
                 // Verificar si ya existe una respuesta para este indicador en esta empresa
                 $existingAnswer = IndicatorAnswer::where('company_id', $user->company_id)
                     ->where('indicator_id', $indicatorId)
@@ -92,7 +107,7 @@ class IndicadorAnswerController extends Controller
                     $existingAnswer->update([
                         'answer' => $answer,
                         'justification' => $justification,
-                        'user_id' => $user->id, // Actualizar al último usuario que modificó
+                        'user_id' => $user->id,
                         'is_binding' => $indicators[$indicatorId]->binding ?? false,
                         'updated_at' => now()
                     ]);
@@ -142,13 +157,25 @@ class IndicadorAnswerController extends Controller
             );
 
             // Verificar estado de la autoevaluación
-            $totalIndicators = Indicator::where('is_active', true)->count();
-            $answeredIndicators = IndicatorAnswer::where('company_id', $user->company_id)
-                ->whereHas('indicator', function($query) {
-                    $query->where('is_active', true);
+            $totalIndicators = Indicator::where('is_active', true)
+                ->where('deleted', false)
+                ->where(function ($query) use ($company) {
+                    $query->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                 })
                 ->count();
-            
+
+            $answeredIndicators = IndicatorAnswer::where('company_id', $user->company_id)
+                ->whereHas('indicator', function ($query) use ($company) {
+                    $query->where('is_active', true)
+                        ->where('deleted', false)
+                        ->where(function ($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        });
+                })
+                ->count();
+
             // Verificar respuestas vinculantes
             $hasFailedBindingQuestions = IndicatorAnswer::where('company_id', $user->company_id)
                 ->where('is_binding', true)
@@ -157,10 +184,31 @@ class IndicadorAnswerController extends Controller
 
             // Verificar notas mínimas por valor
             $hasFailedValues = AutoEvaluationValorResult::where('company_id', $user->company_id)
-                ->where('nota', '<', 70)
-                ->exists();
+                ->whereHas('value', function ($query) use ($company) {
+                    $query->where('deleted', false)
+                        ->where(function ($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        });
+                })
+                ->with(['value' => function($query) {
+                    $query->select('id', 'name', 'minimum_score');
+                }])
+                ->get()
+                ->filter(function ($result) {
+                    // Usar la nota mínima del valor o 70 como valor por defecto
+                    $minimumScore = $result->value->minimum_score ?? 70;
+                    return $result->nota < $minimumScore;
+                })
+                ->isNotEmpty(); // true si hay algún valor que no alcanza su nota mínima
 
-            $activeValues = Value::where('is_active', true)->count();
+            $activeValues = Value::where('is_active', true)
+                ->where('deleted', false)
+                ->where(function ($query) use ($company) {
+                    $query->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })
+                ->count();
             $evaluatedValues = AutoEvaluationValorResult::where('company_id', $user->company_id)->count();
 
             // Determinar el estado
@@ -196,8 +244,25 @@ class IndicadorAnswerController extends Controller
 
             if ($isAutoEvaluationComplete) {
                 // Obtener todos los valores y sus respuestas
-                $allValues = Value::with(['subcategories.indicators'])
+                $allValues = Value::with(['subcategories' => function ($query) use ($company) {
+                    $query->where('deleted', false)
+                        ->where(function ($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        })->with(['indicators' => function ($query) use ($company) {
+                            $query->where('deleted', false)
+                                ->where(function ($q) use ($company) {
+                                    $q->whereNull('created_at')
+                                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                                });
+                        }]);
+                    }])
                     ->where('is_active', true)
+                    ->where('deleted', false)
+                    ->where(function ($query) use ($company) {
+                        $query->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    })
                     ->get();
 
                 $allAnswers = IndicatorAnswer::where('company_id', $user->company_id)
@@ -288,7 +353,6 @@ class IndicadorAnswerController extends Controller
                     'isAutoEvaluationComplete' => $isAutoEvaluationComplete
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al guardar respuestas:', [
@@ -312,11 +376,28 @@ class IndicadorAnswerController extends Controller
 
         $evaluacionCompleta = $this->isAutoEvaluationComplete($user->company_id);
 
-        if($applicationSended && $formSended && $evaluacionCompleta){
+        if ($applicationSended && $formSended && $evaluacionCompleta) {
             try {
                 // Obtener todos los valores y sus respuestas
-                $allValues = Value::with(['subcategories.indicators'])
+                $allValues = Value::with(['subcategories' => function ($query) use ($company) {
+                    $query->where('deleted', false)
+                        ->where(function ($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        })->with(['indicators' => function ($query) use ($company) {
+                            $query->where('deleted', false)
+                                ->where(function ($q) use ($company) {
+                                    $q->whereNull('created_at')
+                                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                                });
+                        }]);
+                    }])
                     ->where('is_active', true)
+                    ->where('deleted', false)
+                    ->where(function ($query) use ($company) {
+                        $query->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    })
                     ->get();
 
                 $allAnswers = IndicatorAnswer::where('company_id', $user->company_id)
@@ -350,7 +431,7 @@ class IndicadorAnswerController extends Controller
                 if (!file_exists($companyPath)) {
                     mkdir($companyPath, 0755, true);
                 }
-                
+
                 // Generar nombre de archivo con timestamp
                 $fileName = "autoevaluation_{$user->company_id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
                 $fullPath = "{$companyPath}/{$fileName}";
@@ -405,8 +486,13 @@ class IndicadorAnswerController extends Controller
 
     private function calculateSubcategoryScores($valueId, $companyId)
     {
-        // Obtener las certificaciones válidas de la empresa
+        // Obtener la empresa y su fecha de inicio de auto-evaluación
         $company = Company::find($companyId);
+        if (!$company->fecha_inicio_auto_evaluacion) {
+            return [];
+        }
+
+        // Obtener las certificaciones válidas de la empresa
         $validCertifications = $company->certifications()
             ->whereRaw('fecha_expiracion > NOW() OR fecha_expiracion IS NULL')
             ->get();
@@ -428,8 +514,14 @@ class IndicadorAnswerController extends Controller
             ->join('subcategories as s', 'i.subcategory_id', '=', 's.id')
             ->where('ia.company_id', $companyId)
             ->where('s.value_id', $valueId)
+            ->where('i.deleted', false)
+            ->where('s.deleted', false)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('i.created_at')
+                    ->orWhere('i.created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
             ->select('s.id as subcategory_id', 'ia.answer', 'i.id as indicator_id')
-            ->orderBy('ia.updated_at', 'desc') // Asegurar que tomamos las respuestas más recientes
+            ->orderBy('ia.updated_at', 'desc')
             ->get();
 
         // Agrupar por subcategoría y calcular porcentaje
@@ -442,7 +534,7 @@ class IndicadorAnswerController extends Controller
                 ];
             }
             $scores[$answer->subcategory_id]['total']++;
-            
+
             // Si el indicador está homologado, contar como respuesta positiva (1)
             if ($answer->answer == 1 || in_array($answer->indicator_id, $homologatedIndicators)) {
                 $scores[$answer->subcategory_id]['positive']++;
@@ -464,26 +556,50 @@ class IndicadorAnswerController extends Controller
      */
     private function isAutoEvaluationComplete($companyId)
     {
-        $activeValues = Value::where('is_active', true)->count();
-        $evaluatedValues = AutoEvaluationValorResult::where('company_id', $companyId)->count();
+        // Obtener la empresa y su fecha de inicio de auto-evaluación
+        $company = Company::find($companyId);
+        if (!$company->fecha_inicio_auto_evaluacion) {
+            return false;
+        }
 
-        $numeroDeIndicadoresAResponder = Indicator::where('is_active', true)->count();
-
-        $numeroDeIndicadoresRespondidos = IndicatorAnswer::where('company_id', $companyId)
-            ->whereHas('indicator', function($query) {
-                $query->where('is_active', true);
+        $activeValues = Value::where('is_active', true)
+            ->where('deleted', false)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
             })
             ->count();
-        
-        $isComplete = $numeroDeIndicadoresAResponder === $numeroDeIndicadoresRespondidos;
-        
+        $evaluatedValues = AutoEvaluationValorResult::where('company_id', $companyId)->count();
+
+        $numeroDeIndicadoresAResponderLaEmpresa = Indicator::where('is_active', true)
+            ->where('deleted', false)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
+            ->count();
+
+        $numeroDeIndicadoresRespondidos = IndicatorAnswer::where('company_id', $companyId)
+            ->whereHas('indicator', function ($query) use ($company) {
+                $query->where('is_active', true)
+                    ->where('deleted', false)
+                    ->where(function ($q) use ($company) {
+                        $q->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    });
+            })
+            ->count();
+
+        $isComplete = $numeroDeIndicadoresAResponderLaEmpresa === $numeroDeIndicadoresRespondidos;
+
         Log::info('Verificación de autoevaluación completa:', [
             'company_id' => $companyId,
             'active_values' => $activeValues,
             'evaluated_values' => $evaluatedValues,
-            'is_complete' => $isComplete
+            'is_complete' => $isComplete,
+            'fecha_inicio_auto_evaluacion' => $company->fecha_inicio_auto_evaluacion
         ]);
-        
+
         return $isComplete;
     }
 
@@ -497,24 +613,42 @@ class IndicadorAnswerController extends Controller
     {
         try {
             $user = Auth::user();
-            
+
             if (!$user) {
                 return response()->json(['message' => 'Usuario no autenticado'], 401);
             }
-            
+
             $companyId = $user->company_id;
             $isComplete = $this->isAutoEvaluationComplete($companyId);
-            
+
             $activeValues = Value::where('is_active', true)->count();
             $evaluatedValues = AutoEvaluationValorResult::where('company_id', $companyId)->count();
-            
+
             // Si la autoevaluación está completa pero no se ha marcado como finalizada
             $company = Company::find($companyId);
-            
+
             if ($isComplete && !$company->autoeval_ended) {
                 // Obtener todos los valores y sus respuestas
-                $allValues = Value::with(['subcategories.indicators'])
+
+                $allValues = Value::with(['subcategories' => function ($query) use ($company) {
+                    $query->where('deleted', false)
+                        ->where(function ($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        })->with(['indicators' => function ($query) use ($company) {
+                            $query->where('deleted', false)
+                                ->where(function ($q) use ($company) {
+                                    $q->whereNull('created_at')
+                                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                                });
+                        }]);
+                    }])
                     ->where('is_active', true)
+                    ->where('deleted', false)
+                    ->where(function ($query) use ($company) {
+                        $query->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    })
                     ->get();
 
                 $allAnswers = IndicatorAnswer::where('company_id', $companyId)
@@ -548,7 +682,7 @@ class IndicadorAnswerController extends Controller
                 if (!file_exists($companyPath)) {
                     mkdir($companyPath, 0755, true);
                 }
-                
+
                 // Generar nombre de archivo con timestamp
                 $fileName = "autoevaluation_{$companyId}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
                 $fullPath = "{$companyPath}/{$fileName}";
@@ -587,7 +721,7 @@ class IndicadorAnswerController extends Controller
                     ]
                 ]);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Estado de autoevaluación verificado.',
@@ -597,13 +731,12 @@ class IndicadorAnswerController extends Controller
                     'evaluated_values' => $evaluatedValues
                 ]
             ]);
-            
         } catch (\Exception $e) {
             Log::error('Error al verificar estado de autoevaluación:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al verificar estado de autoevaluación: ' . $e->getMessage()
@@ -665,15 +798,15 @@ class IndicadorAnswerController extends Controller
                     ]);
                     continue; // Saltar este indicador
                 }
-                
+
                 // Si el indicador está homologado, forzar la respuesta a "1" (Sí)
                 if (in_array($indicatorId, $homologatedIndicators)) {
                     $answer = "1";
                 }
-                
+
                 // Obtener la justificación si existe
                 $justification = isset($request->justifications[$indicatorId]) ? $request->justifications[$indicatorId] : null;
-                
+
                 // Verificar si ya existe una respuesta para este indicador en esta empresa
                 $existingAnswer = IndicatorAnswer::where('company_id', $user->company_id)
                     ->where('indicator_id', $indicatorId)
@@ -709,7 +842,6 @@ class IndicadorAnswerController extends Controller
                 'message' => 'Respuestas guardadas parcialmente.',
                 'value_id' => $request->value_id
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al guardar respuestas parciales:', [

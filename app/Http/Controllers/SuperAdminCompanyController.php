@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
 class SuperAdminCompanyController extends Controller
 {
     public function switchCompany(Request $request)
@@ -13,7 +13,7 @@ class SuperAdminCompanyController extends Controller
             'company_id' => 'required|exists:companies,id'
         ]);
 
-        $user = auth()->user();
+        $user = Auth::user();
         
         if ($user->role !== 'super_admin') {
             return response()->json(['error' => 'No autorizado'], 403);

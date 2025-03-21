@@ -35,8 +35,3 @@ export default {
         forms
     ],
 };
-
-/*
-lo mismo al hacer el import de empresas
-hacer la verificacion de from_migration para redirigir al ususairo
-*/

@@ -18,13 +18,15 @@ class SubcategoryController extends Controller
             $query->where(function($q) use ($searchTerm) {
                 $q->where('subcategories.name', 'like', "%{$searchTerm}%")
                   ->orWhereHas('value', function($valueQuery) use ($searchTerm) {
-                      $valueQuery->where('name', 'like', "%{$searchTerm}%");
+                      $valueQuery->where('name', 'like', "%{$searchTerm}%")
+                                ->where('deleted', false);
                   });
             });
         }
 
         // Primero ordenar por value_id y luego por order de forma descendente
-        $query->orderBy('value_id')->orderBy('order', 'desc');
+        $query->orderBy('value_id')->orderBy('order', 'desc')
+            ->where('deleted', false);
 
         $perPage = $request->input('per_page', 10);
         $subcategories = $query->paginate($perPage);
@@ -85,7 +87,10 @@ class SubcategoryController extends Controller
 
     public function destroy(Subcategory $subcategory)
     {
-        $subcategory->delete();
+        $subcategory->update([
+            'deleted' => true,
+            'deleted_at' => now()
+        ]);
         return response()->json(['message' => 'Subcategoría eliminada exitosamente']);
     }
 
@@ -97,7 +102,10 @@ class SubcategoryController extends Controller
                 'ids.*' => 'exists:subcategories,id'
             ]);
 
-            $count = Subcategory::whereIn('id', $request->ids)->delete();
+            $count = Subcategory::whereIn('id', $request->ids)->update([
+                'deleted' => true,
+                'deleted_at' => now()
+            ]);
 
             return response()->json([
                 'message' => "{$count} subcategorías eliminadas exitosamente"

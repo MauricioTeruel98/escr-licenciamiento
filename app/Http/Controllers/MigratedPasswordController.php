@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -57,10 +58,18 @@ class MigratedPasswordController extends Controller
     {
         $email = $request->input('email');
         $user = User::where('email', $email)->first();
-        
+
+        $company = Company::where('id', $user->company_id)->first();
+
         if ($user && $user->from_migration) {
             $user->from_migration = 0;
             $user->save();
+
+            if($company->fecha_inicio_auto_evaluacion == null) {
+                $company->fecha_inicio_auto_evaluacion = now();
+                $company->save();
+            }
+
             return response()->json(['success' => true]);
         }
         

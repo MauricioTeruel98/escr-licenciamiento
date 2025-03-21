@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Auth;
 
 class Indicator extends Model
 {
@@ -18,7 +19,9 @@ class Indicator extends Model
         'evaluation_questions',
         'guide',
         'is_active',
-        'is_binary'
+        'is_binary',
+        'deleted',
+        'deleted_at'
     ];
 
     protected $guarded = ['homologation_id'];
@@ -27,8 +30,25 @@ class Indicator extends Model
         'binding' => 'boolean',
         'is_active' => 'boolean',
         'evaluation_questions' => 'array',
-        'is_binary' => 'boolean'
+        'is_binary' => 'boolean',
+        'deleted' => 'boolean'
     ];
+
+    /**
+     * Scope global para filtrar indicadores basados en la fecha de inicio de auto-evaluación
+     */
+    /*protected static function booted()
+    {
+        static::addGlobalScope('auto_evaluation_date', function ($query) {
+            $company = Auth::user()?->company;
+            if ($company && $company->fecha_inicio_auto_evaluacion) {
+                $query->where(function ($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                });
+            }
+        });
+    }*/
 
     public function homologation(): BelongsTo
     {
@@ -64,7 +84,7 @@ class Indicator extends Model
 
     public function evaluationQuestions()
     {
-        return $this->hasMany(EvaluationQuestion::class);
+        return $this->hasMany(EvaluationQuestion::class)->where('deleted', false);
     }
 
     public function indicatorAnswers()
