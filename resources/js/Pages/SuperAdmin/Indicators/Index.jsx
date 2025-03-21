@@ -77,7 +77,7 @@ export default function IndicatorsIndex() {
         },
         { 
             key: 'subcategory', 
-            label: 'Subcategoría',
+            label: 'Componente',
             render: (item) => item.subcategory?.name || 'N/A'
         },
         {

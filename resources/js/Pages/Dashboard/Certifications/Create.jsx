@@ -623,7 +623,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                     return (
                                         <>
                                             <div key={cert.id} className={`p-4 rounded-lg shadow-sm border border-gray-200 ${certificadoExpirado ? 'border-2 border-red-400 rounded-lg bg-red-100/50' : 'bg-white'}`}>
-                                                <div className="flex flex-col xl:flex-row justify-between space-y-4">
+                                                <div className="flex flex-col xl:flex-row justify-between space-y-4 gap-4">
                                                     {/* Primera fila: Nombre y botón editar */}
                                                     <div>
                                                         <div className="flex flex-col justify-between items-start">
@@ -656,12 +656,12 @@ export default function Certifications({ certifications: initialCertifications, 
 
                                                     <div>
                                                         {cert.editando ? (
-                                                            <div className="grid xl:grid-cols-2 gap-8">
+                                                            <div className="grid xl:grid-cols-2 gap-4">
                                                                 <div>
                                                                     <label className={`block text-md font-semibold ${fechaObtencionErrores[cert.id] ? 'text-red-600' : ''}`}>
                                                                         Fecha de obtención<span className="text-red-500">*</span>
                                                                     </label>
-                                                                    <div className="flex flex-col justify-center xl:items-center h-16">
+                                                                    <div className="">
                                                                         <DatePicker
                                                                             selected={cert.fecha_obtencion}
                                                                             onChange={(date) => {
@@ -692,7 +692,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                     <label className={`block text-md font-semibold ${fechaErrores[cert.id] ? 'text-red-600' : ''}`}>
                                                                         Fecha de expiración<span className="text-red-500">*</span>
                                                                     </label>
-                                                                    <div className="flex flex-col justify-center xl:items-center h-16">
+                                                                    <div className="">
                                                                         <DatePicker
                                                                             selected={cert.fecha_expiracion}
                                                                             onChange={(date) => handleChange(cert.id, 'fecha_expiracion', date)}

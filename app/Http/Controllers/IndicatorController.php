@@ -26,6 +26,9 @@ class IndicatorController extends Controller
                     })
                     ->orWhereHas('value', function ($q) use ($searchTerm) {
                         $q->where('name', 'like', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('subcategory', function ($q) use ($searchTerm) {
+                        $q->where('name', 'like', "%{$searchTerm}%");
                     });
             });
         }

@@ -23,6 +23,7 @@ export default function CertificationsIndex() {
         total: 0,
         perPage: 10
     });
+    const [searchTerm, setSearchTerm] = useState('');
 
     const columns = [
         { key: 'nombre', label: 'Nombre' },
@@ -74,12 +75,13 @@ export default function CertificationsIndex() {
         fetchCertifications();
     }, [pagination.currentPage, pagination.perPage]);
 
-    const fetchCertifications = async () => {
+    const fetchCertifications = async (page = pagination.currentPage, perPage = pagination.perPage, search = searchTerm) => {
         try {
             const response = await axios.get('/api/certifications', {
                 params: {
-                    page: pagination.currentPage,
-                    per_page: pagination.perPage
+                    page,
+                    per_page: perPage,
+                    search
                 }
             });
             setCertifications(response.data.data);
@@ -96,6 +98,12 @@ export default function CertificationsIndex() {
                 message: 'Error al cargar las certificaciones'
             });
         }
+    };
+
+    const handleSearch = (term) => {
+        setSearchTerm(term);
+        setPagination(prev => ({ ...prev, currentPage: 1 }));
+        fetchCertifications(1, pagination.perPage, term);
     };
 
     const handleCreate = () => {
@@ -197,8 +205,9 @@ export default function CertificationsIndex() {
                         columns={columns}
                         data={certifications}
                         pagination={pagination}
-                        onPageChange={(page) => setPagination({...pagination, currentPage: page})}
-                        onPerPageChange={(perPage) => setPagination({...pagination, perPage, currentPage: 1})}
+                        onSearch={handleSearch}
+                        onPageChange={(page) => fetchCertifications(page, pagination.perPage)}
+                        onPerPageChange={(perPage) => fetchCertifications(1, perPage)}
                         onBulkDelete={handleBulkDelete}
                     />
                 </div>
