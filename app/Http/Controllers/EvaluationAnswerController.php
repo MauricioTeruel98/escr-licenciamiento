@@ -59,6 +59,7 @@ class EvaluationAnswerController extends Controller
             foreach ($request->answers as $questionId => $answerData) {
                 // Verificar si la pregunta fue creada antes de la fecha de inicio
                 $evaluationQuestion = EvaluationQuestion::where('id', $questionId)
+                    ->where('deleted', false)
                     ->where(function ($query) use ($company) {
                         $query->whereNull('created_at')
                             ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
@@ -187,6 +188,7 @@ class EvaluationAnswerController extends Controller
 
             // Verificar si este es el último valor
             $isLastValue = Value::where('is_active', true)
+                ->where('deleted', false)
                 ->orderBy('id', 'desc')
                 ->first()->id == $request->value_id;
 
@@ -199,6 +201,7 @@ class EvaluationAnswerController extends Controller
                 if ($user->role === 'evaluador') {
                     // Obtener todos los valores
                     $allValues = Value::where('is_active', true)
+                        ->where('deleted', false)
                         ->where(function ($query) use ($company) {
                             $query->whereNull('created_at')
                                 ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
@@ -234,6 +237,7 @@ class EvaluationAnswerController extends Controller
                     // Agrupar indicadores por valor
                     $indicatorsByValue = Indicator::where('is_active', true)
                         ->with(['subcategory.value', 'evaluationQuestions'])
+                        ->where('deleted', false)
                         ->where(function ($query) use ($company) {
                             $query->whereNull('created_at')
                                 ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
@@ -468,6 +472,7 @@ class EvaluationAnswerController extends Controller
                 // Si es evaluador, guardar la evaluación
                 if ($user->role === 'evaluador') {
                     $evaluationQuestion = EvaluationQuestion::where('id', $questionId)
+                    ->where('deleted', false)
                     ->where(function ($query) use ($company) {
                         $query->whereNull('created_at')
                             ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
@@ -660,6 +665,7 @@ class EvaluationAnswerController extends Controller
 
             // Contar las preguntas asociadas a esos indicadores
             $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)
+            ->where('deleted', false)
             ->where(function ($query) use ($company) {
                 $query->whereNull('created_at')
                     ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
@@ -792,6 +798,7 @@ class EvaluationAnswerController extends Controller
         // Obtener todos los indicadores asociados al valor con el filtro de fecha
         $indicators = Indicator::where('value_id', $valueId)
             ->where('is_active', true)
+            ->where('deleted', false)
             ->where(function ($query) use ($company) {
                 $query->whereNull('created_at')
                     ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
@@ -907,6 +914,7 @@ class EvaluationAnswerController extends Controller
 
         // Obtener todos los valores
         $allValues = Value::where('is_active', true)
+            ->where('deleted', false)
             ->where(function ($query) use ($company) {
                 $query->whereNull('created_at')
                     ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
@@ -952,6 +960,7 @@ class EvaluationAnswerController extends Controller
                         ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                 });
             }])
+            ->where('deleted', false)
             ->where(function ($query) use ($company) {
                 $query->whereNull('created_at')
                     ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);

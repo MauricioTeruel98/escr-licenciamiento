@@ -45,8 +45,9 @@ class DashboardController extends Controller
             ]);
         }*/
 
-        // Obtener el total de indicadores activos que existían antes de la fecha de inicio
+        // Obtener el total de indicadores activos
         $totalIndicadores = Indicator::where('is_active', true)
+            ->where('deleted', false)
             ->where(function($query) use ($company) {
                 $query->whereNull('created_at')
                     ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
@@ -89,24 +90,40 @@ class DashboardController extends Controller
 
         if ($company->estado_eval != 'auto-evaluacion' && $company->estado_eval != 'auto-evaluacion-completed') {
             $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)
+                ->where('deleted', false)
                 ->whereHas('indicator', function ($query) use ($company) {
-                    $query->where(function($q) use ($company) {
-                        $q->whereNull('created_at')
-                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
-                    });
+                    $query->where('deleted', false)
+                        ->where(function($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        });
+                })
+                ->where(function($query) use ($company) {
+                    $query->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                 })
                 ->count();
 
             $numeroDePreguntasQueRespondioLaEmpresa = IndicatorAnswerEvaluation::where('company_id', $user->company_id)
+                ->whereHas('evaluationQuestion', function ($query) use ($company) {
+                    $query->where('deleted', false)
+                        ->where(function($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        });
+                })
                 ->whereHas('evaluationQuestion.indicator', function ($query) use ($company) {
-                    $query->where(function($q) use ($company) {
-                        $q->whereNull('created_at')
-                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
-                    });
+                    $query->where('deleted', false)
+                        ->where(function($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        });
                 })
                 ->count();
 
-            $progresoEvaluacion = $numeroDePreguntasQueRespondioLaEmpresa / $numeroDePreguntasQueVaAResponderLaEmpresa * 100;
+            $progresoEvaluacion = $numeroDePreguntasQueVaAResponderLaEmpresa > 0 
+                ? ($numeroDePreguntasQueRespondioLaEmpresa / $numeroDePreguntasQueVaAResponderLaEmpresa) * 100 
+                : 0;
         }
 
         // Calcular indicadores homologados por certificaciones
@@ -156,29 +173,39 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Obtener valores con nota insuficiente (menor a 70)
+        // Obtener valores con nota insuficiente (menor a la nota mínima requerida para cada valor)
         $failedValues = AutoEvaluationValorResult::where('company_id', $user->company_id)
-            ->where('nota', '<', 70)
             ->whereHas('value', function ($query) use ($company) {
-                $query->where(function($q) use ($company) {
-                    $q->whereNull('created_at')
-                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
-                });
+                $query->where('deleted', false)
+                    ->where(function($q) use ($company) {
+                        $q->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    });
             })
-            ->with('value:id,name')
+            ->with(['value' => function($query) {
+                $query->select('id', 'name', 'minimum_score');
+            }])
             ->get()
+            ->filter(function ($result) {
+                // Usar la nota mínima del valor o 70 como valor por defecto
+                $minimumScore = $result->value->minimum_score ?? 70;
+                return $result->nota < $minimumScore;
+            })
             ->map(function ($result) {
                 return [
                     'name' => $result->value->name,
-                    'nota' => $result->nota
+                    'nota' => $result->nota,
+                    'nota_minima' => $result->value->minimum_score ?? 70
                 ];
-            });
+            })
+            ->values(); // Asegura que el array resultante esté reindexado
 
         // Determinar el status
         $status = 'en_proceso';
         $autoEvaluationResult = \App\Models\AutoEvaluationResult::where('company_id', $user->company_id)->first();
 
         $activeValues = Value::where('is_active', true)
+            ->where('deleted', false)
             ->where(function($query) use ($company) {
                 $query->whereNull('created_at')
                     ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);

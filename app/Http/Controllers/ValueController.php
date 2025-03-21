@@ -11,7 +11,8 @@ class ValueController extends Controller
     public function index(Request $request)
     {
         $query = Value::with(['subcategories' => function($query) {
-            $query->orderBy('order', 'desc');
+            $query->orderBy('order', 'desc')
+                ->where('deleted', false);
         }]);
 
         // Búsqueda
@@ -19,12 +20,14 @@ class ValueController extends Controller
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', "%{$searchTerm}%")
-                  ->orWhere('slug', 'like', "%{$searchTerm}%");
+                  ->orWhere('slug', 'like', "%{$searchTerm}%")
+                  ->orWhere('deleted', false);
             });
         }
 
         // Ordenamiento (si lo necesitas)
-        $query->orderBy('created_at', 'desc');
+        $query->orderBy('created_at', 'desc')
+            ->where('deleted', false);
 
         // Paginación
         $perPage = $request->input('per_page', 10);
@@ -79,7 +82,10 @@ class ValueController extends Controller
 
     public function destroy(Value $value)
     {
-        $value->delete();
+        $value->update([
+            'deleted' => true,
+            'deleted_at' => now()
+        ]);
         return response()->json([
             'message' => 'Valor eliminado exitosamente'
         ]);
@@ -93,7 +99,10 @@ class ValueController extends Controller
                 'ids.*' => 'exists:values,id'
             ]);
 
-            $count = Value::whereIn('id', $request->ids)->delete();
+            $count = Value::whereIn('id', $request->ids)->update([
+                'deleted' => true,
+                'deleted_at' => now()
+            ]);
 
             return response()->json([
                 'message' => "{$count} valores eliminados exitosamente"
@@ -109,6 +118,7 @@ class ValueController extends Controller
     {
         try {
             $values = Value::where('is_active', true)
+                ->where('deleted', false)
                 ->orderBy('name')
                 ->get(['id', 'name']);
 
@@ -131,6 +141,7 @@ class ValueController extends Controller
                     $query->whereNull('created_at')
                         ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                 })
+                ->where('deleted', false)
                 ->orderBy('name')
                 ->get(['id', 'name']);
 
@@ -148,6 +159,7 @@ class ValueController extends Controller
             // Obtener las subcategorías ordenadas por el campo order de forma descendente
             $subcategories = $value->subcategories()
                 ->orderBy('order', 'desc')
+                ->where('deleted', false)
                 ->get();
 
             // Asegurarse de que todas las subcategorías tengan un valor de orden
@@ -194,7 +206,7 @@ class ValueController extends Controller
     {
         try {
             // Obtener todos los valores
-            $values = Value::all();
+            $values = Value::where('deleted', false)->get();
 
             foreach ($values as $value) {
                 // Obtener las subcategorías de este valor ordenadas por ID (o fecha de creación)

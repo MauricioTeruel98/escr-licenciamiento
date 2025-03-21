@@ -39,41 +39,29 @@ class EvaluationController extends Controller
             })
             ->pluck('indicator_id')
             ->toArray();
-
-        $value = Value::with(['subcategories' => function ($query) use ($company) {
-            $query->where(function ($q) use ($company) {
-                $q->whereNull('created_at')
-                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
-            })->with(['indicators' => function ($query) use ($company) {
-                $query->where(function ($q) use ($company) {
-                    $q->whereNull('created_at')
-                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
-                });
-            }]);
-        }])
-            ->where(function ($query) use ($company) {
-                $query->whereNull('created_at')
-                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
-            })->findOrFail($value_id);
             
         // Obtener el total de preguntas de evaluación por subcategoría con filtro de fecha
         $valueData = Value::with(['subcategories' => function ($query) use ($company, $indicatorIds) {
-            $query->where(function ($q) use ($company) {
-                $q->whereNull('created_at')
-                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
-            })->with(['indicators' => function ($query) use ($indicatorIds, $company) {
-                $query->whereIn('indicators.id', $indicatorIds)
-                    ->where(function ($q) use ($company) {
-                        $q->whereNull('created_at')
-                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
-                    });
-            }, 'indicators.evaluationQuestions' => function ($query) use ($company) {
-                $query->where(function ($q) use ($company) {
+            $query->where('deleted', false)
+                ->where(function ($q) use ($company) {
                     $q->whereNull('created_at')
                         ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
-                });
-            }]);
+                })->with(['indicators' => function ($query) use ($indicatorIds, $company) {
+                    $query->where('deleted', false)
+                        ->whereIn('indicators.id', $indicatorIds)
+                        ->where(function ($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        });
+                }, 'indicators.evaluationQuestions' => function ($query) use ($company) {
+                    $query->where('deleted', false)
+                        ->where(function ($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        });
+                }]);
         }])
+            ->where('deleted', false)
             ->findOrFail($value_id);
 
         // Calcular el progreso

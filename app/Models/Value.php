@@ -14,12 +14,15 @@ class Value extends Model
         'name',
         'slug',
         'minimum_score',
-        'is_active'
+        'is_active',
+        'deleted',
+        'deleted_at'
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
-        'minimum_score' => 'integer'
+        'minimum_score' => 'integer',
+        'deleted' => 'boolean'
     ];
 
     public function subcategories(): HasMany
