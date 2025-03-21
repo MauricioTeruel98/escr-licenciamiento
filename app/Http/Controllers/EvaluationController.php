@@ -23,6 +23,7 @@ class EvaluationController extends Controller
     {
         $user = Auth::user();
         $company_id = $user->company_id;
+        $company = Company::find($company_id);
         $isEvaluador = $user->role === 'evaluador';
         $isSuperAdmin = $user->role === 'super_admin';
 
@@ -39,13 +40,40 @@ class EvaluationController extends Controller
             ->pluck('indicator_id')
             ->toArray();
 
-        // Log para depuración
-        Log::info('Indicadores con respuesta "sí":', $indicatorIds);
-
-        // Obtener el total de preguntas de evaluación por subcategoría
-        $valueData = Value::with(['subcategories.indicators' => function ($query) use ($indicatorIds) {
-            $query->whereIn('indicators.id', $indicatorIds);
-        }, 'subcategories.indicators.evaluationQuestions'])
+        $value = Value::with(['subcategories' => function ($query) use ($company) {
+            $query->where(function ($q) use ($company) {
+                $q->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })->with(['indicators' => function ($query) use ($company) {
+                $query->where(function ($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                });
+            }]);
+        }])
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })->findOrFail($value_id);
+            
+        // Obtener el total de preguntas de evaluación por subcategoría con filtro de fecha
+        $valueData = Value::with(['subcategories' => function ($query) use ($company, $indicatorIds) {
+            $query->where(function ($q) use ($company) {
+                $q->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })->with(['indicators' => function ($query) use ($indicatorIds, $company) {
+                $query->whereIn('indicators.id', $indicatorIds)
+                    ->where(function ($q) use ($company) {
+                        $q->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    });
+            }, 'indicators.evaluationQuestions' => function ($query) use ($company) {
+                $query->where(function ($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                });
+            }]);
+        }])
             ->findOrFail($value_id);
 
         // Calcular el progreso
@@ -168,22 +196,22 @@ class EvaluationController extends Controller
         $numeroDePreguntasQueRespondioLaEmpresa = IndicatorAnswerEvaluation::where('company_id', $user->company_id)->count();
 
         $numeroDePreguntasQueRespondioLaEmpresaPorValor = IndicatorAnswerEvaluation::where('company_id', $user->company_id)->get()
-        ->filter(function ($question) use ($value_id) {
-            $indicatorValueId = Indicator::find($question->indicator_id)->value_id;
-            return $indicatorValueId == $value_id;
-        })
-        ->count();
+            ->filter(function ($question) use ($value_id) {
+                $indicatorValueId = Indicator::find($question->indicator_id)->value_id;
+                return $indicatorValueId == $value_id;
+            })
+            ->count();
 
         $numeroDePreguntasQueClificoElEvaluador = EvaluatorAssessment::where('company_id', $user->company_id)->count();
 
         $numeroDePreguntasQueClificoPositivamenteElEvaluador = EvaluatorAssessment::where('company_id', $user->company_id)->where('approved', true)->count();
 
         $numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor = EvaluatorAssessment::where('company_id', $user->company_id)->where('approved', true)->get()
-        ->filter(function ($question) use ($value_id) {
-            $indicatorValueId = Indicator::find($question->indicator_id)->value_id;
-            return $indicatorValueId == $value_id;
-        })
-        ->count();
+            ->filter(function ($question) use ($value_id) {
+                $indicatorValueId = Indicator::find($question->indicator_id)->value_id;
+                return $indicatorValueId == $value_id;
+            })
+            ->count();
 
         return Inertia::render('Dashboard/Evaluacion/Evaluacion', [
             'valueData' => $valueData,
@@ -207,9 +235,9 @@ class EvaluationController extends Controller
 
     public function getIndicators()
     {
-        // Obtener el usuario autenticado y su empresa
         $user = Auth::user();
         $companyId = $user->company_id;
+        $company = Company::find($companyId);
 
         // Obtener los IDs de los indicadores donde la empresa respondió "sí"
         $indicatorIds = IndicatorAnswer::where('company_id', $companyId)
@@ -225,9 +253,18 @@ class EvaluationController extends Controller
             ->toArray();
 
         // Obtener solo los indicadores que la empresa respondió "sí" y que estén activos
-        $indicators = Indicator::with(['evaluationQuestions'])
+        $indicators = Indicator::with(['evaluationQuestions' => function ($query) use ($company) {
+            $query->where(function ($q) use ($company) {
+                $q->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            });
+        }])
             ->whereIn('id', $indicatorIds)
             ->where('is_active', true)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
             ->get()
             ->map(function ($indicator) {
                 return [

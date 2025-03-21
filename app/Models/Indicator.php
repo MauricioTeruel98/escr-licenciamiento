@@ -34,7 +34,7 @@ class Indicator extends Model
     /**
      * Scope global para filtrar indicadores basados en la fecha de inicio de auto-evaluación
      */
-    protected static function booted()
+    /*protected static function booted()
     {
         static::addGlobalScope('auto_evaluation_date', function ($query) {
             $company = Auth::user()?->company;
@@ -45,7 +45,7 @@ class Indicator extends Model
                 });
             }
         });
-    }
+    }*/
 
     public function homologation(): BelongsTo
     {

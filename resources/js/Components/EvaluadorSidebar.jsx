@@ -34,7 +34,7 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
 
         const fetchValues = async () => {
             try {
-                const response = await axios.get('/api/active-values');
+                const response = await axios.get('/api/sidebar-values');
                 const values = Array.isArray(response.data) ? response.data.map(value => ({
                     name: value.name || 'Sin nombre',
                     route: `/evaluacion/${value.id}`,

@@ -120,6 +120,28 @@ class ValueController extends Controller
         }
     }
 
+    public function getActiveValuesSidebar()
+    {
+        try {
+            $user = auth()->user();
+            $company = $user->company;
+            
+            $values = Value::where('is_active', true)
+                ->where(function ($query) use ($company) {
+                    $query->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })
+                ->orderBy('name')
+                ->get(['id', 'name']);
+
+            return response()->json($values);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al obtener los valores: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getSubcategoriesByValue(Value $value)
     {
         try {

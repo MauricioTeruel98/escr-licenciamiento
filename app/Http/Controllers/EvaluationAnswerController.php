@@ -33,6 +33,7 @@ class EvaluationAnswerController extends Controller
             DB::beginTransaction();
 
             $user = Auth::user();
+            $company = Company::find($user->company_id);
             $savedAnswers = [];
 
             if (!$user) {
@@ -56,6 +57,14 @@ class EvaluationAnswerController extends Controller
             $message = $isPartialSave ? 'Respuestas guardadas correctamente' : 'Evaluación completada exitosamente';
 
             foreach ($request->answers as $questionId => $answerData) {
+                // Verificar si la pregunta fue creada antes de la fecha de inicio
+                $evaluationQuestion = EvaluationQuestion::where('id', $questionId)
+                    ->where(function ($query) use ($company) {
+                        $query->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    })
+                    ->firstOrFail();
+
                 // Si es evaluador, guardar la evaluación
                 if ($user->role === 'evaluador') {
                     $evaluationQuestion = \App\Models\EvaluationQuestion::findOrFail($questionId);
@@ -189,7 +198,12 @@ class EvaluationAnswerController extends Controller
                 // Si el usuario es evaluador y es el último valor, generar PDF con los resultados
                 if ($user->role === 'evaluador') {
                     // Obtener todos los valores
-                    $allValues = Value::where('is_active', true)->get();
+                    $allValues = Value::where('is_active', true)
+                        ->where(function ($query) use ($company) {
+                            $query->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        })
+                        ->get();
 
                     // Obtener la empresa evaluada
                     $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
@@ -220,6 +234,10 @@ class EvaluationAnswerController extends Controller
                     // Agrupar indicadores por valor
                     $indicatorsByValue = Indicator::where('is_active', true)
                         ->with(['subcategory.value', 'evaluationQuestions'])
+                        ->where(function ($query) use ($company) {
+                            $query->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        })
                         ->get()
                         ->groupBy('subcategory.value.id');
 
@@ -422,6 +440,7 @@ class EvaluationAnswerController extends Controller
             DB::beginTransaction();
 
             $user = Auth::user();
+            $company = Company::find($user->company_id);
             $savedAnswers = [];
 
             if (!$user) {
@@ -448,7 +467,12 @@ class EvaluationAnswerController extends Controller
             foreach ($request->answers as $questionId => $answerData) {
                 // Si es evaluador, guardar la evaluación
                 if ($user->role === 'evaluador') {
-                    $evaluationQuestion = \App\Models\EvaluationQuestion::findOrFail($questionId);
+                    $evaluationQuestion = EvaluationQuestion::where('id', $questionId)
+                    ->where(function ($query) use ($company) {
+                        $query->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    })
+                    ->firstOrFail();
 
                     // Guardar o actualizar la evaluación
                     EvaluatorAssessment::updateOrCreate(
@@ -635,17 +659,23 @@ class EvaluationAnswerController extends Controller
                 ->pluck('indicator_id'); // Obtener solo los IDs
 
             // Contar las preguntas asociadas a esos indicadores
-            $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)->count();
+            $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
+            ->count();
 
             $numeroDePreguntasQueRespondioLaEmpresa = IndicatorAnswerEvaluation::where('company_id', $user->company_id)->count();
 
             $numeroDePreguntasQueClificoElEvaluador = EvaluatorAssessment::where('company_id', $user->company_id)->count();
 
-            $numeroDePreguntasQueClificoPositivamenteElEvaluador = EvaluatorAssessment::where('company_id', $user->company_id)->where('approved', true)->count();
+            $numeroDePreguntasQueClificoPositivamenteElEvaluador = EvaluatorAssessment::where('company_id', $user->company_id)->count();
 
             $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
 
             // Enviar notificación al completar la evaluación
+            //dd($numeroDePreguntasQueRespondioLaEmpresa, $numeroDePreguntasQueVaAResponderLaEmpresa);
             if ($numeroDePreguntasQueRespondioLaEmpresa == $numeroDePreguntasQueVaAResponderLaEmpresa && $user->role !== 'evaluador' && $company->estado_eval !== 'evaluacion-desaprobada') {
                 $company->estado_eval = 'evaluacion-pendiente';
                 $company->save();
@@ -757,9 +787,15 @@ class EvaluationAnswerController extends Controller
      */
     private function calculateValueScore($valueId, $companyId)
     {
-        // Obtener todos los indicadores asociados al valor
-        $indicators = \App\Models\Indicator::where('value_id', $valueId)
+        $company = Company::find($companyId);
+        
+        // Obtener todos los indicadores asociados al valor con el filtro de fecha
+        $indicators = Indicator::where('value_id', $valueId)
             ->where('is_active', true)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
             ->pluck('id');
 
         if ($indicators->isEmpty()) {
@@ -870,7 +906,12 @@ class EvaluationAnswerController extends Controller
         $superAdminUser = User::where('role', 'super_admin')->first();
 
         // Obtener todos los valores
-        $allValues = Value::where('is_active', true)->get();
+        $allValues = Value::where('is_active', true)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
+            ->get();
 
         // Obtener las puntuaciones finales
         $finalScores = EvaluationValueResult::where('company_id', $user->company_id)
@@ -895,9 +936,26 @@ class EvaluationAnswerController extends Controller
             ->get()
             ->groupBy('indicator_id');
 
-        // Agrupar indicadores por valor
+        // Obtener los IDs de los indicadores donde la empresa respondió "sí"
+        $indicatorIds = IndicatorAnswer::where('company_id', $user->company_id)
+            ->where(function ($query) {
+                $query->whereIn('answer', ['1', 'si', 'sí', 'yes', 1, true]);
+            })
+            ->pluck('indicator_id');
+            
+        // Agrupar indicadores por valor (solo los que la empresa respondió "sí")
         $indicatorsByValue = Indicator::where('is_active', true)
-            ->with(['subcategory.value', 'evaluationQuestions'])
+            ->whereIn('id', $indicatorIds)
+            ->with(['subcategory.value', 'evaluationQuestions' => function ($query) use ($company) {
+                $query->where(function ($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                });
+            }])
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
             ->get()
             ->groupBy('subcategory.value.id');
 
