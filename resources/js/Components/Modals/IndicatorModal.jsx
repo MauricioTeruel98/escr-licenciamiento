@@ -35,6 +35,7 @@ export default function IndicatorModal({
     const [questionToDelete, setQuestionToDelete] = useState(null);
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
     const [homologationSearch, setHomologationSearch] = useState('');
+    const [questionsToDelete, setQuestionsToDelete] = useState([]);
 
     useEffect(() => {
         if (isOpen) {
@@ -141,26 +142,26 @@ export default function IndicatorModal({
         const submissionData = {
             ...formData,
             evaluation_questions: filteredQuestions,
-            evaluation_questions_binary: filteredBinary
+            evaluation_questions_binary: filteredBinary,
+            questions_to_delete: questionsToDelete
         };
 
-        // Enviar los datos al componente padre con un tipo de evento
+        // Enviar los datos al componente padre
         if (indicator) {
-            // Si estamos editando, enviamos un evento de actualización
             onSubmit({ 
                 type: 'indicator_updated', 
                 indicatorId: indicator.id, 
                 data: submissionData 
             });
         } else {
-            // Si estamos creando, enviamos un evento de creación
             onSubmit({ 
                 type: 'indicator_created', 
                 data: submissionData 
             });
         }
         
-        // Cerrar el modal
+        // Limpiar el estado
+        setQuestionsToDelete([]);
         handleClose();
     };
 
@@ -201,7 +202,22 @@ export default function IndicatorModal({
 
     const confirmDeleteQuestion = () => {
         if (questionToDelete !== null) {
-            removeQuestion(questionToDelete);
+            // Si la pregunta tiene ID, la marcamos para eliminación
+            if (indicator?.evaluation_questions?.[questionToDelete]?.id) {
+                const questionId = indicator.evaluation_questions[questionToDelete].id;
+                setQuestionsToDelete(prev => [...prev, questionId]);
+            }
+            
+            // Remover la pregunta del formData
+            setFormData(prev => ({
+                ...prev,
+                evaluation_questions: prev.evaluation_questions.filter((_, i) => i !== questionToDelete),
+                evaluation_questions_binary: prev.evaluation_questions_binary.filter((_, i) => i !== questionToDelete),
+                evaluation_question_ids: prev.evaluation_question_ids 
+                    ? prev.evaluation_question_ids.filter((_, i) => i !== questionToDelete)
+                    : undefined
+            }));
+            
             setQuestionToDelete(null);
             setShowDeleteConfirmation(false);
         }
@@ -210,41 +226,6 @@ export default function IndicatorModal({
     const cancelDeleteQuestion = () => {
         setQuestionToDelete(null);
         setShowDeleteConfirmation(false);
-    };
-
-    const removeQuestion = (index) => {
-        setValidationError(null);
-        if (indicator?.evaluation_questions?.[index]?.id) {
-            const questionId = indicator.evaluation_questions[index].id;
-            axios.delete(`/api/indicators/${indicator.id}/questions/${questionId}`)
-                .then(() => {
-                    setFormData(prev => ({
-                        ...prev,
-                        evaluation_questions: prev.evaluation_questions.filter((_, i) => i !== index),
-                        evaluation_questions_binary: prev.evaluation_questions_binary.filter((_, i) => i !== index),
-                        // Si hay un array de IDs de preguntas, también lo actualizamos
-                        evaluation_question_ids: prev.evaluation_question_ids 
-                            ? prev.evaluation_question_ids.filter((_, i) => i !== index)
-                            : undefined
-                    }));
-                    
-                    // Notificar al componente padre que se ha eliminado una pregunta
-                    if (onSubmit) {
-                        // Enviamos un evento personalizado para indicar que se eliminó una pregunta
-                        onSubmit({ type: 'question_deleted', indicatorId: indicator.id, questionId });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al eliminar la pregunta:', error);
-                });
-        } else {
-            // La pregunta no existe en la base de datos, solo la eliminamos del estado
-            setFormData(prev => ({
-                ...prev,
-                evaluation_questions: prev.evaluation_questions.filter((_, i) => i !== index),
-                evaluation_questions_binary: prev.evaluation_questions_binary.filter((_, i) => i !== index)
-            }));
-        }
     };
 
     const updateQuestion = (index, value) => {
