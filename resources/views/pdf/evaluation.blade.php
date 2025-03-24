@@ -47,24 +47,25 @@
             background-color: #f4f4f9;
             color: #333;
             margin: 0;
-            padding: 20px;
+            padding: 25px;
             font-size: 0.85rem !important;
-            line-height: 1.4;
+
         }
 
         @page {
-            margin: 0;
-            padding: 0;
+            margin: 0mm;
+            /* Ajusta el valor según lo necesites */
         }
+
 
         header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             background-color: #157f3d;
-            padding: 10px;
+            padding: 15px;
             color: white;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
         }
@@ -79,15 +80,15 @@
         }
 
         h2 {
-            page-break-before: auto;
-            page-break-after: avoid;
-            margin-top: 15px;
-            margin-bottom: 10px;
+            font-size: 1.5em;
             color: #157f3d;
+            margin-top: 20px;
+            margin-bottom: 10px;
+
         }
 
         p {
-            margin: 5px 0;
+            margin: 10px 0;
         }
 
         table {
@@ -99,16 +100,16 @@
             border-radius: 8px;
             border: 1px solid #e5e7eb;
             overflow: hidden;
-            page-break-inside: avoid;
-            margin-bottom: 15px;
+
+
         }
 
         th,
         td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 10px;
             text-align: left;
-            font-size: 0.8rem;
+
         }
 
         th {
@@ -123,10 +124,10 @@
 
         .signature-table {
             width: 100%;
-            margin-top: 100px;
+            margin-top: 180px;
             border: none;
             background-color: #f4f4f9;
-            page-break-inside: avoid;
+
         }
 
         .signature-table td {
@@ -145,19 +146,19 @@
 
         .score {
             background-color: #f3f4f6;
-            padding: 10px;
+            padding: 15px;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
-            margin: 8px 0;
+            margin-top: 10px;
         }
 
         .indicator-section {
-            page-break-inside: avoid;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+
             background-color: white;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
-            padding: 10px;
+            padding: 15px;
         }
 
         .indicator-section h4 {
@@ -185,16 +186,16 @@
 
         .page-break {
             page-break-after: always;
-            margin: 0;
-            padding: 0;
+
+
         }
 
         .evaluation-info {
             background-color: #f3f4f6;
-            padding: 10px;
+            padding: 15px;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .text-center {
@@ -203,10 +204,10 @@
 
         .auto-evaluation-section {
             background-color: #f9f9f9;
-            padding: 10px;
+            padding: 15px;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .auto-evaluation-section h5 {
@@ -229,12 +230,12 @@
         }
 
         .answer-box {
-            margin-left: 15px;
+            margin-left: 20px;
             background-color: white;
-            padding: 8px;
+            padding: 10px;
             border-radius: 5px;
             border: 1px solid #e5e7eb;
-            margin-bottom: 8px;
+
         }
 
         .justification {
@@ -277,13 +278,13 @@
         }
 
         .evaluation-status {
-            margin: 15px 0;
+            margin: 20px 0;
         }
 
         .evaluation-result {
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .evaluation-result.failed {
@@ -330,20 +331,33 @@
         }
 
         .evaluation-result.failed p {
-            color: #7F1D1D !important;
-        }
-
-        .evaluation-result.failed h2 {
-            color: #7F1D1D !important;
+            color: #7F1D1D;
         }
 
         .evaluation-result.passed p {
             color: #166534;
         }
+
+        .full-page {
+            width: 100%;
+            height: 100%;
+            /* Alternativa si DomPDF no interpreta bien A4 */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 0;
+            /* Fuerza una nueva página */
+        }
     </style>
 </head>
 
 <body>
+    <div class="full-page">
+        i
+        <img src="/public/assets/img/ESE_FEB_Descargable_Informe-01.jpg" alt="Logo"
+            style="position: absolute; top:0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+    </div>
     <header>
         <img src="/public/assets/img/logo_esc.png" alt="Logo">
         <h1>Informe de Evaluación del Protocolo Marca País</h1>
@@ -383,7 +397,7 @@
                             d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
                             clip-rule="evenodd" />
                     </svg>
-                    <h2 style="color: initial;">EVALUACIÓN NO APROBADA</h2>
+                    <h2>EVALUACIÓN NO APROBADA</h2>
                 </div>
                 <p>La empresa no ha aprobado uno o más indicadores descalificatorios, lo cual impide la obtención de la
                     licencia.</p>
@@ -497,7 +511,7 @@
                     <td>{{ $user->lastname }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->phone }}</td>
-                    <td>{{ $user->role === 'admin' ? 'Administrador' : 'Usuario' }}</td>
+                    <td>{{ $user->role }}</td>
                 </tr>
             @endif
         @endforeach
@@ -950,6 +964,12 @@
         <p class="text-center">Este informe ha sido generado automáticamente por el sistema de evaluación del Protocolo
             Marca País.</p>
         <p class="text-center">© {{ date('Y') }} - Todos los derechos reservados</p>
+    </div>
+
+    <div class="full-page">
+        i
+        <img src="/public/assets/img/ESE_FEB_Descargable_Informe-02.jpg" alt="Logo"
+            style="position: absolute; top:0; left: 0; width: 100%; height: 100%; object-fit: cover;">
     </div>
 </body>
 
