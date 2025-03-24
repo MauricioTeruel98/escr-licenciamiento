@@ -273,7 +273,11 @@ class DashboardController extends Controller
             'failedValues' => $failedValues,
             'autoEvaluationResult' => $autoEvaluationResult,
             'company' => $company,
-            'preguntasDescalificatoriasRechazadas' => $preguntasDescalificatoriasRechazadas
+            'preguntasDescalificatoriasRechazadas' => $preguntasDescalificatoriasRechazadas,
+            'flash' => [
+                'error' => session('error'),
+                'success' => session('success')
+            ]
         ]);
     }
 

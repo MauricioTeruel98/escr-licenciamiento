@@ -26,13 +26,19 @@ class CompanyAuthController extends Controller
 
     public function showCompanyRegister()
     {
+        // Verificar si el usuario ya tiene una empresa asignada
+        if (Auth::user()->company_id) {
+            return redirect()->route('dashboard')
+                ->with('error', 'No puede registrar otra empresa porque ya tiene una empresa registrada.');
+        }
+
         // Obtener la cédula jurídica de la sesión
         $legalId = session('legal_id', '');
-        
+
         // Cargar las provincias desde el archivo lugares.json
         $lugaresJson = file_get_contents(storage_path('app/public/lugares.json'));
         $lugares = json_decode($lugaresJson, true);
-        
+
         // Extraer solo las provincias
         $provincias = [];
         if (isset($lugares[0]['provincias'])) {
@@ -43,10 +49,11 @@ class CompanyAuthController extends Controller
                 ];
             }
         }
-        
+
         return Inertia::render('Auth/CompanyRegister', [
             'legalId' => $legalId,
-            'provincias' => $provincias
+            'provincias' => $provincias,
+            'hasCompany' => Auth::user()->company_id !== null
         ]);
     }
 
@@ -68,7 +75,7 @@ class CompanyAuthController extends Controller
             $cleanedValue = preg_replace('/[\'"\\\\\\/]/', '', ltrim($request->legal_id));
             $request->merge(['legal_id' => $cleanedValue]);
         }
-        
+
         $request->validate([
             'legal_id' => [
                 'required',
@@ -92,10 +99,9 @@ class CompanyAuthController extends Controller
 
             // Si la empresa no existe, guardamos el legal_id en la sesión y redirigimos al registro
             session(['legal_id' => $request->legal_id]);
-            
+
             DB::commit();
             return redirect()->route('company.register');
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al verificar cédula jurídica:', [
@@ -103,7 +109,7 @@ class CompanyAuthController extends Controller
                 'trace' => $e->getTraceAsString(),
                 'request' => $request->all()
             ]);
-            
+
             return back()
                 ->withInput()
                 ->with('error', 'Hubo un error al procesar la solicitud. Por favor, intente nuevamente.');
@@ -114,7 +120,7 @@ class CompanyAuthController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $companyId = session('pending_company_id');
             if (!$companyId) {
                 throw new \Exception('No hay una empresa pendiente de asignación');
@@ -122,7 +128,7 @@ class CompanyAuthController extends Controller
 
             $user = Auth::user();
             $company = \App\Models\Company::findOrFail($companyId);
-            
+
             $user->company_id = $companyId;
             $user->role = 'user';
             $user->status = 'pending';
@@ -151,17 +157,16 @@ class CompanyAuthController extends Controller
             session()->forget('pending_company_id');
 
             DB::commit();
-            
+
             return redirect()->route('approval.pending')
                 ->with('success', 'Solicitud de acceso enviada. Espere la aprobación del administrador.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al solicitar acceso:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return back()->with('error', 'Hubo un error al procesar la solicitud. Por favor, intente nuevamente.');
         }
     }
@@ -200,6 +205,11 @@ class CompanyAuthController extends Controller
 
     public function storeCompany(Request $request)
     {
+        // Verificar si el usuario ya tiene una empresa asignada
+        if (Auth::user()->company_id) {
+            return redirect()->route('dashboard')->with('error', 'No puede registrar otra empresa porque ya tiene una empresa registrada.');
+        }
+
         try {
             // Limpiar los datos de entrada
             $cleanedData = [];
@@ -216,7 +226,7 @@ class CompanyAuthController extends Controller
                     $cleanedData[$key] = $cleanedValue;
                 }
             }
-            
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'website' => 'required|url',
@@ -234,29 +244,29 @@ class CompanyAuthController extends Controller
                 'provincia.regex' => 'La provincia solo puede contener letras, números, espacios y guiones.',
                 'website.url' => 'El formato del sitio web no es válido. Debe incluir "https://" o "http://" al inicio (ejemplo: https://www.miempresa.com)'
             ]);
-    
-            DB::beginTransaction();
-            
-            $company = Company::create($validated);
 
-            $company->fecha_inicio_auto_evaluacion = now();
-            $company->save();
-    
-            // Vincular la empresa al usuario actual y establecerlo como admin
+            DB::beginTransaction();
+
             $user = Auth::user();
+
+            if (!$user->company_id) {
+                $company = Company::create($validated);
+                $company->fecha_inicio_auto_evaluacion = now();
+                $company->save();
+            }
+
+            // Vincular la empresa al usuario actual y establecerlo como admin
             $user->company_id = $company->id;
             $user->role = 'admin';
             $user->status = 'approved';
             $user->save();
-    
+
             // Limpiar la sesión
             session()->forget('legal_id');
-            
-            DB::commit();
-    
-            return redirect()->route('dashboard')->with('success', 'Empresa registrada exitosamente');
-    
 
+            DB::commit();
+
+            return redirect()->route('dashboard')->with('success', 'Empresa registrada exitosamente');
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::error('Error de validación:', [
                 'errors' => $e->errors(),
@@ -270,10 +280,10 @@ class CompanyAuthController extends Controller
                 'trace' => $e->getTraceAsString(),
                 'request' => $request->all()
             ]);
-            
+
             return back()
                 ->withInput()
                 ->with('error', 'Hubo un error al registrar la empresa. Por favor, intente nuevamente.');
         }
     }
-} 
+}

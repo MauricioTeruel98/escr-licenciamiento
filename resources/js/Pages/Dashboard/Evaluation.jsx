@@ -1,7 +1,7 @@
 import { Link, useForm, usePage, router } from '@inertiajs/react';
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { CircleArrowDown, CircleArrowRight } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ApplicationModal from '@/Components/Modals/ApplicationModal';
 import axios from 'axios';
 import FinalizarAutoevaluacionModal from '@/Components/Modals/FinalizarAutoevaluacionModal';
@@ -125,7 +125,7 @@ export default function Evaluation({
     preguntasDescalificatoriasRechazadas
 }) {
     const { post } = useForm();
-    const { auth } = usePage().props;
+    const { auth, flash } = usePage().props;
 
     const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
     const [isFinalizarAutoevaluacionModalOpen, setIsFinalizarAutoevaluacionModalOpen] = useState(false);
@@ -133,6 +133,24 @@ export default function Evaluation({
     const [notification, setNotification] = useState(null);
     const [modalStatus, setModalStatus] = useState('initial');
     const [isFinalizarEvaluacionModalOpen, setIsFinalizarEvaluacionModalOpen] = useState(false);
+
+    useEffect(() => {
+        if (flash.error) {
+            console.log('error', flash.error)
+            setNotification({
+                type: 'error',
+                message: flash.error
+            });
+        }
+        if (flash.success) {
+            console.log('success', flash.success)
+            setNotification({
+                type: 'success',
+                message: flash.success
+            });
+        }
+    }, [flash]);
+
     const handleApplicationSubmit = async () => {
         try {
             setIsSubmitting(true);
@@ -311,6 +329,24 @@ export default function Evaluation({
 
     return (
         <DashboardLayout userName={userName} title={`Autoevaluación de ${companyName}`}>
+            {/* {notification && (
+                <div className={`fixed top-4 right-4 px-4 py-3 rounded border z-50 ${
+                    notification.type === 'error' 
+                        ? 'bg-red-100 border-red-400 text-red-700' 
+                        : 'bg-green-100 border-green-400 text-green-700'
+                }`} role="alert">
+                    <strong className="font-bold">
+                        {notification.type === 'error' ? 'Error: ' : 'Éxito: '}
+                    </strong>
+                    <span className="block sm:inline">{notification.message}</span>
+                    <button
+                        className="absolute top-0 bottom-0 right-0 px-4 py-3"
+                        onClick={() => setNotification(null)}
+                    >
+                        <span className="text-2xl">&times;</span>
+                    </button>
+                </div>
+            )} */}
             <div className="space-y-8">
                 {!isExporter && !isEvaluador && !isAuthorizedByAdmin && (
                     <div className="bg-red-50 border-l-4 border-red-400 p-4">

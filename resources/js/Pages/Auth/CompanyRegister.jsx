@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import ImageLayout from '@/Layouts/ImageLayout';
 
-export default function CompanyRegister({ legalId, provincias }) {
+export default function CompanyRegister({ legalId, provincias, hasCompany }) {
 
     const { data, setData, post, processing, errors } = useForm({
         name: '',
@@ -39,6 +39,21 @@ export default function CompanyRegister({ legalId, provincias }) {
             setFilteredProvincias(filtered);
         }
     }, [searchTerm, provincias]);
+
+    // Agregar useEffect para redirigir si ya tiene empresa
+    useEffect(() => {
+        if (hasCompany) {
+            router.visit(route('dashboard'), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Mostrar mensaje de error
+                    if (document.referrer !== '') {
+                        window.history.pushState(null, '', route('dashboard'));
+                    }
+                }
+            });
+        }
+    }, [hasCompany]);
 
     // Validación para cédula jurídica
     const validateLegalId = (legalId) => {
@@ -122,6 +137,18 @@ export default function CompanyRegister({ legalId, provincias }) {
     const submit = (e) => {
         e.preventDefault();
 
+        if (hasCompany) {
+            // Redirigir al dashboard con mensaje de error
+            router.visit(route('dashboard'), {
+                preserveScroll: true,
+                onFinish: () => {
+                    // Mostrar mensaje flash
+                    router.reload({ only: ['flash'] });
+                }
+            });
+            return;
+        }
+
         // Validar antes de enviar
         if (data.legal_id && !validateLegalId(data.legal_id)) {
             return;
@@ -165,6 +192,41 @@ export default function CompanyRegister({ legalId, provincias }) {
 
         post(route('company.store'));
     };
+
+    // Si ya tiene empresa, mostrar mensaje y no renderizar el formulario
+    if (hasCompany) {
+        return (
+            <ImageLayout title="Registro de Empresa">
+                <div className="max-w-2xl w-full mx-auto p-6 mt-10">
+                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-yellow-700">
+                                    Ya tiene una empresa registrada. No puede crear otra empresa.
+                                </p>
+                                <div className="mt-4">
+                                    <div className="flex">
+                                        <a
+                                            href={route('dashboard')}
+                                            className="text-sm font-medium text-yellow-700 hover:text-yellow-600"
+                                        >
+                                            Volver al panel principal
+                                            <span aria-hidden="true"> &rarr;</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ImageLayout>
+        );
+    }
 
     return (
         <ImageLayout title="Registro de Empresa">
