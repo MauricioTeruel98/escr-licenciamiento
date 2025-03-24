@@ -398,4 +398,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/import/companies-additional-info', [App\Http\Controllers\ImportController::class, 'importCompaniesAdditionalInfo'])->name('import.companies-additional-info');
 });
 
+Route::post('/company/product/delete-image', [CompanyProfileController::class, 'deleteProductImage'])
+    ->name('company.product.delete-image');
+
 require __DIR__ . '/auth.php';

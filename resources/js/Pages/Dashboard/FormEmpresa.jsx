@@ -1067,6 +1067,15 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
     };
 
     const agregarProducto = () => {
+        if (data.productos.length >= 15) {
+            setToast({
+                show: true,
+                message: 'No se pueden agregar más de 15 productos',
+                type: 'error'
+            });
+            return;
+        }
+        
         setData('productos', [...data.productos, {
             nombre: '',
             descripcion: '',

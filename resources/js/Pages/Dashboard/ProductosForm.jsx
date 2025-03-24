@@ -70,6 +70,9 @@ export default function ProductosForm({
     // Agregar estado para el toast
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
+    // Agregar esta constante al inicio del componente, después de las props
+    const MAX_PRODUCTOS = 15;
+
     // Función para verificar si todos los campos requeridos están completos
     const verificarCamposCompletos = () => {
         // Verificar campos básicos requeridos
@@ -142,6 +145,22 @@ export default function ProductosForm({
     // Función para subir productos
     const uploadProductos = async () => {
         if (!data.productos || data.productos.length === 0) return null;
+
+        // Validar que no haya productos vacíos
+        const productosVacios = data.productos.some(producto =>
+            !producto.nombre?.trim() ||
+            !producto.descripcion?.trim() ||
+            (!producto.imagen && !imagenes.productos?.[data.productos.indexOf(producto)])
+        );
+
+        if (productosVacios) {
+            setToast({
+                show: true,
+                message: 'Todos los productos deben tener nombre, descripción e imagen',
+                type: 'error'
+            });
+            return null;
+        }
 
         setLoading(true);
         const formData = new FormData();
@@ -252,15 +271,86 @@ export default function ProductosForm({
         }
     };
 
+    // Agregar esta función para verificar si hay productos incompletos
+    const hayProductosIncompletos = () => {
+        return data.productos.some(producto =>
+            !producto.nombre?.trim() ||
+            !producto.descripcion?.trim() ||
+            (!producto.imagen && !imagenes.productos?.[data.productos.indexOf(producto)])
+        );
+    };
+
     // Manejador para el botón de guardar productos
     const handleGuardarProductos = async (e) => {
         e.preventDefault();
-        
-        // Primero guardar los productos
+
+        // Validar que no haya productos vacíos
+        const productosVacios = data.productos.some(producto =>
+            !producto.nombre?.trim() ||
+            !producto.descripcion?.trim() ||
+            (!producto.imagen && !imagenes.productos?.[data.productos.indexOf(producto)])
+        );
+
+        if (productosVacios) {
+            setToast({
+                show: true,
+                message: 'Todos los productos deben tener nombre, descripción e imagen',
+                type: 'error'
+            });
+            return;
+        }
+
+        // Si todos los productos tienen sus campos completos, proceder con el guardado
         await uploadProductos();
-        
+
         // Luego ejecutar el submit del formulario principal
         await submit(e);
+    };
+
+    // Agregar esta nueva función después de las funciones existentes
+    const handleDeleteProductImage = async (productId, imageType) => {
+        try {
+            setLoading(true);
+            const response = await axios.post(route('company.product.delete-image'), {
+                product_id: productId,
+                image_type: imageType
+            });
+
+            if (response.data.success) {
+                // Actualizar el estado local
+                setData(prevData => ({
+                    ...prevData,
+                    productos: prevData.productos.map(producto => {
+                        if (producto.id === productId) {
+                            return {
+                                ...producto,
+                                [imageType]: null,
+                                [`${imageType}_url`]: null
+                            };
+                        }
+                        return producto;
+                    })
+                }));
+
+                setToast({
+                    show: true,
+                    message: 'Imagen eliminada correctamente',
+                    type: 'success'
+                });
+
+                // Recargar los datos
+                router.reload({ only: ['imagenes'] });
+            }
+        } catch (error) {
+            console.error('Error al eliminar la imagen:', error);
+            setToast({
+                show: true,
+                message: error.response?.data?.message || 'Error al eliminar la imagen',
+                type: 'error'
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -319,6 +409,7 @@ export default function ProductosForm({
                                                 onChange={handleChange}
                                                 name={`productos[${index}].nombre`}
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
                                                 placeholder=""
                                             />
                                             <InputError message={errors[`productos.${index}.nombre`]} />
@@ -335,6 +426,7 @@ export default function ProductosForm({
                                                 name={`productos[${index}].descripcion`}
                                                 rows={6}
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                required
                                                 placeholder="Lorem Ipsum"
                                             />
                                             <InputError message={errors[`productos.${index}.descripcion`]} />
@@ -355,9 +447,15 @@ export default function ProductosForm({
                                                 onDragLeave={handleDragLeave}
                                                 onDrop={(e) => handleDrop(e, 'producto', index)}
                                             >
-                                                <div className="text-center text-gray-600">
-                                                    Arrastre o <span className="text-green-600">Cargar</span>
-                                                    <p className="text-xs mt-1">Máximo 1 imagen por producto. Solo formatos jpg, jpeg o png.</p>
+                                                <div className="text-center text-gray-600 flex items-center justify-center gap-2">
+                                                    <div>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-upload text-gray-400"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>
+
+                                                    </div>
+                                                    <div>
+                                                        <p>Arrastre o <span className="text-green-600">Cargar</span></p>
+                                                        <p className="text-xs mt-1">Solo formatos jpg, jpeg o png. Máximo 5MB</p>
+                                                    </div>
                                                 </div>
                                                 <input
                                                     id={`producto-input-${index}`}
@@ -365,6 +463,7 @@ export default function ProductosForm({
                                                     className="hidden"
                                                     accept=".png,.jpg,.jpeg"
                                                     onChange={(e) => handleImagenChange(e, 'producto', index)}
+                                                    required
                                                 />
                                             </label>
 
@@ -374,7 +473,7 @@ export default function ProductosForm({
                                                     <div className="flex items-center">
                                                         <button
                                                             type="button"
-                                                            onClick={() => removeExistingImage('producto', producto.imagen, index)}
+                                                            onClick={() => handleDeleteProductImage(producto.id, 'imagen')}
                                                             className="mr-2"
                                                         >
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -431,8 +530,13 @@ export default function ProductosForm({
                                                         onDragLeave={handleDragLeave}
                                                         onDrop={(e) => handleDrop(e, 'producto_2', index)}
                                                     >
-                                                        <div className="text-center text-gray-600">
-                                                            <p className="text-sm mt-1">Imagen opcional. Solo formatos jpg, jpeg o png.</p>
+                                                        <div className="text-center text-gray-600 flex items-center">
+                                                            <div>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-upload text-gray-400"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm mt-1">Arrastrar o <span className="text-green-600">cargar</span> imagen opcional. Solo formatos jpg, jpeg o png. Máximo 5MB</p>
+                                                            </div>
                                                         </div>
                                                         <input
                                                             id={`producto-input-2-${index}`}
@@ -449,7 +553,7 @@ export default function ProductosForm({
                                                             <div className="flex items-center">
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => removeExistingImage('producto_2', producto.imagen_2, index)}
+                                                                    onClick={() => handleDeleteProductImage(producto.id, 'imagen_2')}
                                                                     className="mr-2"
                                                                 >
                                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -506,8 +610,13 @@ export default function ProductosForm({
                                                         onDragLeave={handleDragLeave}
                                                         onDrop={(e) => handleDrop(e, 'producto_3', index)}
                                                     >
-                                                        <div className="text-center text-gray-600">
-                                                            <p className="text-sm mt-1">Imagen opcional. Solo formatos jpg, jpeg o png.</p>
+                                                        <div className="text-center text-gray-600 flex items-center">
+                                                            <div>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-upload text-gray-400"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm mt-1">Arrastrar o <span className="text-green-600">cargar</span> imagen opcional. Solo formatos jpg, jpeg o png. Máximo 5MB</p>
+                                                            </div>
                                                         </div>
                                                         <input
                                                             id={`producto-input-3-${index}`}
@@ -524,7 +633,7 @@ export default function ProductosForm({
                                                             <div className="flex items-center">
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => removeExistingImage('producto_3', producto.imagen_3, index)}
+                                                                    onClick={() => handleDeleteProductImage(producto.id, 'imagen_3')}
                                                                     className="mr-2"
                                                                 >
                                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -581,19 +690,36 @@ export default function ProductosForm({
                             <button
                                 type="button"
                                 onClick={agregarProducto}
-                                className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                                disabled={data.productos.length >= MAX_PRODUCTOS}
+                                className={`px-6 py-2 rounded-md transition-colors ${
+                                    data.productos.length >= MAX_PRODUCTOS 
+                                    ? 'bg-gray-400 text-white cursor-not-allowed' 
+                                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                                }`}
                             >
-                                Agregar Producto
+                                {data.productos.length >= MAX_PRODUCTOS 
+                                    ? 'Límite máximo de productos alcanzado' 
+                                    : 'Agregar Producto'
+                                }
                             </button>
+                            {data.productos.length > 0 && (
+                                <span className="ml-3 text-sm text-gray-600 self-center">
+                                    {data.productos.length} de {MAX_PRODUCTOS} productos
+                                </span>
+                            )}
                         </div>
 
                         {/* Botón de guardar */}
                         <div className="flex mt-6">
                             <button
                                 type="submit"
-                                disabled={processing || loading || !infoAdicional}
+                                disabled={processing || loading || !infoAdicional || hayProductosIncompletos()}
                                 onClick={handleGuardarProductos}
-                                className={`inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white ${!infoAdicional ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-700 hover:bg-green-800'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800 z-50`}
+                                className={`inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white 
+                                    ${(!infoAdicional || hayProductosIncompletos())
+                                        ? 'bg-gray-400 cursor-not-allowed'
+                                        : 'bg-green-700 hover:bg-green-800'} 
+                                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800 z-50`}
                             >
                                 {loading ? (
                                     <>
@@ -603,6 +729,8 @@ export default function ProductosForm({
                                         </svg>
                                         Procesando...
                                     </>
+                                ) : hayProductosIncompletos() ? (
+                                    'Complete todos los campos del producto'
                                 ) : !infoAdicional ? (
                                     'Complete la información de la empresa primero'
                                 ) : (

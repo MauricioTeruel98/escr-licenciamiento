@@ -1060,5 +1060,49 @@ class CompanyProfileController extends Controller
         $autoEvaluationResult->form_sended = 1;
         $autoEvaluationResult->save();
     }
+
+    public function deleteProductImage(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            $productId = $request->product_id;
+            $imageType = $request->image_type; // 'imagen', 'imagen_2', 'imagen_3'
+
+            $product = CompanyProducts::where('id', $productId)
+                ->where('company_id', $user->company_id)
+                ->first();
+
+            if (!$product) {
+                return response()->json(['success' => false, 'message' => 'Producto no encontrado'], 404);
+            }
+
+            // Verificar que la imagen existe
+            if (!$product->$imageType || !Storage::disk('public')->exists($product->$imageType)) {
+                return response()->json(['success' => false, 'message' => 'Imagen no encontrada'], 404);
+            }
+
+            // Eliminar el archivo
+            Storage::disk('public')->delete($product->$imageType);
+
+            // Actualizar el registro en la base de datos
+            $product->update([$imageType => null]);
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Imagen eliminada correctamente',
+                'product' => $product
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al eliminar imagen del producto:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la imagen: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
 
