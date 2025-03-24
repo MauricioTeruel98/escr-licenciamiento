@@ -54,12 +54,21 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, certName }) => {
 };
 
 export default function Certifications({ certifications: initialCertifications, availableCertifications, userName }) {
+
     const [certificaciones, setCertificaciones] = useState(
-        initialCertifications.map(cert => ({
-            ...cert,
-            fecha_obtencion: cert.fecha_obtencion ? new Date(cert.fecha_obtencion) : null,
-            fecha_expiracion: cert.fecha_expiracion ? new Date(cert.fecha_expiracion) : null
-        }))
+        initialCertifications.map(cert => {
+            const obtenerFechaLocal = (fecha) => {
+                if (!fecha) return null;
+                const [year, month, day] = fecha.split("T")[0].split("-"); 
+                return new Date(year, month - 1, day); 
+            };
+    
+            return {
+                ...cert,
+                fecha_obtencion: obtenerFechaLocal(cert.fecha_obtencion),
+                fecha_expiracion: obtenerFechaLocal(cert.fecha_expiracion)
+            };
+        })
     );
 
     // Simplificamos los estados del formulario
@@ -284,6 +293,7 @@ export default function Certifications({ certifications: initialCertifications, 
             });
 
             showNotification('success', response.data.message);
+            window.location.reload();
         } catch (error) {
             if (error.response?.status === 422 && error.response?.data?.error?.includes('Ya existe una certificación')) {
                 showNotification('error', 'Ya existe una certificación con este nombre para su empresa');
@@ -622,6 +632,7 @@ export default function Certifications({ certifications: initialCertifications, 
 
                                     return (
                                         <>
+                                            {console.log(cert)}
                                             <div key={cert.id} className={`p-4 rounded-lg shadow-sm border border-gray-200 ${certificadoExpirado ? 'border-2 border-red-400 rounded-lg bg-red-100/50' : 'bg-white'}`}>
                                                 <div className="flex flex-col xl:flex-row justify-between space-y-4 gap-4">
                                                     {/* Primera fila: Nombre y botón editar */}

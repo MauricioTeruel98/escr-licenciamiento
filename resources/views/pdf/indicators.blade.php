@@ -65,7 +65,7 @@
         }
 
         h1, h2, h3, h4 {
-            color: #111827;
+            color: #333;
             margin-top: 0;
         }
 
@@ -125,15 +125,15 @@
 
     @foreach($values as $value)
         <div class="value-section">
-            <h2>Valor: {{ $value->name }}</h2>
+            <h2>Valor: <span style="color: #157f3d;">{{ $value->name }}</span></h2>
             @foreach($value->subcategories as $subcategory)
                 <div class="subcategory-section">
-                    <h3>Componente: {{ $subcategory->name }}</h3>
+                    <h3>Componente: <span style="color: #157f3d;">{{ $subcategory->name }}</span></h3>
                     @foreach($subcategory->indicators as $indicator)
                         <div class="requisito-section">
-                            <h4>Requisito: {{ $indicator->requisito->name ?? 'N/A' }}</h4>
-                            <p><strong>Indicador:</strong> {{ $indicator->name }}</p>
-                            <p><strong>Pregunta de Autoevaluación:</strong> {{ $indicator->self_evaluation_question }}</p>
+                            <h4>Requisito: <span style="color: #157f3d;">{{ $indicator->requisito->name ?? 'N/A' }}</span></h4>
+                            <p><strong>Indicador:</strong> <span style="color: #157f3d;">{{ $indicator->name }}</span></p>
+                            <p><strong>Pregunta de Autoevaluación:</strong> <span style="color: #157f3d;">{{ $indicator->self_evaluation_question }}</span></p>
                         </div>
                     @endforeach
                 </div>

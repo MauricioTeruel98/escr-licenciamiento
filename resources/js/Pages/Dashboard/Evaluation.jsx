@@ -135,6 +135,7 @@ export default function Evaluation({
     const [isFinalizarEvaluacionModalOpen, setIsFinalizarEvaluacionModalOpen] = useState(false);
 
     useEffect(() => {
+        /*
         if (flash.error) {
             console.log('error', flash.error)
             setNotification({
@@ -149,7 +150,13 @@ export default function Evaluation({
                 message: flash.success
             });
         }
+        */
     }, [flash]);
+
+    useEffect(() => {
+        history.replaceState(null, '', '/dashboard');
+    }, []);
+
 
     const handleApplicationSubmit = async () => {
         try {
@@ -743,7 +750,7 @@ export default function Evaluation({
                                                                     <ul className="list-disc pl-5 space-y-1">
                                                                         {failedValues.map((value, index) => (
                                                                             <li key={index}>
-                                                                                <span className="font-medium">{value.name}:</span> Nota actual: {value.nota}% 
+                                                                                <span className="font-medium">{value.name}:</span> Nota actual: {value.nota}%
                                                                                 <span className="text-red-600"> (Nota mínima requerida: {value.nota_minima}%)</span>
                                                                             </li>
                                                                         ))}
