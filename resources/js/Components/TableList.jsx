@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Search, Trash2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Search, Trash2, X } from 'lucide-react';
 import DeleteModal from '@/Components/Modals/DeleteModal';
 
 export default function TableList({ 
@@ -16,6 +16,8 @@ export default function TableList({
     const [selectedItems, setSelectedItems] = useState([]);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [pageInputValue, setPageInputValue] = useState(pagination.currentPage);
+    const [searchValue, setSearchValue] = useState('');
+    const searchTimeout = useRef(null);
 
     useEffect(() => {
         setPageInputValue(pagination.currentPage);
@@ -65,6 +67,41 @@ export default function TableList({
         }
     };
 
+    const handleSearch = (value) => {
+        setSearchValue(value);
+
+        // Limpiar el timeout anterior si existe
+        if (searchTimeout.current) {
+            clearTimeout(searchTimeout.current);
+        }
+
+        // Crear un nuevo timeout
+        searchTimeout.current = setTimeout(() => {
+            onPageChange(1);
+            onSearch(value);
+        }, 300); // Esperar 300ms antes de ejecutar la búsqueda
+    };
+
+    const handleClearSearch = () => {
+        // Limpiar el timeout si existe
+        if (searchTimeout.current) {
+            clearTimeout(searchTimeout.current);
+        }
+        
+        setSearchValue('');
+        onPageChange(1);
+        onSearch('');
+    };
+
+    // Limpiar el timeout cuando el componente se desmonte
+    useEffect(() => {
+        return () => {
+            if (searchTimeout.current) {
+                clearTimeout(searchTimeout.current);
+            }
+        };
+    }, []);
+
     return (
         <div className="bg-white rounded-lg shadow overflow-hidden">
             {/* Barra de acciones masivas */}
@@ -95,7 +132,7 @@ export default function TableList({
                 </div>
             )}
 
-            {/* Barra de búsqueda */}
+            {/* Barra de búsqueda modificada */}
             <div className="px-4 py-3 border-b border-gray-200">
                 <div className="relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -103,10 +140,22 @@ export default function TableList({
                     </div>
                     <input
                         type="text"
-                        onChange={(e) => onSearch(e.target.value)}
-                        className="block w-full pl-10 sm:text-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                        value={searchValue}
+                        onChange={(e) => handleSearch(e.target.value)}
+                        className="block w-full pl-10 pr-10 sm:text-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
                         placeholder="Buscar..."
                     />
+                    {searchValue && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <button
+                                onClick={handleClearSearch}
+                                className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                                title="Limpiar búsqueda"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 

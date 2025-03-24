@@ -31,6 +31,7 @@ export default function UsersIndex() {
 
     const columns = [
         { key: 'name', label: 'Nombre' },
+        { key: 'lastname', label: 'Apellido' },
         { key: 'email', label: 'Email' },
         {
             key: 'puesto',
