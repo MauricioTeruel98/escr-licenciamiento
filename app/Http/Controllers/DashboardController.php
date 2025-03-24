@@ -48,7 +48,7 @@ class DashboardController extends Controller
         // Obtener el total de indicadores activos
         $totalIndicadores = Indicator::where('is_active', true)
             ->where('deleted', false)
-            ->where(function($query) use ($company) {
+            ->where(function ($query) use ($company) {
                 $query->whereNull('created_at')
                     ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
             })
@@ -60,7 +60,7 @@ class DashboardController extends Controller
         // Obtener el número de respuestas de la empresa
         $indicadoresRespondidos = IndicatorAnswer::whereHas('indicator', function ($query) use ($company) {
             $query->where('is_active', true)
-                ->where(function($q) use ($company) {
+                ->where(function ($q) use ($company) {
                     $q->whereNull('created_at')
                         ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                 });
@@ -74,7 +74,7 @@ class DashboardController extends Controller
         // Obtener los IDs de los indicadores respondidos con "sí"
         $indicatorIds = IndicatorAnswer::where('company_id', $user->company_id)
             ->whereHas('indicator', function ($query) use ($company) {
-                $query->where(function($q) use ($company) {
+                $query->where(function ($q) use ($company) {
                     $q->whereNull('created_at')
                         ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                 });
@@ -93,12 +93,12 @@ class DashboardController extends Controller
                 ->where('deleted', false)
                 ->whereHas('indicator', function ($query) use ($company) {
                     $query->where('deleted', false)
-                        ->where(function($q) use ($company) {
+                        ->where(function ($q) use ($company) {
                             $q->whereNull('created_at')
                                 ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                         });
                 })
-                ->where(function($query) use ($company) {
+                ->where(function ($query) use ($company) {
                     $query->whereNull('created_at')
                         ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                 })
@@ -107,22 +107,22 @@ class DashboardController extends Controller
             $numeroDePreguntasQueRespondioLaEmpresa = IndicatorAnswerEvaluation::where('company_id', $user->company_id)
                 ->whereHas('evaluationQuestion', function ($query) use ($company) {
                     $query->where('deleted', false)
-                        ->where(function($q) use ($company) {
+                        ->where(function ($q) use ($company) {
                             $q->whereNull('created_at')
                                 ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                         });
                 })
                 ->whereHas('evaluationQuestion.indicator', function ($query) use ($company) {
                     $query->where('deleted', false)
-                        ->where(function($q) use ($company) {
+                        ->where(function ($q) use ($company) {
                             $q->whereNull('created_at')
                                 ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                         });
                 })
                 ->count();
 
-            $progresoEvaluacion = $numeroDePreguntasQueVaAResponderLaEmpresa > 0 
-                ? ($numeroDePreguntasQueRespondioLaEmpresa / $numeroDePreguntasQueVaAResponderLaEmpresa) * 100 
+            $progresoEvaluacion = $numeroDePreguntasQueVaAResponderLaEmpresa > 0
+                ? ($numeroDePreguntasQueRespondioLaEmpresa / $numeroDePreguntasQueVaAResponderLaEmpresa) * 100
                 : 0;
         }
 
@@ -145,7 +145,7 @@ class DashboardController extends Controller
                     ->whereHas('indicator', function ($query) use ($company) {
                         $query->where('is_active', true)
                             ->where('deleted', false)
-                            ->where(function($q) use ($company) {
+                            ->where(function ($q) use ($company) {
                                 $q->whereNull('created_at')
                                     ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                             });
@@ -160,7 +160,7 @@ class DashboardController extends Controller
             ->where('is_binding', true)
             ->where('answer', 0)
             ->whereHas('indicator', function ($query) use ($company) {
-                $query->where(function($q) use ($company) {
+                $query->where(function ($q) use ($company) {
                     $q->whereNull('created_at')
                         ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                 });
@@ -178,12 +178,12 @@ class DashboardController extends Controller
         $failedValues = AutoEvaluationValorResult::where('company_id', $user->company_id)
             ->whereHas('value', function ($query) use ($company) {
                 $query->where('deleted', false)
-                    ->where(function($q) use ($company) {
+                    ->where(function ($q) use ($company) {
                         $q->whereNull('created_at')
                             ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                     });
             })
-            ->with(['value' => function($query) {
+            ->with(['value' => function ($query) {
                 $query->select('id', 'name', 'minimum_score');
             }])
             ->get()
@@ -207,7 +207,7 @@ class DashboardController extends Controller
 
         $activeValues = Value::where('is_active', true)
             ->where('deleted', false)
-            ->where(function($query) use ($company) {
+            ->where(function ($query) use ($company) {
                 $query->whereNull('created_at')
                     ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
             })
@@ -236,19 +236,21 @@ class DashboardController extends Controller
         $preguntasDescalificatoriasRechazadas = EvaluatorAssessment::with(['indicator', 'evaluationQuestion'])
             ->whereHas('indicator', function ($query) use ($company) {
                 $query->where('binding', true)
-                    ->where(function($q) use ($company) {
+                    ->where(function ($q) use ($company) {
                         $q->whereNull('created_at')
                             ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
                     });
             })
+            ->whereHas('evaluationQuestion') // Asegurar que la pregunta existe
             ->where('approved', false)
             ->where('company_id', $user->company_id)
             ->get()
             ->map(function ($assessment) {
+                // Validar que evaluationQuestion no sea null antes de acceder a sus propiedades
                 return [
-                    'indicator_name' => $assessment->indicator->name,
+                    'indicator_name' => $assessment->indicator ? $assessment->indicator->name : 'N/A',
                     'indicator_id' => $assessment->indicator_id,
-                    'question' => $assessment->evaluationQuestion->question,
+                    'question' => $assessment->evaluationQuestion ? $assessment->evaluationQuestion->question : 'N/A',
                     'question_id' => $assessment->evaluation_question_id,
                     'evaluator_comment' => $assessment->comment
                 ];
@@ -423,26 +425,27 @@ class DashboardController extends Controller
                         'imagen_2' => $producto->imagen_2,
                         'imagen_3' => $producto->imagen_3
                     ];
-                    
+
                     // Añadir URLs para las imágenes si existen
                     if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
                         $productoData['imagen_url'] = asset('storage/' . $producto->imagen);
                     }
-                    
+
                     if ($producto->imagen_2 && Storage::disk('public')->exists($producto->imagen_2)) {
                         $productoData['imagen_2_url'] = asset('storage/' . $producto->imagen_2);
                     }
-                    
+
                     if ($producto->imagen_3 && Storage::disk('public')->exists($producto->imagen_3)) {
                         $productoData['imagen_3_url'] = asset('storage/' . $producto->imagen_3);
                     }
-                    
+
                     // Convertir el array a objeto para mantener consistencia con el código existente
                     return (object)$productoData;
                 });
-                
+
                 // Agregar un log para depurar las imágenes de productos
-                Log::info('Productos cargados con sus imágenes:', 
+                Log::info(
+                    'Productos cargados con sus imágenes:',
                     $infoAdicional->productos->map(function ($producto) {
                         return [
                             'id' => $producto->id,
