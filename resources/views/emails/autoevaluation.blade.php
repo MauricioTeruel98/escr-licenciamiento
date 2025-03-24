@@ -53,15 +53,15 @@
         </div>
         
         <div class="content">
-            <p>Ha completado satisfactoriamente el proceso de autoevaluación del licenciamiento corporativo de la marca país esencial Costa Rica.</p>
+            <p>Ha completado satisfactoriamente el proceso de autoevaluación del licenciamiento corporativo de la marca país <i>esencial</i> Costa Rica.</p>
             
             <p>Adjunto encontrará un documento pdf con los resultados detallados de su autoevaluación.</p>
             
             <p>Próximos pasos:</p>
             <ol>
-                <li>El equipo de licenciamiento esencial Costa Rica revisará su autoevaluación.</li>
+                <li>El equipo de licenciamiento <i>esencial</i> Costa Rica revisará su autoevaluación.</li>
                 <li>Una vez revisada la autoevaluación, el equipo se comunicará vía correo electrónico en un plazo no mayor a 30 días hábiles.</li>
-                <li>Podrá continuar con el proceso de evaluación del licenciamiento corporativo de la marca país esencial Costa Rica.</li>
+                <li>Podrá continuar con el proceso de evaluación del licenciamiento corporativo de la marca país <i>esencial</i> Costa Rica.</li>
             </ol>
 
             {{-- <div style="text-align: center;">

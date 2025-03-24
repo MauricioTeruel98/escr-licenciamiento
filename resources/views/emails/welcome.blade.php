@@ -56,7 +56,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Bienvenido(a) a la plataforma de licenciamiento corporativo de la marca país esencial Costa Rica.</h1>
+            <h1>Bienvenido(a) a la plataforma de licenciamiento corporativo de la marca país <i>esencial</i> Costa Rica.</h1>
         </div>
 
         <div class="content">
@@ -65,7 +65,7 @@
                 el protocolo de licenciamiento.</p>
 
             <p>Una vez realizado este proceso, según la calificación obtenida, podrá continuar con la etapa de solicitud
-                para formar parte de la comunidad de empresas Esenciales Costa Rica.</p>
+                para formar parte de la comunidad de empresas <i>esenciales</i> Costa Rica.</p>
 
             {{-- <div style="text-align: center;">
                 <a href="{{ route('login') }}" class="button">Iniciar sesión</a>

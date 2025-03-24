@@ -22,3 +22,6 @@ yarn-error.log
 /.zed
 
 .codegpt
+
+/public/assets/pdfs/Consentimiento informado.pdf
+/public/assets/pdfs/Consentimiento informado-old.pdf

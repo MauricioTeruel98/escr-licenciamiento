@@ -61,7 +61,7 @@
 
         <div class="content">
             <p>Su solicitud de acceso al perfil de la empresa {{ $company->name }} en la plataforma de licenciamiento
-                corporativo de la marca país esencial Costa Rica ha sido denegada por el administrador (a) de la
+                corporativo de la marca país <i>esencial</i> Costa Rica ha sido denegada por el administrador (a) de la
                 empresa.
             </p>
 

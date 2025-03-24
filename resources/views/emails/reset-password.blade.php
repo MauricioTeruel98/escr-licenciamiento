@@ -61,7 +61,7 @@
 
         <div class="content">
             <p>Hemos recibido una solicitud de restablecimiento de contraseña para el perfil de su empresa dentro de la
-                plataforma de licenciamiento corporativo de la marca país esencial Costa Rica.</p>
+                plataforma de licenciamiento corporativo de la marca país <i>esencial</i> Costa Rica.</p>
 
             <div style="text-align: center;">
                 <a href="{{ $resetUrl }}" class="button">Restablecer Contraseña</a>

@@ -1038,7 +1038,6 @@ class EvaluationAnswerController extends Controller
         }
 
         // Actualizar el estado según el resultado de la evaluación
-        
         if ($hasFailedBindingIndicators) {
             $company->estado_eval = 'evaluacion-desaprobada';
         } else {
