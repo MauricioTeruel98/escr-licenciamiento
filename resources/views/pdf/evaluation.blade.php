@@ -47,24 +47,24 @@
             background-color: #f4f4f9;
             color: #333;
             margin: 0;
-            padding: 25px;
+            padding: 20px;
             font-size: 0.85rem !important;
+            line-height: 1.4;
         }
 
         @page {
-            margin: 0mm;
-            /* Ajusta el valor según lo necesites */
+            margin: 0;
+            padding: 0;
         }
-
 
         header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             background-color: #157f3d;
-            padding: 15px;
+            padding: 10px;
             color: white;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
         }
@@ -79,14 +79,15 @@
         }
 
         h2 {
-            font-size: 1.5em;
-            color: #157f3d;
-            margin-top: 20px;
+            page-break-before: auto;
+            page-break-after: avoid;
+            margin-top: 15px;
             margin-bottom: 10px;
+            color: #157f3d;
         }
 
         p {
-            margin: 10px 0;
+            margin: 5px 0;
         }
 
         table {
@@ -98,13 +99,16 @@
             border-radius: 8px;
             border: 1px solid #e5e7eb;
             overflow: hidden;
+            page-break-inside: avoid;
+            margin-bottom: 15px;
         }
 
         th,
         td {
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 8px;
             text-align: left;
+            font-size: 0.8rem;
         }
 
         th {
@@ -119,9 +123,10 @@
 
         .signature-table {
             width: 100%;
-            margin-top: 180px;
+            margin-top: 100px;
             border: none;
             background-color: #f4f4f9;
+            page-break-inside: avoid;
         }
 
         .signature-table td {
@@ -140,18 +145,19 @@
 
         .score {
             background-color: #f3f4f6;
-            padding: 15px;
+            padding: 10px;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
-            margin-top: 10px;
+            margin: 8px 0;
         }
 
         .indicator-section {
-            margin-bottom: 20px;
+            page-break-inside: avoid;
+            margin-bottom: 15px;
             background-color: white;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
-            padding: 15px;
+            padding: 10px;
         }
 
         .indicator-section h4 {
@@ -179,14 +185,16 @@
 
         .page-break {
             page-break-after: always;
+            margin: 0;
+            padding: 0;
         }
 
         .evaluation-info {
             background-color: #f3f4f6;
-            padding: 15px;
+            padding: 10px;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .text-center {
@@ -195,10 +203,10 @@
 
         .auto-evaluation-section {
             background-color: #f9f9f9;
-            padding: 15px;
+            padding: 10px;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .auto-evaluation-section h5 {
@@ -221,11 +229,12 @@
         }
 
         .answer-box {
-            margin-left: 20px;
+            margin-left: 15px;
             background-color: white;
-            padding: 10px;
+            padding: 8px;
             border-radius: 5px;
             border: 1px solid #e5e7eb;
+            margin-bottom: 8px;
         }
 
         .justification {
@@ -268,13 +277,13 @@
         }
 
         .evaluation-status {
-            margin: 20px 0;
+            margin: 15px 0;
         }
 
         .evaluation-result {
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .evaluation-result.failed {
@@ -321,7 +330,11 @@
         }
 
         .evaluation-result.failed p {
-            color: #7F1D1D;
+            color: #7F1D1D !important;
+        }
+
+        .evaluation-result.failed h2 {
+            color: #7F1D1D !important;
         }
 
         .evaluation-result.passed p {
@@ -370,7 +383,7 @@
                             d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
                             clip-rule="evenodd" />
                     </svg>
-                    <h2>EVALUACIÓN NO APROBADA</h2>
+                    <h2 style="color: initial;">EVALUACIÓN NO APROBADA</h2>
                 </div>
                 <p>La empresa no ha aprobado uno o más indicadores descalificatorios, lo cual impide la obtención de la
                     licencia.</p>
