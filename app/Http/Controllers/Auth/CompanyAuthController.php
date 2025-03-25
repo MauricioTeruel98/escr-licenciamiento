@@ -16,9 +16,17 @@ use App\Notifications\AccessRequestApproved;
 use App\Notifications\AccessRequestRejected;
 use App\Notifications\AccessRequestPendingNotification;
 use App\Notifications\NewAccessRequestNotification;
+use App\Services\MailService;
 
 class CompanyAuthController extends Controller
 {
+    protected $mailService;
+
+    public function __construct(MailService $mailService)
+    {
+        $this->mailService = $mailService;
+    }
+
     public function showRegard()
     {
         return Inertia::render('Auth/Regard');
@@ -136,7 +144,8 @@ class CompanyAuthController extends Controller
 
             // Enviar notificación al usuario solicitante
             try {
-                $user->notify(new AccessRequestPendingNotification($company));
+                $notification = new AccessRequestPendingNotification($company);
+                $this->mailService->send($user->email, $notification);
             } catch (\Exception $e) {
                 Log::error('Error al enviar la notificación de solicitud de acceso pendiente: ' . $e->getMessage());
             }
@@ -148,7 +157,8 @@ class CompanyAuthController extends Controller
 
             if ($adminUser) {
                 try {
-                    $adminUser->notify(new NewAccessRequestNotification($user));
+                    $notification = new NewAccessRequestNotification($user);
+                    $this->mailService->send($adminUser->email, $notification);
                 } catch (\Exception $e) {
                     Log::error('Error al enviar la notificación de solicitud de acceso pendiente al administrador: ' . $e->getMessage());
                 }

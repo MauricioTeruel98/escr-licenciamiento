@@ -22,9 +22,17 @@ use App\Models\Certification;
 use App\Models\IndicatorHomologation;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\MailService;
 
 class IndicadorAnswerController extends Controller
 {
+    protected $mailService;
+
+    public function __construct(MailService $mailService)
+    {
+        $this->mailService = $mailService;
+    }
+
     public function store(Request $request)
     {
         try {
@@ -444,14 +452,16 @@ class IndicadorAnswerController extends Controller
                 // Enviar email con PDF al usuario administrador de la empresa
                 $admin = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
                 try {
-                    Mail::to($admin->email)->send(new AutoEvaluationResults($fullPath, $company));
+                    $mail = new \App\Mail\AutoEvaluationResults($fullPath, $company);
+                    $this->mailService->send($admin->email, $mail);
                 } catch (\Exception $e) {
                     Log::error('Error al enviar el correo de resultados de evaluación: ' . $e->getMessage());
                 }
 
                 $superadminuser = User::where('role', 'super_admin')->first();
                 try {
-                    Mail::to($superadminuser->email)->send(new AutoEvaluationComplete($fullPath, $company));
+                    $mail = new \App\Mail\AutoEvaluationComplete($fullPath, $company);
+                    $this->mailService->send($superadminuser->email, $mail);
                 } catch (\Exception $e) {
                     Log::error('Error al enviar el correo de resultados de evaluación al superadmin: ' . $e->getMessage());
                 }
@@ -693,14 +703,16 @@ class IndicadorAnswerController extends Controller
                 // Enviar email con PDF al usuario administrador de la empresa
                 $admin = User::where('company_id', $companyId)->where('role', 'admin')->first();
                 try {
-                    Mail::to($admin->email)->send(new AutoEvaluationResults($fullPath, $company));
+                    $mail = new \App\Mail\AutoEvaluationResults($fullPath, $company);
+                    $this->mailService->send($admin->email, $mail);
                 } catch (\Exception $e) {
                     Log::error('Error al enviar el correo de resultados de evaluación: ' . $e->getMessage());
                 }
 
                 $superadminuser = User::where('role', 'super_admin')->first();
                 try {
-                    Mail::to($superadminuser->email)->send(new AutoEvaluationComplete($fullPath, $company));
+                    $mail = new \App\Mail\AutoEvaluationComplete($fullPath, $company);
+                    $this->mailService->send($superadminuser->email, $mail);
                 } catch (\Exception $e) {
                     Log::error('Error al enviar el correo de resultados de evaluación al superadmin: ' . $e->getMessage());
                 }

@@ -24,9 +24,17 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Cache;
+use App\Services\MailService;
 
 class EvaluationAnswerController extends Controller
 {
+    protected $mailService;
+
+    public function __construct(MailService $mailService)
+    {
+        $this->mailService = $mailService;
+    }
+
     public function store(Request $request)
     {
         try {
@@ -281,7 +289,8 @@ class EvaluationAnswerController extends Controller
                     // Enviar email con PDF al usuario administrador de la empresa
                     if ($adminUser) {
                         try {
-                            Mail::to($adminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));
+                            $mail = new \App\Mail\EvaluationResults($fullPath, $company);
+                            $this->mailService->send($adminUser->email, $mail);
                         } catch (\Exception $e) {
                             Log::error('Error al enviar el correo de resultados de evaluación: ' . $e->getMessage());
                         }
@@ -290,7 +299,8 @@ class EvaluationAnswerController extends Controller
                     // Enviar email con PDF al superadmin
                     if ($superAdminUser) {
                         try {
-                            Mail::to($superAdminUser->email)->send(new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company));
+                            $mail = new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company);
+                            $this->mailService->send($superAdminUser->email, $mail);
                         } catch (\Exception $e) {
                             Log::error('Error al enviar el correo de resultados de evaluación al superadmin: ' . $e->getMessage());
                         }
@@ -310,14 +320,16 @@ class EvaluationAnswerController extends Controller
 
                     if ($adminUser) {
                         try {
-                            $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
+                            $mail = new EvaluationCompletedNotification($user, $company->name);
+                            $this->mailService->send($adminUser->email, $mail);
                         } catch (\Exception $e) {
                             Log::error('Error al enviar la notificación de evaluación completada al administrador: ' . $e->getMessage());
                         }
                     }
                     if ($superAdminUser) {
                         try {
-                            $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
+                            $mail = new EvaluationCompletedNotificationSuperAdmin($user, $company->name);
+                            $this->mailService->send($superAdminUser->email, $mail);
                         } catch (\Exception $e) {
                             Log::error('Error al enviar la notificación de evaluación completada al superadmin: ' . $e->getMessage());
                         }
@@ -872,14 +884,16 @@ class EvaluationAnswerController extends Controller
         if (!$this->notificationsAlreadySent($user->company_id, $request->value_id ?? null, 'evaluacion-completada')) {
             if ($adminUser) {
                 try {
-                    $adminUser->notify(new EvaluationCompletedNotification($user, $company->name));
+                    $mail = new EvaluationCompletedNotification($user, $company->name);
+                    $this->mailService->send($adminUser->email, $mail);
                 } catch (\Exception $e) {
                     Log::error('Error al enviar la notificación de evaluación completada al administrador: ' . $e->getMessage());
                 }
             }
             if ($superAdminUser) {
                 try {
-                    $superAdminUser->notify(new EvaluationCompletedNotificationSuperAdmin($user, $company->name));
+                    $mail = new EvaluationCompletedNotificationSuperAdmin($user, $company->name);
+                    $this->mailService->send($superAdminUser->email, $mail);
                 } catch (\Exception $e) {
                     Log::error('Error al enviar la notificación de evaluación completada al superadmin: ' . $e->getMessage());
                 }
@@ -1016,7 +1030,8 @@ class EvaluationAnswerController extends Controller
             // Enviar email con PDF al usuario administrador de la empresa
             if ($adminUser) {
                 try {
-                    Mail::to($adminUser->email)->send(new \App\Mail\EvaluationResults($fullPath, $company));
+                    $mail = new \App\Mail\EvaluationResults($fullPath, $company);
+                    $this->mailService->send($adminUser->email, $mail);
                 } catch (\Exception $e) {
                     Log::error('Error al enviar el email de evaluación calificada al administrador: ' . $e->getMessage());
                 }
@@ -1025,7 +1040,8 @@ class EvaluationAnswerController extends Controller
             // Enviar email con PDF al superadmin
             if ($superAdminUser) {
                 try {
-                    Mail::to($superAdminUser->email)->send(new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company));
+                    $mail = new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company);
+                    $this->mailService->send($superAdminUser->email, $mail);
                 } catch (\Exception $e) {
                     Log::error('Error al enviar el email de evaluación calificada al superadmin', [
                         'error' => $e->getMessage(),

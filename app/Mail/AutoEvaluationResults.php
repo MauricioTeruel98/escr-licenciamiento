@@ -11,6 +11,7 @@ class AutoEvaluationResults extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $subject = 'Resultados de Autoevaluación';
     protected $pdfPath;
     public $company;
 

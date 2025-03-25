@@ -14,9 +14,17 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Services\MailService;
 
 class RegisteredUserController extends Controller
 {
+    protected $mailService;
+
+    public function __construct(MailService $mailService)
+    {
+        $this->mailService = $mailService;
+    }
+
     /**
      * Display the registration view.
      */
@@ -61,9 +69,10 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        // Enviar notificación de bienvenida
+        // Enviar notificación de bienvenida usando el nuevo servicio
         try {
-            $user->notify(new WelcomeNotification());
+            $welcomeNotification = new WelcomeNotification();
+            $this->mailService->send($user->email, $welcomeNotification);
         } catch (\Exception $e) {
             Log::error('Error al enviar la notificación de bienvenida: ' . $e->getMessage());
         }

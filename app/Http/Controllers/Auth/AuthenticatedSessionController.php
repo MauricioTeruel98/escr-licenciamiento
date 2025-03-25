@@ -45,7 +45,7 @@ class AuthenticatedSessionController extends Controller
         $user = auth()->user();
         $company = Company::find($user->company_id);
 
-        if($user->company_id){
+        if($user->company_id && $user->role !== 'evaluador'){
             if($company->fecha_inicio_auto_evaluacion === null){
                 $company->fecha_inicio_auto_evaluacion = $company->created_at;
                 $company->save();

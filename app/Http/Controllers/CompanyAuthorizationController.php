@@ -2,14 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\MailService;
 use App\Models\Company;
 use App\Models\AutoEvaluationResult;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+
 class CompanyAuthorizationController extends Controller
 {
+    protected $mailService;
+
+    public function __construct(MailService $mailService)
+    {
+        $this->mailService = $mailService;
+    }
+
     public function authorizeCompany(Company $company)
     {
         // Verificar si el formulario fue enviado
@@ -32,7 +40,8 @@ class CompanyAuthorizationController extends Controller
         $adminUser = User::where('company_id', $company->id)->where('role', 'admin')->first();
 
         try {
-            Mail::to($adminUser->email)->send(new \App\Mail\AuthorizeToEvalaution($company));
+            $mail = new \App\Mail\AuthorizeToEvalaution($company);
+            $this->mailService->send($adminUser->email, $mail);
         } catch (\Exception $e) {
             // Log the error or handle it as needed, but continue execution
             Log::error('Error al enviar el correo de autorización: ' . $e->getMessage());

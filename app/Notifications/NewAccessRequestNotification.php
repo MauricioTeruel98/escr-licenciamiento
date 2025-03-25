@@ -12,6 +12,8 @@ class NewAccessRequestNotification extends Notification
 
     protected $requestingUser;
 
+    public $subject = 'Nueva solicitud de acceso';
+
     public function __construct($requestingUser)
     {
         $this->requestingUser = $requestingUser;

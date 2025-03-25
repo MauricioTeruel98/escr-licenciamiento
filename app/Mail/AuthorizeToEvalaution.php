@@ -12,6 +12,7 @@ class AuthorizeToEvalaution extends Mailable
     use Queueable, SerializesModels;
 
     public $company;
+    public $subject = 'Autorización para iniciar evaluación';
 
     public function __construct($company)
     {

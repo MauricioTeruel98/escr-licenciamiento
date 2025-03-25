@@ -13,6 +13,7 @@ class EvaluationResults extends Mailable
 
     protected $pdfPath;
     public $company;
+    public $subject = 'Resultados de Evaluación';
 
     public function __construct($pdfPath, $company)
     {
@@ -23,7 +24,7 @@ class EvaluationResults extends Mailable
     public function build()
     {
         return $this->view('emails.evaluation_calificated')
-                    ->subject('Resultados de la Evaluación')
+                    ->subject($this->subject)
                     ->with([
                         'user' => $this->company->users->where('role', 'admin')->first(),
                         'companyName' => $this->company->name

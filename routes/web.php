@@ -40,6 +40,7 @@ use App\Http\Controllers\UsersManagementSuperAdminController;
 use App\Http\Middleware\EnsureUserHasNoCompany;
 use App\Http\Controllers\ImportController;
 use App\Http\Middleware\EnsureApplicationSended;
+use App\Http\Controllers\MailLogController;
 // Ruta principal
 Route::get('/', function () {
     if (Auth::check()) {
@@ -400,5 +401,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::post('/company/product/delete-image', [CompanyProfileController::class, 'deleteProductImage'])
     ->name('company.product.delete-image');
+
+Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
+    Route::get('/mail-logs', [MailLogController::class, 'index'])->name('mail-logs.index');
+    Route::post('/mail-logs/{id}/retry', [MailLogController::class, 'retry'])->name('mail-logs.retry');
+    Route::post('/mail-logs/send-test', [MailLogController::class, 'sendTest'])->name('mail-logs.send-test');
+});
 
 require __DIR__ . '/auth.php';
