@@ -119,7 +119,8 @@ export default function ProductosForm({
         const tieneFotografias = (data.fotografias_paths && JSON.parse(data.fotografias_paths).length > 0) ||
             (imagenes.fotografias && imagenes.fotografias.length > 0);
 
-        return camposCompletos && tieneProductoValido && tieneLogo && tieneFotografias;
+        //return camposCompletos && tieneProductoValido && tieneLogo && tieneFotografias;
+        return camposCompletos && tieneLogo && tieneFotografias;
     };
 
     // Función para actualizar form_sended
