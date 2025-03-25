@@ -109,7 +109,7 @@ export default function Progresos() {
             key: 'actions',
             label: 'Acciones',
             render: (item) => {
-                if ((item.estado === 'Auto-evaluación Completada' || item.estado === 'Evaluación') && !item.authorized && item.form_sended) {
+                if ((item.estado === 'Autoevaluación Completada' || item.estado === 'Evaluación') && !item.authorized && item.form_sended) {
                     return (
                         <button
                             onClick={() => handleAuthorize(item.id)}

@@ -875,7 +875,11 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         // Si hay campos incompletos o no hay producto válido, no permitir form_sended = 1
         // Valida si hay al menos una foto, ya que cuando la variable fotografias no tiene elementos, se convierte en undefined
 
-        const formularioCompleto = camposIncompletos.length === 0 && tieneProductoValido && fotografiasLength > 0 && logo;
+        // CON PRODUCTOS
+        //const formularioCompleto = camposIncompletos.length === 0 && tieneProductoValido && fotografiasLength > 0 && logo;
+
+        // SIN PRODUCTOS
+        const formularioCompleto = camposIncompletos.length === 0 && fotografiasLength > 0 && logo;
 
         //console.log('formularioCompleto', formularioCompleto);
         //console.log('camposIncompletos', camposIncompletos);
@@ -2029,7 +2033,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             ...camposRequeridos,
             fotografias: tieneFotografias ? "ok" : "",  // Si hay fotos, marcamos como "ok"
             logo: tieneLogo ? "ok" : "",                // Si hay logo, marcamos como "ok"
-            productos: tieneProductoValido ? "ok" : ""  // Si hay al menos un producto válido, marcamos como "ok"
+            //productos: tieneProductoValido ? "ok" : ""  // Si hay al menos un producto válido, marcamos como "ok"
         };
 
         // Filtrar campos vacíos y mapear a sus etiquetas
@@ -2041,9 +2045,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 if (campo === 'logo') {
                     return !tieneLogo;
                 }
-                if (campo === 'productos') {
+                /*if (campo === 'productos') {
                     return !tieneProductoValido;
-                }
+                }*/
                 return isEmptyField(campo);
             })
             .map(([campo]) => {
