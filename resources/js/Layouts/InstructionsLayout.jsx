@@ -84,7 +84,7 @@ export default function InstructionsLayout({ children, title }) {
                                     Instrucciones:
                                 </h2>
                                 <p className="text-white mb-6">
-                                    Para crear un usuario en la plataforma de <span className='font-bold'>auto-evaluación</span> siga los siguientes pasos:
+                                    Para crear un usuario en la plataforma de <span className='font-bold'>autoevaluación</span> siga los siguientes pasos:
                                 </p>
                                 <div className="space-y-6">
                                     <div className="flex gap-4 items-start">
@@ -155,7 +155,7 @@ export default function InstructionsLayout({ children, title }) {
                                     Instrucciones:
                                 </h2>
                                 <p className="text-white mb-6">
-                                    Para crear un usuario en la plataforma de <span className='font-bold'>auto-evaluación</span> siga los siguientes pasos:
+                                    Para crear un usuario en la plataforma de <span className='font-bold'>autoevaluación</span> siga los siguientes pasos:
                                 </p>
                                 <div className="space-y-6">
                                     <div className="flex gap-4 items-start">

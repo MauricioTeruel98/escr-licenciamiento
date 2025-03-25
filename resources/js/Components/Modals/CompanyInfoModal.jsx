@@ -30,7 +30,7 @@ export default function CompanyInfoModal({ isOpen, onClose, companyId }) {
 
     if (!isOpen) return null;
 
-    console.log(productos);
+    console.log(infoAdicional);
 
     return (
         <div className="fixed inset-0 z-50">
@@ -111,7 +111,7 @@ export default function CompanyInfoModal({ isOpen, onClose, companyId }) {
                                     </div>
 
                                     {/* Datos de Exportación */}
-                                    {(company.is_exporter || infoAdicional.rango_exportaciones ||
+                                    {infoAdicional && (company.is_exporter || infoAdicional.rango_exportaciones ||
                                         infoAdicional.paises_exportacion || infoAdicional.planes_expansion) && (
                                             <div className="bg-gray-50 p-4 rounded-lg">
                                                 <h4 className="text-lg font-medium text-gray-900 mb-3">Información de Exportación</h4>
@@ -177,10 +177,11 @@ export default function CompanyInfoModal({ isOpen, onClose, companyId }) {
                                     )}
 
                                     {/* Información detallada */}
-                                    <div className="bg-gray-50 p-4 rounded-lg">
-                                        <h4 className="text-lg font-medium text-gray-900 mb-3">Información Detallada</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
+                                    {infoAdicional && (
+                                        <div className="bg-gray-50 p-4 rounded-lg">
+                                            <h4 className="text-lg font-medium text-gray-900 mb-3">Información Detallada</h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
                                                 <p className="text-sm font-medium text-gray-500">Año de Fundación</p>
                                                 <p className="mt-1">{infoAdicional.anio_fundacion || 'No especificado'}</p>
                                             </div>
@@ -217,14 +218,16 @@ export default function CompanyInfoModal({ isOpen, onClose, companyId }) {
                                             <div className="col-span-2">
                                                 <p className="text-sm font-medium text-gray-500">Descripción (Inglés)</p>
                                                 <p className="mt-1 whitespace-pre-line">{infoAdicional.descripcion_en || 'No especificada'}</p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    )}
 
                                     {/* Redes sociales */}
-                                    <div className="bg-gray-50 p-4 rounded-lg">
-                                        <h4 className="text-lg font-medium text-gray-900 mb-3">Redes Sociales</h4>
-                                        <div className="grid grid-cols-1 gap-3">
+                                    {infoAdicional && (
+                                        <div className="bg-gray-50 p-4 rounded-lg">
+                                            <h4 className="text-lg font-medium text-gray-900 mb-3">Redes Sociales</h4>
+                                            <div className="grid grid-cols-1 gap-3">
                                             {infoAdicional.facebook && (
                                                 <div>
                                                     <p className="text-sm font-medium text-gray-500">Facebook</p>
@@ -262,10 +265,11 @@ export default function CompanyInfoModal({ isOpen, onClose, companyId }) {
                                             )}
 
                                             {!infoAdicional.facebook && !infoAdicional.linkedin && !infoAdicional.instagram && !infoAdicional.otra_red_social && (
-                                                <p className="text-gray-500 italic">No hay redes sociales especificadas</p>
-                                            )}
+                                                    <p className="text-gray-500 italic">No hay redes sociales especificadas</p>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
 
                                     {/* Información de contacto */}
                                     <div className="bg-gray-50 p-4 rounded-lg">

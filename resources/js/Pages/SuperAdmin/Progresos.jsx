@@ -33,10 +33,10 @@ export default function Progresos() {
                 let colorClass = '';
 
                 switch (item.estado) {
-                    case 'Auto-evaluación':
+                    case 'Autoevaluación':
                         colorClass = 'text-yellow-800 border-yellow-200 bg-yellow-50';
                         break;
-                    case 'Auto-evaluación Completada':
+                    case 'Autoevaluación Completada':
                         colorClass = 'text-blue-800 border-blue-200 bg-blue-50';
                         break;
                     case 'Evaluación Pendiente':

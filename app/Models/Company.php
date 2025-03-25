@@ -101,9 +101,9 @@ class Company extends Model
     {
         switch ($this->estado_eval) {
             case 'auto-evaluacion':
-                return 'Auto-evaluación';
+                return 'Autoevaluación';
             case 'auto-evaluacion-completed':
-                return 'Auto-evaluación Completada';
+                return 'Autoevaluación Completada';
             case 'evaluacion-pendiente':
                 return 'Evaluación Pendiente';
             case 'evaluacion':

@@ -111,6 +111,11 @@ input {
     background: #15803d;
 }
 
+.badge{
+    height: inherit;
+    padding: 3px 10px;
+}
+
 @media (max-width: 768px) {
     .react-datepicker-wrapper {
         width: 100% !important;

@@ -34,23 +34,23 @@ const FAQSection = () => {
     const faqs = [
         {
             id: 'faq-1',
-            question: '¿En qué consiste la auto-evaluación?',
+            question: '¿En qué consiste la autoevaluación?',
             answer: 'Esta plataforma está diseñada para que las empresas puedan medir la nota que obtendrían en este momento para aplicar por el proceso de licenciamiento de esencial COSTA RICA.'
         },
         {
             id: 'faq-2',
-            question: '¿Cómo guardo mi progreso respondiendo la auto-evaluación?',
+            question: '¿Cómo guardo mi progreso respondiendo la autoevaluación?',
             answer: 'El progreso se guarda automáticamente mientras respondes las preguntas. Puedes cerrar la sesión y volver más tarde para continuar desde donde lo dejaste.'
         },
         {
             id: 'faq-3',
             question: '¿Puede otro usuario en la empresa colaborar con las respuestas?',
-            answer: 'Sí, múltiples usuarios de la misma empresa pueden colaborar en completar la auto-evaluación. Cada usuario debe tener su propia cuenta asociada a la empresa.'
+            answer: 'Sí, múltiples usuarios de la misma empresa pueden colaborar en completar la autoevaluación. Cada usuario debe tener su propia cuenta asociada a la empresa.'
         },
         {
             id: 'faq-4',
             question: '¿Hay indicadores más importantes que otros?',
-            answer: 'Sí, algunos indicadores tienen mayor peso en la evaluación final. Estos están claramente marcados durante el proceso de auto-evaluación.'
+            answer: 'Sí, algunos indicadores tienen mayor peso en la evaluación final. Estos están claramente marcados durante el proceso de autoevaluación.'
         },
         {
             id: 'faq-5',

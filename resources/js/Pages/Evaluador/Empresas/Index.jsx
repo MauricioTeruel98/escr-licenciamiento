@@ -46,11 +46,11 @@ export default function EmpresasEvaluadorIndex() {
                 switch (item.estado_eval) {
                     case 'auto-evaluacion':
                         colorClass = 'text-yellow-800 border-yellow-200 bg-yellow-50';
-                        textItem = 'Auto-evaluación';
+                        textItem = 'Autoevaluación';
                         break;
                     case 'auto-evaluacion-completada':
                         colorClass = 'text-blue-800 border-blue-200 bg-blue-50';
-                        textItem = 'Auto-evaluación Completada';
+                        textItem = 'Autoevaluación Completada';
                         break;
                     case 'evaluacion-pendiente':
                         colorClass = 'text-orange-800 border-orange-200 bg-orange-50';

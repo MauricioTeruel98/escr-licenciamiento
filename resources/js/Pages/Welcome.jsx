@@ -132,7 +132,7 @@ function IndicatorsSection() {
 function FAQSection() {
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
-      <h2 className="font-bold mb-4">Sobre la plataforma de auto-evaluación</h2>
+      <h2 className="font-bold mb-4">Sobre la plataforma de autoevaluación</h2>
       <p className="text-gray-600 mb-6">
         Esta plataforma está diseñada para que las empresas puedan medir la nota que obtendrían en este momento para aplicar por el proceso de licenciamiento de esencial COSTA RICA.
       </p>
@@ -140,8 +140,8 @@ function FAQSection() {
       <h3 className="font-bold mb-4">Preguntas frecuentes</h3>
       <div className="space-y-2">
         {[
-          '¿En qué consiste la auto-evaluación?',
-          '¿Cómo guardo mi progreso respondiendo la auto-evaluación?',
+          '¿En qué consiste la autoevaluación?',
+          '¿Cómo guardo mi progreso respondiendo la autoevaluación?',
           '¿Puede otro usuario en la empresa colaborar con las respuestas?',
           '¿Hay indicadores más importantes que otros?',
           '¿Puedo homologar certificaciones previas de mi empresa?'
@@ -181,7 +181,7 @@ export default function Component() {
 
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-6">
-                <h2 className="text-xl font-bold">Auto-evaluación de Buzz</h2>
+                <h2 className="text-xl font-bold">Autoevaluación de Buzz</h2>
                 <ProgressSection />
                 <IndicatorsSection />
               </div>

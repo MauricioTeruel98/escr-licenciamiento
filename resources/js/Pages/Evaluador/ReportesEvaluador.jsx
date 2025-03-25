@@ -23,18 +23,55 @@ export default function Reportes() {
                 <div className="font-medium text-gray-900">{item.nombre}</div>
             )
         },
-        { 
-            key: 'estado', 
+        {
+            key: 'estado',
             label: 'Estado',
-            render: (item) => (
-                <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${
-                    item.estado === 'Auto-evaluación' 
-                        ? 'text-yellow-800 border-yellow-200 bg-yellow-50' 
-                        : 'text-green-800 border-green-200 bg-green-50'
-                }`}>
-                    {item.estado}
-                </span>
-            )
+            render: (item) => {
+                let colorClass = '';
+                let textItem = '';
+                switch (item.estado_eval) {
+                    case 'auto-evaluacion':
+                        colorClass = 'text-yellow-800 border-yellow-200 bg-yellow-50';
+                        textItem = 'Autoevaluación';
+                        break;
+                    case 'auto-evaluacion-completada':
+                        colorClass = 'text-blue-800 border-blue-200 bg-blue-50';
+                        textItem = 'Autoevaluación Completada';
+                        break;
+                    case 'evaluacion-pendiente':
+                        colorClass = 'text-orange-800 border-orange-200 bg-orange-50';
+                        textItem = 'Evaluación Pendiente';
+                        break;
+                    case 'evaluacion':
+                        colorClass = 'text-green-800 border-green-200 bg-green-50';
+                        textItem = 'Evaluación';
+                        break;
+                    case 'evaluacion-completada':
+                        colorClass = 'text-indigo-800 border-indigo-200 bg-indigo-50';
+                        textItem = 'Evaluación Completada';
+                        break;
+                    case 'evaluacion-calificada':
+                        colorClass = 'text-amber-800 border-amber-200 bg-amber-50';
+                        textItem = 'Evaluación Calificada';
+                        break;
+                    case 'evaluacion-desaprobada':
+                        colorClass = 'text-red-800 border-red-200 bg-red-50';
+                        textItem = 'Evaluación Desaprobada';
+                        break;
+                    case 'evaluado':
+                        colorClass = 'text-green-800 border-green-200 bg-green-50';
+                        textItem = 'Evaluado';
+                        break;
+                    default:
+                        colorClass = 'text-gray-800 border-gray-200 bg-gray-50';
+                }
+
+                return (
+                    <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${colorClass}`}>
+                        {textItem}
+                    </span>
+                );
+            }
         },
         {
             key: 'actions',
