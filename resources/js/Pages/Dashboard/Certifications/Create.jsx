@@ -440,7 +440,7 @@ export default function Certifications({ certifications: initialCertifications, 
                     Certificaciones
                 </h1>
                 <p className="text-gray-600">
-                    Registre sus certificaciones en nuestro plataforma para su homologaciòn con la marca paìs.
+                    Registre sus certificaciones en nuestro plataforma para su homologación con la marca país.
                 </p>
 
                 <div className="md:grid md:grid-cols-3 gap-8">
