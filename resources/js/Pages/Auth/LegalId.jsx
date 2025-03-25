@@ -59,7 +59,7 @@ export default function LegalId() {
                 <h1 className="text-2xl font-semibold mb-4">¡Bienvenido!</h1>
 
                 <p className="text-gray-600 mb-8">
-                    Le invitamos a continuar con el proceso de auto-evaluación registrando la información de la empresa.
+                    Le invitamos a continuar con el proceso de autoevaluación registrando la información de la empresa.
                 </p>
 
                 <form onSubmit={submit} className="">
@@ -83,7 +83,7 @@ export default function LegalId() {
                     </div>
 
                     <p className="text-gray-500 text-sm mt-3">
-                            Importante: La auto-evaluación y las siguientes etapas del licenciamiento Marca País estará asociado a la cédula jurídica de la empresa y no al perfil del usuario principal.
+                            Importante: La autoevaluación y las siguientes etapas del licenciamiento Marca País estará asociado a la cédula jurídica de la empresa y no al perfil del usuario principal.
                         </p>
 
                     <div className="flex gap-4 mt-10">

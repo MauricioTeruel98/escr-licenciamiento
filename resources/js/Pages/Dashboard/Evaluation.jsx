@@ -1038,7 +1038,7 @@ export default function Evaluation({
                     <div className="space-y-8">
                         <div className="card bg-white shadow">
                             <div className="card-body">
-                                <h2 className="card-title">Sobre la plataforma de auto-evaluación</h2>
+                                <h2 className="card-title">Sobre la plataforma de autoevaluación</h2>
                                 <p className="text-gray-600">
                                     Esta plataforma está diseñada para que las empresas puedan medir la nota que obtendrían en este momento para aplicar por el proceso de licenciamiento de esencial COSTA RICA.
                                 </p>

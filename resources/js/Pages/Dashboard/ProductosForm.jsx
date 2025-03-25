@@ -280,6 +280,23 @@ export default function ProductosForm({
         );
     };
 
+    // Agregar esta función para obtener los campos faltantes
+    const obtenerCamposFaltantes = () => {
+        let camposFaltantes = [];
+        data.productos.forEach((producto, index) => {
+            if (!producto.nombre?.trim()) {
+                camposFaltantes.push(`nombre del Producto ${index + 1}`);
+            }
+            if (!producto.descripcion?.trim()) {
+                camposFaltantes.push(`descripción del Producto ${index + 1}`);
+            }
+            if (!producto.imagen && !imagenes.productos?.[index]) {
+                camposFaltantes.push(`imagen del Producto ${index + 1}`);
+            }
+        });
+        return camposFaltantes;
+    };
+
     // Manejador para el botón de guardar productos
     const handleGuardarProductos = async (e) => {
         e.preventDefault();
@@ -710,7 +727,7 @@ export default function ProductosForm({
                         </div>
 
                         {/* Botón de guardar */}
-                        <div className="flex mt-6">
+                        <div className="flex mt-6 items-center">
                             <button
                                 type="submit"
                                 disabled={processing || loading || !infoAdicional || hayProductosIncompletos()}
@@ -729,21 +746,17 @@ export default function ProductosForm({
                                         </svg>
                                         Procesando...
                                     </>
-                                ) : hayProductosIncompletos() ? (
-                                    'Complete todos los campos del producto'
                                 ) : !infoAdicional ? (
                                     'Complete la información de la empresa primero'
                                 ) : (
                                     'Guardar productos'
                                 )}
                             </button>
-                            {
-                                ((dataAutoEvaluationResult && dataAutoEvaluationResult.form_sended == 1) || (!dataAutoEvaluationResult && autoEvaluationResult && autoEvaluationResult.form_sended == 1)) && company.estado_eval == "auto-evaluacion" && (
-                                    <div>
-
-                                    </div>
-                                )
-                            }
+                            {hayProductosIncompletos() && (
+                                <span className="ml-4 text-sm text-red-600">
+                                    Campos faltantes: {obtenerCamposFaltantes().join(', ')}
+                                </span>
+                            )}
                         </div>
                     </div>
                 )}
