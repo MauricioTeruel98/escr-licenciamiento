@@ -18,15 +18,31 @@ class MigratedPasswordController extends Controller
         $user = User::where('email', $email)->first();
 
         if ($user && $user->from_migration) {
-            // Enviar automáticamente el enlace de restablecimiento de contraseña
-            $status = $this->sendResetLinkEmail($email);
-            
-            // Responder con el resultado
-            return response()->json([
-                'from_migration' => true,
-                'status' => $status,
-                'message' => __($status)
-            ]);
+            try {
+                // Enviar automáticamente el enlace de restablecimiento de contraseña
+                $status = $this->sendResetLinkEmail($email);
+                
+                // Responder con el resultado
+                return response()->json([
+                    'from_migration' => true,
+                    'status' => $status,
+                    'message' => __($status)
+                ]);
+            } catch (\Exception $e) {
+                // Registrar el error en el log
+                \Illuminate\Support\Facades\Log::error('Error en el proceso de migración de contraseña:', [
+                    'error' => $e->getMessage(),
+                    'email' => $email,
+                    'trace' => $e->getTraceAsString()
+                ]);
+
+                // Devolver una respuesta de error controlada
+                return response()->json([
+                    'from_migration' => true,
+                    'status' => 'error',
+                    'message' => 'Ha ocurrido un error al procesar la solicitud. Por favor, inténtelo más tarde.'
+                ], 200); // Usamos 200 para mantener la consistencia de la respuesta
+            }
         }
 
         return response()->json(['from_migration' => false]);
@@ -47,8 +63,20 @@ class MigratedPasswordController extends Controller
         // Guardar el email en la sesión antes de enviar el enlace
         session(['password_reset_email' => $email]);
 
-        // Enviar el enlace de restablecimiento utilizando el broker de contraseñas integrado de Laravel
-        return Password::sendResetLink(['email' => $email]);
+        try {
+            // Enviar el enlace de restablecimiento utilizando el broker de contraseñas integrado de Laravel
+            return Password::sendResetLink(['email' => $email]);
+        } catch (\Exception $e) {
+            // Registrar el error en el log
+            \Illuminate\Support\Facades\Log::error('Error al enviar el correo de restablecimiento de contraseña para usuario migrado:', [
+                'error' => $e->getMessage(),
+                'email' => $email,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Devolver un estado de error genérico
+            return Password::RESET_THROTTLED;
+        }
     }
 
     /**

@@ -1027,7 +1027,12 @@ class EvaluationAnswerController extends Controller
                 try {
                     Mail::to($superAdminUser->email)->send(new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company));
                 } catch (\Exception $e) {
-                    Log::error('Error al enviar el email de evaluación calificada al superadmin: ' . $e->getMessage());
+                    Log::error('Error al enviar el email de evaluación calificada al superadmin', [
+                        'error' => $e->getMessage(),
+                        'user_id' => $superAdminUser->id ?? 'desconocido',
+                        'email' => $superAdminUser->email ?? 'desconocido'
+                    ]);
+                    
                 }
             }
 
