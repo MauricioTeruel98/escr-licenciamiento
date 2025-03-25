@@ -11,9 +11,14 @@ class CompanyManagementController extends Controller
 {
     public function index(Request $request)
     {
-        $companies = Company::with(['users' => function ($query) {
-            $query->where('role', 'admin');
-        }])
+        $companies = Company::with([
+            'users' => function ($query) {
+                $query->where('role', 'admin');
+            },
+            'evaluators' => function ($query) {
+                $query->select('users.id', 'users.name', 'users.email');
+            }
+        ])
         ->when($request->search, function($query, $search) {
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")

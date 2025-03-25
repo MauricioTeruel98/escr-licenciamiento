@@ -57,6 +57,27 @@ export default function CompaniesIndex() {
             render: (item) => item.users_count || 0
         },
         {
+            key: 'evaluators',
+            label: 'Evaluadores',
+            render: (item) => (
+                <div className="flex flex-wrap gap-1">
+                    {item.evaluators && item.evaluators.length > 0 ? (
+                        item.evaluators.map((evaluator) => (
+                            <span
+                                key={evaluator.id}
+                                className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 border border-blue-200"
+                                title={evaluator.email}
+                            >
+                                {evaluator.name}
+                            </span>
+                        ))
+                    ) : (
+                        <span className="text-gray-500 text-sm">Sin evaluadores</span>
+                    )}
+                </div>
+            )
+        },
+        {
             key: 'actions',
             label: 'Acciones',
             render: (item) => (

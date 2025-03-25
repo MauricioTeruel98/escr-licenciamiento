@@ -120,4 +120,10 @@ class Company extends Model
                 return 'No aplica';
         }
     }
+
+    public function evaluators()
+    {
+        return $this->belongsToMany(User::class, 'company_evaluator', 'company_id', 'user_id')
+                    ->select(['users.id', 'users.name', 'users.email']);
+    }
 } 
