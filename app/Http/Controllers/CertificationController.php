@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class CertificationController extends Controller
 {
@@ -44,12 +45,13 @@ class CertificationController extends Controller
             'fecha_obtencion' => 'required|date_format:Y-m-d',
             'fecha_expiracion' => 'required|date_format:Y-m-d|after:fecha_obtencion',
             'organismo_certificador' => 'string',
+            'files.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:5120', // 5MB max
         ]);
 
         try {
             $company = Auth::user()->company;
             
-            // Verificar si ya existe una certificación con el mismo nombre para esta empresa
+            // Verificar si ya existe una certificación con el mismo nombre
             $existingCertification = $company->certifications()
                 ->where('nombre', $validated['nombre'])
                 ->first();
@@ -59,8 +61,22 @@ class CertificationController extends Controller
                     'error' => 'Ya existe una certificación con este nombre para su empresa'
                 ], 422);
             }
-            
-            // Obtener el número de indicadores homologados para esta certificación
+
+            // Procesar los archivos
+            $filePaths = [];
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $file) {
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs(
+                        'certifications/company_' . $company->id,
+                        $fileName,
+                        'public'
+                    );
+                    $filePaths[] = $path;
+                }
+            }
+
+            // Obtener el número de indicadores homologados
             $indicadoresCount = IndicatorHomologation::where('homologation_id', $validated['homologation_id'])
                 ->whereHas('indicator', function ($query) use ($company) {
                     $query->where('is_active', true)
@@ -78,15 +94,31 @@ class CertificationController extends Controller
                 'fecha_obtencion' => $validated['fecha_obtencion'],
                 'fecha_expiracion' => $validated['fecha_expiracion'],
                 'indicadores' => $indicadoresCount,
-                'organismo_certificador' => $validated['organismo_certificador']
+                'organismo_certificador' => $validated['organismo_certificador'],
+                'file_paths' => json_encode($filePaths)
             ]);
 
             $certification->refresh();
 
+            // Preparar los archivos para la respuesta
+            $files = array_map(function ($path) {
+                return [
+                    'name' => basename($path),
+                    'path' => $path,
+                    'size' => file_exists(storage_path('app/public/' . $path)) ?
+                        filesize(storage_path('app/public/' . $path)) : 0,
+                    'type' => mime_content_type(storage_path('app/public/' . $path)) ?? 'application/octet-stream'
+                ];
+            }, $filePaths);
+
             return response()->json([
-                'certification' => $certification,
+                'certification' => array_merge(
+                    $certification->toArray(),
+                    ['files' => $files]
+                ),
                 'message' => 'Certificación creada exitosamente'
             ]);
+
         } catch (\Exception $e) {
             Log::error('Error al crear certificación:', [
                 'message' => $e->getMessage(),
@@ -132,6 +164,55 @@ class CertificationController extends Controller
             return response()->json(['message' => 'Certificación eliminada exitosamente']);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al eliminar la certificación'], 500);
+        }
+    }
+
+    public function deleteFile(Request $request, Certification $certification)
+    {
+        try {
+            $user = Auth::user();
+            $filePath = $request->file_path;
+
+            if (!$user) {
+                return response()->json(['message' => 'Usuario no autenticado'], 401);
+            }
+
+            // Obtener array de archivos actual
+            $files = json_decode($certification->file_paths, true) ?? [];
+
+            // Encontrar y eliminar el archivo específico
+            if (($key = array_search($filePath, $files)) !== false) {
+                // Eliminar el archivo del storage
+                if (Storage::disk('public')->exists($filePath)) {
+                    Storage::disk('public')->delete($filePath);
+                }
+
+                // Eliminar la ruta del archivo del array
+                unset($files[$key]);
+
+                // Reindexar el array y actualizar en la base de datos
+                $files = array_values($files);
+                $certification->file_paths = json_encode($files);
+                $certification->save();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Archivo eliminado correctamente',
+                    'files' => $files
+                ]);
+            }
+
+            return response()->json(['message' => 'Archivo no encontrado'], 404);
+        } catch (\Exception $e) {
+            Log::error('Error al eliminar archivo:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el archivo: ' . $e->getMessage()
+            ], 500);
         }
     }
 } 

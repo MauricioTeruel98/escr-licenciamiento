@@ -408,4 +408,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::post('/mail-logs/send-test', [MailLogController::class, 'sendTest'])->name('mail-logs.send-test');
 });
 
+Route::delete('certifications/{certification}/files', [CertificationController::class, 'deleteFile'])
+    ->name('certifications.deleteFile');
+
 require __DIR__ . '/auth.php';

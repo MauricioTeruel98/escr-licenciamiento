@@ -16,7 +16,8 @@ class Certification extends Model
         'fecha_expiracion',
         'indicadores',
         'homologation_id',
-        'organismo_certificador'
+        'organismo_certificador',
+        'file_paths'
     ];
 
     protected $casts = [
@@ -24,6 +25,7 @@ class Certification extends Model
         'fecha_expiracion' => 'date',
         'indicadores' => 'integer',
         'homologation_id' => 'integer',
+        'file_paths' => 'array'
     ];
 
     /**
