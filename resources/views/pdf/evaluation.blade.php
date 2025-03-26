@@ -467,7 +467,7 @@
     <p>- Hombres: {{ $company->infoAdicional->cantidad_hombres ?? 0 }}</p>
     <p>- Mujeres: {{ $company->infoAdicional->cantidad_mujeres ?? 0 }}</p>
     <p>- Otros: {{ $company->infoAdicional->cantidad_otros ?? 0 }}</p>
-    <p><strong>Dirección:</strong></p>
+    <p><strong>Dirección: {{ $company->infoAdicional->direccion_empresa ?? 'N/A' }}</strong></p>
     <p>- Provincia: {{ $company->provincia ?? 'N/A' }}</p>
     <p>- Cantón: {{ $company->canton ?? 'N/A' }}</p>
     <p>- Distrito: {{ $company->distrito ?? 'N/A' }}</p>
@@ -494,6 +494,15 @@
             </tr>
         @endforeach
     </table>
+
+    <h2>Puntos fuertes de la organización</h2>
+    <p>{{ $company->infoAdicional->puntos_fuertes ?? 'N/A' }}</p>
+
+    <h2>Oportunidades de mejora de la organización</h2>
+    <p>{{ $company->infoAdicional->oportunidades ?? 'N/A' }}</p>
+
+    <h2>Justificación del alcance, articulo 10 del Reglamento para el uso de la marca país <i>esencial</i> COSTA RICA</h2>
+    <p>{{ $company->infoAdicional->justificacion ?? 'N/A' }}</p>
 
     <h2>Datos participantes clave</h2>
     <table>

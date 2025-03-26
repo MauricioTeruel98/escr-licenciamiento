@@ -385,7 +385,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 
                                 {/* Justificación */}
-                                <div>
+                                {/* <div>
                                     <label className="block text-sm font-medium text-gray-700">
                                         Justificación del alcance, articulo 10 del Reglamento para el uso de la marca país <i>esencial</i> COSTA RICA
                                     </label>
@@ -398,7 +398,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                         maxLength={360}
                                         style={{ resize: 'vertical', minHeight: '150px', maxHeight: '500px' }}
                                     ></textarea>
-                                </div>
+                                </div> */}
 
                                 {/* Puntos fuertes */}
                                 <div>
