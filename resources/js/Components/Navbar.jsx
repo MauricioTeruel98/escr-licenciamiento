@@ -27,8 +27,6 @@ export default function Navbar({ userName, onMenuClick }) {
         }
     };
 
-    console.log(isLoading);
-
     const handleApprove = (userId) => {
         setIsLoading(true);
         post(route('user.approve', userId), {}, {
@@ -164,7 +162,7 @@ export default function Navbar({ userName, onMenuClick }) {
                                 >
                                     Perfil Usuario
                                 </Link>
-                                {(auth.user.role === 'admin' || auth.user.role === 'super_admin') && (
+                                {(auth.user.role === 'admin' || auth.user.role === 'super_admin' || auth.user.role === 'evaluador') && (
                                     <Link
                                         href={route('company.edit')}
                                         className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
