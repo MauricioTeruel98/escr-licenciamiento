@@ -69,6 +69,9 @@ class CompanyController extends Controller
             'phone' => 'required|string',
             'mobile' => 'required|string',
             'is_exporter' => 'required|boolean',
+            'puntos_fuertes' => 'nullable|string',
+            'justificacion' => 'nullable|string',
+            'oportunidades' => 'nullable|string',
         ], [
             'provincia.regex' => 'La provincia solo puede contener letras, números, espacios y guiones.',
             'website.url' => 'El formato del sitio web no es válido. Debe incluir "https://" o "http://" al inicio (ejemplo: https://www.miempresa.com)'
@@ -87,6 +90,9 @@ class CompanyController extends Controller
             $info_adicional->actividad_comercial = $validated['commercial_activity'];
             $info_adicional->telefono_1 = $validated['phone'];
             $info_adicional->telefono_2 = $validated['mobile'];
+            $info_adicional->puntos_fuertes = $validated['puntos_fuertes'];
+            $info_adicional->justificacion = $validated['justificacion'];
+            $info_adicional->oportunidades = $validated['oportunidades'];
             $info_adicional->save();
         }
 

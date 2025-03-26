@@ -21,11 +21,24 @@ export default function EvaluadorDashboard({ auth }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [notification, setNotification] = useState(null);
     const [isCalificarNuevamenteModalOpen, setIsCalificarNuevamenteModalOpen] = useState(false);
+    const [evaluationFields, setEvaluationFields] = useState({
+        puntos_fuertes: activeCompany?.puntos_fuertes || '',
+        oportunidades: activeCompany?.oportunidades || ''
+    });
 
     useEffect(() => {
         fetchCompanies();
         fetchActiveCompany();
     }, []);
+
+    useEffect(() => {
+        if (activeCompany) {
+            setEvaluationFields({
+                puntos_fuertes: activeCompany.puntos_fuertes || '',
+                oportunidades: activeCompany.oportunidades || ''
+            });
+        }
+    }, [activeCompany]);
 
     const filteredCompanies = query === ''
         ? companies
@@ -51,6 +64,13 @@ export default function EvaluadorDashboard({ auth }) {
             setActiveCompany(response.data);
             setIsCompanyAuthorized(response.data?.authorized === 1);
             setCompanyStatusEval(response.data?.estado_eval);
+            
+            if (response.data) {
+                setEvaluationFields({
+                    puntos_fuertes: response.data.puntos_fuertes || '',
+                    oportunidades: response.data.oportunidades || ''
+                });
+            }
         } catch (error) {
             console.error('Error al cargar empresa activa:', error);
         }
@@ -89,6 +109,11 @@ export default function EvaluadorDashboard({ auth }) {
             setModalStatus('processing');
             setIsSubmitting(true);
 
+            await axios.post(route('company.update.evaluation-fields'), {
+                puntos_fuertes: evaluationFields.puntos_fuertes,
+                oportunidades: evaluationFields.oportunidades
+            });
+
             const response = await axios.post(route('indicadores.enviar-evaluacion-calificada'));
 
             if (response.data.success) {
@@ -98,7 +123,6 @@ export default function EvaluadorDashboard({ auth }) {
             } else {
                 throw new Error(response.data.message || 'Error al finalizar la evaluación');
             }
-
         } catch (error) {
             setIsFinalizarEvaluacionModalOpen(false);
             setNotification({
@@ -111,7 +135,6 @@ export default function EvaluadorDashboard({ auth }) {
                 window.location.reload();
             }, 3000);
         }
-
     };
 
     const openCalificarNuevamenteModal = () => {
@@ -153,6 +176,13 @@ export default function EvaluadorDashboard({ auth }) {
                 window.location.reload();
             }, 3000);
         }
+    };
+
+    const handleFieldChange = (field, value) => {
+        setEvaluationFields(prev => ({
+            ...prev,
+            [field]: value
+        }));
     };
 
     return (
@@ -330,8 +360,38 @@ export default function EvaluadorDashboard({ auth }) {
                         </div>
                     )}
 
+                    {
+                        (activeCompany && (companyStatusEval === 'evaluacion-calificada' || companyStatusEval === 'evaluacion-desaprobada')) && (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Puntos fuertes de la organización<span className="text-red-500">*</span>
+                                    </label>
+                                    <textarea
+                                        value={evaluationFields.puntos_fuertes}
+                                        onChange={(e) => handleFieldChange('puntos_fuertes', e.target.value)}
+                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                        rows={4}
+                                        placeholder="Ingrese los puntos fuertes de la empresa"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Oportunidades de mejora de la organización<span className="text-red-500">*</span>
+                                    </label>
+                                    <textarea
+                                        value={evaluationFields.oportunidades}
+                                        onChange={(e) => handleFieldChange('oportunidades', e.target.value)}
+                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                        rows={4}
+                                        placeholder="Ingrese las oportunidades de mejora"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                     <div className="mb-8 block md:flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
+                        <div className="flex flex-col lg:flex-row items-center gap-4">
                             <span className="text-xl font-semibold">Evaluar empresa:</span>
                             <div className="relative w-[300px]">
                                 <Combobox value={selectedCompany} onChange={setSelectedCompany}>
@@ -403,11 +463,12 @@ export default function EvaluadorDashboard({ auth }) {
 
                         {
                             (activeCompany && (companyStatusEval === 'evaluacion-calificada' || companyStatusEval === 'evaluacion-desaprobada')) && (
-                                <div className="">
+                                <div className="space-y-4">
+
                                     <button
                                         onClick={openFinalizarEvaluacionModal}
-                                        disabled={isSubmitting}
-                                        className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-75"
+                                        disabled={isSubmitting || !evaluationFields.puntos_fuertes || !evaluationFields.oportunidades}
+                                        className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-75 disabled:cursor-not-allowed"
                                     >
                                         {isSubmitting ? (
                                             <>
@@ -426,7 +487,7 @@ export default function EvaluadorDashboard({ auth }) {
                         }
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col lg:flex-row items-center gap-4">
                         <div className="w-1/2">
                             <div className="bg-white rounded-lg shadow p-6">
                                 <h3 className="text-xl font-bold mb-2">Descargar documentación</h3>

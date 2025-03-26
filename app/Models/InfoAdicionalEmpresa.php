@@ -80,7 +80,10 @@ class InfoAdicionalEmpresa extends Model
         'productos',
         'logo_path',
         'fotografias_paths',
-        'certificaciones_paths'
+        'certificaciones_paths',
+        'puntos_fuertes',
+        'justificacion',
+        'oportunidades'
     ];
 
     protected $casts = [
@@ -88,6 +91,9 @@ class InfoAdicionalEmpresa extends Model
         'recomienda_marca_pais' => 'boolean',
         'fotografias_paths' => 'array',
         'certificaciones_paths' => 'array',
+        'puntos_fuertes' => 'string',
+        'justificacion' => 'string',
+        'oportunidades' => 'string'
     ];
 
     public function company()

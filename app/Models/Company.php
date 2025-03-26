@@ -30,7 +30,10 @@ class Company extends Model
         'auto_evaluation_document_path',
         'evaluation_document_path',
         'fecha_inicio_auto_evaluacion',
-        'fecha_inicio_evaluacion'
+        'fecha_inicio_evaluacion',
+        'puntos_fuertes',
+        'justificacion',
+        'oportunidades'
     ];
 
     protected $casts = [
@@ -39,6 +42,9 @@ class Company extends Model
         'fecha_calificacion_evaluador' => 'datetime',
         'fecha_inicio_auto_evaluacion' => 'datetime',
         'fecha_inicio_evaluacion' => 'datetime',
+        'puntos_fuertes' => 'string',
+        'justificacion' => 'string',
+        'oportunidades' => 'string'
     ];
 
     public function users()

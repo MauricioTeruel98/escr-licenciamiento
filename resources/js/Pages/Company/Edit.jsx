@@ -18,6 +18,9 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
         phone: company.phone || '',
         mobile: company.mobile || '',
         is_exporter: company.is_exporter || false,
+        puntos_fuertes: company.puntos_fuertes || '',
+        justificacion: company.justificacion || '',
+        oportunidades: company.oportunidades || '',
     });
 
     const [searchTerm, setSearchTerm] = useState(company.provincia || '');
@@ -378,6 +381,58 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                     </p>
                                 </div>
                             )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                
+                                {/* Justificación */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Justificación del alcance, articulo 10 del Reglamento para el uso de la marca país <i>esencial</i> COSTA RICA
+                                    </label>
+                                    <textarea
+                                        value={data.justificacion}
+                                        onChange={e => handleInputChange(e, 'justificacion')}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none"
+                                        placeholder="Justificación"
+                                        rows={6}
+                                        maxLength={360}
+                                        style={{ resize: 'vertical', minHeight: '150px', maxHeight: '500px' }}
+                                    ></textarea>
+                                </div>
+
+                                {/* Puntos fuertes */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Puntos fuertes de la organización
+                                    </label>
+                                    <textarea
+                                        value={data.puntos_fuertes}
+                                        onChange={e => handleInputChange(e, 'puntos_fuertes')}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none"
+                                        placeholder="Puntos fuertes"
+                                        rows={6}
+                                        maxLength={360}
+                                        style={{ resize: 'vertical', minHeight: '150px', maxHeight: '500px' }}
+                                    ></textarea>
+                                </div>
+
+                            </div>
+
+                            {/* Oportunidades */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Oportunidades de mejora de la organización
+                                </label>
+                                <textarea
+                                    value={data.oportunidades}
+                                    onChange={e => handleInputChange(e, 'oportunidades')}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none"
+                                    placeholder="Oportunidades"
+                                    rows={6}
+                                    maxLength={360}
+                                    style={{ resize: 'vertical', minHeight: '150px', maxHeight: '500px' }}
+                                ></textarea>
+                            </div>
                         </div>
 
                         <div>

@@ -290,6 +290,9 @@ class CompanyProfileController extends Controller
                 $company->commercial_activity = $allData['actividad_comercial'];
                 $company->phone = $allData['telefono_1'];
                 $company->mobile = $allData['telefono_2'];
+                $company->puntos_fuertes = $allData['puntos_fuertes'];
+                $company->justificacion = $allData['justificacion'];
+                $company->oportunidades = $allData['oportunidades'];
                 $company->save();
             }
 

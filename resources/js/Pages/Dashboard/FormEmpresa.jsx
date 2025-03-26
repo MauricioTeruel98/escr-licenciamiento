@@ -102,6 +102,10 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         representante_telefono: infoAdicional?.representante_telefono || '',
         representante_celular: infoAdicional?.representante_celular || '',
 
+        puntos_fuertes: infoAdicional?.puntos_fuertes || '',
+        justificacion: infoAdicional?.justificacion || '',
+        oportunidades: infoAdicional?.oportunidades || '',
+
         productos: infoAdicional?.productos
             ? infoAdicional.productos.map(p => ({
                 id: p.id,
@@ -1569,6 +1573,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             case 'observaciones':
             case 'planes_expansion':
             case 'direccion_empresa':
+            case 'puntos_fuertes':
+            case 'justificacion':
+            case 'oportunidades':
                 tipoValidacion = 'descripcion';
                 break;
 
@@ -2156,6 +2163,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('descripcion_es') ? 'border-red-500' : 'border-gray-300'
                                                 }`}
                                             maxLength={240}
+                                            style={{ resize: 'vertical', minHeight: '150px', maxHeight: '400px' }}
                                         />
                                         <InputError message={errors.descripcion_es} />
                                     </div>
@@ -2173,6 +2181,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('descripcion_en') ? 'border-red-500' : 'border-gray-300'
                                                 }`}
                                             maxLength={240}
+                                            style={{ resize: 'vertical', minHeight: '150px', maxHeight: '400px' }}
                                         />
                                         <InputError message={errors.descripcion_en} />
                                     </div>
@@ -2293,7 +2302,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 placeholder="Ingrese la dirección detallada (calle, número, referencias, etc.)"
                                                 maxLength="150"
-
+                                                style={{ resize: 'vertical', minHeight: '150px', maxHeight: '400px' }}
                                             ></textarea>
                                             <InputError message={errors.direccion_empresa} />
                                             <p className="mt-1 text-sm text-gray-500">
@@ -2505,7 +2514,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             placeholder="Actividad comercial"
                                             maxLength={100}
                                             rows={2}
-                                            style={{ resize: 'none' }}
+                                            style={{ resize: 'vertical', minHeight: '150px', maxHeight: '400px' }}
                                         />
                                         <InputError message={errors.actividad_comercial} />
                                     </div>
@@ -2651,11 +2660,61 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                     placeholder="Describa los planes de expansión de su empresa"
                                                     maxLength={240}
+                                                    style={{ resize: 'vertical', minHeight: '150px', maxHeight: '300px' }}
                                                 ></textarea>
                                                 <InputError message={errors.planes_expansion} />
                                             </div>
                                         </>
                                     )}
+
+                                    {/* Sección de puntos fuertes, justificación y oportunidades */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Justificación del alcance, articulo 10 del Reglamento para el uso de la marca país <i>esencial</i> COSTA RICA
+                                        </label>
+                                        <textarea
+                                            value={data.justificacion}
+                                            onChange={handleChange}
+                                            name="justificacion"
+                                            rows={6}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            placeholder="Justificación"
+                                            maxLength={360}
+                                            style={{ resize: 'vertical', minHeight: '150px', maxHeight: '500px' }}
+                                        ></textarea>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Puntos fuertes de la organización
+                                        </label>
+                                        <textarea
+                                            value={data.puntos_fuertes}
+                                            onChange={handleChange}
+                                            name="puntos_fuertes"
+                                            rows={6}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            placeholder="Puntos fuertes"
+                                            maxLength={360}
+                                            style={{ resize: 'vertical', minHeight: '150px', maxHeight: '500px' }}
+                                        ></textarea>
+                                        <InputError message={errors.puntos_fuertes} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Oportunidades de mejora de la organización
+                                        </label>
+                                        <textarea
+                                            value={data.oportunidades}
+                                            onChange={handleChange}
+                                            name="oportunidades"
+                                            rows={6}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            maxLength={360}
+                                            placeholder="Oportunidades"
+                                            style={{ resize: 'vertical', minHeight: '150px', maxHeight: '500px' }}
+                                        ></textarea>
+                                    </div>
+
                                 </div>
 
                                 {/* Botón de guardar */}
@@ -3010,6 +3069,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 }`}
                                             placeholder="Respuesta"
                                             maxLength={240}
+                                            style={{ resize: 'vertical', minHeight: '150px', maxHeight: '400px' }}
                                         />
                                     </div>
 
@@ -3027,6 +3087,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 }`}
                                             placeholder="Answer"
                                             maxLength={240}
+                                            style={{ resize: 'vertical', minHeight: '150px', maxHeight: '400px' }}
                                         />
                                     </div>
 
@@ -3044,6 +3105,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                 }`}
                                             placeholder="Respuesta"
                                             maxLength={240}
+                                            style={{ resize: 'vertical', minHeight: '150px', maxHeight: '400px' }}
                                         />
                                     </div>
 

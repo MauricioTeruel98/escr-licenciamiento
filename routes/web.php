@@ -157,6 +157,9 @@ Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
     Route::post('/api/evaluador/switch-company', [EvaluadorController::class, 'switchCompany']);
     Route::post('/api/evaluacion/calificar-nuevamente', [EvaluationAnswerController::class, 'calificarNuevamente'])
         ->name('evaluacion.calificar-nuevamente');
+    Route::post('/api/company/update-evaluation-fields', [EvaluadorController::class, 'updateEvaluationFields'])
+        ->name('company.update.evaluation-fields');
+    Route::get('/api/company/{company}/evaluation-fields', [EvaluadorController::class, 'getEvaluationFields']);
 });
 
 Route::middleware(['auth', EnsureUserIsEvaluador::class, EnsureCompanyIsAuthorized::class])->group(function () {

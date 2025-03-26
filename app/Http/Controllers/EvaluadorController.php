@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Company;
+use App\Models\InfoAdicionalEmpresa;
 
 class EvaluadorController extends Controller
 {
@@ -76,5 +77,42 @@ class EvaluadorController extends Controller
     public function reportes()
     {
         return Inertia::render('Evaluador/ReportesEvaluador');
+    }
+
+    public function updateEvaluationFields(Request $request)
+    {
+        $request->validate([
+            'puntos_fuertes' => 'required|string',
+            'oportunidades' => 'required|string',
+        ]);
+
+        $user = auth()->user();
+        $company = Company::find($user->company_id);
+
+        if (!$company) {
+            return response()->json(['error' => 'Empresa no encontrada'], 404);
+        }
+
+        $company->update([
+            'puntos_fuertes' => $request->puntos_fuertes,
+            'oportunidades' => $request->oportunidades,
+        ]);
+
+        $infoAdicional = InfoAdicionalEmpresa::where('company_id', $company->id)->first();
+
+        $infoAdicional->update([
+            'puntos_fuertes' => $request->puntos_fuertes,
+            'oportunidades' => $request->oportunidades,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function getEvaluationFields(Company $company)
+    {
+        return response()->json([
+            'puntos_fuertes' => $company->puntos_fuertes,
+            'oportunidades' => $company->oportunidades,
+        ]);
     }
 } 
