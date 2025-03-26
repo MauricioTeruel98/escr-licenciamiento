@@ -967,7 +967,7 @@ export default function Evaluation({
                         {/* Progress Section */}
                         <div className="card bg-white shadow">
                             <div className="card-body">
-                                <h2 className="card-title">Progreso Autoevaluación</h2>
+                                <h2 className="card-title">Progreso autoevaluación</h2>
                                 <progress
                                     className="progress progress-success bg-green-100"
                                     value={progreso.toFixed(0)}

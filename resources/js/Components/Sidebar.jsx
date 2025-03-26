@@ -115,7 +115,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                             onClick={() => setIsEvaluationOpen(!isEvaluationOpen)}
                             className="w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800"
                         >
-                            <span>Autoevaluacion</span>
+                            <span>Autoevaluación</span>
                             <svg
                                 className={`w-4 h-4 transition-transform ${isEvaluationOpen ? 'rotate-180' : ''}`}
                                 fill="none"
