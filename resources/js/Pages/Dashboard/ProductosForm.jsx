@@ -481,7 +481,6 @@ export default function ProductosForm({
                                                     className="hidden"
                                                     accept=".png,.jpg,.jpeg"
                                                     onChange={(e) => handleImagenChange(e, 'producto', index)}
-                                                    required
                                                 />
                                             </label>
 
