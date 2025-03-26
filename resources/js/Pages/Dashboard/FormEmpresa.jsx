@@ -2679,7 +2679,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             rows={6}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             placeholder="Justificación"
-                                            maxLength={360}
+                                            maxLength={640}
                                             style={{ resize: 'vertical', minHeight: '150px', maxHeight: '500px' }}
                                         ></textarea>
                                     </div>
@@ -2694,7 +2694,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             rows={6}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                             placeholder="Puntos fuertes"
-                                            maxLength={360}
+                                            maxLength={640}
                                             style={{ resize: 'vertical', minHeight: '150px', maxHeight: '500px' }}
                                         ></textarea>
                                         <InputError message={errors.puntos_fuertes} />
@@ -2709,7 +2709,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             name="oportunidades"
                                             rows={6}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                            maxLength={360}
+                                            maxLength={640}
                                             placeholder="Oportunidades"
                                             style={{ resize: 'vertical', minHeight: '150px', maxHeight: '500px' }}
                                         ></textarea>

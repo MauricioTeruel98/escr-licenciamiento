@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -30,6 +31,7 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $company = Company::find($user->company_id);
         if ($user) {
             $autoEvaluationResult = \App\Models\AutoEvaluationResult::where('company_id', $user->company_id)->first();
             $user->form_sended = $autoEvaluationResult ? $autoEvaluationResult->form_sended : false;
@@ -40,6 +42,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user,
                 'dashboard_route' => $this->getDashboardRoute($user),
+                'company' => $company,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

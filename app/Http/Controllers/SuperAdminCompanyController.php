@@ -29,6 +29,11 @@ class SuperAdminCompanyController extends Controller
 
         $company = Company::find($validated['company_id']);
 
+        if ($company->fecha_inicio_auto_evaluacion == null) {
+            $company->fecha_inicio_auto_evaluacion = now();
+            $company->save();
+        }
+
         return response()->json([
             'message' => 'Empresa cambiada exitosamente',
             'company' => [

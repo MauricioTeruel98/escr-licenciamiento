@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 
 export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }) {
     const { url } = usePage();
+    const { auth } = usePage().props;
     const [isEvaluacionOpen, setIsEvaluacionOpen] = useState(false);
     const [isUsuariosOpen, setIsUsuariosOpen] = useState(false);
 
@@ -18,24 +19,26 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
     // Verificar si la URL actual corresponde a alguna página dentro de los dropdowns
     useEffect(() => {
         // Verificar si la URL actual corresponde a alguna página de administración de evaluación
-        const isInEvaluacionSection = evaluacionItems.some(item => 
+        const isInEvaluacionSection = evaluacionItems.some(item =>
             url.includes(item.href) || item.active
         );
-        
+
         // Verificar si la URL actual corresponde a alguna página de administración de usuarios
-        const isInUsuariosSection = usuariosItems.some(item => 
+        const isInUsuariosSection = usuariosItems.some(item =>
             url.includes(item.href) || item.active
         );
-        
+
         // Actualizar el estado de los dropdowns
         if (isInEvaluacionSection) {
             setIsEvaluacionOpen(true);
         }
-        
+
         if (isInUsuariosSection) {
             setIsUsuariosOpen(true);
         }
     }, [url, evaluacionItems, usuariosItems]);
+
+    console.log(auth.company);
 
     return (
         <>
@@ -62,14 +65,18 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                 </div>
 
                 <ul className="menu p-4 lg:pt-24">
-                    <li className="mb-1">
-                        <Link
-                            href={route('dashboard')}
-                            className="block px-4 py-2 hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800"
-                        >
-                            Ir al Panel de Empresa
-                        </Link>
-                    </li>
+                    {
+                        auth.company && auth.company.fecha_inicio_auto_evaluacion && (
+                            <li className="mb-1">
+                                <Link
+                                    href={route('dashboard')}
+                                    className="block px-4 py-2 hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800"
+                                >
+                                    Ir al Panel de Empresa
+                                </Link>
+                            </li>
+                        )
+                    }
 
                     <div className="divider"></div>
 
@@ -187,7 +194,7 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                         </ul>
                     </li>
 
-                    {/* Homologaciones */   }
+                    {/* Homologaciones */}
                     <li className="mb-1">
                         <Link
                             href={route('super.homologations')}
@@ -206,7 +213,7 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
                             </div>
                         </Link>
                     </li>
-                    
+
                     {/* Reportes */}
                     <li className="mb-1">
                         <Link

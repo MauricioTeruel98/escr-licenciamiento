@@ -395,7 +395,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none"
                                         placeholder="Justificación"
                                         rows={6}
-                                        maxLength={360}
+                                        maxLength={640}
                                         style={{ resize: 'vertical', minHeight: '150px', maxHeight: '500px' }}
                                     ></textarea>
                                 </div> */}
@@ -411,7 +411,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none"
                                         placeholder="Puntos fuertes"
                                         rows={6}
-                                        maxLength={360}
+                                        maxLength={640}
                                         style={{ resize: 'vertical', minHeight: '150px', maxHeight: '500px' }}
                                     ></textarea>
                                 </div>
@@ -427,7 +427,7 @@ export default function CompanyEdit({ company, sectors, provincias, userName }) 
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none"
                                         placeholder="Oportunidades"
                                         rows={6}
-                                        maxLength={360}
+                                        maxLength={640}
                                         style={{ resize: 'vertical', minHeight: '150px', maxHeight: '500px' }}
                                     ></textarea>
                                 </div>

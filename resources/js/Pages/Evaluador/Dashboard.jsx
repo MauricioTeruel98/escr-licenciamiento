@@ -372,6 +372,7 @@ export default function EvaluadorDashboard({ auth }) {
                                         onChange={(e) => handleFieldChange('puntos_fuertes', e.target.value)}
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                         rows={4}
+                                        maxLength={640}
                                         placeholder="Ingrese los puntos fuertes de la empresa"
                                     />
                                 </div>
@@ -384,6 +385,7 @@ export default function EvaluadorDashboard({ auth }) {
                                         onChange={(e) => handleFieldChange('oportunidades', e.target.value)}
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                         rows={4}
+                                        maxLength={640}
                                         placeholder="Ingrese las oportunidades de mejora"
                                     />
                                 </div>
