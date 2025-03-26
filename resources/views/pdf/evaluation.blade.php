@@ -418,20 +418,20 @@
     </div>
 
     <div class="evaluation-info">
-        <p><strong>Fecha de evaluación:</strong> {{ $date }}</p>
-        <p><strong>Evaluador:</strong> {{ $evaluador->name }} {{ $evaluador->lastname }}</p>
-        <p><strong>Correo electrónico:</strong> {{ $evaluador->email }}</p>
+        <p><strong style="font-weight: bold; font-size: 18px;">Fecha de evaluación:</strong> {{ $date }}</p>
+        <p><strong style="font-weight: bold; font-size: 18px;">Evaluador:</strong> {{ $evaluador->name }} {{ $evaluador->lastname }}</p>
+        <p><strong style="font-weight: bold; font-size: 18px;">Correo electrónico:</strong> {{ $evaluador->email }}</p>
     </div>
 
     <h2>Datos de la organización</h2>
-    <p><strong>Nombre comercial:</strong> {{ $company->infoAdicional->nombre_comercial ?? 'N/A' }}</p>
-    <p><strong>Razón social:</strong> {{ $company->infoAdicional->nombre_legal ?? 'N/A' }}</p>
-    <p><strong>Cédula jurídica:</strong> {{ $company->infoAdicional->cedula_juridica ?? 'N/A' }}</p>
-    <p><strong>Descripción:</strong> {{ $company->infoAdicional->descripcion_es ?? 'N/A' }}</p>
-    <p><strong>Año de fundación:</strong> {{ $company->infoAdicional->anio_fundacion ?? 'N/A' }}</p>
-    <p><strong>Proceso de licenciamiento:</strong> {{ $company->infoAdicional->proceso_licenciamiento ?? 'N/A' }}</p>
-    <p><strong>Exporta actualmente:</strong> {{ $company->infoAdicional->es_exportadora ? 'Sí' : 'No' }}</p>
-    <p><strong>Países de exportación:</strong></p>
+    <p><strong style="font-weight: bold; font-size: 18px;">Nombre comercial:</strong> {{ $company->infoAdicional->nombre_comercial ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 18px;">Razón social:</strong> {{ $company->infoAdicional->nombre_legal ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 18px;">Cédula jurídica:</strong> {{ $company->infoAdicional->cedula_juridica ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 18px;">Descripción:</strong> {{ $company->infoAdicional->descripcion_es ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 18px;">Año de fundación:</strong> {{ $company->infoAdicional->anio_fundacion ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 18px;">Proceso de licenciamiento:</strong> {{ $company->infoAdicional->proceso_licenciamiento ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 18px;">Exporta actualmente:</strong> {{ $company->infoAdicional->es_exportadora ? 'Sí' : 'No' }}</p>
+    <p><strong style="font-weight: bold; font-size: 18px;">Países de exportación:</strong></p>
     @if ($company->infoAdicional->paises_exportacion && $company->infoAdicional->paises_exportacion != 'N/A')
         @php
             $paises = array_map('trim', explode(',', $company->infoAdicional->paises_exportacion));
@@ -458,20 +458,20 @@
     @endif
 
 
-    <p><strong>Productos/servicios:</strong> {{ $company->infoAdicional->producto_servicio ?? 'N/A' }}</p>
-    <p><strong>Rango de exportaciones:</strong> {{ $company->infoAdicional->rango_exportaciones ?? 'N/A' }}</p>
-    <p><strong>Total de empleados:</strong>
+    <p><strong style="font-weight: bold; font-size: 18px;">Productos/servicios:</strong> {{ $company->infoAdicional->producto_servicio ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 18px;">Rango de exportaciones:</strong> {{ $company->infoAdicional->rango_exportaciones ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 18px;">Total de empleados:</strong>
         {{ $company->infoAdicional->cantidad_hombres + $company->infoAdicional->cantidad_mujeres + $company->infoAdicional->cantidad_otros }}
     </p>
-    <p><strong>Distribución de empleados:</strong></p>
+    <p><strong style="font-weight: bold; font-size: 18px;">Distribución de empleados:</strong></p>
     <p>- Hombres: {{ $company->infoAdicional->cantidad_hombres ?? 0 }}</p>
     <p>- Mujeres: {{ $company->infoAdicional->cantidad_mujeres ?? 0 }}</p>
     <p>- Otros: {{ $company->infoAdicional->cantidad_otros ?? 0 }}</p>
-    <p><strong>Dirección: {{ $company->infoAdicional->direccion_empresa ?? 'N/A' }}</strong></p>
+    <p><strong style="font-weight: bold; font-size: 18px;">Dirección:</strong> {{ $company->infoAdicional->direccion_empresa ?? 'N/A' }}</p>
     <p>- Provincia: {{ $company->provincia ?? 'N/A' }}</p>
     <p>- Cantón: {{ $company->canton ?? 'N/A' }}</p>
     <p>- Distrito: {{ $company->distrito ?? 'N/A' }}</p>
-    <p><strong>Redes sociales:</strong></p>
+    <p><strong style="font-weight: bold; font-size: 18px;">Redes sociales:</strong></p>
     <p>- Sitio web: <a href="{{ $company->infoAdicional->sitio_web }}">{{ $company->infoAdicional->sitio_web }}</a>
     </p>
     <p>- Facebook: <a href="{{ $company->infoAdicional->facebook }}">{{ $company->infoAdicional->facebook }}</a></p>
