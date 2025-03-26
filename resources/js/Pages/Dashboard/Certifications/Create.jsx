@@ -53,6 +53,128 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, certName }) => {
     );
 };
 
+// Agregar estos componentes para el diseño del input de archivos
+const FileUploadInput = ({ onFileChange, selectedFiles, onRemoveFile }) => {
+    const inputRef = useRef(null);
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const files = Array.from(e.dataTransfer.files);
+        onFileChange({ target: { files } });
+    };
+
+    const getFileIcon = (fileType) => {
+        if (fileType.startsWith('image/')) {
+            return (
+                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            );
+        } else if (fileType === 'application/pdf') {
+            return (
+                <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+            );
+        } else if (fileType.includes('word') || fileType.includes('document')) {
+            return (
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            );
+        } else if (fileType.includes('sheet') || fileType.includes('excel')) {
+            return (
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            );
+        }
+        return (
+            <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+        );
+    };
+
+    return (
+        <div className="space-y-4">
+            <div
+                className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-green-500 transition-colors duration-200 ease-in-out"
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onClick={() => inputRef.current?.click()}
+            >
+                <input
+                    type="file"
+                    ref={inputRef}
+                    onChange={onFileChange}
+                    multiple
+                    accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"
+                    className="hidden"
+                />
+                <div className="text-center">
+                    <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                        <path
+                            d="M28 8H12a4 4 0 00-4 4v20m0 0v4a4 4 0 004 4h20a4 4 0 004-4V28m-4-4h4M8 32h4m30-16v-4a4 4 0 00-4-4h-4m-4-4V8m0 0h4"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+                    </svg>
+                    <div className="mt-4 flex text-sm leading-6 text-gray-600">
+                        <label className="relative cursor-pointer rounded-md bg-white font-semibold text-green-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-green-600 focus-within:ring-offset-2 hover:text-green-500">
+                            <span>Cargar archivos</span>
+                        </label>
+                        <p className="pl-1">o arrastrar y soltar</p>
+                    </div>
+                    <p className="text-xs leading-5 text-gray-600">
+                        JPG, JPEG, PNG, PDF, DOC, DOCX, XLS, XLSX hasta 5MB
+                    </p>
+                </div>
+            </div>
+
+            {/* Lista de archivos seleccionados */}
+            {selectedFiles.length > 0 && (
+                <div className="mt-4 space-y-2">
+                    <p className="text-sm font-medium text-gray-700">Archivos seleccionados:</p>
+                    <div className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
+                        {selectedFiles.map((file, index) => (
+                            <div key={index} className="flex items-center justify-between p-4">
+                                <div className="flex items-center space-x-3">
+                                    {getFileIcon(file.type)}
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-medium text-gray-900">
+                                            {file.name}
+                                        </span>
+                                        <span className="text-xs text-gray-500">
+                                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                                        </span>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => onRemoveFile(index)}
+                                    className="text-red-500 hover:text-red-700"
+                                >
+                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 export default function Certifications({ certifications: initialCertifications, availableCertifications, userName }) {
 
     const [certificaciones, setCertificaciones] = useState(
@@ -682,12 +804,12 @@ export default function Certifications({ certifications: initialCertifications, 
                                         Archivos de evidencia (máximo 3)
                                     </span>
                                 </label>
-                                <input
-                                    type="file"
-                                    multiple
-                                    onChange={handleFileChange}
-                                    accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"
-                                    className="w-full px-3 py-2 border rounded-md border-gray-300"
+                                <FileUploadInput
+                                    onFileChange={handleFileChange}
+                                    selectedFiles={selectedFiles}
+                                    onRemoveFile={(index) => {
+                                        setSelectedFiles(files => files.filter((_, i) => i !== index));
+                                    }}
                                 />
                                 {fileErrors.length > 0 && (
                                     <div className="mt-2">
@@ -696,15 +818,6 @@ export default function Certifications({ certifications: initialCertifications, 
                                         ))}
                                     </div>
                                 )}
-                                <FileList
-                                    files={selectedFiles}
-                                    onRemove={(index) => {
-                                        setSelectedFiles(files => files.filter((_, i) => i !== index));
-                                    }}
-                                />
-                                <p className="mt-1 text-sm text-gray-500">
-                                    Formatos permitidos: JPG, JPEG, PNG, PDF, DOC, DOCX, XLS, XLSX. Máximo 5MB por archivo.
-                                </p>
                             </div>
 
                             <button
@@ -908,7 +1021,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                                 </div>
                                                 {/* Agregar esta nueva sección para mostrar los archivos */}
                                                 <div className="mt-4">
-                                                    <h4 className="text-md font-semibold mb-2">Archivos adjuntos:</h4>
+                                                    <h4 className="text-md font-semibold mb-2">Archivos evidencia:</h4>
                                                     {files.length > 0 ? (
                                                         <div className="space-y-2">
                                                             <div className="flex items-center justify-start gap-2">
@@ -942,7 +1055,9 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                         <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
                                                                             <div className="flex items-center space-x-2">
                                                                                 {icon}
-                                                                                <span className="text-sm text-gray-600">{fileName}</span>
+                                                                                <span className="text-sm text-gray-600">
+                                                                                    {fileName.length > 20 ? fileName.substring(0, 25) + '...' : fileName}
+                                                                                </span>
                                                                             </div>
                                                                             <div className="flex space-x-2">
                                                                                 <button
