@@ -131,9 +131,9 @@
                     <h3>Componente: <span style="color: #157f3d;">{{ $subcategory->name }}</span></h3>
                     @foreach($subcategory->indicators as $indicator)
                         <div class="requisito-section">
-                            <h4>Requisito: <span style="color: #157f3d;">{{ $indicator->requisito->name ?? 'N/A' }}</span></h4>
-                            <p><strong>Indicador:</strong> <span style="color: #157f3d;">{{ $indicator->name }}</span></p>
-                            <p><strong>Pregunta de Autoevaluación:</strong> <span style="color: #157f3d;">{{ $indicator->self_evaluation_question }}</span></p>
+                            <h4 style="font-size: 0.95rem;">Requisito: <span style="color: #157f3d;">{{ $indicator->requisito->name ?? 'N/A' }}</span></h4>
+                            <p><strong style="font-size: 0.95rem;">Indicador:</strong> <span style="color: #157f3d;">{{ $indicator->name }}</span></p>
+                            <p><strong style="font-size: 0.95rem;">Pregunta de Autoevaluación:</strong> <span style="color: #157f3d;">{{ $indicator->self_evaluation_question }}</span></p>
                         </div>
                     @endforeach
                 </div>

@@ -412,11 +412,15 @@ export default function Evaluation({
                                                 }
                                             </p>
                                         </div>
-                                        <Link href={route('form.empresa')}
-                                            className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75"
-                                        >
-                                            {autoEvaluationResult.form_sended === 1 ? 'Editar Información de la Empresa' : 'Completar Información de la Empresa'}
-                                        </Link>
+                                        {
+                                            company.estado_eval !== 'evaluado' && (
+                                                <Link href={route('form.empresa')}
+                                                    className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75"
+                                                >
+                                                    {autoEvaluationResult.form_sended === 1 ? 'Editar Información de la Empresa' : 'Completar Información de la Empresa'}
+                                                </Link>
+                                            )
+                                        }
                                     </div>
                                 </div>
 
