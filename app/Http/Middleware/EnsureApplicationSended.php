@@ -33,7 +33,7 @@ class EnsureApplicationSended
                 ->with('error', 'Debes completar y enviar la auto-evaluación antes de acceder a esta página.');
         }
 
-        if(($user->role == 'admin' || $user->role == 'user') && $user->company->estado_eval == 'evaluado') {
+        if($user->role != 'super_admin' && $user->company->estado_eval == 'evaluado') {
             return redirect()->route('dashboard')
                 ->with('error', 'Ya completaste el proceso, no puedes enviar de nuevo la información de la empresa.');
         }

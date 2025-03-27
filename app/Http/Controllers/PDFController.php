@@ -27,7 +27,7 @@ class PDFController extends Controller
         return $pdf->download('indicadores_licenciamiento.pdf');
     }
 
-    public function downloadCompanyDocumentation()
+    public function downloadCompanyDocumentation(Request $request)
     {
         try {
             Log::info('Iniciando descarga de documentación');
@@ -35,17 +35,25 @@ class PDFController extends Controller
             // Obtener el usuario autenticado y su empresa
             $user = Auth::user();
             
-            if (!$user || !$user->company_id) {
+            $companyId = null;
+
+            if($request->has('company_id')) {
+                $companyId = $request->input('company_id');
+            } else {
+                $companyId = $user->company_id;
+            }
+            
+            if (!$user || !$companyId) {
                 Log::error('Usuario no autenticado o sin empresa asignada');
                 return redirect()->back()->with('error', 'No se encontró información de la empresa.');
             }
 
-            Log::info('Usuario autenticado: ' . $user->id . ', Empresa: ' . $user->company_id);
+            Log::info('Usuario autenticado: ' . $user->id . ', Empresa: ' . $companyId);
 
-            $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
+            $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($companyId);
             
             if (!$company) {
-                Log::error('No se encontró la empresa con ID: ' . $user->company_id);
+                Log::error('No se encontró la empresa con ID: ' . $companyId);
                 return redirect()->back()->with('error', 'No se encontró información de la empresa.');
             }
 
