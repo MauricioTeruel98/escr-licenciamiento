@@ -15,6 +15,7 @@ use ZipArchive;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CompanyExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Models\CompanyProducts;
 
 class PDFController extends Controller
 {
@@ -105,6 +106,7 @@ class PDFController extends Controller
                     'Provincia',
                     'Cantón',
                     'Distrito',
+                    'Dirección de Empresa',
                     'Actividad Comercial',
                     'Es Exportadora',
                     'Descripción (ES)',
@@ -148,16 +150,45 @@ class PDFController extends Controller
                     'Contacto Representante - Puesto',
                     'Contacto Representante - Teléfono',
                     'Contacto Representante - Celular',
+                    'Contacto Notificación - Nombre',
+                    'Contacto Notificación - Email',
+                    'Contacto Notificación - Puesto',
+                    'Contacto Notificación - Teléfono',
+                    'Contacto Notificación - Celular',
+                    'Asignado Proceso - Nombre',
+                    'Asignado Proceso - Email',
+                    'Asignado Proceso - Puesto',
+                    'Asignado Proceso - Teléfono',
+                    'Asignado Proceso - Celular',
                     'Estado de Evaluación',
                     'Fecha de Registro',
                     'Última Actualización',
+                    'Logo Path',
+                    'Fotografías',
+                    'Certificaciones',
+                    'Puntos Fuertes',
+                    'Justificación',
+                    'Oportunidades',
+                    'Fecha Inicio Auto-evaluación',
+                    'Fecha Calificación Evaluador',
                 ];
                 
                 // Aplicar encabezados
                 foreach ($headers as $index => $header) {
-                    // Convertir el índice numérico a letra de columna (A, B, C, etc.)
                     $columnLetter = $this->getColumnLetter($index);
                     $sheet->setCellValue($columnLetter . '1', $header);
+                }
+                
+                // Reemplazar el ajuste automático de columnas con un ajuste más preciso
+                // Para la hoja principal
+                foreach ($headers as $index => $header) {
+                    $columnLetter = $this->getColumnLetter($index);
+                    $sheet->getColumnDimension($columnLetter)->setWidth(
+                        max(
+                            strlen($header) * 1.5, // Ancho basado en la longitud del encabezado
+                            20 // Ancho mínimo
+                        )
+                    );
                 }
                 
                 // Datos de la empresa actualizados
@@ -167,10 +198,10 @@ class PDFController extends Controller
                 $estadoEval = '';
                 switch ($company->estado_eval) {
                     case 'auto-evaluacion':
-                        $estadoEval = 'Auto-evaluación';
+                        $estadoEval = 'Autoevaluación';
                         break;
                     case 'auto-evaluacion-completed':
-                        $estadoEval = 'Auto-evaluación Completada';
+                        $estadoEval = 'Autoevaluación Completada';
                         break;
                     case 'evaluacion-pendiente':
                         $estadoEval = 'Evaluación Pendiente';
@@ -202,6 +233,7 @@ class PDFController extends Controller
                     $company->provincia,
                     $company->canton,
                     $company->distrito,
+                    $infoAdicional ? $infoAdicional->direccion_empresa : '',
                     $company->commercial_activity,
                     $company->is_exporter ? 'Sí' : 'No',
                     $infoAdicional ? $infoAdicional->descripcion_es : '',
@@ -245,9 +277,27 @@ class PDFController extends Controller
                     $infoAdicional ? $infoAdicional->representante_puesto : '',
                     $infoAdicional ? $infoAdicional->representante_telefono : '',
                     $infoAdicional ? $infoAdicional->representante_celular : '',
+                    $infoAdicional ? $infoAdicional->contacto_notificacion_nombre : '',
+                    $infoAdicional ? $infoAdicional->contacto_notificacion_email : '',
+                    $infoAdicional ? $infoAdicional->contacto_notificacion_puesto : '',
+                    $infoAdicional ? $infoAdicional->contacto_notificacion_telefono : '',
+                    $infoAdicional ? $infoAdicional->contacto_notificacion_celular : '',
+                    $infoAdicional ? $infoAdicional->asignado_proceso_nombre : '',
+                    $infoAdicional ? $infoAdicional->asignado_proceso_email : '',
+                    $infoAdicional ? $infoAdicional->asignado_proceso_puesto : '',
+                    $infoAdicional ? $infoAdicional->asignado_proceso_telefono : '',
+                    $infoAdicional ? $infoAdicional->asignado_proceso_celular : '',
                     $estadoEval,
                     $company->created_at->format('d/m/Y'),
                     $company->updated_at->format('d/m/Y'),
+                    $infoAdicional ? $infoAdicional->logo_path : '',
+                    $infoAdicional ? (is_array($infoAdicional->fotografias_paths) ? implode(', ', $infoAdicional->fotografias_paths) : '') : '',
+                    $infoAdicional ? (is_array($infoAdicional->certificaciones_paths) ? implode(', ', $infoAdicional->certificaciones_paths) : '') : '',
+                    $infoAdicional ? $infoAdicional->puntos_fuertes : '',
+                    $infoAdicional ? $infoAdicional->justificacion : '',
+                    $infoAdicional ? $infoAdicional->oportunidades : '',
+                    $company->fecha_inicio_auto_evaluacion ? $company->fecha_inicio_auto_evaluacion->format('d/m/Y') : '',
+                    $company->fecha_calificacion_evaluador ? $company->fecha_calificacion_evaluador->format('d/m/Y') : '',
                 ];
                 
                 // Aplicar datos
@@ -315,6 +365,104 @@ class PDFController extends Controller
                 // Ajustar el ancho de las columnas automáticamente
                 foreach (range('A', $lastColumn) as $column) {
                     $sheet->getColumnDimension($column)->setAutoSize(true);
+                }
+                
+                // Crear una nueva hoja para los productos
+                $productsSheet = $spreadsheet->createSheet();
+                $productsSheet->setTitle('Productos');
+                
+                // Encabezados para la hoja de productos
+                $productHeaders = [
+                    'ID',
+                    'Nombre',
+                    'Descripción',
+                    'Imagen Principal',
+                    'Imagen Adicional',
+                    'Imagen Adicional',
+                ];
+                
+                // Aplicar encabezados de productos
+                foreach ($productHeaders as $index => $header) {
+                    $columnLetter = $this->getColumnLetter($index);
+                    $productsSheet->setCellValue($columnLetter . '1', $header);
+                }
+                
+                // Reemplazar el ajuste automático de columnas con un ajuste más preciso
+                // Para la hoja de productos
+                foreach ($productHeaders as $index => $header) {
+                    $columnLetter = $this->getColumnLetter($index);
+                    $productsSheet->getColumnDimension($columnLetter)->setWidth(
+                        max(
+                            strlen($header) * 1.5, // Ancho basado en la longitud del encabezado
+                            20 // Ancho mínimo
+                        )
+                    );
+                }
+                
+                // Obtener los productos de la empresa
+                $products = CompanyProducts::where('company_id', $company->id)->get();
+                
+                // Agregar datos de productos
+                $row = 2;
+                foreach ($products as $product) {
+                    $productData = [
+                        $product->id,
+                        $product->nombre,
+                        $product->descripcion,
+                        $product->imagen,
+                        $product->imagen_2,
+                        $product->imagen_3,
+                    ];
+                    
+                    foreach ($productData as $index => $value) {
+                        $columnLetter = $this->getColumnLetter($index);
+                        $productsSheet->setCellValue($columnLetter . $row, $value);
+                    }
+                    $row++;
+                }
+                
+                // Aplicar estilos a la hoja de productos
+                $lastProductColumn = $this->getColumnLetter(count($productHeaders) - 1);
+                $lastProductRow = $products->count() + 1;
+                
+                // Estilo para encabezados de productos
+                $productsSheet->getStyle('A1:' . $lastProductColumn . '1')->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                        'color' => ['rgb' => 'FFFFFF'],
+                    ],
+                    'fill' => [
+                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => '2C3E50'],
+                    ],
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                        'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
+                
+                // Altura de la fila de encabezado de productos
+                $productsSheet->getRowDimension(1)->setRowHeight(30);
+                
+                // Aplicar bordes a todas las celdas con datos de productos
+                $borderStyle = [
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                            'color' => ['rgb' => '000000'],
+                        ],
+                        'outline' => [
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                            'color' => ['rgb' => '000000'],
+                        ],
+                    ],
+                ];
+                
+                $productsSheet->getStyle('A1:' . $lastProductColumn . $lastProductRow)->applyFromArray($borderStyle);
+                
+                // Ajustar el ancho de las columnas automáticamente
+                foreach (range('A', $lastProductColumn) as $column) {
+                    $productsSheet->getColumnDimension($column)->setAutoSize(true);
                 }
                 
                 // Guardar el archivo Excel
