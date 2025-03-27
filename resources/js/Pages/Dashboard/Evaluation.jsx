@@ -652,13 +652,14 @@ export default function Evaluation({
                                                     Evaluación calificada
                                                 </h3>
                                                 <p className="text-sm text-gray-500">
-                                                    Su empresa ha sido calificada. Se le ha enviado un correo con los resultados de la evaluación y los siguientes pasos para licenciarse.
+                                                    {/* Su empresa ha sido calificada. Se le ha enviado un correo con los resultados de la evaluación y los siguientes pasos para licenciarse. */}
+                                                    Su empresa ha sido calificada. Pronto se comunicarán para continuar con el proceso de licenciamiento
                                                 </p>
-                                                {
+                                                {/* {
                                                     company.evaluation_document_path && (
                                                         <a href={`storage/evaluations/${company.evaluation_document_path}`} className='text-green-700' target="_blank" rel="noopener noreferrer">Descargar documento de evaluación</a>
                                                     )
-                                                }
+                                                } */}
                                             </div>
                                         )
                                     }

@@ -228,6 +228,11 @@ export default function EvaluadorDashboard({ auth }) {
                                         <h2 className="text-lg font-semibold text-green-900">{activeCompany.name}</h2>
                                     </div>
                                 </div>
+                                <div>
+                                    <Link href={route('form.empresa')} className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors text-center" target="_blank" rel="noopener noreferrer">
+                                        Información de la empresa
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     )}

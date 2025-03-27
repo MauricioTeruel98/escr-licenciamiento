@@ -925,7 +925,7 @@ class EvaluationAnswerController extends Controller
 
         $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
         $superAdminUser = User::where('role', 'super_admin')->first();
-
+        $evaluadorUser = User::where('company_id', $user->company_id)->where('role', 'evaluador')->first();
         // Obtener todos los valores
         $allValues = Value::where('is_active', true)
             ->where('deleted', false)
@@ -1028,10 +1028,22 @@ class EvaluationAnswerController extends Controller
             $company->save();
 
             // Enviar email con PDF al usuario administrador de la empresa
+            /*
             if ($adminUser) {
                 try {
                     $mail = new \App\Mail\EvaluationResults($fullPath, $company);
                     $this->mailService->send($adminUser->email, $mail);
+                } catch (\Exception $e) {
+                    Log::error('Error al enviar el email de evaluación calificada al administrador: ' . $e->getMessage());
+                }
+            }
+            */
+
+            // Enviar email con PDF al evaluador
+            if ($evaluadorUser) {
+                try {
+                    $mail = new \App\Mail\EvaluationResults($fullPath, $company);
+                    $this->mailService->send($evaluadorUser->email, $mail);
                 } catch (\Exception $e) {
                     Log::error('Error al enviar el email de evaluación calificada al administrador: ' . $e->getMessage());
                 }
