@@ -33,6 +33,7 @@ class ReportController extends Controller
                 'id' => $company->id,
                 'nombre' => $company->name,
                 'estado' => $company->formatted_state,
+                'estado_eval' => $company->estado_eval,
                 'es_exportador' => $company->is_exporter,
                 'autorizado_por_super_admin' => $company->authorized_by_super_admin
             ];

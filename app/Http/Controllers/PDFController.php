@@ -16,6 +16,11 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CompanyExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Models\CompanyProducts;
+use App\Models\EvaluationValueResult;
+use App\Models\EvaluatorAssessment;
+use App\Models\IndicatorAnswerEvaluation;
+use App\Models\IndicatorAnswer;
+use App\Models\Indicator;
 
 class PDFController extends Controller
 {
@@ -732,5 +737,125 @@ class PDFController extends Controller
         }
         
         return $columnName;
+    }
+
+    public function regenerateEvaluationPDF($companyId)
+    {
+        try {
+            $user = Auth::user();
+            $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($companyId);
+
+            if (!$company) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Empresa no encontrada'
+                ], 404);
+            }
+
+            // Obtener todos los valores
+            $allValues = Value::where('is_active', true)
+                ->where('deleted', false)
+                ->where(function ($query) use ($company) {
+                    $query->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })
+                ->get();
+
+            // Obtener las puntuaciones finales
+            $finalScores = EvaluationValueResult::where('company_id', $companyId)
+                ->get()
+                ->keyBy('value_id');
+
+            // Obtener todas las evaluaciones del evaluador para esta empresa
+            $evaluatorAssessments = EvaluatorAssessment::where('company_id', $companyId)
+                ->with(['evaluationQuestion', 'indicator'])
+                ->get()
+                ->groupBy('indicator_id');
+
+            // Obtener todas las respuestas de la empresa
+            $companyAnswers = IndicatorAnswerEvaluation::where('company_id', $companyId)
+                ->with(['evaluationQuestion', 'indicator'])
+                ->get()
+                ->groupBy('indicator_id');
+
+            // Obtener todas las respuestas de autoevaluación
+            $autoEvaluationAnswers = \App\Models\IndicatorAnswer::where('company_id', $companyId)
+                ->with(['indicator'])
+                ->get()
+                ->groupBy('indicator_id');
+
+            // Obtener los IDs de los indicadores donde la empresa respondió "sí"
+            $indicatorIds = IndicatorAnswer::where('company_id', $companyId)
+                ->where(function ($query) {
+                    $query->whereIn('answer', ['1', 'si', 'sí', 'yes', 1, true]);
+                })
+                ->pluck('indicator_id');
+
+            // Agrupar indicadores por valor
+            $indicatorsByValue = Indicator::where('is_active', true)
+                ->whereIn('id', $indicatorIds)
+                ->with(['subcategory.value', 'evaluationQuestions'])
+                ->where('deleted', false)
+                ->where(function ($query) use ($company) {
+                    $query->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })
+                ->get()
+                ->groupBy('subcategory.value.id');
+
+            // Generar PDF con los resultados
+            $pdf = Pdf::loadView('pdf/evaluation', [
+                'values' => $allValues,
+                'company' => $company,
+                'evaluador' => $user,
+                'date' => now()->format('d/m/Y'),
+                'finalScores' => $finalScores,
+                'evaluatorAssessments' => $evaluatorAssessments,
+                'companyAnswers' => $companyAnswers,
+                'autoEvaluationAnswers' => $autoEvaluationAnswers,
+                'indicatorsByValue' => $indicatorsByValue
+            ]);
+
+            // Crear estructura de carpetas para la empresa
+            $companySlug = Str::slug($company->name);
+            $basePath = storage_path('app/public/evaluations');
+            $companyPath = "{$basePath}/{$company->id}-{$companySlug}";
+
+            // Crear carpetas si no existen
+            if (!file_exists($basePath)) {
+                mkdir($basePath, 0755, true);
+            }
+            if (!file_exists($companyPath)) {
+                mkdir($companyPath, 0755, true);
+            }
+
+            // Generar nombre de archivo con timestamp
+            $fileName = "evaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
+            $fullPath = "{$companyPath}/{$fileName}";
+
+            // Guardar PDF
+            $pdf->save($fullPath);
+
+            // Actualizar el path del documento en la empresa
+            $evaluationPath = "{$company->id}-{$companySlug}/{$fileName}";
+            $company->evaluation_document_path = $evaluationPath;
+            $company->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'PDF regenerado exitosamente'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al regenerar PDF de evaluación:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al regenerar el PDF: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 

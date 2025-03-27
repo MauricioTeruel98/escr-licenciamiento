@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import SuperAdminLayout from '@/Layouts/SuperAdminLayout';
 import TableList from '@/Components/TableList';
 import axios from 'axios';
+import RegenerarPDFModal from '@/Components/Modals/RegenerarPDFModal';
 
 export default function Reportes() {
     const [empresas, setEmpresas] = useState([]);
@@ -17,21 +18,25 @@ export default function Reportes() {
     const [isLoading, setIsLoading] = useState(false);
     const [abortController, setAbortController] = useState(null);
     const [searchTimeout, setSearchTimeout] = useState(null);
+    const [isRegenerarModalOpen, setIsRegenerarModalOpen] = useState(false);
+    const [modalStatus, setModalStatus] = useState('initial');
+    const [selectedEmpresa, setSelectedEmpresa] = useState(null);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const columns = [
-        { 
-            key: 'nombre', 
+        {
+            key: 'nombre',
             label: 'Nombre',
             render: (item) => (
                 <div className="font-medium text-gray-900">{item.nombre}</div>
             )
         },
-        { 
-            key: 'estado', 
+        {
+            key: 'estado',
             label: 'Estado',
             render: (item) => {
                 let colorClass = '';
-                
+
                 switch (item.estado) {
                     case 'Autoevaluación':
                         colorClass = 'text-yellow-800 border-yellow-200 bg-yellow-50';
@@ -60,7 +65,7 @@ export default function Reportes() {
                     default:
                         colorClass = 'text-gray-800 border-gray-200 bg-gray-50';
                 }
-                
+
                 return (
                     <span className={`text-md p-3 font-semibold mb-1 badge rounded-lg border ${colorClass}`}>
                         {item.estado}
@@ -111,7 +116,18 @@ export default function Reportes() {
             key: 'actions',
             label: '',
             render: (item) => (
-                <div className="flex items-center justify-end">
+                <div className="flex items-center justify-end gap-4">
+                    {
+                        item.estado_eval === "evaluado" && (
+                            <button
+                                onClick={() => handleRegenerarPDFClick(item)}
+                                className="text-blue-700 hover:text-blue-800 flex items-center gap-1"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-repeat"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3" /><path d="M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3 -3l3 -3" /></svg>
+                                Regenerar PDF evaluación
+                            </button>
+                        )
+                    }
                     <a
                         href={route('download.company.documentation', { company_id: item.id })}
                         className="text-green-700 hover:text-green-800 flex items-center gap-1"
@@ -171,7 +187,7 @@ export default function Reportes() {
         }
 
         setSearchTerm(term);
-        
+
         const timeout = setTimeout(() => {
             setPagination(prev => ({ ...prev, currentPage: 1 }));
             fetchEmpresas(1, pagination.perPage, term);
@@ -204,9 +220,39 @@ export default function Reportes() {
         };
     }, [searchTimeout, abortController]);
 
-    const handleReporteClick = (empresa) => {
-        // Implementar la lógica para descargar o ver el reporte
-        console.log('Descargar reporte de:', empresa.nombre);
+    const handleRegenerarPDFClick = (empresa) => {
+        setSelectedEmpresa(empresa);
+        setModalStatus('initial');
+        setIsRegenerarModalOpen(true);
+    };
+
+    const handleConfirmRegenerar = async () => {
+        try {
+            setModalStatus('processing');
+            setIsProcessing(true);
+
+            const response = await axios.post(`/regenerate-evaluation-pdf/${selectedEmpresa.id}`);
+
+            if (response.data.success) {
+                setModalStatus('completed');
+                await fetchEmpresas(); // Recargar la lista de empresas
+            } else {
+                throw new Error(response.data.message || 'Error al regenerar el PDF');
+            }
+        } catch (error) {
+            console.error('Error al regenerar PDF:', error);
+            // Puedes manejar el error de otra manera si lo deseas
+            setIsRegenerarModalOpen(false);
+            alert('Error al regenerar el PDF: ' + (error.response?.data?.message || error.message));
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleCloseModal = () => {
+        setIsRegenerarModalOpen(false);
+        setModalStatus('initial');
+        setSelectedEmpresa(null);
     };
 
     const handleAuthorizeExporter = async (empresa) => {
@@ -239,18 +285,26 @@ export default function Reportes() {
                 <div className="mb-4">
                     <h2 className="text-lg font-medium text-gray-900">Empresas</h2>
                 </div>
-                
+
                 <TableList
                     columns={columns}
                     data={empresas}
                     onSearch={handleSearch}
-                    onSort={() => {}}
+                    onSort={() => { }}
                     pagination={pagination}
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}
                     isLoading={isLoading}
                 />
             </div>
+
+            <RegenerarPDFModal
+                isOpen={isRegenerarModalOpen}
+                onClose={handleCloseModal}
+                onConfirm={handleConfirmRegenerar}
+                status={modalStatus}
+                isProcessing={isProcessing}
+            />
         </SuperAdminLayout>
     );
 }

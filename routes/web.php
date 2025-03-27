@@ -414,4 +414,8 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
 Route::delete('certifications/{certification}/files', [CertificationController::class, 'deleteFile'])
     ->name('certifications.deleteFile');
 
+Route::post('/regenerate-evaluation-pdf/{companyId}', [PDFController::class, 'regenerateEvaluationPDF'])
+    ->name('regenerate.evaluation.pdf')
+    ->middleware(['auth', EnsureUserIsSuperAdmin::class]);
+
 require __DIR__ . '/auth.php';
