@@ -31,10 +31,11 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
-        $company = Company::find($user->company_id);
+        $company = null;
         if ($user) {
             $autoEvaluationResult = \App\Models\AutoEvaluationResult::where('company_id', $user->company_id)->first();
             $user->form_sended = $autoEvaluationResult ? $autoEvaluationResult->form_sended : false;
+            $company = Company::find($user->company_id);
         }
 
         return [
