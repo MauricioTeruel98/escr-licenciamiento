@@ -216,7 +216,7 @@ export default function EvaluadorDashboard({ auth }) {
                         </p>
                     </div>
 
-                    {activeCompany && (
+                    {activeCompany && Object.keys(activeCompany).length > 0 && (
                         <div className="mb-8 bg-green-50 border border-green-200 rounded-lg p-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -238,7 +238,7 @@ export default function EvaluadorDashboard({ auth }) {
                     )}
 
                     {/* Mensaje de advertencia cuando la empresa no está autorizada */}
-                    {companyStatusEval === 'evaluacion-pendiente' && (
+                    { activeCompany && Object.keys(activeCompany).length > 0 && companyStatusEval === 'evaluacion-pendiente' && (
                         <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                             <div className="flex items-start gap-3">
                                 <div className="mt-0.5">
@@ -348,7 +348,7 @@ export default function EvaluadorDashboard({ auth }) {
                     )}
 
                     {/* Mensaje de advertencia cuando la empresa no está autorizada */}
-                    {activeCompany && !isCompanyAuthorized && (
+                    {activeCompany && Object.keys(activeCompany).length > 0 && !isCompanyAuthorized && (
                         <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                             <div className="flex items-start gap-3">
                                 <div className="mt-0.5">

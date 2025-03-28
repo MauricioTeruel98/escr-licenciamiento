@@ -171,9 +171,10 @@ class EvaluationController extends Controller
             ->pluck('indicator_id'); // Obtener solo los IDs
 
         // Contar las preguntas asociadas a esos indicadores
-        $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)->count();
+        $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)->where('deleted', false)->count();
 
         $numeroDePreguntasQueVaAResponderLaEmpresaPorValor = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)
+            ->where('deleted', false)
             ->get()
             ->filter(function ($question) use ($value_id) {
                 $indicatorValueId = Indicator::find($question->indicator_id)->value_id;
@@ -257,12 +258,12 @@ class EvaluationController extends Controller
                         if ($homologatedIndicator['id'] === $indicator->id) {
                             $indicator->isHomologated = true;
                             $indicator->homologation_name = $certification['certification_name'];
-                            
+
                             // Buscar la certificación válida correspondiente
                             $matchingCertification = $validCertifications->first(function ($cert) use ($certification) {
                                 return $cert->nombre === $certification['certification_name'];
                             });
-                            
+
                             if ($matchingCertification) {
                                 $indicator->certification = [
                                     'id' => $matchingCertification->id,
