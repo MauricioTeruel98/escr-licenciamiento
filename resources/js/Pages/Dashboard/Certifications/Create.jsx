@@ -798,7 +798,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                 />
                             </div>
 
-                            {/* <div className="form-control">
+                            <div className="form-control">
                                 <label className="label">
                                     <span className="label-text text-sm font-medium">
                                         Archivos de evidencia (máximo 3)
@@ -818,7 +818,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                         ))}
                                     </div>
                                 )}
-                            </div> */}
+                            </div>
 
                             <button
                                 type="submit"
@@ -1020,11 +1020,11 @@ export default function Certifications({ certifications: initialCertifications, 
                                                     </div>
                                                 </div>
                                                 {/* Agregar esta nueva sección para mostrar los archivos */}
-                                                {/* <div className="mt-4">
+                                                <div className="mt-4">
                                                     <h4 className="text-md font-semibold mb-2">Archivos evidencia:</h4>
                                                     {files.length > 0 ? (
                                                         <div className="space-y-2">
-                                                            <div className="flex items-center justify-start gap-2">
+                                                            <div className="flex items-center justify-start gap-2 flex-wrap">
                                                                 {files.map((filePath, index) => {
                                                                     const fileName = filePath.split('/').pop();
                                                                     const fileExtension = fileName.split('.').pop().toLowerCase();
@@ -1089,7 +1089,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                                     ) : (
                                                         <p className="text-sm text-gray-500">No hay archivos adjuntos</p>
                                                     )}
-                                                </div> */}
+                                                </div>
                                             </div>
                                             {
                                                 certificadoExpirado && (
