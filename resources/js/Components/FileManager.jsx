@@ -20,7 +20,8 @@ export default function FileManager({
     onSuccess,
     onError,
     readOnly = false,
-    required = true
+    required = true,
+    certificationPaths = []
 }) {
     const [isDragging, setIsDragging] = useState(false);
     const [error, setError] = useState('');
@@ -151,7 +152,7 @@ export default function FileManager({
         // Llamar a la función de eliminación proporcionada por el componente padre
         if (onFileRemove) {
             await onFileRemove(fileToRemove);
-            
+
             // Si se eliminó el último archivo y el campo es requerido, mostrar error
             if (required && files.length <= 1) {
                 setError(errorMessages.required || 'Debe subir al menos un archivo');
@@ -211,33 +212,18 @@ export default function FileManager({
 
             {/* Lista de archivos */}
             <div className="space-y-2 mt-2">
-                {files.map((file, index) => (
-                    <div
-                        key={`${file.name || file.path}-${index}`}
-                        className="flex items-center justify-between bg-gray-600 rounded-lg px-4 py-2"
-                    >
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-white">
-                                {file.name || basename(file.path)}
-                            </span>
-                            <span className="text-xs text-gray-300">
-                                {formatFileSize(file.size)}
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {!readOnly && (
-                                <button
-                                    onClick={() => handleFileRemove(file)}
-                                    className="p-1 hover:bg-gray-500 rounded"
-                                >
-                                    <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            )}
-                            {file.path && (
+                {certificationPaths && certificationPaths.length > 0 ? (
+                    certificationPaths.map((path, index) => (
+                        <div
+                            key={index}
+                            className="flex items-center justify-between bg-gray-600 rounded-lg px-4 py-2"
+                        >
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-white">{basename(path)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
                                 <a
-                                    href={`/storage/${file.path}`}
+                                    href={`/storage/${path}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="p-1 hover:bg-gray-500 rounded"
@@ -246,10 +232,46 @@ export default function FileManager({
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>
                                 </a>
-                            )}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))
+                ) : (
+                    files.map((file, index) => (
+                        <div
+                            key={`${file.name || file.path}-${index}`}
+                            className="flex items-center justify-between bg-gray-600 rounded-lg px-4 py-2"
+                        >
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-white">{file.name || basename(file.path)}</span>
+                                <span className="text-xs text-gray-300">{formatFileSize(file.size)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {!readOnly && (
+                                    <button
+                                        onClick={() => handleFileRemove(file)}
+                                        className="p-1 hover:bg-gray-500 rounded"
+                                    >
+                                        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                )}
+                                {file.path && (
+                                    <a
+                                        href={`/storage/${file.path}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-1 hover:bg-gray-500 rounded"
+                                    >
+                                        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                    </a>
+                                )}
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );
