@@ -107,6 +107,27 @@ export default function CompanyInfoModal({ isOpen, onClose, companyId }) {
                                                     </span>
                                                 </p>
                                             </div>
+                                            {infoAdicional && infoAdicional.justificacion && (
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500">Justificación del alcance, articulo 10 del Reglamento para el uso de la marca país <i>esencial</i> COSTA RICA</p>
+                                                    <p className="mt-1">{infoAdicional.justificacion}</p>
+                                                </div>
+                                            )}
+
+                                            {infoAdicional && infoAdicional.puntos_fuertes && (
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500">Puntos fuertes de la organización</p>
+                                                    <p className="mt-1">{infoAdicional.puntos_fuertes}</p>
+                                                </div>
+                                            )}
+
+                                            {infoAdicional && infoAdicional.oportunidades && (
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500">Oportunidades de mejora de la organización</p>
+                                                    <p className="mt-1">{infoAdicional.oportunidades}</p>
+                                                </div>
+                                            )}
+                                            
                                         </div>
                                     </div>
 
