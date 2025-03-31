@@ -1712,8 +1712,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
     const handleAnioFundacionChange = (e) => {
         const { name, value } = e.target;
 
-        // Eliminar espacios al inicio
-        const valorSinEspacios = value.trimStart();
+        // Eliminar espacios al inicio y caracteres de barra "/"
+        const valorSinEspacios = value.trimStart().replace(/\//g, '');
 
         // Permitir campo vacío
         if (valorSinEspacios === '') {
@@ -1727,73 +1727,68 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             return;
         }
 
-        // Solo permitir números y el carácter "/"
-        const valorFormateado = valorSinEspacios.replace(/[^\d\/]/g, '');
+        // Solo permitir números
+        const valorFormateado = valorSinEspacios.replace(/[^\d]/g, '');
 
         // Aplicar formato automático DD/MM/AAAA
         let fechaFormateada = valorFormateado;
 
-        // Si se borra hacia atrás y hay un / al final, eliminar también el /
-        if (valorFormateado.length < data.anio_fundacion?.length &&
-            data.anio_fundacion?.endsWith('/') &&
-            !valorFormateado.endsWith('/')) {
-            fechaFormateada = valorFormateado.slice(0, -1);
-        }
         // Añadir automáticamente las barras después de DD y MM
-        else if ((valorFormateado.length === 2 || valorFormateado.length === 5) &&
-            !valorFormateado.endsWith('/')) {
-            // Validar límites antes de añadir la barra
-            if (valorFormateado.length === 2) {
+        if (valorFormateado.length > 0) {
+            if (valorFormateado.length <= 2) {
+                fechaFormateada = valorFormateado;
+            } else if (valorFormateado.length <= 4) {
                 // Validar día (no puede ser mayor a 31)
-                const dia = parseInt(valorFormateado);
+                const dia = parseInt(valorFormateado.substring(0, 2));
+                const restoDigitos = valorFormateado.substring(2);
+                
                 if (dia > 31) {
-                    fechaFormateada = '31/';
+                    fechaFormateada = '31/' + restoDigitos;
                     setErrors(prevErrors => ({
                         ...prevErrors,
                         [name]: 'El día no puede ser mayor a 31'
                     }));
                 } else {
-                    fechaFormateada = valorFormateado + '/';
+                    fechaFormateada = valorFormateado.substring(0, 2) + '/' + valorFormateado.substring(2);
                 }
-            } else if (valorFormateado.length === 5) {
+            } else {
                 // Validar mes (no puede ser mayor a 12)
-                const partes = valorFormateado.split('/');
-                if (partes.length > 1) {
-                    const mes = parseInt(partes[1]);
-                    if (mes > 12) {
-                        const dia = partes[0];
-                        fechaFormateada = dia + '/12/';
-                        setErrors(prevErrors => ({
-                            ...prevErrors,
-                            [name]: 'El mes no puede ser mayor a 12'
-                        }));
-                    } else {
-                        fechaFormateada = valorFormateado + '/';
-                    }
+                const dia = valorFormateado.substring(0, 2);
+                const mes = parseInt(valorFormateado.substring(2, 4));
+                const restoDigitos = valorFormateado.substring(4);
+                
+                if (mes > 12) {
+                    fechaFormateada = dia + '/12/' + restoDigitos;
+                    setErrors(prevErrors => ({
+                        ...prevErrors,
+                        [name]: 'El mes no puede ser mayor a 12'
+                    }));
                 } else {
-                    fechaFormateada = valorFormateado + '/';
+                    fechaFormateada = dia + '/' + valorFormateado.substring(2, 4) + '/' + valorFormateado.substring(4);
                 }
             }
         }
+
         // Validar que la fecha no sea posterior a la actual
-        else if (valorFormateado.length >= 10) {
-            const partes = valorFormateado.split('/');
-            if (partes.length === 3) {
-                const fechaIngresada = new Date(partes[2], partes[1] - 1, partes[0]);
-                const fechaActual = new Date();
+        if (valorFormateado.length >= 8) {
+            const dia = parseInt(valorFormateado.substring(0, 2));
+            const mes = parseInt(valorFormateado.substring(2, 4)) - 1; // Meses en JS son 0-11
+            const anio = parseInt(valorFormateado.substring(4, 8));
+            
+            const fechaIngresada = new Date(anio, mes, dia);
+            const fechaActual = new Date();
 
-                if (fechaIngresada > fechaActual) {
-                    // Si la fecha es posterior a la actual, usar la fecha actual
-                    const diaActual = fechaActual.getDate().toString().padStart(2, '0');
-                    const mesActual = (fechaActual.getMonth() + 1).toString().padStart(2, '0');
-                    const anioActual = fechaActual.getFullYear();
+            if (fechaIngresada > fechaActual) {
+                // Si la fecha es posterior a la actual, usar la fecha actual
+                const diaActual = fechaActual.getDate().toString().padStart(2, '0');
+                const mesActual = (fechaActual.getMonth() + 1).toString().padStart(2, '0');
+                const anioActual = fechaActual.getFullYear();
 
-                    fechaFormateada = `${diaActual}/${mesActual}/${anioActual}`;
-                    setErrors(prevErrors => ({
-                        ...prevErrors,
-                        [name]: 'No se permite una fecha posterior a la actual. Se ha establecido la fecha actual.'
-                    }));
-                }
+                fechaFormateada = `${diaActual}/${mesActual}/${anioActual}`;
+                setErrors(prevErrors => ({
+                    ...prevErrors,
+                    [name]: 'No se permite una fecha posterior a la actual. Se ha establecido la fecha actual.'
+                }));
             }
         }
 
@@ -1803,7 +1798,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         }
 
         // Si hay cambios (caracteres no permitidos), mostrar mensaje
-        if (valorSinEspacios !== fechaFormateada && !errors[name]) {
+        if (value !== fechaFormateada && !errors[name]) {
             setErrors(prevErrors => ({
                 ...prevErrors,
                 [name]: 'Formato requerido: DD/MM/AAAA'
