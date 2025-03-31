@@ -225,7 +225,7 @@ export default function CompaniesIndex() {
             console.error('Error:', error);
             setNotification({
                 type: 'error',
-                message: error.response?.data?.message || 'Error al eliminar la empresa'
+                message: error.response?.data?.message || 'Error al eliminar la empresa. Asegúrese de que no tenga datos relacionados.'
             });
         }
     };
@@ -242,7 +242,7 @@ export default function CompaniesIndex() {
             console.error('Error:', error);
             setNotification({
                 type: 'error',
-                message: error.response?.data?.message || 'Error al eliminar las empresas'
+                message: error.response?.data?.message || 'Error al eliminar las empresas. Asegúrese de que no tengan datos relacionados.'
             });
         }
     };
