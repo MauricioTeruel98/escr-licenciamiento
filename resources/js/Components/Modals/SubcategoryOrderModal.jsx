@@ -1,12 +1,76 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import axios from 'axios';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+function SortableItem({ subcategory }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({ id: subcategory.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    return (
+        <li
+            ref={setNodeRef}
+            style={style}
+            className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm flex items-center justify-between cursor-move"
+            {...attributes}
+            {...listeners}
+        >
+            <div className="flex-1">
+                <div className="flex items-center">
+                    <span className="font-medium">{subcategory.name}</span>
+                    <span className="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                        Orden: {subcategory.order}
+                    </span>
+                </div>
+                {subcategory.description && (
+                    <p className="text-sm text-gray-500 mt-1">{subcategory.description}</p>
+                )}
+            </div>
+            <div className="flex items-center text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                </svg>
+            </div>
+        </li>
+    );
+}
 
 export default function SubcategoryOrderModal({ isOpen, onClose, valueId, valueName }) {
     const [subcategories, setSubcategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     useEffect(() => {
         if (isOpen && valueId) {
@@ -30,21 +94,24 @@ export default function SubcategoryOrderModal({ isOpen, onClose, valueId, valueN
         }
     };
 
-    const handleDragEnd = (result) => {
-        if (!result.destination) return;
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
 
-        const items = Array.from(subcategories);
-        const [reorderedItem] = items.splice(result.source.index, 1);
-        items.splice(result.destination.index, 0, reorderedItem);
-
-        // Actualizar el orden de forma descendente (valores más altos = mayor prioridad)
-        const totalItems = items.length;
-        const updatedItems = items.map((item, index) => ({
-            ...item,
-            order: totalItems - index // Asignar valores descendentes (el primero tiene el valor más alto)
-        }));
-
-        setSubcategories(updatedItems);
+        if (active.id !== over.id) {
+            setSubcategories((items) => {
+                const oldIndex = items.findIndex((item) => item.id === active.id);
+                const newIndex = items.findIndex((item) => item.id === over.id);
+                
+                const newItems = arrayMove(items, oldIndex, newIndex);
+                
+                // Actualizar el orden de forma descendente (valores más altos = mayor prioridad)
+                const totalItems = newItems.length;
+                return newItems.map((item, index) => ({
+                    ...item,
+                    order: totalItems - index
+                }));
+            });
+        }
     };
 
     const handleSave = async () => {
@@ -54,7 +121,7 @@ export default function SubcategoryOrderModal({ isOpen, onClose, valueId, valueN
             await axios.post('/api/subcategories/update-order', {
                 subcategories: subcategories.map((item, index) => ({
                     id: item.id,
-                    order: totalItems - index // Asignar valores descendentes (el primero tiene el valor más alto)
+                    order: totalItems - index
                 }))
             });
             setSaving(false);
@@ -104,52 +171,25 @@ export default function SubcategoryOrderModal({ isOpen, onClose, valueId, valueN
                                     <p className="text-sm text-gray-600 mb-4">
                                         Arrastra y suelta las subcategorías para cambiar su orden. Las subcategorías en la parte superior tendrán mayor prioridad.
                                     </p>
-                                    <DragDropContext onDragEnd={handleDragEnd}>
-                                        <Droppable droppableId="subcategories">
-                                            {(provided) => (
-                                                <ul
-                                                    {...provided.droppableProps}
-                                                    ref={provided.innerRef}
-                                                    className="space-y-2"
-                                                >
-                                                    {subcategories.map((subcategory, index) => (
-                                                        <Draggable
-                                                            key={subcategory.id}
-                                                            draggableId={subcategory.id.toString()}
-                                                            index={index}
-                                                        >
-                                                            {(provided) => (
-                                                                <li
-                                                                    ref={provided.innerRef}
-                                                                    {...provided.draggableProps}
-                                                                    {...provided.dragHandleProps}
-                                                                    className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm flex items-center justify-between"
-                                                                >
-                                                                    <div className="flex-1">
-                                                                        <div className="flex items-center">
-                                                                            <span className="font-medium">{subcategory.name}</span>
-                                                                            <span className="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                                                                                Orden: {subcategory.order}
-                                                                            </span>
-                                                                        </div>
-                                                                        {subcategory.description && (
-                                                                            <p className="text-sm text-gray-500 mt-1">{subcategory.description}</p>
-                                                                        )}
-                                                                    </div>
-                                                                    <div className="flex items-center text-gray-400">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
-                                                                        </svg>
-                                                                    </div>
-                                                                </li>
-                                                            )}
-                                                        </Draggable>
-                                                    ))}
-                                                    {provided.placeholder}
-                                                </ul>
-                                            )}
-                                        </Droppable>
-                                    </DragDropContext>
+                                    <DndContext
+                                        sensors={sensors}
+                                        collisionDetection={closestCenter}
+                                        onDragEnd={handleDragEnd}
+                                    >
+                                        <SortableContext
+                                            items={subcategories.map(item => item.id)}
+                                            strategy={verticalListSortingStrategy}
+                                        >
+                                            <ul className="space-y-2">
+                                                {subcategories.map((subcategory) => (
+                                                    <SortableItem
+                                                        key={subcategory.id}
+                                                        subcategory={subcategory}
+                                                    />
+                                                ))}
+                                            </ul>
+                                        </SortableContext>
+                                    </DndContext>
                                 </div>
                             )}
                         </div>

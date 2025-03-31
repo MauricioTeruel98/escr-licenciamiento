@@ -22,10 +22,12 @@
         "vite": "^5.0"
     },
     "dependencies": {
+        "@dnd-kit/core": "^6.3.1",
+        "@dnd-kit/sortable": "^10.0.0",
+        "@dnd-kit/utilities": "^3.2.2",
         "@heroicons/react": "^2.2.0",
         "heroicons": "^2.2.0",
         "lucide-react": "^0.454.0",
-        "react-beautiful-dnd": "^13.1.1",
         "react-datepicker": "^7.5.0"
     }
 }
