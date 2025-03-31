@@ -64,7 +64,7 @@ export default function EvaluadorDashboard({ auth }) {
             setActiveCompany(response.data);
             setIsCompanyAuthorized(response.data?.authorized === 1);
             setCompanyStatusEval(response.data?.estado_eval);
-            
+
             if (response.data) {
                 setEvaluationFields({
                     puntos_fuertes: response.data.puntos_fuertes || '',
@@ -238,7 +238,7 @@ export default function EvaluadorDashboard({ auth }) {
                     )}
 
                     {/* Mensaje de advertencia cuando la empresa no está autorizada */}
-                    { activeCompany && Object.keys(activeCompany).length > 0 && companyStatusEval === 'evaluacion-pendiente' && (
+                    {activeCompany && Object.keys(activeCompany).length > 0 && companyStatusEval === 'evaluacion-pendiente' && (
                         <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                             <div className="flex items-start gap-3">
                                 <div className="mt-0.5">
@@ -312,11 +312,18 @@ export default function EvaluadorDashboard({ auth }) {
                                 <div className="mt-0.5">
                                     <CheckCircle className="h-5 w-5 text-blue-600" />
                                 </div>
-                                <div>
-                                    <h3 className="text-md font-semibold text-blue-800">La empresa ha sido calificada</h3>
-                                    <p className="text-sm text-blue-700 mt-1">
-                                        La empresa ha sido calificada y está lista para ser evaluada.
-                                    </p>
+                                <div className="flex items-center justify-between gap-3 w-full">
+                                    <div>
+                                        <h3 className="text-md font-semibold text-blue-800">La empresa ha sido calificada</h3>
+                                        <p className="text-sm text-blue-700 mt-1">
+                                            La empresa ha sido calificada y está lista para ser evaluada.
+                                        </p>
+                                    </div>
+                                    {
+                                        activeCompany.evaluation_document_path && (
+                                            <a href={`/storage/evaluations/${activeCompany.evaluation_document_path}`} className='text-blue-700' target="_blank" rel="noopener noreferrer">Descargar documento de evaluación</a>
+                                        )
+                                    }
                                 </div>
                             </div>
                         </div>
