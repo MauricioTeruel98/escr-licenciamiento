@@ -402,11 +402,11 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
     };
 
     const handleImagenChange = (e, tipo, productoIndex = null) => {
-        const files = Array.from(e.target.files);
+        const originalFiles = Array.from(e.target.files);
 
         // Validar tipos de archivos permitidos
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-        const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
+        const invalidFiles = originalFiles.filter(file => !allowedTypes.includes(file.type));
 
         if (invalidFiles.length > 0) {
             alert('Solo se permiten archivos de tipo: jpg, jpeg o png.');
@@ -425,7 +425,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         };
 
         // Validar tamaño máximo según el tipo
-        const oversizedFiles = files.filter(file => file.size > maxSize[tipo]);
+        const oversizedFiles = originalFiles.filter(file => file.size > maxSize[tipo]);
 
         if (oversizedFiles.length > 0) {
             const sizeText = tipo === 'logo' ? '1 MB' :
@@ -448,8 +448,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
         if (tipo === 'logo') {
             // Generar URL de vista previa para el logo
-            const fileWithPreview = files[0];
-            fileWithPreview.preview = URL.createObjectURL(files[0]);
+            const fileWithPreview = originalFiles[0];
+            fileWithPreview.preview = URL.createObjectURL(originalFiles[0]);
             setImagenes(prev => ({ ...prev, logo: fileWithPreview }));
         } else if (tipo === 'fotografias') {
             // Verificar si se excede el límite de fotografías
@@ -463,9 +463,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             }
 
             // Tomar solo los archivos que caben dentro del límite
-            const filesToAdd = files.slice(0, availableSlots);
+            const filesToAdd = originalFiles.slice(0, availableSlots);
 
-            if (filesToAdd.length < files.length) {
+            if (filesToAdd.length < originalFiles.length) {
                 alert(`Solo se han añadido ${filesToAdd.length} fotografías. El límite máximo es de ${maxFiles.fotografias} fotografías.`);
             }
 
@@ -490,9 +490,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             }
 
             // Tomar solo los archivos que caben dentro del límite
-            const filesToAdd = files.slice(0, availableSlots);
+            const filesToAdd = originalFiles.slice(0, availableSlots);
 
-            if (filesToAdd.length < files.length) {
+            if (filesToAdd.length < originalFiles.length) {
                 alert(`Solo se han añadido ${filesToAdd.length} certificaciones. El límite máximo es de ${maxFiles.certificaciones} certificaciones.`);
             }
 
@@ -508,9 +508,10 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             }));
         } else if (tipo === 'producto') {
             // Para productos, solo se permite 1 imagen por producto
-            if (files.length > maxFiles.productos) {
+            let filesToUse = originalFiles;
+            if (originalFiles.length > maxFiles.productos) {
                 alert(`Solo se permite ${maxFiles.productos} imagen por producto.`);
-                files = [files[0]]; // Tomar solo el primer archivo
+                filesToUse = [originalFiles[0]]; // Tomar solo el primer archivo
             }
 
             setImagenes(prev => {
@@ -518,7 +519,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 if (!newProductos[productoIndex]) {
                     newProductos[productoIndex] = [];
                 }
-                newProductos[productoIndex] = files[0];
+                newProductos[productoIndex] = filesToUse[0];
                 return { ...prev, productos: newProductos };
             });
 
@@ -538,10 +539,10 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 };
             });
         } else if (tipo === 'producto_2') {
-            // Para imagen adicional 1, solo se permite 1 imagen por producto
-            if (files.length > maxFiles.producto_2) {
+            let filesToUse = originalFiles;
+            if (originalFiles.length > maxFiles.producto_2) {
                 alert(`Solo se permite ${maxFiles.producto_2} imagen adicional 1 por producto.`);
-                files = [files[0]]; // Tomar solo el primer archivo
+                filesToUse = [originalFiles[0]];
             }
 
             setImagenes(prev => {
@@ -549,7 +550,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 if (!newProductos2[productoIndex]) {
                     newProductos2[productoIndex] = [];
                 }
-                newProductos2[productoIndex] = files[0];
+                newProductos2[productoIndex] = filesToUse[0];
                 return { ...prev, productos_2: newProductos2 };
             });
 
@@ -569,10 +570,10 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 };
             });
         } else if (tipo === 'producto_3') {
-            // Para imagen adicional 2, solo se permite 1 imagen por producto
-            if (files.length > maxFiles.producto_3) {
+            let filesToUse = originalFiles;
+            if (originalFiles.length > maxFiles.producto_3) {
                 alert(`Solo se permite ${maxFiles.producto_3} imagen adicional 2 por producto.`);
-                files = [files[0]]; // Tomar solo el primer archivo
+                filesToUse = [originalFiles[0]];
             }
 
             setImagenes(prev => {
@@ -580,7 +581,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 if (!newProductos3[productoIndex]) {
                     newProductos3[productoIndex] = [];
                 }
-                newProductos3[productoIndex] = files[0];
+                newProductos3[productoIndex] = filesToUse[0];
                 return { ...prev, productos_3: newProductos3 };
             });
 
@@ -600,7 +601,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 };
             });
         } else {
-            setImagenes(prev => ({ ...prev, [tipo]: [...(prev[tipo] || []), ...files] }));
+            setImagenes(prev => ({ ...prev, [tipo]: [...(prev[tipo] || []), ...originalFiles] }));
         }
     };
 
