@@ -546,6 +546,31 @@ class PDFController extends Controller
                     Log::error('Error al agregar Excel al ZIP: ' . $e->getMessage());
                     return redirect()->back()->with('error', 'Error al agregar Excel al ZIP: ' . $e->getMessage());
                 }
+
+                // Agregar la carpeta de archivos de la empresa
+                try {
+                    $companyFolderPath = "companies/{$company->id}-{$companySlug}";
+                    if (Storage::disk('public')->exists($companyFolderPath)) {
+                        // Obtener todos los archivos y subcarpetas
+                        $files = Storage::disk('public')->allFiles($companyFolderPath);
+                        
+                        foreach ($files as $file) {
+                            if (Storage::disk('public')->exists($file)) {
+                                $fileContent = Storage::disk('public')->get($file);
+                                // Reorganizar la estructura de carpetas dentro del ZIP
+                                $newPath = str_replace($companyFolderPath, 'archivos', $file);
+                                $zip->addFromString($newPath, $fileContent);
+                                Log::info('Archivo agregado al ZIP: ' . $newPath);
+                            }
+                        }
+                        Log::info('Carpeta de archivos agregada al ZIP');
+                    } else {
+                        Log::warning('No se encontró la carpeta de la empresa: ' . $companyFolderPath);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error al agregar carpeta de archivos al ZIP: ' . $e->getMessage());
+                    // Continuar con la ejecución aunque no se pueda agregar la carpeta
+                }
                 
                 $zip->close();
                 Log::info('Archivo ZIP cerrado correctamente');
