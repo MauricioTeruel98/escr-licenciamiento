@@ -11,6 +11,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class CertificationController extends Controller
 {
@@ -66,9 +67,10 @@ class CertificationController extends Controller
             $filePaths = [];
             if ($request->hasFile('files')) {
                 foreach ($request->file('files') as $file) {
+                    $companySlug = Str::slug($company->name);
                     $fileName = time() . '_' . $file->getClientOriginalName();
                     $path = $file->storeAs(
-                        'certifications/company_' . $company->id,
+                        "companies/{$company->id}-{$companySlug}/certifications",
                         $fileName,
                         'public'
                     );
@@ -146,11 +148,11 @@ class CertificationController extends Controller
             // Procesar nuevos archivos si existen
             if ($request->hasFile('files')) {
                 $filePaths = json_decode($certification->file_paths, true) ?? [];
-                
+                $companySlug = Str::slug($certification->company->name);
                 foreach ($request->file('files') as $file) {
                     $fileName = time() . '_' . $file->getClientOriginalName();
                     $path = $file->storeAs(
-                        'certifications/company_' . $certification->company_id,
+                        "companies/{$certification->company_id}-{$companySlug}/certifications",
                         $fileName,
                         'public'
                     );

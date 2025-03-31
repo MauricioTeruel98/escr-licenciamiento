@@ -321,7 +321,7 @@ export default function EvaluadorDashboard({ auth }) {
                                     </div>
                                     {
                                         activeCompany.evaluation_document_path && (
-                                            <a href={`/storage/evaluations/${activeCompany.evaluation_document_path}`} className='text-blue-700' target="_blank" rel="noopener noreferrer">Descargar documento de evaluación</a>
+                                            <a href={`/storage/${activeCompany.evaluation_document_path}`} className='text-blue-700' target="_blank" rel="noopener noreferrer">Descargar documento de evaluación</a>
                                         )
                                     }
                                 </div>

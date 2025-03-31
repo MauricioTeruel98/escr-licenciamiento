@@ -142,9 +142,10 @@ class EvaluationAnswerController extends Controller
                 if (isset($answerData['files']) && is_array($answerData['files'])) {
                     foreach ($answerData['files'] as $file) {
                         if ($file instanceof \Illuminate\Http\UploadedFile) {
+                            $companySlug = Str::slug($company->name);
                             $fileName = time() . '_' . $file->getClientOriginalName();
                             $path = $file->storeAs(
-                                'evaluation-files/company_' . $user->company_id,
+                                "companies/{$company->id}-{$companySlug}/evaluation-files",
                                 $fileName,
                                 'public'
                             );
@@ -267,9 +268,9 @@ class EvaluationAnswerController extends Controller
                     ]);
 
                     // Crear estructura de carpetas para la empresa
-                    $companySlug = Str::slug($company->name); // Convertir nombre de empresa a slug
-                    $basePath = storage_path('app/public/evaluations');
-                    $companyPath = "{$basePath}/{$company->id}-{$companySlug}";
+                    $companySlug = Str::slug($company->name);
+                    $basePath = storage_path('app/public/companies');
+                    $companyPath = "{$basePath}/{$company->id}-{$companySlug}/evaluations";
 
                     // Crear carpetas si no existen
                     if (!file_exists($basePath)) {
@@ -285,6 +286,11 @@ class EvaluationAnswerController extends Controller
 
                     // Guardar PDF
                     $pdf->save($fullPath);
+
+                    $finalEvaluationPath = "companies/{$company->id}-{$companySlug}/evaluations/{$fileName}";
+
+                    $company->evaluation_document_path = $finalEvaluationPath;
+                    $company->save();
 
                     // Enviar email con PDF al usuario administrador de la empresa
                     if ($adminUser) {
@@ -551,9 +557,10 @@ class EvaluationAnswerController extends Controller
                             if (isset($answerData['files']) && is_array($answerData['files'])) {
                                 foreach ($answerData['files'] as $file) {
                                     if ($file instanceof \Illuminate\Http\UploadedFile) {
+                                        $companySlug = Str::slug($company->name);
                                         $fileName = time() . '_' . $file->getClientOriginalName();
                                         $path = $file->storeAs(
-                                            'evaluation-files/company_' . $user->company_id,
+                                            "companies/{$company->id}-{$companySlug}/evaluation-files",
                                             $fileName,
                                             'public'
                                         );
@@ -618,9 +625,10 @@ class EvaluationAnswerController extends Controller
                 if (isset($answerData['files']) && is_array($answerData['files'])) {
                     foreach ($answerData['files'] as $file) {
                         if ($file instanceof \Illuminate\Http\UploadedFile) {
+                            $companySlug = Str::slug($company->name);
                             $fileName = time() . '_' . $file->getClientOriginalName();
                             $path = $file->storeAs(
-                                'evaluation-files/company_' . $user->company_id,
+                                "companies/{$company->id}-{$companySlug}/evaluation-files",
                                 $fileName,
                                 'public'
                             );
@@ -1003,11 +1011,9 @@ class EvaluationAnswerController extends Controller
             ]);
 
             // Crear estructura de carpetas para la empresa
-            $companySlug = Str::slug($company->name); // Convertir nombre de empresa a slug
-            $basePath = storage_path('app/public/evaluations');
-            $companyPath = "{$basePath}/{$company->id}-{$companySlug}";
-
-            $evaluationPath = "{$company->id}-{$companySlug}";
+            $companySlug = Str::slug($company->name);
+            $basePath = storage_path('app/public/companies');
+            $companyPath = "{$basePath}/{$company->id}-{$companySlug}/evaluations";
 
             // Crear carpetas si no existen
             if (!file_exists($basePath)) {
@@ -1024,7 +1030,7 @@ class EvaluationAnswerController extends Controller
             // Guardar PDF
             $pdf->save($fullPath);
 
-            $finalEvaluationPath = "{$evaluationPath}/{$fileName}";
+            $finalEvaluationPath = "companies/{$company->id}-{$companySlug}/evaluations/{$fileName}";
 
             $company->evaluation_document_path = $finalEvaluationPath;
             $company->save();
@@ -1068,7 +1074,7 @@ class EvaluationAnswerController extends Controller
 
             // Registrar que se enviaron las notificaciones
             if (!$hasFailedBindingIndicators) {
-                $this->markNotificationsAsSent($user->company_id, $request->value_id, 'evaluado');
+                //$this->markNotificationsAsSent($user->company_id, $request->value_id, 'evaluado');
             }
         }
 

@@ -296,8 +296,8 @@ class PDFController extends Controller
                     $company->created_at->format('d/m/Y'),
                     $company->updated_at->format('d/m/Y'),
                     $infoAdicional ? $infoAdicional->logo_path : '',
-                    $infoAdicional ? (is_array($infoAdicional->fotografias_paths) ? implode(', ', $infoAdicional->fotografias_paths) : '') : '',
-                    $infoAdicional ? (is_array($infoAdicional->certificaciones_paths) ? implode(', ', $infoAdicional->certificaciones_paths) : '') : '',
+                    $infoAdicional ? $this->formatPaths($infoAdicional->fotografias_paths) : '',
+                    $infoAdicional ? $this->formatPaths($infoAdicional->certificaciones_paths) : '',
                     $infoAdicional ? $infoAdicional->puntos_fuertes : '',
                     $infoAdicional ? $infoAdicional->justificacion : '',
                     $infoAdicional ? $infoAdicional->oportunidades : '',
@@ -500,69 +500,40 @@ class PDFController extends Controller
                 
                 // Verificar y agregar el PDF de autoevaluación si existe
                 $autoEvalPdfFound = false;
-                if ($company->autoeval_ended) {
-                    $autoEvalPath = "autoevaluations/{$company->id}-{$companySlug}";
-                    
-                    if (Storage::disk('public')->exists($autoEvalPath)) {
-                        $autoEvalFiles = Storage::disk('public')->files($autoEvalPath);
-                        
-                        if (!empty($autoEvalFiles)) {
-                            // Ordenar archivos por fecha de modificación (más reciente primero)
-                            usort($autoEvalFiles, function($a, $b) {
-                                return Storage::disk('public')->lastModified($b) - Storage::disk('public')->lastModified($a);
-                            });
-                            
-                            $latestAutoEvalPdf = $autoEvalFiles[0];
-                            
-                            try {
-                                $pdfContent = Storage::disk('public')->get($latestAutoEvalPdf);
-                                $pdfFileName = "autoevaluacion_{$company->id}_{$companySlug}.pdf";
-                                $zip->addFromString($pdfFileName, $pdfContent);
-                                Log::info('PDF de autoevaluación agregado al ZIP: ' . $pdfFileName);
-                                $autoEvalPdfFound = true;
-                            } catch (\Exception $e) {
-                                Log::error('Error al agregar PDF de autoevaluación al ZIP: ' . $e->getMessage());
-                                // Continuar con la ejecución aunque no se pueda agregar este archivo
-                            }
+                if ($company->autoeval_ended && $company->auto_evaluation_document_path) {
+                    try {
+                        if (Storage::disk('public')->exists($company->auto_evaluation_document_path)) {
+                            $pdfContent = Storage::disk('public')->get($company->auto_evaluation_document_path);
+                            $pdfFileName = "autoevaluacion_{$company->id}_{$companySlug}.pdf";
+                            $zip->addFromString($pdfFileName, $pdfContent);
+                            Log::info('PDF de autoevaluación agregado al ZIP: ' . $pdfFileName);
+                            $autoEvalPdfFound = true;
                         } else {
-                            Log::warning('No se encontraron archivos PDF de autoevaluación en la carpeta: ' . $autoEvalPath);
+                            Log::warning('No se encontró el archivo de autoevaluación: ' . $company->auto_evaluation_document_path);
                         }
-                    } else {
-                        Log::warning('No existe la carpeta de autoevaluaciones: ' . $autoEvalPath);
+                    } catch (\Exception $e) {
+                        Log::error('Error al agregar PDF de autoevaluación al ZIP: ' . $e->getMessage());
+                        // Continuar con la ejecución aunque no se pueda agregar este archivo
                     }
                 }
                 
                 // Verificar y agregar el PDF de evaluación si existe
                 $evalPdfFound = false;
-                if ($company->eval_ended || $company->estado_eval === 'evaluacion-completada' || $company->estado_eval === 'evaluado') {
-                    $evalPath = "evaluations/{$company->id}-{$companySlug}";
-                    
-                    if (Storage::disk('public')->exists($evalPath)) {
-                        $evalFiles = Storage::disk('public')->files($evalPath);
-                        
-                        if (!empty($evalFiles)) {
-                            // Ordenar archivos por fecha de modificación (más reciente primero)
-                            usort($evalFiles, function($a, $b) {
-                                return Storage::disk('public')->lastModified($b) - Storage::disk('public')->lastModified($a);
-                            });
-                            
-                            $latestEvalPdf = $evalFiles[0];
-                            
-                            try {
-                                $pdfContent = Storage::disk('public')->get($latestEvalPdf);
-                                $pdfFileName = "evaluacion_{$company->id}_{$companySlug}.pdf";
-                                $zip->addFromString($pdfFileName, $pdfContent);
-                                Log::info('PDF de evaluación agregado al ZIP: ' . $pdfFileName);
-                                $evalPdfFound = true;
-                            } catch (\Exception $e) {
-                                Log::error('Error al agregar PDF de evaluación al ZIP: ' . $e->getMessage());
-                                // Continuar con la ejecución aunque no se pueda agregar este archivo
-                            }
+                if (($company->eval_ended || $company->estado_eval === 'evaluacion-completada' || $company->estado_eval === 'evaluado') 
+                    && $company->evaluation_document_path) {
+                    try {
+                        if (Storage::disk('public')->exists($company->evaluation_document_path)) {
+                            $pdfContent = Storage::disk('public')->get($company->evaluation_document_path);
+                            $pdfFileName = "evaluacion_{$company->id}_{$companySlug}.pdf";
+                            $zip->addFromString($pdfFileName, $pdfContent);
+                            Log::info('PDF de evaluación agregado al ZIP: ' . $pdfFileName);
+                            $evalPdfFound = true;
                         } else {
-                            Log::warning('No se encontraron archivos PDF de evaluación en la carpeta: ' . $evalPath);
+                            Log::warning('No se encontró el archivo de evaluación: ' . $company->evaluation_document_path);
                         }
-                    } else {
-                        Log::warning('No existe la carpeta de evaluaciones: ' . $evalPath);
+                    } catch (\Exception $e) {
+                        Log::error('Error al agregar PDF de evaluación al ZIP: ' . $e->getMessage());
+                        // Continuar con la ejecución aunque no se pueda agregar este archivo
                     }
                 }
                 
@@ -857,5 +828,24 @@ class PDFController extends Controller
                 'message' => 'Error al regenerar el PDF: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function formatPaths($paths) {
+        if (empty($paths)) {
+            return '';
+        }
+
+        // Si es un string JSON, convertirlo a array
+        if (is_string($paths)) {
+            $paths = json_decode($paths, true);
+        }
+
+        // Si después de la decodificación sigue siendo string o es null, retornar el valor original
+        if (!is_array($paths)) {
+            return $paths ?? '';
+        }
+
+        // Filtrar valores vacíos y unir con comas
+        return implode(', ', array_filter($paths));
     }
 } 

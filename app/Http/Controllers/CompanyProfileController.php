@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class CompanyProfileController extends Controller
 {
@@ -637,14 +638,15 @@ class CompanyProfileController extends Controller
                 }
 
                 $companyId = Auth::user()->company_id;
-
+                $company = Company::find($companyId);
                 // Crear directorio si no existe
-                Storage::disk('public')->makeDirectory("empresas/{$companyId}/logos");
+                $companySlug = Str::slug($company->name);
+                Storage::disk('public')->makeDirectory("companies/{$companyId}-{$companySlug}/logos");
 
                 try {
                     // Guardar el logo
                     $logoPath = $logo->storeAs(
-                        "empresas/{$companyId}/logos",
+                        "companies/{$companyId}-{$companySlug}/logos",
                         time() . '_' . $logo->getClientOriginalName(),
                         'public'
                     );
@@ -699,9 +701,10 @@ class CompanyProfileController extends Controller
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
             $maxSizeInBytes = 3 * 1024 * 1024; // 3 MB
             $companyId = Auth::user()->company_id;
-
+            $company = Company::find($companyId);
             // Crear directorio si no existe
-            Storage::disk('public')->makeDirectory("empresas/{$companyId}/fotografias");
+            $companySlug = Str::slug($company->name);
+            Storage::disk('public')->makeDirectory("companies/{$companyId}-{$companySlug}/photos");
 
             $fotografiasPaths = [];
             $errores = [];
@@ -731,7 +734,7 @@ class CompanyProfileController extends Controller
                         }
 
                         $path = $foto->storeAs(
-                            "empresas/{$companyId}/fotografias",
+                            "companies/{$companyId}-{$companySlug}/photos",
                             time() . '_' . $foto->getClientOriginalName(),
                             'public'
                         );
@@ -777,9 +780,10 @@ class CompanyProfileController extends Controller
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
             $maxSizeInBytes = 1 * 1024 * 1024; // 1 MB
             $companyId = Auth::user()->company_id;
-
+            $company = Company::find($companyId);
             // Crear directorio si no existe
-            Storage::disk('public')->makeDirectory("empresas/{$companyId}/certificaciones");
+            $companySlug = Str::slug($company->name);
+            Storage::disk('public')->makeDirectory("companies/{$companyId}-{$companySlug}/certifications-fotos");
 
             $certificacionesPaths = [];
             $errores = [];
@@ -809,7 +813,7 @@ class CompanyProfileController extends Controller
                         }
 
                         $path = $cert->storeAs(
-                            "empresas/{$companyId}/certificaciones",
+                            "companies/{$companyId}-{$companySlug}/certifications-fotos",
                             time() . '_' . $cert->getClientOriginalName(),
                             'public'
                         );
@@ -857,7 +861,7 @@ class CompanyProfileController extends Controller
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
             $maxSizeInBytes = 5 * 1024 * 1024; // 5 MB (mismo que fotografías)
             $companyId = Auth::user()->company_id;
-            
+            $company = Company::find($companyId);
             // Obtener la info adicional de la empresa
             $infoAdicional = InfoAdicionalEmpresa::where('company_id', $companyId)->first();
             if (!$infoAdicional) {
@@ -865,7 +869,8 @@ class CompanyProfileController extends Controller
             }
 
             // Crear directorio si no existe
-            Storage::disk('public')->makeDirectory("empresas/{$companyId}/productos");
+            $companySlug = Str::slug($company->name);
+            Storage::disk('public')->makeDirectory("companies/{$companyId}-{$companySlug}/products");
 
             $productos = [];
             $errores = [];
@@ -899,7 +904,7 @@ class CompanyProfileController extends Controller
 
                             // Guardar la nueva imagen
                             $imagenPath = $imagen->storeAs(
-                                "empresas/{$companyId}/productos",
+                                "companies/{$companyId}-{$companySlug}/products",
                                 time() . '_' . $imagen->getClientOriginalName(),
                                 'public'
                             );
@@ -926,7 +931,7 @@ class CompanyProfileController extends Controller
 
                             // Guardar la nueva imagen adicional 1
                             $imagen2Path = $imagen2->storeAs(
-                                "empresas/{$companyId}/productos",
+                                "companies/{$companyId}-{$companySlug}/products",
                                 time() . '_adicional1_' . $imagen2->getClientOriginalName(),
                                 'public'
                             );
@@ -953,7 +958,7 @@ class CompanyProfileController extends Controller
 
                             // Guardar la nueva imagen adicional 2
                             $imagen3Path = $imagen3->storeAs(
-                                "empresas/{$companyId}/productos",
+                                "companies/{$companyId}-{$companySlug}/products",
                                 time() . '_adicional2_' . $imagen3->getClientOriginalName(),
                                 'public'
                             );

@@ -294,9 +294,9 @@ class IndicadorAnswerController extends Controller
                 ]);
 
                 // Crear estructura de carpetas para la empresa
-                $companySlug = Str::slug($user->company->name); // Convertir nombre de empresa a slug
-                $basePath = storage_path('app/public/autoevaluations');
-                $companyPath = "{$basePath}/{$user->company_id}-{$companySlug}";
+                $companySlug = Str::slug($company->name);
+                $basePath = storage_path('app/public/companies');
+                $companyPath = "{$basePath}/{$company->id}-{$companySlug}/autoevaluations";
 
                 // Crear carpetas si no existen
                 if (!file_exists($basePath)) {
@@ -305,9 +305,9 @@ class IndicadorAnswerController extends Controller
                 if (!file_exists($companyPath)) {
                     mkdir($companyPath, 0755, true);
                 }
-                
+
                 // Generar nombre de archivo con timestamp
-                $fileName = "autoevaluation_{$user->company_id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
+                $fileName = "autoevaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
                 $fullPath = "{$companyPath}/{$fileName}";
 
                 // Guardar PDF
@@ -429,8 +429,8 @@ class IndicadorAnswerController extends Controller
 
                 // Crear estructura de carpetas para la empresa
                 $companySlug = Str::slug($company->name);
-                $basePath = storage_path('app/public/autoevaluations');
-                $companyPath = "{$basePath}/{$user->company_id}-{$companySlug}";
+                $basePath = storage_path('app/public/companies');
+                $companyPath = "{$basePath}/{$company->id}-{$companySlug}/autoevaluations";
 
                 // Crear carpetas si no existen
                 if (!file_exists($basePath)) {
@@ -441,7 +441,8 @@ class IndicadorAnswerController extends Controller
                 }
 
                 // Generar nombre de archivo con timestamp
-                $fileName = "autoevaluation_{$user->company_id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
+                //$finalEvaluationPath = "companies/{$company->id}-{$companySlug}/evaluations/{$fileName}";
+                $fileName = "autoevaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
                 $fullPath = "{$companyPath}/{$fileName}";
 
                 $evaluationPath = "{$company->id}-{$companySlug}";
@@ -466,7 +467,8 @@ class IndicadorAnswerController extends Controller
                     Log::error('Error al enviar el correo de resultados de evaluación al superadmin: ' . $e->getMessage());
                 }
 
-                $finalAutoEvaluationPath = "{$evaluationPath}/{$fileName}";
+                //$finalAutoEvaluationPath = "{$evaluationPath}/{$fileName}";
+                $finalAutoEvaluationPath = "companies/{$company->id}-{$companySlug}/autoevaluations/{$fileName}";
 
                 // Actualizar la columna autoeval_ended en la tabla companies
                 $company->update([
@@ -682,8 +684,8 @@ class IndicadorAnswerController extends Controller
 
                 // Crear estructura de carpetas para la empresa
                 $companySlug = Str::slug($company->name);
-                $basePath = storage_path('app/public/autoevaluations');
-                $companyPath = "{$basePath}/{$companyId}-{$companySlug}";
+                $basePath = storage_path('app/public/companies');
+                $companyPath = "{$basePath}/{$company->id}-{$companySlug}/autoevaluations";
 
                 // Crear carpetas si no existen
                 if (!file_exists($basePath)) {
@@ -694,7 +696,7 @@ class IndicadorAnswerController extends Controller
                 }
 
                 // Generar nombre de archivo con timestamp
-                $fileName = "autoevaluation_{$companyId}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
+                $fileName = "autoevaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
                 $fullPath = "{$companyPath}/{$fileName}";
 
                 // Guardar PDF
