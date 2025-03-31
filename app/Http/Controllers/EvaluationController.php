@@ -39,7 +39,7 @@ class EvaluationController extends Controller
             })
             ->pluck('indicator_id')
             ->toArray();
-            
+
         // Obtener el total de preguntas de evaluación por subcategoría con filtro de fecha
         $valueData = Value::with(['subcategories' => function ($query) use ($company, $indicatorIds) {
             $query->where('deleted', false)
@@ -171,9 +171,10 @@ class EvaluationController extends Controller
             ->pluck('indicator_id'); // Obtener solo los IDs
 
         // Contar las preguntas asociadas a esos indicadores
-        $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)->count();
+        $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)->where('deleted', false)->count();
 
         $numeroDePreguntasQueVaAResponderLaEmpresaPorValor = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)
+            ->where('deleted', false)
             ->get()
             ->filter(function ($question) use ($value_id) {
                 $indicatorValueId = Indicator::find($question->indicator_id)->value_id;
@@ -201,6 +202,88 @@ class EvaluationController extends Controller
             })
             ->count();
 
+        // NUEVO: Obtener las certificaciones válidas de la empresa
+        $validCertifications = $company->certifications()
+            ->whereRaw('fecha_expiracion > NOW() OR fecha_expiracion IS NULL')
+            ->select('id', 'nombre', 'fecha_obtencion', 'fecha_expiracion', 'homologation_id', 'file_paths')
+            ->get();
+
+        // NUEVO: Obtener los IDs de las certificaciones disponibles asociadas
+        $homologationIds = $validCertifications->pluck('homologation_id')->filter();
+
+        // NUEVO: Obtener los indicadores homologados y sus certificaciones
+        $homologatedIndicators = [];
+        if ($homologationIds->count() > 0) {
+            $homologatedIndicators = \App\Models\IndicatorHomologation::whereIn('homologation_id', $homologationIds)
+                ->with(['indicator', 'availableCertification'])
+                ->whereHas('indicator', function ($query) use ($company) {
+                    $query->where(function ($q) use ($company) {
+                        $q->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    });
+                })
+                ->get()
+                ->groupBy('homologation_id')
+                ->map(function ($group) {
+                    $certificationName = $group->first()->availableCertification ?
+                        $group->first()->availableCertification->nombre : 'Certificación no disponible';
+
+                    return [
+                        'certification_name' => $certificationName,
+                        'indicators' => $group->map(function ($homologation) {
+                            if (!$homologation->indicator) {
+                                return null;
+                            }
+                            return [
+                                'id' => $homologation->indicator->id,
+                                'name' => $homologation->indicator->name,
+                            ];
+                        })->filter()
+                    ];
+                })
+                ->toArray();
+        }
+
+        // Obtener todos los IDs de indicadores homologados
+        $homologatedIndicatorIds = collect($homologatedIndicators)->flatMap(function ($certification) {
+            return collect($certification['indicators'])->pluck('id');
+        })->unique()->toArray();
+
+        // Marcar los indicadores homologados en valueData y añadir la información de la certificación
+        $valueData->subcategories->each(function ($subcategory) use ($validCertifications, $homologatedIndicators) {
+            $subcategory->indicators->each(function ($indicator) use ($validCertifications, $homologatedIndicators) {
+                // Buscar la certificación que homologa este indicador
+                foreach ($homologatedIndicators as $certification) {
+                    foreach ($certification['indicators'] as $homologatedIndicator) {
+                        if ($homologatedIndicator['id'] === $indicator->id) {
+                            $indicator->isHomologated = true;
+                            $indicator->homologation_name = $certification['certification_name'];
+
+                            // Buscar la certificación válida correspondiente
+                            $matchingCertification = $validCertifications->first(function ($cert) use ($certification) {
+                                return $cert->nombre === $certification['certification_name'];
+                            });
+
+                            if ($matchingCertification) {
+                                $indicator->certification = [
+                                    'id' => $matchingCertification->id,
+                                    'nombre' => $matchingCertification->nombre,
+                                    'fecha_obtencion' => $matchingCertification->fecha_obtencion,
+                                    'fecha_expiracion' => $matchingCertification->fecha_expiracion,
+                                    'file_paths' => $matchingCertification->file_paths
+                                ];
+                            }
+                            return;
+                        }
+                    }
+                }
+                $indicator->isHomologated = false;
+                $indicator->certification = null;
+            });
+        });
+
+        //dd($validCertifications);
+
         return Inertia::render('Dashboard/Evaluacion/Evaluacion', [
             'valueData' => $valueData,
             'userName' => $user->name,
@@ -211,6 +294,7 @@ class EvaluationController extends Controller
             'totalSteps' => $valueData->subcategories->count(),
             'value_id' => $value_id,
             'company' => $company,
+            'validCertifications' => $validCertifications,
             'numeroDePreguntasQueVaAResponderLaEmpresa' => $numeroDePreguntasQueVaAResponderLaEmpresa,
             'numeroDePreguntasQueRespondioLaEmpresa' => $numeroDePreguntasQueRespondioLaEmpresa,
             'numeroDePreguntasQueRespondioLaEmpresaPorValor' => $numeroDePreguntasQueRespondioLaEmpresaPorValor,

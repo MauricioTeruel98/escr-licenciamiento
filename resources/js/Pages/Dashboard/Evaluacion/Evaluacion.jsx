@@ -7,7 +7,7 @@ import axios from 'axios';
 import { router, usePage } from '@inertiajs/react';
 import EvaluacionProcessing from '@/Components/Modals/EvaluacionProcessing';
 
-export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, isSuperAdmin = false, progress, totalSteps, value_id, company, numeroDePreguntasQueVaAResponderLaEmpresa, numeroDePreguntasQueRespondioLaEmpresa, numeroDePreguntasQueClificoElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor, numeroDePreguntasQueVaAResponderLaEmpresaPorValor, numeroDePreguntasQueRespondioLaEmpresaPorValor }) {
+export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, isSuperAdmin = false, progress, totalSteps, value_id, company, numeroDePreguntasQueVaAResponderLaEmpresa, numeroDePreguntasQueRespondioLaEmpresa, numeroDePreguntasQueClificoElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor, numeroDePreguntasQueVaAResponderLaEmpresaPorValor, numeroDePreguntasQueRespondioLaEmpresaPorValor, validCertifications }) {
     const { auth } = usePage().props;
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [approvals, setApprovals] = useState(() => {
@@ -101,6 +101,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
         // Verificar las preguntas de la subcategoría actual
         subcategories[currentSubcategoryIndex].indicators.forEach(indicator => {
+            // Si el indicador está homologado, omitir validación
+            if (indicator.isHomologated) {
+                return;
+            }
+
             indicator.evaluation_questions.forEach(question => {
                 // No validar descripción para preguntas no binarias
                 if (question.is_binary === false || question.is_binary === 0) {
@@ -204,17 +209,22 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                 indicator.evaluation_questions.forEach(question => {
                     totalQuestions++;
 
-                    // Verificar que la descripción no esté vacía después de quitar espacios
-                    const hasDescription = answers[question.id]?.description?.trim() !== '' &&
-                        answers[question.id]?.description !== undefined;
-
-                    // Verificar que haya al menos un archivo
-                    const hasFiles = answers[question.id]?.files?.length > 0;
-
-                    // Una pregunta se considera respondida solo si tiene descripción y archivos,
-                    // independientemente de si es binaria o no, o si tiene valor asignado automáticamente
-                    if (hasDescription && hasFiles) {
+                    // Si el indicador está homologado, contar la pregunta como respondida automáticamente
+                    if (indicator.isHomologated) {
                         answeredQuestions++;
+                    } else {
+                        // Verificar que la descripción no esté vacía después de quitar espacios
+                        const hasDescription = answers[question.id]?.description?.trim() !== '' &&
+                            answers[question.id]?.description !== undefined;
+
+                        // Verificar que haya al menos un archivo
+                        const hasFiles = answers[question.id]?.files?.length > 0;
+
+                        // Una pregunta se considera respondida solo si tiene descripción y archivos,
+                        // independientemente de si es binaria o no, o si tiene valor asignado automáticamente
+                        if (hasDescription && hasFiles) {
+                            answeredQuestions++;
+                        }
                     }
                 });
             });
@@ -265,7 +275,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     const checkBindingAnswers = useCallback((questionId, value) => {
         if (!isEvaluador) {
             const newFailedIndicators = [...failedBindingIndicators];
-            
+
             // Encontrar el indicador al que pertenece la pregunta
             let foundIndicator = null;
             subcategories.forEach(subcategory => {
@@ -301,6 +311,24 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
     // Modificar la función handleAnswer para incluir la verificación de indicadores descalificatorios
     const handleAnswer = (questionId, value, description = '', files = [], evaluator_comment = '') => {
+        // Encontrar el indicador correspondiente
+        let isHomologated = false;
+        subcategories.forEach(subcategory => {
+            subcategory.indicators.forEach(indicator => {
+                indicator.evaluation_questions.forEach(question => {
+                    if (question.id === questionId && indicator.isHomologated) {
+                        isHomologated = true;
+                    }
+                });
+            });
+        });
+
+        // Si está homologado, no permitir cambios
+        if (isHomologated) {
+            return;
+        }
+
+        // Continuar con la lógica existente si no está homologado
         const newAnswers = { ...answers };
         newAnswers[questionId] = {
             value,
@@ -387,7 +415,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
     const areAllQuestionsAnswered = () => {
         if (isEvaluador) {
-            // Para evaluadores, usar la misma lógica que calculateEvaluatorProgress
+            // Lógica para evaluadores, considerando indicadores homologados
             let totalQuestions = 0;
             let answeredQuestions = 0;
 
@@ -396,7 +424,12 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     indicator.evaluation_questions.forEach(question => {
                         totalQuestions++;
 
-                        // Para evaluadores, verificar si se ha tomado una decisión (aprobado o no)
+                        // Si el indicador está homologado, contar como respondido automáticamente
+                        if (indicator.isHomologated) {
+                            answeredQuestions++;
+                            return;
+                        }
+
                         if (approvals[question.id] !== undefined) {
                             answeredQuestions++;
                         }
@@ -406,7 +439,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
             return totalQuestions === answeredQuestions;
         } else {
-            // Para usuarios normales, usar la misma lógica que calculateProgress
+            // Para usuarios normales, considerar indicadores homologados
             let totalQuestions = 0;
             let answeredQuestions = 0;
 
@@ -415,14 +448,17 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     indicator.evaluation_questions.forEach(question => {
                         totalQuestions++;
 
-                        // Verificar que la descripción no esté vacía después de quitar espacios
+                        // Si el indicador está homologado, contar como respondido automáticamente
+                        if (indicator.isHomologated) {
+                            answeredQuestions++;
+                            return;
+                        }
+
+                        // Para indicadores no homologados, verificar descripción y archivos
                         const hasDescription = answers[question.id]?.description?.trim() !== '' &&
                             answers[question.id]?.description !== undefined;
-
-                        // Verificar que haya al menos un archivo subido
                         const hasFiles = answers[question.id]?.files && answers[question.id]?.files.length > 0;
 
-                        // Una pregunta se considera respondida solo si tiene descripción y archivos
                         if (hasDescription && hasFiles) {
                             answeredQuestions++;
                         }
@@ -438,21 +474,27 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         const currentSubcategory = subcategories[currentSubcategoryIndex];
 
         if (isEvaluador) {
-            // Para evaluadores, verificar si todas las preguntas de la subcategoría actual tienen una decisión
-            return currentSubcategory.indicators.every(indicator =>
-                indicator.evaluation_questions.every(question =>
-                    approvals[question.id] !== undefined
-                )
-            );
-        } else {
-            // Para empresas
+            // Lógica para evaluadores, considerando indicadores homologados
             return currentSubcategory.indicators.every(indicator =>
                 indicator.evaluation_questions.every(question => {
-                    // Verificar que la descripción no esté vacía después de quitar espacios
+                    // Considerar como respondido si está homologado
+                    if (indicator.isHomologated) {
+                        return true;
+                    }
+
+                    return approvals[question.id] !== undefined;
+                })
+            );
+        } else {
+            // Para empresas, considerar los indicadores homologados como ya respondidos
+            return currentSubcategory.indicators.every(indicator =>
+                indicator.evaluation_questions.every(question => {
+                    if (indicator.isHomologated) {
+                        return true; // Considerar como respondido si está homologado
+                    }
+
                     const hasDescription = answers[question.id]?.description?.trim() !== '' &&
                         answers[question.id]?.description !== undefined;
-
-                    // Verificar que haya al menos un archivo subido
                     const hasFiles = answers[question.id]?.files && answers[question.id]?.files.length > 0;
 
                     return hasDescription && hasFiles;
@@ -462,7 +504,6 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     };
 
     const handleFinish = () => {
-        // Si la empresa no es exportadora y no es evaluador, no permitir finalizar
         if (!isExporter && !isEvaluador && !isAuthorizedByAdmin) {
             setNotification({
                 type: 'error',
@@ -477,6 +518,11 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
         valueData.subcategories.forEach(subcategory => {
             subcategory.indicators.forEach(indicator => {
+                // Saltar la validación para indicadores homologados
+                if (indicator.isHomologated) {
+                    return;
+                }
+
                 indicator.evaluation_questions.forEach(question => {
                     // Si la pregunta no es binaria, omitirla
                     if (question.is_binary === false || question.is_binary === 0) {
@@ -498,7 +544,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             setValidationErrors(errors);
             setNotification({
                 type: 'error',
-                message: 'Debe subir al menos un archivo como evidencia para cada pregunta'
+                message: 'Debe subir al menos un archivo como evidencia para cada pregunta no homologada'
             });
             return;
         }
@@ -656,7 +702,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
         }
     };
 
-    // Efecto para establecer automáticamente el valor "1" (Sí) para preguntas con is_binary = false
+    // Modificar el useEffect inicial
     useEffect(() => {
         if (!isEvaluador) {
             const newAnswers = { ...answers };
@@ -665,11 +711,26 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
             valueData.subcategories.forEach(subcategory => {
                 subcategory.indicators.forEach(indicator => {
                     indicator.evaluation_questions.forEach(question => {
-                        if (question.is_binary === false || question.is_binary === 0) {
-                            // Si la pregunta no es binaria, establecer automáticamente "Sí" y una descripción predeterminada
+                        // Si el indicador está homologado, establecer respuesta automática
+                        if (indicator.isHomologated && indicator.certification) {
+                            newAnswers[question.id] = {
+                                value: "1", // Siempre "Sí" para homologados
+                                description: `Homologado por ${indicator.homologation_name}`,
+                                files: indicator.certification.file_paths ? 
+                                    JSON.parse(indicator.certification.file_paths).map(path => ({
+                                        path: path,
+                                        name: path.split('/').pop(),
+                                        type: 'application/octet-stream'
+                                    })) : [],
+                                evaluator_comment: ''
+                            };
+                            hasChanges = true;
+                        }
+                        // Mantener la lógica existente para preguntas no binarias
+                        else if (question.is_binary === false || question.is_binary === 0) {
                             if (!newAnswers[question.id] || !newAnswers[question.id]?.description) {
                                 newAnswers[question.id] = {
-                                    value: "1", // Establecer "Sí" como valor predeterminado
+                                    value: "1",
                                     description: newAnswers[question.id]?.description || '',
                                     files: newAnswers[question.id]?.files || []
                                 };
@@ -682,6 +743,51 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
 
             if (hasChanges) {
                 setAnswers(newAnswers);
+            }
+        } else {
+            // Lógica para evaluadores
+            const newApprovals = { ...approvals };
+            const newAnswers = { ...answers };
+            let hasChanges = false;
+
+            valueData.subcategories.forEach(subcategory => {
+                subcategory.indicators.forEach(indicator => {
+                    indicator.evaluation_questions.forEach(question => {
+                        // Si el indicador está homologado, establecer aprobación y comentario automáticos
+                        if (indicator.isHomologated) {
+                            if (newApprovals[question.id] === undefined) {
+                                newApprovals[question.id] = true; // Aprobar automáticamente
+                                hasChanges = true;
+                            }
+
+                            // Establecer o actualizar el comentario del evaluador
+                            if (!newAnswers[question.id]?.evaluator_comment) {
+                                newAnswers[question.id] = {
+                                    ...newAnswers[question.id],
+                                    evaluator_comment: `Homologado por ${indicator.homologation_name}`
+                                };
+                                hasChanges = true;
+                            }
+                        }
+                    });
+                });
+            });
+
+            if (hasChanges) {
+                setApprovals(newApprovals);
+                setAnswers(newAnswers);
+                // Actualizar los contadores de evaluación
+                valueData.subcategories.forEach(subcategory => {
+                    subcategory.indicators.forEach(indicator => {
+                        indicator.evaluation_questions.forEach(question => {
+                            if (indicator.isHomologated) {
+                                setTotalEvaluatedQuestions(prev => prev + 1);
+                                setTotalApprovedQuestions(prev => prev + 1);
+                                setTotalApprovedQuestionsForValue(prev => prev + 1);
+                            }
+                        });
+                    });
+                });
             }
         }
     }, [valueData, isEvaluador]);
@@ -703,7 +809,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
     useEffect(() => {
         if (!isEvaluador && savedAnswers) {
             const newFailedIndicators = [];
-            
+
             // Revisar todas las respuestas guardadas
             subcategories.forEach(subcategory => {
                 subcategory.indicators.forEach(indicator => {
@@ -876,7 +982,13 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             {subcategories[currentSubcategoryIndex].indicators.map(indicator => (
                                 <div key={indicator.id} className="space-y-8">
                                     {/* Cabecera del Indicador */}
-                                    <div className={`p-6 rounded-xl border space-y-8 ${indicator.binding ? 'bg-amber-50/50 ring-1 ring-amber-100' : 'bg-gray-50 border-gray-200'}`}>
+                                    <div className={`p-6 rounded-xl border space-y-8 ${
+                                        indicator.isHomologated 
+                                            ? 'bg-blue-50/50 ring-1 ring-blue-300' 
+                                            : indicator.binding 
+                                                ? 'bg-amber-50/50 ring-1 ring-amber-100' 
+                                                : 'bg-gray-50 border-gray-200'
+                                    }`}>
                                         <div className="space-y-2">
                                             <div className="inline-block">
                                                 <span className="bg-green-50 text-green-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-green-600/20">
@@ -888,6 +1000,21 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                             <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                                         </svg>
                                                         Indicador descalificatório
+                                                    </span>
+                                                )}
+                                                {indicator.isHomologated && (
+                                                    <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/10 ml-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            className="h-4 w-4 mr-1"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="2"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round">
+                                                            <path d="M13.5 3H12H8C6.34315 3 5 4.34315 5 6V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8.625M13.5 3L19 8.625M13.5 3V7.625C13.5 8.17728 13.9477 8.625 14.5 8.625H19" />
+                                                        </svg>
+                                                        Homologado por {indicator.homologation_name}
                                                     </span>
                                                 )}
                                             </div>
@@ -908,14 +1035,14 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 type="radio"
                                                                 name={`question-${question.id}`}
                                                                 value="1"
-                                                                checked={answers[question.id]?.value === "1"}
+                                                                checked={answers[question.id]?.value === "1" || indicator.isHomologated}
                                                                 onChange={(e) => handleAnswer(
                                                                     question.id,
                                                                     e.target.value,
                                                                     answers[question.id]?.description || '',
                                                                     answers[question.id]?.files || []
                                                                 )}
-                                                                disabled={isEvaluador ? (company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada') : (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada')}
+                                                                disabled={isEvaluador ? (company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada' || indicator.isHomologated) : (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada' || indicator.isHomologated)}
                                                                 className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                             />
                                                             <span className="text-gray-900">Sí</span>
@@ -933,7 +1060,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     answers[question.id]?.description || '',
                                                                     answers[question.id]?.files || []
                                                                 )}
-                                                                disabled={isEvaluador ? (company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada') : (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada')}
+                                                                disabled={isEvaluador ? (company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada' || indicator.isHomologated) : (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada' || indicator.isHomologated)}
                                                                 className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                             />
                                                             <span className="text-gray-900">No</span>
@@ -949,7 +1076,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                         </label>
                                                         <textarea
                                                             rows={4}
-                                                            value={answers[question.id]?.description || ''}
+                                                            value={indicator.isHomologated ? `${answers[question.id]?.description || ''}` : answers[question.id]?.description || ''}
                                                             onChange={(e) => {
                                                                 handleAnswer(
                                                                     question.id,
@@ -967,7 +1094,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     });
                                                                 }
                                                             }}
-                                                            disabled={isEvaluador ? (company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada') : (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada')}
+                                                            disabled={isEvaluador ? (company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada' || indicator.isHomologated) : (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada' || indicator.isHomologated)}
                                                             maxLength={240}
                                                             className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none disabled:bg-gray-100 disabled:text-gray-500 ${validationErrors[`description-${question.id}`] ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
                                                                 }`}
@@ -1022,7 +1149,8 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     );
                                                                 }
                                                             }}
-                                                            readOnly={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada'}
+                                                            certificationPaths={indicator.certification && JSON.parse(indicator.certification?.file_paths)}
+                                                            readOnly={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada' || indicator.isHomologated}
                                                         />
                                                         {validationErrors[`files-${question.id}`] && (
                                                             <p className="mt-1 text-sm text-red-600">
@@ -1050,7 +1178,8 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 <input
                                                                     type="radio"
                                                                     name={`approval-${question.id}`}
-                                                                    checked={approvals[question.id] === true}
+                                                                    checked={approvals[question.id] === true || indicator.isHomologated}
+                                                                    disabled={indicator.isHomologated}
                                                                     onChange={() => handleApproval(question.id, true)}
                                                                     className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                                 />
@@ -1061,6 +1190,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     type="radio"
                                                                     name={`approval-${question.id}`}
                                                                     checked={approvals[question.id] === false}
+                                                                    disabled={indicator.isHomologated}
                                                                     onChange={() => handleApproval(question.id, false)}
                                                                     className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
                                                                 />
@@ -1088,7 +1218,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                             </label>
                                                             <textarea
                                                                 rows={6}
-                                                                value={answers[question.id]?.evaluator_comment || ''}
+                                                                value={indicator.isHomologated ? `${answers[question.id]?.description || ''}` : answers[question.id]?.evaluator_comment || ''}
                                                                 onChange={(e) => handleAnswer(
                                                                     question.id,
                                                                     answers[question.id]?.value,
@@ -1096,7 +1226,8 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                     answers[question.id]?.files,
                                                                     e.target.value
                                                                 )}
-                                                                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none"
+                                                                disabled={indicator.isHomologated}
+                                                                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none disabled:bg-gray-100 disabled:text-gray-500"
                                                                 placeholder="Agregue un comentario sobre su evaluación..."
                                                                 maxLength={240}
                                                             />

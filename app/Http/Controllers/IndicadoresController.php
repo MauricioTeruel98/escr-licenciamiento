@@ -145,6 +145,7 @@ class IndicadoresController extends Controller
             })
             ->get();
 
+        $savedAnswersCount = IndicatorAnswer::where('company_id', $user->company_id)->count();
         // Formatear las respuestas para el componente React
         $formattedAnswers = [];
         $formattedJustifications = [];
@@ -212,6 +213,7 @@ class IndicadoresController extends Controller
             'previouslyHomologatedIndicators' => $previouslyHomologatedIndicators,
             'company' => $company,
             'availableToModifyAutoeval' => $availableToModifyAutoeval,
+            'savedAnswersCount' => $savedAnswersCount
         ]);
     }
 }

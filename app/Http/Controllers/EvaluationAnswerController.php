@@ -968,7 +968,9 @@ class EvaluationAnswerController extends Controller
         // Agrupar indicadores por valor (solo los que la empresa respondió "sí")
         $indicatorsByValue = Indicator::where('is_active', true)
             ->whereIn('id', $indicatorIds)
-            ->with(['subcategory.value', 'evaluationQuestions' => function ($query) use ($company) {
+            ->with(['subcategory' => function($query) {
+                $query->orderBy('order', 'desc');
+            }, 'subcategory.value', 'evaluationQuestions' => function ($query) use ($company) {
                 $query->where(function ($q) use ($company) {
                     $q->whereNull('created_at')
                         ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);

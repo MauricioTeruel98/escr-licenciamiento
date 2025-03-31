@@ -118,17 +118,12 @@ const FileUploadInput = ({ onFileChange, selectedFiles, onRemoveFile }) => {
                     accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"
                     className="hidden"
                 />
-                <div className="text-center">
-                    <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                        <path
-                            d="M28 8H12a4 4 0 00-4 4v20m0 0v4a4 4 0 004 4h20a4 4 0 004-4V28m-4-4h4M8 32h4m30-16v-4a4 4 0 00-4-4h-4m-4-4V8m0 0h4"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
+                <div className="flex flex-col items-center text-center">
+                    <div className="flex justify-center items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-upload text-gray-400"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>
+                    </div>
                     <div className="mt-4 flex text-sm leading-6 text-gray-600">
-                        <label className="relative cursor-pointer rounded-md bg-white font-semibold text-green-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-green-600 focus-within:ring-offset-2 hover:text-green-500">
+                        <label className="relative cursor-pointer rounded-md font-semibold text-green-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-green-600 focus-within:ring-offset-2 hover:text-green-500">
                             <span>Cargar archivos</span>
                         </label>
                         <p className="pl-1">o arrastrar y soltar</p>
@@ -465,10 +460,22 @@ export default function Certifications({ certifications: initialCertifications, 
         if (!validarFechaExpiracion(cert.fecha_expiracion, id)) return;
 
         try {
-            const response = await axios.put(`/certifications/${id}`, {
-                fecha_obtencion: cert.fecha_obtencion.toISOString().split('T')[0],
-                fecha_expiracion: cert.fecha_expiracion.toISOString().split('T')[0],
-                organismo_certificador: cert.organismo_certificador || ''
+            const formData = new FormData();
+            formData.append('fecha_obtencion', cert.fecha_obtencion.toISOString().split('T')[0]);
+            formData.append('fecha_expiracion', cert.fecha_expiracion.toISOString().split('T')[0]);
+            formData.append('organismo_certificador', cert.organismo_certificador || '');
+
+            // Agregar nuevos archivos si existen
+            if (cert.newFiles) {
+                cert.newFiles.forEach(file => {
+                    formData.append('files[]', file);
+                });
+            }
+
+            const response = await axios.post(`/certifications/${id}?_method=PUT`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
             });
 
             setCertificaciones(certificaciones.map(cert =>
@@ -481,9 +488,20 @@ export default function Certifications({ certifications: initialCertifications, 
             }));
 
             showNotification('success', response.data.message);
+            window.location.reload();
         } catch (error) {
             showNotification('error', error.response?.data?.error || 'Error al actualizar la certificación');
         }
+    };
+
+    // Agregar esta función para manejar la carga de nuevos archivos en modo edición
+    const handleEditFileChange = (id, files) => {
+        setCertificaciones(certificaciones.map(cert =>
+            cert.id === id ? {
+                ...cert,
+                newFiles: [...(cert.newFiles || []), ...Array.from(files)]
+            } : cert
+        ));
     };
 
     const handleChange = (id, field, value) => {
@@ -793,15 +811,23 @@ export default function Certifications({ certifications: initialCertifications, 
                                         ...nuevaCertificacion,
                                         organismoCertificador: validarInput(e.target.value, 'organismo')
                                     })}
-                                    className="w-full px-3 py-2 border rounded-md border-gray-300"
+                                    className={`w-full px-3 py-2 border rounded-md ${!nuevaCertificacion.organismoCertificador
+                                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                                            : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                        }`}
                                     required
                                 />
+                                {!nuevaCertificacion.organismoCertificador && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        El organismo certificador es obligatorio
+                                    </p>
+                                )}
                             </div>
 
-                            {/* <div className="form-control">
+                            <div className="form-control">
                                 <label className="label">
                                     <span className="label-text text-sm font-medium">
-                                        Archivos de evidencia (máximo 3)
+                                        Archivos de evidencia<span className="text-red-500">*</span>
                                     </span>
                                 </label>
                                 <FileUploadInput
@@ -818,12 +844,23 @@ export default function Certifications({ certifications: initialCertifications, 
                                         ))}
                                     </div>
                                 )}
-                            </div> */}
+                                {selectedFiles.length === 0 && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        Debe cargar al menos un archivo de evidencia
+                                    </p>
+                                )}
+                            </div>
 
                             <button
                                 type="submit"
                                 className="rounded-md bg-green-700 px-4 py-2 text-white hover:bg-green-800 disabled:opacity-50 flex items-center justify-center"
-                                disabled={!nombreCertificacion || !nuevaCertificacion.fechaObtencion || !nuevaCertificacion.fechaExpiracion || fechaError || loading}
+                                disabled={!nombreCertificacion ||
+                                    !nuevaCertificacion.fechaObtencion ||
+                                    !nuevaCertificacion.fechaExpiracion ||
+                                    !nuevaCertificacion.organismoCertificador ||
+                                    fechaError ||
+                                    loading ||
+                                    selectedFiles.length === 0}
                             >
                                 {loading ? (
                                     <>
@@ -834,7 +871,15 @@ export default function Certifications({ certifications: initialCertifications, 
                                         Procesando...
                                     </>
                                 ) : (
-                                    'Agregar'
+                                    <>
+                                        {!nuevaCertificacion.organismoCertificador ? (
+                                            <span className="text-sm">Debe ingresar el organismo certificador</span>
+                                        ) : selectedFiles.length === 0 ? (
+                                            <span className="text-sm">Debe cargar al menos un archivo de evidencia</span>
+                                        ) : (
+                                            'Agregar'
+                                        )}
+                                    </>
                                 )}
                             </button>
                         </form>
@@ -1019,77 +1064,116 @@ export default function Certifications({ certifications: initialCertifications, 
                                                         </div>
                                                     </div>
                                                 </div>
-                                                {/* Agregar esta nueva sección para mostrar los archivos */}
-                                                {/* <div className="mt-4">
+                                                {/* Sección de archivos */}
+                                                <div className="mt-4">
                                                     <h4 className="text-md font-semibold mb-2">Archivos evidencia:</h4>
-                                                    {files.length > 0 ? (
-                                                        <div className="space-y-2">
-                                                            <div className="flex items-center justify-start gap-2">
-                                                                {files.map((filePath, index) => {
-                                                                    const fileName = filePath.split('/').pop();
-                                                                    const fileExtension = fileName.split('.').pop().toLowerCase();
+                                                    <div className="space-y-4">
+                                                        {/* Mostrar archivos existentes */}
+                                                        {files.length > 0 && (
+                                                            <div className="space-y-2">
+                                                                <div className="flex items-center justify-start gap-2 flex-wrap">
+                                                                    {files.map((filePath, index) => {
+                                                                        const fileName = filePath.split('/').pop();
+                                                                        const fileExtension = fileName.split('.').pop().toLowerCase();
 
-                                                                    // Determinar el icono basado en la extensión
-                                                                    let icon;
-                                                                    if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
-                                                                        icon = (
-                                                                            <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                                            </svg>
-                                                                        );
-                                                                    } else if (fileExtension === 'pdf') {
-                                                                        icon = (
-                                                                            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                                                            </svg>
-                                                                        );
-                                                                    } else {
-                                                                        icon = (
-                                                                            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                                            </svg>
-                                                                        );
-                                                                    }
+                                                                        // Determinar el icono basado en la extensión
+                                                                        let icon;
+                                                                        if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+                                                                            icon = (
+                                                                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                                </svg>
+                                                                            );
+                                                                        } else if (fileExtension === 'pdf') {
+                                                                            icon = (
+                                                                                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                                                </svg>
+                                                                            );
+                                                                        } else {
+                                                                            icon = (
+                                                                                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                                </svg>
+                                                                            );
+                                                                        }
 
-                                                                    return (
-                                                                        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                                                            <div className="flex items-center space-x-2">
-                                                                                {icon}
-                                                                                <span className="text-sm text-gray-600">
-                                                                                    {fileName.length > 20 ? fileName.substring(0, 25) + '...' : fileName}
-                                                                                </span>
-                                                                            </div>
-                                                                            <div className="flex space-x-2">
-                                                                                <button
-                                                                                    onClick={() => handleDownload(filePath, fileName)}
-                                                                                    className="p-1 text-blue-600 hover:text-blue-800"
-                                                                                    title="Descargar archivo"
-                                                                                >
-                                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                                                    </svg>
-                                                                                </button>
-                                                                                {cert.editando && (
+                                                                        return (
+                                                                            <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                                                                                <div className="flex items-center space-x-2">
+                                                                                    {icon}
+                                                                                    <span className="text-sm text-gray-600">
+                                                                                        {fileName.length > 20 ? fileName.substring(0, 25) + '...' : fileName}
+                                                                                    </span>
+                                                                                </div>
+                                                                                <div className="flex space-x-2">
                                                                                     <button
-                                                                                        onClick={() => handleDeleteFile(cert.id, filePath)}
-                                                                                        className="p-1 text-red-600 hover:text-red-800"
-                                                                                        title="Eliminar archivo"
+                                                                                        onClick={() => handleDownload(filePath, fileName)}
+                                                                                        className="p-1 text-blue-600 hover:text-blue-800"
+                                                                                        title="Descargar archivo"
                                                                                     >
-                                                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                                        </svg>
+                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-download"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 11l5 5l5 -5" /><path d="M12 4l0 12" /></svg>
                                                                                     </button>
-                                                                                )}
+                                                                                    {cert.editando && (
+                                                                                        <button
+                                                                                            onClick={() => handleDeleteFile(cert.id, filePath)}
+                                                                                            className="p-1 text-red-600 hover:text-red-800"
+                                                                                            title="Eliminar archivo"
+                                                                                        >
+                                                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                                            </svg>
+                                                                                        </button>
+                                                                                    )}
+                                                                                </div>
                                                                             </div>
-                                                                        </div>
-                                                                    );
-                                                                })}
+                                                                        );
+                                                                    })}
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    ) : (
-                                                        <p className="text-sm text-gray-500">No hay archivos adjuntos</p>
-                                                    )}
-                                                </div> */}
+                                                        )}
+
+                                                        {/* Input para nuevos archivos - Solo mostrar en modo edición */}
+                                                        {cert.editando && (
+                                                            <div className="mt-2 border rounded-lg p-3 bg-gray-50">
+                                                                <p className="text-sm font-medium text-gray-700 mb-2">Agregar nuevos archivos:</p>
+                                                                <div className="flex items-center gap-2">
+                                                                    <input
+                                                                        type="file"
+                                                                        onChange={(e) => handleEditFileChange(cert.id, e.target.files)}
+                                                                        multiple
+                                                                        accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"
+                                                                        className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                                                    />
+                                                                </div>
+                                                                {/* Mostrar nuevos archivos seleccionados */}
+                                                                {cert.newFiles && cert.newFiles.length > 0 && (
+                                                                    <div className="mt-2 space-y-1">
+                                                                        {cert.newFiles.map((file, index) => (
+                                                                            <div key={index} className="flex items-center justify-between py-1">
+                                                                                <span className="text-sm text-gray-600">{file.name}</span>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        setCertificaciones(certificaciones.map(c =>
+                                                                                            c.id === cert.id ? {
+                                                                                                ...c,
+                                                                                                newFiles: (c.newFiles || []).filter((_, i) => i !== index)
+                                                                                            } : c
+                                                                                        ));
+                                                                                    }}
+                                                                                    className="text-red-500 hover:text-red-700"
+                                                                                >
+                                                                                    <X className="h-4 w-4" />
+                                                                                </button>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
                                             {
                                                 certificadoExpirado && (

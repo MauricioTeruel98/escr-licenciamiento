@@ -139,9 +139,27 @@ class CertificationController extends Controller
             'fecha_obtencion' => 'required|date_format:Y-m-d',
             'fecha_expiracion' => 'required|date_format:Y-m-d|after:fecha_obtencion',
             'organismo_certificador' => 'string',
+            'files.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:5120', // 5MB max
         ]);
 
         try {
+            // Procesar nuevos archivos si existen
+            if ($request->hasFile('files')) {
+                $filePaths = json_decode($certification->file_paths, true) ?? [];
+                
+                foreach ($request->file('files') as $file) {
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs(
+                        'certifications/company_' . $certification->company_id,
+                        $fileName,
+                        'public'
+                    );
+                    $filePaths[] = $path;
+                }
+                
+                $certification->file_paths = json_encode($filePaths);
+            }
+
             $certification->update($validated);
 
             return response()->json([
