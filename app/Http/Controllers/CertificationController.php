@@ -148,6 +148,14 @@ class CertificationController extends Controller
             // Procesar nuevos archivos si existen
             if ($request->hasFile('files')) {
                 $filePaths = json_decode($certification->file_paths, true) ?? [];
+                
+                // Verificar el límite de archivos
+                if (count($filePaths) + count($request->file('files')) > 3) {
+                    return response()->json([
+                        'error' => 'Solo se permiten hasta 3 archivos por certificación'
+                    ], 422);
+                }
+
                 $companySlug = Str::slug($certification->company->name);
                 foreach ($request->file('files') as $file) {
                     $fileName = time() . '_' . $file->getClientOriginalName();

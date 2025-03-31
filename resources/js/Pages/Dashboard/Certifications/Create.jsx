@@ -494,12 +494,43 @@ export default function Certifications({ certifications: initialCertifications, 
         }
     };
 
-    // Agregar esta función para manejar la carga de nuevos archivos en modo edición
+    // Modificar la función handleEditFileChange
     const handleEditFileChange = (id, files) => {
+        const cert = certificaciones.find(c => c.id === id);
+        const currentFiles = JSON.parse(cert.file_paths || '[]');
+        const newFiles = Array.from(files);
+
+        // Verificar el límite de archivos
+        if (currentFiles.length + newFiles.length > 3) {
+            showNotification('error', 'Solo se permiten hasta 3 archivos por certificación');
+            return;
+        }
+
+        // Validar tipos y tamaños de archivo
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf',
+            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+
+        const invalidFiles = newFiles.filter(file => {
+            if (!validTypes.includes(file.type)) {
+                showNotification('error', `Tipo de archivo no válido: ${file.name}`);
+                return true;
+            }
+            if (file.size > 5 * 1024 * 1024) { // 5MB
+                showNotification('error', `Archivo demasiado grande: ${file.name}`);
+                return true;
+            }
+            return false;
+        });
+
+        if (invalidFiles.length > 0) {
+            return;
+        }
+
         setCertificaciones(certificaciones.map(cert =>
             cert.id === id ? {
                 ...cert,
-                newFiles: [...(cert.newFiles || []), ...Array.from(files)]
+                newFiles: [...(cert.newFiles || []), ...newFiles]
             } : cert
         ));
     };
