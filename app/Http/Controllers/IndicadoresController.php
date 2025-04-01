@@ -31,7 +31,15 @@ class IndicadoresController extends Controller
                 ->where(function ($q) use ($company) {
                     $q->whereNull('created_at')
                         ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
-                })->with(['indicators' => function ($query) use ($company) {
+                })
+                ->whereHas('indicators', function($query) use ($company) {
+                    $query->where('deleted', false)
+                        ->where(function ($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        });
+                })
+                ->with(['indicators' => function ($query) use ($company) {
                     $query->where('deleted', false)
                         ->where(function ($q) use ($company) {
                             $q->whereNull('created_at')

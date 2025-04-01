@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Value;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\Auth;
 class ValueController extends Controller
 {
     public function index(Request $request)
@@ -135,7 +135,7 @@ class ValueController extends Controller
     public function getActiveValuesSidebar()
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             $company = $user->company;
             
             $values = Value::where('is_active', true)
