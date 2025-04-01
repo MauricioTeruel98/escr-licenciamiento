@@ -7,7 +7,7 @@ import axios from 'axios';
 import { router, usePage } from '@inertiajs/react';
 import EvaluacionProcessing from '@/Components/Modals/EvaluacionProcessing';
 
-export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, isSuperAdmin = false, progress, totalSteps, value_id, company, numeroDePreguntasQueVaAResponderLaEmpresa, numeroDePreguntasQueRespondioLaEmpresa, numeroDePreguntasQueClificoElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor, numeroDePreguntasQueVaAResponderLaEmpresaPorValor, numeroDePreguntasQueRespondioLaEmpresaPorValor, validCertifications }) {
+export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, isSuperAdmin = false, progress, totalSteps, value_id, company, numeroDePreguntasQueVaAResponderLaEmpresa, numeroDePreguntasQueRespondioLaEmpresa, numeroDePreguntasQueClificoElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor, numeroDePreguntasQueVaAResponderLaEmpresaPorValor, numeroDePreguntasQueRespondioLaEmpresaPorValor, validCertifications, totalHomologatedIndicators }) {
     const { auth } = usePage().props;
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
     const [approvals, setApprovals] = useState(() => {
@@ -873,8 +873,13 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     <div className="lg:w-1/2">
                         <div className="flex items-center mt-5">
                             <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-sm font-semibold ring-1 ring-inset ring-blue-600/20 flex items-center gap-2">
-                                Evaluación en Proceso
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
+                                {totalHomologatedIndicators} Indicadores Homologados en {valueData.name}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-info-circle">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                                    <path d="M12 9h.01" />
+                                    <path d="M11 12h1v4h1" />
+                                </svg>
                             </span>
                         </div>
                         <h1 className="text-4xl font-bold mt-3">{valueData.name}</h1>

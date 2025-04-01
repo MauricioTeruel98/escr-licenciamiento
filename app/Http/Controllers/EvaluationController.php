@@ -46,6 +46,13 @@ class EvaluationController extends Controller
                 ->where(function ($q) use ($company) {
                     $q->whereNull('created_at')
                         ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })
+                ->whereHas('indicators', function($query) use ($company) {
+                    $query->where('deleted', false)
+                        ->where(function ($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        });
                 })->with(['indicators' => function ($query) use ($indicatorIds, $company) {
                     $query->where('deleted', false)
                         ->whereIn('indicators.id', $indicatorIds)
@@ -282,6 +289,16 @@ class EvaluationController extends Controller
             });
         });
 
+        // NUEVO: Calcular el total de indicadores homologados para este valor
+        $totalHomologatedIndicators = 0;
+        foreach ($valueData->subcategories as $subcategory) {
+            foreach ($subcategory->indicators as $indicator) {
+                if ($indicator->isHomologated) {
+                    $totalHomologatedIndicators++;
+                }
+            }
+        }
+
         //dd($validCertifications);
 
         return Inertia::render('Dashboard/Evaluacion/Evaluacion', [
@@ -301,7 +318,8 @@ class EvaluationController extends Controller
             'numeroDePreguntasQueClificoElEvaluador' => $numeroDePreguntasQueClificoElEvaluador,
             'numeroDePreguntasQueVaAResponderLaEmpresaPorValor' => $numeroDePreguntasQueVaAResponderLaEmpresaPorValor,
             'numeroDePreguntasQueClificoPositivamenteElEvaluador' => $numeroDePreguntasQueClificoPositivamenteElEvaluador,
-            'numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor' => $numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor
+            'numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor' => $numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor,
+            'totalHomologatedIndicators' => $totalHomologatedIndicators
         ]);
     }
 
