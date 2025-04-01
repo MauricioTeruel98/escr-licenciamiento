@@ -386,8 +386,8 @@ export default function Certifications({ certifications: initialCertifications, 
                 return false;
             }
 
-            if (file.size > 4 * 1024 * 1024) { // 4MB por archivo
-                newErrors.push(`El archivo ${file.name} excede el límite de 4MB`);
+            if (file.size > 5 * 1024 * 1024) { // 5MB por archivo
+                newErrors.push(`El archivo ${file.name} excede el límite de 5MB`);
                 return false;
             }
             return true;
@@ -508,11 +508,106 @@ export default function Certifications({ certifications: initialCertifications, 
         });
     };
 
+    // Modificar la función handleEditFileChange
+    const handleEditFileChange = async (id, files) => {
+        const cert = certificaciones.find(c => c.id === id);
+        const currentFiles = JSON.parse(cert.file_paths || '[]');
+        const existingNewFiles = cert.newFiles || [];
+        const totalExistingFiles = currentFiles.length + existingNewFiles.length;
+
+        // Si ya tiene 3 archivos, no permitir más
+        if (totalExistingFiles >= 3) {
+            showNotification('error', 'Ya tiene el máximo de 3 archivos permitidos');
+            // Limpiar el input de archivos
+            const fileInput = document.querySelector(`input[type="file"]`);
+            if (fileInput) fileInput.value = '';
+            return;
+        }
+
+        // Calcular cuántos archivos más puede agregar
+        const remainingSlots = 3 - totalExistingFiles;
+        const newFiles = Array.from(files).slice(0, remainingSlots);
+
+        if (files.length > remainingSlots) {
+            showNotification('warning', `Solo se pueden seleccionar ${remainingSlots} archivo${remainingSlots === 1 ? '' : 's'} más`);
+        }
+
+        const maxTotalSize = 12 * 1024 * 1024; // 12MB total máximo
+        let totalSize = 0;
+
+        // Validar tipos y tamaños de archivo
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf',
+            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+
+        // Calcular tamaño total incluyendo archivos existentes
+        currentFiles.forEach(file => {
+            totalSize += 2 * 1024 * 1024; // 2MB estimados por archivo existente
+        });
+
+        existingNewFiles.forEach(file => {
+            totalSize += file.size;
+        });
+
+        const validFiles = [];
+        const errors = [];
+
+        for (const file of newFiles) {
+            if (!validTypes.includes(file.type)) {
+                errors.push(`Tipo de archivo no válido: ${file.name}`);
+                continue;
+            }
+
+            totalSize += file.size;
+            if (totalSize > maxTotalSize) {
+                errors.push(`El tamaño total de los archivos no puede exceder 12MB`);
+                break;
+            }
+
+            if (file.size > 4 * 1024 * 1024) { // 4MB por archivo
+                errors.push(`El archivo ${file.name} excede el límite de 4MB`);
+                continue;
+            }
+
+            // Si es una imagen, comprimir antes de agregar
+            if (file.type.startsWith('image/')) {
+                try {
+                    const compressedFile = await compressImage(file);
+                    validFiles.push(compressedFile);
+                } catch (error) {
+                    errors.push(`Error al procesar la imagen ${file.name}`);
+                }
+            } else {
+                validFiles.push(file);
+            }
+        }
+
+        if (errors.length > 0) {
+            errors.forEach(error => showNotification('error', error));
+            // Limpiar el input de archivos
+            const fileInput = document.querySelector(`input[type="file"]`);
+            if (fileInput) fileInput.value = '';
+            return;
+        }
+
+        if (validFiles.length > 0) {
+            setCertificaciones(certificaciones.map(cert =>
+                cert.id === id ? {
+                    ...cert,
+                    newFiles: [...(cert.newFiles || []), ...validFiles]
+                } : cert
+            ));
+        }
+    };
+
+    // Modificar la función handleSave
     const handleSave = async (id) => {
         const cert = certificaciones.find(c => c.id === id);
 
         if (!validarFechaObtencion(cert.fecha_obtencion, id)) return;
         if (!validarFechaExpiracion(cert.fecha_expiracion, id)) return;
+
+        setLoading(true);
 
         try {
             const formData = new FormData();
@@ -520,16 +615,33 @@ export default function Certifications({ certifications: initialCertifications, 
             formData.append('fecha_expiracion', cert.fecha_expiracion.toISOString().split('T')[0]);
             formData.append('organismo_certificador', cert.organismo_certificador || '');
 
-            // Agregar nuevos archivos si existen
-            if (cert.newFiles) {
-                cert.newFiles.forEach(file => {
-                    formData.append('files[]', file);
-                });
+            // Procesar y agregar nuevos archivos si existen
+            if (cert.newFiles && cert.newFiles.length > 0) {
+                for (const file of cert.newFiles) {
+                    let fileToUpload = file;
+
+                    // Si es una imagen y aún no ha sido comprimida (no tiene la propiedad wasCompressed)
+                    if (file.type.startsWith('image/') && !file.wasCompressed) {
+                        try {
+                            fileToUpload = await compressImage(file);
+                        } catch (error) {
+                            showNotification('error', `Error al procesar la imagen ${file.name}`);
+                            continue;
+                        }
+                    }
+
+                    formData.append('files[]', fileToUpload);
+                }
             }
 
             const response = await axios.post(`/certifications/${id}?_method=PUT`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
+                },
+                timeout: 30000, // 30 segundos de timeout
+                onUploadProgress: (progressEvent) => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    // Aquí puedes actualizar una barra de progreso si lo deseas
                 }
             });
 
@@ -545,49 +657,14 @@ export default function Certifications({ certifications: initialCertifications, 
             showNotification('success', response.data.message);
             window.location.reload();
         } catch (error) {
-            showNotification('error', error.response?.data?.error || 'Error al actualizar la certificación');
-        }
-    };
-
-    // Modificar la función handleEditFileChange
-    const handleEditFileChange = (id, files) => {
-        const cert = certificaciones.find(c => c.id === id);
-        const currentFiles = JSON.parse(cert.file_paths || '[]');
-        const newFiles = Array.from(files);
-
-        // Verificar el límite de archivos
-        if (currentFiles.length + newFiles.length > 3) {
-            showNotification('error', 'Solo se permiten hasta 3 archivos por certificación');
-            return;
-        }
-
-        // Validar tipos y tamaños de archivo
-        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf',
-            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
-
-        const invalidFiles = newFiles.filter(file => {
-            if (!validTypes.includes(file.type)) {
-                showNotification('error', `Tipo de archivo no válido: ${file.name}`);
-                return true;
+            if (error.code === 'ECONNABORTED') {
+                showNotification('error', 'La carga de archivos ha excedido el tiempo límite. Por favor, intente con archivos más pequeños.');
+            } else {
+                showNotification('error', error.response?.data?.error || 'Error al actualizar la certificación');
             }
-            if (file.size > 5 * 1024 * 1024) { // 5MB
-                showNotification('error', `Archivo demasiado grande: ${file.name}`);
-                return true;
-            }
-            return false;
-        });
-
-        if (invalidFiles.length > 0) {
-            return;
+        } finally {
+            setLoading(false);
         }
-
-        setCertificaciones(certificaciones.map(cert =>
-            cert.id === id ? {
-                ...cert,
-                newFiles: [...(cert.newFiles || []), ...newFiles]
-            } : cert
-        ));
     };
 
     const handleChange = (id, field, value) => {
@@ -1222,7 +1299,24 @@ export default function Certifications({ certifications: initialCertifications, 
                                                         {/* Input para nuevos archivos - Solo mostrar en modo edición */}
                                                         {cert.editando && (
                                                             <div className="mt-2 border rounded-lg p-3 bg-gray-50">
-                                                                <p className="text-sm font-medium text-gray-700 mb-2">Agregar nuevos archivos:</p>
+                                                                <div className="flex justify-between items-center mb-2">
+                                                                    <p className="text-sm font-medium text-gray-700">
+                                                                        Agregar nuevos archivos:
+                                                                    </p>
+                                                                    <span className="text-xs text-gray-500">
+                                                                        {(() => {
+                                                                            const currentFiles = JSON.parse(cert.file_paths || '[]');
+                                                                            const newFiles = cert.newFiles || [];
+                                                                            const total = currentFiles.length + newFiles.length;
+                                                                            const remaining = 3 - total;
+                                                                            
+                                                                            if (remaining <= 0) {
+                                                                                return 'Límite máximo de archivos alcanzado';
+                                                                            }
+                                                                            return `${remaining} archivo${remaining === 1 ? '' : 's'} restante${remaining === 1 ? '' : 's'}`;
+                                                                        })()}
+                                                                    </span>
+                                                                </div>
                                                                 <div className="flex items-center gap-2">
                                                                     <input
                                                                         type="file"
@@ -1230,8 +1324,28 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                         multiple
                                                                         accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"
                                                                         className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                                                        disabled={(() => {
+                                                                            const currentFiles = JSON.parse(cert.file_paths || '[]');
+                                                                            const newFiles = cert.newFiles || [];
+                                                                            return (currentFiles.length + newFiles.length) >= 3;
+                                                                        })()}
                                                                     />
                                                                 </div>
+                                                                {(() => {
+                                                                    const currentFiles = JSON.parse(cert.file_paths || '[]');
+                                                                    const newFiles = cert.newFiles || [];
+                                                                    const total = currentFiles.length + newFiles.length;
+                                                                    
+                                                                    if (total >= 3) {
+                                                                        return (
+                                                                            <p className="mt-2 text-xs text-amber-600">
+                                                                                Ha alcanzado el límite máximo de archivos. Elimine algún archivo si desea agregar uno nuevo.
+                                                                            </p>
+                                                                        );
+                                                                    }
+                                                                    return null;
+                                                                })()}
+                                                                
                                                                 {/* Mostrar nuevos archivos seleccionados */}
                                                                 {cert.newFiles && cert.newFiles.length > 0 && (
                                                                     <div className="mt-2 space-y-1">

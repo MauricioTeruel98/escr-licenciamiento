@@ -48,7 +48,7 @@ class CertificationController extends Controller
             'fecha_obtencion' => 'required|date_format:Y-m-d',
             'fecha_expiracion' => 'required|date_format:Y-m-d|after:fecha_obtencion',
             'organismo_certificador' => 'string',
-            'files.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:4096', // 4MB max
+            'files.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:5120', // 5MB max
         ]);
 
         try {
@@ -68,7 +68,7 @@ class CertificationController extends Controller
             // Procesar los archivos
             $filePaths = [];
             $totalSize = 0;
-            $maxTotalSize = 12 * 1024 * 1024; // 12MB total
+            $maxTotalSize = 15 * 1024 * 1024; // 15MB total
 
             if ($request->hasFile('files')) {
                 foreach ($request->file('files') as $file) {
@@ -76,7 +76,7 @@ class CertificationController extends Controller
                     $totalSize += $file->getSize();
                     if ($totalSize > $maxTotalSize) {
                         return response()->json([
-                            'error' => 'El tamaño total de los archivos excede el límite permitido de 12MB'
+                            'error' => 'El tamaño total de los archivos excede el límite permitido de 15MB'
                         ], 422);
                     }
 
@@ -172,6 +172,8 @@ class CertificationController extends Controller
     {
         $this->authorize('update', $certification);
 
+        set_time_limit(120); // Establecer límite de tiempo a 120 segundos
+
         $validated = $request->validate([
             'fecha_obtencion' => 'required|date_format:Y-m-d',
             'fecha_expiracion' => 'required|date_format:Y-m-d|after:fecha_obtencion',
@@ -183,6 +185,15 @@ class CertificationController extends Controller
             // Procesar nuevos archivos si existen
             if ($request->hasFile('files')) {
                 $filePaths = json_decode($certification->file_paths, true) ?? [];
+                $totalSize = 0;
+                $maxTotalSize = 15 * 1024 * 1024; // 15MB total
+
+                // Calcular tamaño total actual
+                foreach ($filePaths as $path) {
+                    if (Storage::disk('public')->exists($path)) {
+                        $totalSize += Storage::disk('public')->size($path);
+                    }
+                }
                 
                 // Verificar el límite de archivos
                 if (count($filePaths) + count($request->file('files')) > 3) {
@@ -192,16 +203,47 @@ class CertificationController extends Controller
                 }
 
                 $companySlug = Str::slug($certification->company->name);
+                $newFiles = [];
+
                 foreach ($request->file('files') as $file) {
-                    $fileName = time() . '_' . $file->getClientOriginalName();
-                    $path = $file->storeAs(
-                        "companies/{$certification->company_id}-{$companySlug}/certifications",
-                        $fileName,
-                        'public'
-                    );
-                    $filePaths[] = $path;
+                    // Verificar tamaño total
+                    $totalSize += $file->getSize();
+                    if ($totalSize > $maxTotalSize) {
+                        // Limpiar archivos nuevos en caso de error
+                        foreach ($newFiles as $newPath) {
+                            Storage::disk('public')->delete($newPath);
+                        }
+                        return response()->json([
+                            'error' => 'El tamaño total de los archivos excede el límite permitido de 15MB'
+                        ], 422);
+                    }
+
+                    try {
+                        $fileName = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) 
+                            . '.' . $file->getClientOriginalExtension();
+
+                        $path = $file->storeAs(
+                            "companies/{$certification->company_id}-{$companySlug}/certifications",
+                            $fileName,
+                            'public'
+                        );
+                        
+                        if (!$path) {
+                            throw new \Exception('Error al guardar el archivo: ' . $fileName);
+                        }
+
+                        $newFiles[] = $path;
+                    } catch (\Exception $e) {
+                        // Limpiar archivos nuevos en caso de error
+                        foreach ($newFiles as $newPath) {
+                            Storage::disk('public')->delete($newPath);
+                        }
+                        throw $e;
+                    }
                 }
                 
+                // Agregar nuevos archivos a la lista existente
+                $filePaths = array_merge($filePaths, $newFiles);
                 $certification->file_paths = json_encode($filePaths);
             }
 
@@ -212,8 +254,13 @@ class CertificationController extends Controller
                 'message' => 'Certificación actualizada exitosamente'
             ]);
         } catch (\Exception $e) {
+            Log::error('Error al actualizar certificación:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
-                'error' => 'Error al actualizar la certificación'
+                'error' => 'Error al actualizar la certificación: ' . $e->getMessage()
             ], 500);
         }
     }
