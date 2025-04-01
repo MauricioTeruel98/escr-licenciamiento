@@ -356,7 +356,7 @@ export default function Certifications({ certifications: initialCertifications, 
     // Modificar la función handleFileChange
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
-        const maxTotalSize = 12 * 1024 * 1024; // 12MB total máximo
+        const maxTotalSize = 15 * 1024 * 1024; // 15MB total máximo
         let totalSize = 0;
 
         if (files.length + selectedFiles.length > 3) {
@@ -532,7 +532,7 @@ export default function Certifications({ certifications: initialCertifications, 
             showNotification('warning', `Solo se pueden seleccionar ${remainingSlots} archivo${remainingSlots === 1 ? '' : 's'} más`);
         }
 
-        const maxTotalSize = 12 * 1024 * 1024; // 12MB total máximo
+        const maxTotalSize = 15 * 1024 * 1024; // 15MB total máximo
         let totalSize = 0;
 
         // Validar tipos y tamaños de archivo
@@ -560,12 +560,12 @@ export default function Certifications({ certifications: initialCertifications, 
 
             totalSize += file.size;
             if (totalSize > maxTotalSize) {
-                errors.push(`El tamaño total de los archivos no puede exceder 12MB`);
+                errors.push(`El tamaño total de los archivos no puede exceder 15MB`);
                 break;
             }
 
-            if (file.size > 4 * 1024 * 1024) { // 4MB por archivo
-                errors.push(`El archivo ${file.name} excede el límite de 4MB`);
+            if (file.size > 5 * 1024 * 1024) { // 5MB por archivo
+                errors.push(`El archivo ${file.name} excede el límite de 5MB`);
                 continue;
             }
 
