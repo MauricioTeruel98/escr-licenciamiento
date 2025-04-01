@@ -143,14 +143,19 @@ const FileUploadInput = ({ onFileChange, selectedFiles, onRemoveFile }) => {
                             <div key={index} className="flex items-center justify-between p-4">
                                 <div className="flex items-center space-x-3">
                                     {getFileIcon(file.type)}
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-medium text-gray-900">
+                                    <div className="flex flex-col w-full">
+                                        <span
+                                            className="text-sm font-medium text-gray-900 break-words whitespace-normal"
+                                            style={{ overflowWrap: "anywhere" }}
+                                        >
                                             {file.name}
                                         </span>
                                         <span className="text-xs text-gray-500">
                                             {(file.size / 1024 / 1024).toFixed(2)} MB
                                         </span>
                                     </div>
+
+
                                 </div>
                                 <button
                                     type="button"
@@ -763,7 +768,11 @@ export default function Certifications({ certifications: initialCertifications, 
             <div className="mt-2">
                 {files.map((file, index) => (
                     <div key={index} className="flex items-center justify-between py-2">
-                        <span className="text-sm text-gray-600">{file.name}</span>
+                        <span className="text-sm text-gray-600">
+                            {file.name.length > 50
+                                ? file.name.substring(0, 47) + '...'
+                                : file.name}
+                        </span>
                         <button
                             type="button"
                             onClick={() => onRemove(index)}
@@ -975,8 +984,8 @@ export default function Certifications({ certifications: initialCertifications, 
                                         organismoCertificador: validarInput(e.target.value, 'organismo')
                                     })}
                                     className={`w-full px-3 py-2 border rounded-md ${!nuevaCertificacion.organismoCertificador
-                                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                                            : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                                        : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
                                         }`}
                                     required
                                 />
@@ -1214,13 +1223,25 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleSave(cert.id)}
-                                                                        className={`px-4 py-1 text-sm bg-green-600 text-white border border-green-700 rounded-md hover:bg-green-700 flex items-center ${fechaErrores[cert.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                                        disabled={fechaErrores[cert.id]}
+                                                                        className={`px-4 py-1 text-sm bg-green-600 text-white border border-green-700 rounded-md hover:bg-green-700 flex items-center ${fechaErrores[cert.id] || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                                        disabled={fechaErrores[cert.id] || loading}
                                                                     >
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                        </svg>
-                                                                        Aceptar
+                                                                        {loading ? (
+                                                                            <>
+                                                                                <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                                </svg>
+                                                                                Procesando...
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                                </svg>
+                                                                                Aceptar
+                                                                            </>
+                                                                        )}
                                                                     </button>
                                                                 </div>
                                                             )}
@@ -1231,70 +1252,118 @@ export default function Certifications({ certifications: initialCertifications, 
                                                 <div className="mt-4">
                                                     <h4 className="text-md font-semibold mb-2">Archivos evidencia:</h4>
                                                     <div className="space-y-4">
-                                                        {/* Mostrar archivos existentes */}
-                                                        {files.length > 0 && (
-                                                            <div className="space-y-2">
-                                                                <div className="flex items-center justify-start gap-2 flex-wrap">
-                                                                    {files.map((filePath, index) => {
-                                                                        const fileName = filePath.split('/').pop();
-                                                                        const fileExtension = fileName.split('.').pop().toLowerCase();
+                                                        {/* Mostrar archivos existentes y nuevos */}
+                                                        <div className="space-y-2">
+                                                            <div className="flex items-center justify-start gap-2 flex-wrap">
+                                                                {/* Archivos existentes */}
+                                                                {files.map((filePath, index) => {
+                                                                    const fileName = filePath.split('/').pop();
+                                                                    const fileExtension = fileName.split('.').pop().toLowerCase();
 
-                                                                        // Determinar el icono basado en la extensión
-                                                                        let icon;
-                                                                        if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
-                                                                            icon = (
-                                                                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                                                </svg>
-                                                                            );
-                                                                        } else if (fileExtension === 'pdf') {
-                                                                            icon = (
-                                                                                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                                                                </svg>
-                                                                            );
-                                                                        } else {
-                                                                            icon = (
-                                                                                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                                                </svg>
-                                                                            );
-                                                                        }
-
-                                                                        return (
-                                                                            <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                                                                <div className="flex items-center space-x-2">
-                                                                                    {icon}
-                                                                                    <span className="text-sm text-gray-600">
-                                                                                        {fileName.length > 20 ? fileName.substring(0, 25) + '...' : fileName}
-                                                                                    </span>
-                                                                                </div>
-                                                                                <div className="flex space-x-2">
-                                                                                    <button
-                                                                                        onClick={() => handleDownload(filePath, fileName)}
-                                                                                        className="p-1 text-blue-600 hover:text-blue-800"
-                                                                                        title="Descargar archivo"
-                                                                                    >
-                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-download"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 11l5 5l5 -5" /><path d="M12 4l0 12" /></svg>
-                                                                                    </button>
-                                                                                    {cert.editando && (
-                                                                                        <button
-                                                                                            onClick={() => handleDeleteFile(cert.id, filePath)}
-                                                                                            className="p-1 text-red-600 hover:text-red-800"
-                                                                                            title="Eliminar archivo"
-                                                                                        >
-                                                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                                            </svg>
-                                                                                        </button>
-                                                                                    )}
-                                                                                </div>
-                                                                            </div>
+                                                                    // Determinar el icono basado en la extensión
+                                                                    let icon;
+                                                                    if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+                                                                        icon = (
+                                                                            <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                            </svg>
                                                                         );
-                                                                    })}
-                                                                </div>
+                                                                    } else if (fileExtension === 'pdf') {
+                                                                        icon = (
+                                                                            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                                            </svg>
+                                                                        );
+                                                                    } else {
+                                                                        icon = (
+                                                                            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                            </svg>
+                                                                        );
+                                                                    }
+
+                                                                    return (
+                                                                        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                                                                            <div className="flex items-center space-x-2">
+                                                                                {icon}
+                                                                                <span className="text-sm text-gray-600">
+                                                                                    {fileName.length > 20 ? fileName.substring(0, 25) + '...' : fileName}
+                                                                                </span>
+                                                                            </div>
+                                                                            <div className="flex space-x-2">
+                                                                                <button
+                                                                                    onClick={() => handleDownload(filePath, fileName)}
+                                                                                    className="p-1 text-blue-600 hover:text-blue-800"
+                                                                                    title="Descargar archivo"
+                                                                                >
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-download"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 11l5 5l5 -5" /><path d="M12 4l0 12" /></svg>
+                                                                                </button>
+                                                                                {cert.editando && (
+                                                                                    <button
+                                                                                        onClick={() => handleDeleteFile(cert.id, filePath)}
+                                                                                        className="p-1 text-red-600 hover:text-red-800"
+                                                                                        title="Eliminar archivo"
+                                                                                    >
+                                                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                                        </svg>
+                                                                                    </button>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+
+                                                                {/* Archivos nuevos */}
+                                                                {cert.editando && cert.newFiles && cert.newFiles.map((file, index) => {
+                                                                    let icon;
+                                                                    if (file.type.startsWith('image/')) {
+                                                                        icon = (
+                                                                            <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                            </svg>
+                                                                        );
+                                                                    } else if (file.type === 'application/pdf') {
+                                                                        icon = (
+                                                                            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                                            </svg>
+                                                                        );
+                                                                    } else {
+                                                                        icon = (
+                                                                            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                            </svg>
+                                                                        );
+                                                                    }
+
+                                                                    return (
+                                                                        <div key={`new-${index}`} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-green-200">
+                                                                            <div className="flex items-center space-x-2">
+                                                                                {icon}
+                                                                                <span className="text-sm text-gray-600">
+                                                                                    {file.name.length > 20 ? file.name.substring(0, 25) + '...' : file.name}
+                                                                                </span>
+                                                                            </div>
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    setCertificaciones(certificaciones.map(c =>
+                                                                                        c.id === cert.id ? {
+                                                                                            ...c,
+                                                                                            newFiles: (c.newFiles || []).filter((_, i) => i !== index)
+                                                                                        } : c
+                                                                                    ));
+                                                                                }}
+                                                                                className="p-1 text-red-600 hover:text-red-800"
+                                                                                title="Eliminar archivo"
+                                                                            >
+                                                                                <X className="h-4 w-4" />
+                                                                            </button>
+                                                                        </div>
+                                                                    );
+                                                                })}
                                                             </div>
-                                                        )}
+                                                        </div>
 
                                                         {/* Input para nuevos archivos - Solo mostrar en modo edición */}
                                                         {cert.editando && (
@@ -1309,7 +1378,7 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                             const newFiles = cert.newFiles || [];
                                                                             const total = currentFiles.length + newFiles.length;
                                                                             const remaining = 3 - total;
-                                                                            
+
                                                                             if (remaining <= 0) {
                                                                                 return 'Límite máximo de archivos alcanzado';
                                                                             }
@@ -1331,45 +1400,6 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                         })()}
                                                                     />
                                                                 </div>
-                                                                {(() => {
-                                                                    const currentFiles = JSON.parse(cert.file_paths || '[]');
-                                                                    const newFiles = cert.newFiles || [];
-                                                                    const total = currentFiles.length + newFiles.length;
-                                                                    
-                                                                    if (total >= 3) {
-                                                                        return (
-                                                                            <p className="mt-2 text-xs text-amber-600">
-                                                                                Ha alcanzado el límite máximo de archivos. Elimine algún archivo si desea agregar uno nuevo.
-                                                                            </p>
-                                                                        );
-                                                                    }
-                                                                    return null;
-                                                                })()}
-                                                                
-                                                                {/* Mostrar nuevos archivos seleccionados */}
-                                                                {cert.newFiles && cert.newFiles.length > 0 && (
-                                                                    <div className="mt-2 space-y-1">
-                                                                        {cert.newFiles.map((file, index) => (
-                                                                            <div key={index} className="flex items-center justify-between py-1">
-                                                                                <span className="text-sm text-gray-600">{file.name}</span>
-                                                                                <button
-                                                                                    type="button"
-                                                                                    onClick={() => {
-                                                                                        setCertificaciones(certificaciones.map(c =>
-                                                                                            c.id === cert.id ? {
-                                                                                                ...c,
-                                                                                                newFiles: (c.newFiles || []).filter((_, i) => i !== index)
-                                                                                            } : c
-                                                                                        ));
-                                                                                    }}
-                                                                                    className="text-red-500 hover:text-red-700"
-                                                                                >
-                                                                                    <X className="h-4 w-4" />
-                                                                                </button>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                )}
                                                             </div>
                                                         )}
                                                     </div>

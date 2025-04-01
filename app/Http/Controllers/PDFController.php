@@ -128,6 +128,7 @@ class PDFController extends Controller
                     'Teléfono 1',
                     'Teléfono 2',
                     'Países Exportación',
+                    'Producto o servicio',
                     'Rango Exportaciones',
                     'Planes Expansión',
                     'Razón Licenciamiento (ES)',
@@ -152,6 +153,7 @@ class PDFController extends Controller
                     'Contacto Vocero - Celular',
                     'Contacto Representante - Nombre',
                     'Contacto Representante - Email',
+                    'Contacto Representante - Cedula',
                     'Contacto Representante - Puesto',
                     'Contacto Representante - Teléfono',
                     'Contacto Representante - Celular',
@@ -255,6 +257,7 @@ class PDFController extends Controller
                     $infoAdicional ? $infoAdicional->telefono_1 : '',
                     $infoAdicional ? $infoAdicional->telefono_2 : '',
                     $infoAdicional ? $infoAdicional->paises_exportacion : '',
+                    $infoAdicional ? $infoAdicional->producto_servicio : '',
                     $infoAdicional ? $infoAdicional->rango_exportaciones : '',
                     $infoAdicional ? $infoAdicional->planes_expansion : '',
                     $infoAdicional ? $infoAdicional->razon_licenciamiento_es : '',
@@ -279,6 +282,7 @@ class PDFController extends Controller
                     $infoAdicional ? $infoAdicional->vocero_celular : '',
                     $infoAdicional ? $infoAdicional->representante_nombre : '',
                     $infoAdicional ? $infoAdicional->representante_email : '',
+                    $infoAdicional ? $infoAdicional->representante_cedula : '',
                     $infoAdicional ? $infoAdicional->representante_puesto : '',
                     $infoAdicional ? $infoAdicional->representante_telefono : '',
                     $infoAdicional ? $infoAdicional->representante_celular : '',
@@ -814,8 +818,8 @@ class PDFController extends Controller
 
             // Crear estructura de carpetas para la empresa
             $companySlug = Str::slug($company->name);
-            $basePath = storage_path('app/public/evaluations');
-            $companyPath = "{$basePath}/{$company->id}-{$companySlug}";
+            $basePath = storage_path('app/public/companies');
+            $companyPath = "{$basePath}/{$company->id}-{$companySlug}/evaluations";
 
             // Crear carpetas si no existen
             if (!file_exists($basePath)) {
@@ -833,7 +837,7 @@ class PDFController extends Controller
             $pdf->save($fullPath);
 
             // Actualizar el path del documento en la empresa
-            $evaluationPath = "{$company->id}-{$companySlug}/{$fileName}";
+            $evaluationPath = "companies/{$company->id}-{$companySlug}/evaluations/{$fileName}";
             $company->evaluation_document_path = $evaluationPath;
             $company->save();
 
