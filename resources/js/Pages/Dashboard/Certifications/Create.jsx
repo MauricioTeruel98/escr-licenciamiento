@@ -353,9 +353,11 @@ export default function Certifications({ certifications: initialCertifications, 
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [fileErrors, setFileErrors] = useState([]);
 
-    // Agregar esta función para manejar la selección de archivos
+    // Modificar la función handleFileChange
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
+        const maxTotalSize = 12 * 1024 * 1024; // 12MB total máximo
+        let totalSize = 0;
 
         if (files.length + selectedFiles.length > 3) {
             setFileErrors(['Solo se permiten hasta 3 archivos']);
@@ -367,13 +369,25 @@ export default function Certifications({ certifications: initialCertifications, 
             'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
 
+        // Calcular tamaño total incluyendo archivos ya seleccionados
+        selectedFiles.forEach(file => {
+            totalSize += file.size;
+        });
+
         const validFiles = files.filter(file => {
             if (!validTypes.includes(file.type)) {
                 newErrors.push(`Tipo de archivo no válido: ${file.name}`);
                 return false;
             }
-            if (file.size > 5 * 1024 * 1024) { // 5MB
-                newErrors.push(`Archivo demasiado grande: ${file.name}`);
+
+            totalSize += file.size;
+            if (totalSize > maxTotalSize) {
+                newErrors.push(`El tamaño total de los archivos no puede exceder 12MB`);
+                return false;
+            }
+
+            if (file.size > 4 * 1024 * 1024) { // 4MB por archivo
+                newErrors.push(`El archivo ${file.name} excede el límite de 4MB`);
                 return false;
             }
             return true;
@@ -385,7 +399,7 @@ export default function Certifications({ certifications: initialCertifications, 
         }
     };
 
-    // Modificar el handleSubmit para incluir los archivos
+    // Modificar la función handleSubmit para incluir compresión de imágenes
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!selectedCertification || !nuevaCertificacion.fechaObtencion || !nuevaCertificacion.fechaExpiracion) return;
@@ -395,21 +409,34 @@ export default function Certifications({ certifications: initialCertifications, 
 
         setLoading(true);
 
-        const formData = new FormData();
-        formData.append('nombre', selectedCertification.nombre);
-        formData.append('homologation_id', selectedCertification.id);
-        formData.append('fecha_obtencion', nuevaCertificacion.fechaObtencion.toISOString().split('T')[0]);
-        formData.append('fecha_expiracion', nuevaCertificacion.fechaExpiracion.toISOString().split('T')[0]);
-        formData.append('organismo_certificador', nuevaCertificacion.organismoCertificador);
-
-        selectedFiles.forEach(file => {
-            formData.append('files[]', file);
-        });
-
         try {
+            const formData = new FormData();
+            formData.append('nombre', selectedCertification.nombre);
+            formData.append('homologation_id', selectedCertification.id);
+            formData.append('fecha_obtencion', nuevaCertificacion.fechaObtencion.toISOString().split('T')[0]);
+            formData.append('fecha_expiracion', nuevaCertificacion.fechaExpiracion.toISOString().split('T')[0]);
+            formData.append('organismo_certificador', nuevaCertificacion.organismoCertificador);
+
+            // Procesar archivos antes de enviar
+            for (const file of selectedFiles) {
+                let fileToUpload = file;
+
+                // Si es una imagen, comprimir
+                if (file.type.startsWith('image/')) {
+                    fileToUpload = await compressImage(file);
+                }
+
+                formData.append('files[]', fileToUpload);
+            }
+
             const response = await axios.post('/certifications', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
+                },
+                timeout: 30000, // 30 segundos de timeout
+                onUploadProgress: (progressEvent) => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    // Aquí puedes actualizar una barra de progreso si lo deseas
                 }
             });
 
@@ -434,23 +461,51 @@ export default function Certifications({ certifications: initialCertifications, 
             showNotification('success', response.data.message);
             window.location.reload();
         } catch (error) {
-            if (error.response?.status === 422 && error.response?.data?.error?.includes('Ya existe una certificación')) {
-                showNotification('error', 'Ya existe una certificación con este nombre para su empresa');
-                // Resaltar el campo de nombre de certificación
-                const inputElement = document.getElementById('nombreCertificacion');
-                if (inputElement) {
-                    inputElement.focus();
-                    inputElement.classList.add('border-red-500');
-                    setTimeout(() => {
-                        inputElement.classList.remove('border-red-500');
-                    }, 3000);
-                }
+            if (error.code === 'ECONNABORTED') {
+                showNotification('error', 'La carga de archivos ha excedido el tiempo límite. Por favor, intente con archivos más pequeños.');
             } else {
                 showNotification('error', error.response?.data?.error || 'Error al crear la certificación');
             }
         } finally {
-            setLoading(false); // Finalizar el estado de carga
+            setLoading(false);
         }
+    };
+
+    // Agregar función para comprimir imágenes
+    const compressImage = async (file) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Calcular nuevas dimensiones manteniendo el aspect ratio
+                    if (width > 1920) {
+                        height = Math.round((height * 1920) / width);
+                        width = 1920;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        const compressedFile = new File([blob], file.name, {
+                            type: file.type,
+                            lastModified: Date.now(),
+                        });
+                        resolve(compressedFile);
+                    }, file.type, 0.7); // Calidad de compresión 0.7
+                };
+            };
+        });
     };
 
     const handleSave = async (id) => {

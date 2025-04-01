@@ -40,13 +40,15 @@ class CertificationController extends Controller
 
     public function store(Request $request)
     {
+        set_time_limit(120); // Establecer límite de tiempo a 120 segundos
+
         $validated = $request->validate([
             'nombre' => 'required|string',
             'homologation_id' => 'required|exists:available_certifications,id',
             'fecha_obtencion' => 'required|date_format:Y-m-d',
             'fecha_expiracion' => 'required|date_format:Y-m-d|after:fecha_obtencion',
             'organismo_certificador' => 'string',
-            'files.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:5120', // 5MB max
+            'files.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:4096', // 4MB max
         ]);
 
         try {
@@ -65,16 +67,42 @@ class CertificationController extends Controller
 
             // Procesar los archivos
             $filePaths = [];
+            $totalSize = 0;
+            $maxTotalSize = 12 * 1024 * 1024; // 12MB total
+
             if ($request->hasFile('files')) {
                 foreach ($request->file('files') as $file) {
+                    // Verificar tamaño total
+                    $totalSize += $file->getSize();
+                    if ($totalSize > $maxTotalSize) {
+                        return response()->json([
+                            'error' => 'El tamaño total de los archivos excede el límite permitido de 12MB'
+                        ], 422);
+                    }
+
                     $companySlug = Str::slug($company->name);
-                    $fileName = time() . '_' . $file->getClientOriginalName();
-                    $path = $file->storeAs(
-                        "companies/{$company->id}-{$companySlug}/certifications",
-                        $fileName,
-                        'public'
-                    );
-                    $filePaths[] = $path;
+                    $fileName = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) 
+                        . '.' . $file->getClientOriginalExtension();
+
+                    try {
+                        $path = $file->storeAs(
+                            "companies/{$company->id}-{$companySlug}/certifications",
+                            $fileName,
+                            'public'
+                        );
+                        
+                        if (!$path) {
+                            throw new \Exception('Error al guardar el archivo: ' . $fileName);
+                        }
+
+                        $filePaths[] = $path;
+                    } catch (\Exception $e) {
+                        // Limpiar archivos ya subidos en caso de error
+                        foreach ($filePaths as $existingPath) {
+                            Storage::disk('public')->delete($existingPath);
+                        }
+                        throw $e;
+                    }
                 }
             }
 
@@ -126,6 +154,13 @@ class CertificationController extends Controller
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+
+            // Limpiar archivos en caso de error
+            if (!empty($filePaths)) {
+                foreach ($filePaths as $path) {
+                    Storage::disk('public')->delete($path);
+                }
+            }
 
             return response()->json([
                 'error' => 'Error al crear la certificación: ' . $e->getMessage()
