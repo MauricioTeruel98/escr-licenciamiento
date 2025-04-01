@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\File;
 
 class CertificationController extends Controller
 {
@@ -39,79 +38,23 @@ class CertificationController extends Controller
         ]);
     }
 
-    private function handleChunkedUpload($file, $companyId, $companySlug)
-    {
-        try {
-            $fileName = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) 
-                . '.' . $file->getClientOriginalExtension();
-            
-            $chunkSize = 1024 * 1024; // 1MB por chunk
-            $totalSize = $file->getSize();
-            $chunks = ceil($totalSize / $chunkSize);
-            
-            $targetPath = "companies/{$companyId}-{$companySlug}/certifications/{$fileName}";
-            $tempPath = storage_path('app/temp/' . uniqid() . '_' . $fileName);
-            
-            // Asegurarse de que el directorio temporal existe
-            File::ensureDirectoryExists(dirname($tempPath));
-            
-            // Abrir archivo temporal para escritura
-            $out = fopen($tempPath, 'wb');
-            
-            // Leer el archivo por chunks
-            $fileHandle = fopen($file->getRealPath(), 'rb');
-            
-            while (!feof($fileHandle)) {
-                $chunk = fread($fileHandle, $chunkSize);
-                fwrite($out, $chunk);
-            }
-            
-            fclose($fileHandle);
-            fclose($out);
-            
-            // Mover el archivo temporal al storage público
-            $success = Storage::disk('public')->putFileAs(
-                dirname($targetPath),
-                $tempPath,
-                basename($targetPath)
-            );
-            
-            // Limpiar archivo temporal
-            if (file_exists($tempPath)) {
-                unlink($tempPath);
-            }
-            
-            if (!$success) {
-                throw new \Exception('Error al mover el archivo a su ubicación final');
-            }
-            
-            return $targetPath;
-        } catch (\Exception $e) {
-            // Limpiar archivo temporal si existe
-            if (isset($tempPath) && file_exists($tempPath)) {
-                unlink($tempPath);
-            }
-            throw $e;
-        }
-    }
-
     public function store(Request $request)
     {
-        set_time_limit(300); // Aumentar a 5 minutos para archivos grandes
-        
+        set_time_limit(120); // Establecer límite de tiempo a 120 segundos
+
         $validated = $request->validate([
             'nombre' => 'required|string',
             'homologation_id' => 'required|exists:available_certifications,id',
             'fecha_obtencion' => 'required|date_format:Y-m-d',
             'fecha_expiracion' => 'required|date_format:Y-m-d|after:fecha_obtencion',
             'organismo_certificador' => 'string',
-            'files.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:15360', // 15MB max
+            'files.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:5120', // 5MB max
         ]);
 
         try {
             $company = Auth::user()->company;
             
-            // Verificar certificación existente
+            // Verificar si ya existe una certificación con el mismo nombre
             $existingCertification = $company->certifications()
                 ->where('nombre', $validated['nombre'])
                 ->first();
@@ -122,29 +65,39 @@ class CertificationController extends Controller
                 ], 422);
             }
 
+            // Procesar los archivos
             $filePaths = [];
             $totalSize = 0;
-            $maxTotalSize = 45 * 1024 * 1024; // 45MB total (15MB x 3 archivos)
+            $maxTotalSize = 15 * 1024 * 1024; // 15MB total
 
             if ($request->hasFile('files')) {
                 foreach ($request->file('files') as $file) {
                     // Verificar tamaño total
                     $totalSize += $file->getSize();
                     if ($totalSize > $maxTotalSize) {
-                        // Limpiar archivos subidos
-                        foreach ($filePaths as $path) {
-                            Storage::disk('public')->delete($path);
-                        }
                         return response()->json([
-                            'error' => 'El tamaño total de los archivos excede el límite permitido de 45MB'
+                            'error' => 'El tamaño total de los archivos excede el límite permitido de 15MB'
                         ], 422);
                     }
 
+                    $companySlug = Str::slug($company->name);
+                    $fileName = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) 
+                        . '.' . $file->getClientOriginalExtension();
+
                     try {
-                        $path = $this->handleChunkedUpload($file, $company->id, Str::slug($company->name));
+                        $path = $file->storeAs(
+                            "companies/{$company->id}-{$companySlug}/certifications",
+                            $fileName,
+                            'public'
+                        );
+                        
+                        if (!$path) {
+                            throw new \Exception('Error al guardar el archivo: ' . $fileName);
+                        }
+
                         $filePaths[] = $path;
                     } catch (\Exception $e) {
-                        // Limpiar archivos subidos en caso de error
+                        // Limpiar archivos ya subidos en caso de error
                         foreach ($filePaths as $existingPath) {
                             Storage::disk('public')->delete($existingPath);
                         }
@@ -203,8 +156,10 @@ class CertificationController extends Controller
             ]);
 
             // Limpiar archivos en caso de error
-            foreach ($filePaths as $path) {
-                Storage::disk('public')->delete($path);
+            if (!empty($filePaths)) {
+                foreach ($filePaths as $path) {
+                    Storage::disk('public')->delete($path);
+                }
             }
 
             return response()->json([
@@ -216,20 +171,22 @@ class CertificationController extends Controller
     public function update(Request $request, Certification $certification)
     {
         $this->authorize('update', $certification);
-        set_time_limit(300); // 5 minutos para archivos grandes
+
+        set_time_limit(120); // Establecer límite de tiempo a 120 segundos
 
         $validated = $request->validate([
             'fecha_obtencion' => 'required|date_format:Y-m-d',
             'fecha_expiracion' => 'required|date_format:Y-m-d|after:fecha_obtencion',
             'organismo_certificador' => 'string',
-            'files.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:15360', // 15MB max
+            'files.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:5120', // 5MB max
         ]);
 
         try {
+            // Procesar nuevos archivos si existen
             if ($request->hasFile('files')) {
                 $filePaths = json_decode($certification->file_paths, true) ?? [];
                 $totalSize = 0;
-                $maxTotalSize = 45 * 1024 * 1024; // 45MB total
+                $maxTotalSize = 15 * 1024 * 1024; // 15MB total
 
                 // Calcular tamaño total actual
                 foreach ($filePaths as $path) {
@@ -237,43 +194,54 @@ class CertificationController extends Controller
                         $totalSize += Storage::disk('public')->size($path);
                     }
                 }
-
+                
+                // Verificar el límite de archivos
                 if (count($filePaths) + count($request->file('files')) > 3) {
                     return response()->json([
                         'error' => 'Solo se permiten hasta 3 archivos por certificación'
                     ], 422);
                 }
 
+                $companySlug = Str::slug($certification->company->name);
                 $newFiles = [];
 
                 foreach ($request->file('files') as $file) {
+                    // Verificar tamaño total
                     $totalSize += $file->getSize();
                     if ($totalSize > $maxTotalSize) {
-                        // Limpiar nuevos archivos
+                        // Limpiar archivos nuevos en caso de error
                         foreach ($newFiles as $newPath) {
                             Storage::disk('public')->delete($newPath);
                         }
                         return response()->json([
-                            'error' => 'El tamaño total de los archivos excede el límite permitido de 45MB'
+                            'error' => 'El tamaño total de los archivos excede el límite permitido de 15MB'
                         ], 422);
                     }
 
                     try {
-                        $path = $this->handleChunkedUpload(
-                            $file, 
-                            $certification->company_id, 
-                            Str::slug($certification->company->name)
+                        $fileName = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) 
+                            . '.' . $file->getClientOriginalExtension();
+
+                        $path = $file->storeAs(
+                            "companies/{$certification->company_id}-{$companySlug}/certifications",
+                            $fileName,
+                            'public'
                         );
+                        
+                        if (!$path) {
+                            throw new \Exception('Error al guardar el archivo: ' . $fileName);
+                        }
+
                         $newFiles[] = $path;
                     } catch (\Exception $e) {
-                        // Limpiar nuevos archivos en caso de error
+                        // Limpiar archivos nuevos en caso de error
                         foreach ($newFiles as $newPath) {
                             Storage::disk('public')->delete($newPath);
                         }
                         throw $e;
                     }
                 }
-
+                
                 // Agregar nuevos archivos a la lista existente
                 $filePaths = array_merge($filePaths, $newFiles);
                 $certification->file_paths = json_encode($filePaths);
