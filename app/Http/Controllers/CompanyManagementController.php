@@ -13,25 +13,48 @@ class CompanyManagementController extends Controller
 {
     public function index(Request $request)
     {
-        $companies = Company::with([
+        $allowedSortColumns = [
+            'legal_id',
+            'name',
+            'sector',
+            'provincia',
+            'is_exporter',
+            'users_count',
+            'created_at'
+        ];
+
+        $query = Company::with([
             'users' => function ($query) {
                 $query->where('role', 'admin');
             },
             'evaluators' => function ($query) {
                 $query->select('users.id', 'users.name', 'users.email');
             }
-        ])
-        ->when($request->search, function($query, $search) {
-            $query->where(function($q) use ($search) {
+        ]);
+
+        // Aplicar búsqueda
+        if ($request->search) {
+            $query->where(function($q) use ($request) {
+                $search = $request->search;
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('legal_id', 'like', "%{$search}%")
                   ->orWhere('provincia', 'like', "%{$search}%")
                   ->orWhere('sector', 'like', "%{$search}%");
             });
-        })
-        ->withCount('users')
-        ->orderBy($request->sort_by ?? 'created_at', $request->sort_order ?? 'desc')
-        ->paginate($request->per_page ?? 10);
+        }
+
+        // Contar usuarios
+        $query->withCount('users');
+
+        // Aplicar ordenamiento
+        if ($request->has('sort_by') && in_array($request->sort_by, $allowedSortColumns)) {
+            $sortOrder = $request->input('sort_order', 'asc');
+            $query->orderBy($request->sort_by, $sortOrder);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $companies = $query->paginate($request->input('per_page', 10));
 
         return response()->json($companies);
     }

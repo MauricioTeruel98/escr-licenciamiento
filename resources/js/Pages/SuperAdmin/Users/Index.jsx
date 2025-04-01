@@ -28,11 +28,24 @@ export default function UsersIndex() {
     const [isLoading, setIsLoading] = useState(false);
     const [abortController, setAbortController] = useState(null);
     const [searchTimeout, setSearchTimeout] = useState(null);
+    const [sortConfig, setSortConfig] = useState({
+        key: 'created_at',
+        order: 'desc'
+    });
 
     const columns = [
-        { key: 'name', label: 'Nombre' },
-        { key: 'lastname', label: 'Apellido' },
-        { key: 'email', label: 'Email' },
+        { 
+            key: 'name', 
+            label: 'Nombre'
+        },
+        { 
+            key: 'lastname', 
+            label: 'Apellido'
+        },
+        { 
+            key: 'email', 
+            label: 'Email'
+        },
         {
             key: 'puesto',
             label: 'Puesto',
@@ -95,6 +108,7 @@ export default function UsersIndex() {
         {
             key: 'company',
             label: 'Empresa',
+            notSortable: true,
             render: (item) => {
                 if (item.role === 'evaluador') {
                     return (
@@ -151,6 +165,7 @@ export default function UsersIndex() {
         {
             key: 'actions',
             label: 'Acciones',
+            notSortable: true,
             render: (item) => (
                 <div className="flex items-center gap-2">
                     <button
@@ -174,7 +189,7 @@ export default function UsersIndex() {
 
     useEffect(() => {
         fetchUsers();
-    }, [pagination.currentPage, pagination.perPage, searchTerm, activeFilter]);
+    }, [pagination.currentPage, pagination.perPage, searchTerm, activeFilter, sortConfig]);
 
     const fetchUsers = async () => {
         if (abortController) {
@@ -191,7 +206,9 @@ export default function UsersIndex() {
                     page: pagination.currentPage,
                     per_page: pagination.perPage,
                     search: searchTerm,
-                    role: activeFilter === 'todos' ? null : activeFilter
+                    role: activeFilter === 'todos' ? null : activeFilter,
+                    sort_by: sortConfig.key,
+                    sort_order: sortConfig.order
                 },
                 signal: controller.signal
             });
@@ -332,6 +349,10 @@ export default function UsersIndex() {
         setPagination({ ...pagination, currentPage: 1 });
     };
 
+    const handleSort = (key, order) => {
+        setSortConfig({ key, order });
+    };
+
     useEffect(() => {
         return () => {
             if (searchTimeout) {
@@ -395,7 +416,8 @@ export default function UsersIndex() {
                     columns={columns}
                     data={users}
                     onSearch={handleSearch}
-                    onSort={() => { }}
+                    onSort={handleSort}
+                    sortConfig={sortConfig}
                     pagination={pagination}
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}

@@ -32,12 +32,28 @@ export default function CompaniesIndex() {
     const [abortController, setAbortController] = useState(null);
     const [searchTimeout, setSearchTimeout] = useState(null);
     const [isSearching, setIsSearching] = useState(false);
+    const [sortConfig, setSortConfig] = useState({
+        key: 'created_at',
+        order: 'desc'
+    });
 
     const columns = [
-        { key: 'legal_id', label: 'Cedula' },
-        { key: 'name', label: 'Nombre' },
-        { key: 'sector', label: 'Sector' },
-        { key: 'provincia', label: 'Provincia' },
+        { 
+            key: 'legal_id', 
+            label: 'Cedula'
+        },
+        { 
+            key: 'name', 
+            label: 'Nombre'
+        },
+        { 
+            key: 'sector', 
+            label: 'Sector'
+        },
+        { 
+            key: 'provincia', 
+            label: 'Provincia'
+        },
         { 
             key: 'is_exporter', 
             label: 'Exportador',
@@ -59,6 +75,7 @@ export default function CompaniesIndex() {
         {
             key: 'evaluators',
             label: 'Evaluadores',
+            notSortable: true,
             render: (item) => (
                 <div className="flex flex-wrap gap-1">
                     {item.evaluators && item.evaluators.length > 0 ? (
@@ -80,6 +97,7 @@ export default function CompaniesIndex() {
         {
             key: 'actions',
             label: 'Acciones',
+            notSortable: true,
             render: (item) => (
                 <div className="flex items-center gap-2">
                     <button
@@ -111,7 +129,7 @@ export default function CompaniesIndex() {
     useEffect(() => {
         fetchCompanies();
         fetchProvincias();
-    }, [pagination.currentPage, pagination.perPage, searchTerm]);
+    }, [pagination.currentPage, pagination.perPage, searchTerm, sortConfig]);
 
     const fetchCompanies = async () => {
         if (abortController) {
@@ -128,7 +146,9 @@ export default function CompaniesIndex() {
                 params: {
                     page: pagination.currentPage,
                     per_page: pagination.perPage,
-                    search: searchTerm
+                    search: searchTerm,
+                    sort_by: sortConfig.key,
+                    sort_order: sortConfig.order
                 },
                 signal: controller.signal
             });
@@ -261,6 +281,10 @@ export default function CompaniesIndex() {
         setSearchTimeout(timeout);
     };
 
+    const handleSort = (key, order) => {
+        setSortConfig({ key, order });
+    };
+
     useEffect(() => {
         return () => {
             if (searchTimeout) {
@@ -294,11 +318,13 @@ export default function CompaniesIndex() {
                     <TableList
                         columns={columns}
                         data={companies}
+                        onSearch={handleSearch}
+                        onSort={handleSort}
+                        sortConfig={sortConfig}
                         pagination={pagination}
                         onPageChange={(page) => setPagination({...pagination, currentPage: page})}
                         onPerPageChange={(perPage) => setPagination({...pagination, perPage, currentPage: 1})}
                         onBulkDelete={handleBulkDelete}
-                        onSearch={handleSearch}
                         isLoading={isLoading}
                     />
                 </div>

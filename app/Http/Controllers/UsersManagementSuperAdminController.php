@@ -15,9 +15,9 @@ class UsersManagementSuperAdminController extends Controller
     public function index(Request $request)
     {
         $query = User::query()
-            ->with(['company', 'evaluatedCompanies'])
-            ->orderBy('created_at', 'desc');
+            ->with(['company', 'evaluatedCompanies']);
 
+        // Aplicar búsqueda
         if ($request->has('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -28,8 +28,30 @@ class UsersManagementSuperAdminController extends Controller
             });
         }
 
+        // Aplicar filtro por rol
         if ($request->has('role') && $request->input('role') !== 'todos') {
             $query->where('role', $request->input('role'));
+        }
+
+        // Lista de columnas ordenables permitidas
+        $allowedSortColumns = [
+            'name',
+            'lastname',
+            'email',
+            'puesto',
+            'phone',
+            'created_at',
+            'role',
+            'status'
+        ];
+
+        // Aplicar ordenamiento solo si la columna está permitida
+        if ($request->has('sort_by') && in_array($request->input('sort_by'), $allowedSortColumns)) {
+            $sortBy = $request->input('sort_by');
+            $sortOrder = $request->input('sort_order', 'asc');
+            $query->orderBy($sortBy, $sortOrder);
+        } else {
+            $query->orderBy('created_at', 'desc');
         }
 
         $users = $query->paginate($request->input('per_page', 10));

@@ -11,7 +11,8 @@ export default function TableList({
     onPageChange,
     onPerPageChange,
     onBulkDelete,
-    isLoading
+    isLoading,
+    sortConfig = null
 }) {
     const [selectedItems, setSelectedItems] = useState([]);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -102,6 +103,14 @@ export default function TableList({
         };
     }, []);
 
+    const handleSort = (column) => {
+        // Si la columna no es ordenable o no hay onSort/sortConfig, no hacer nada
+        if (!onSort || !sortConfig || column.notSortable) return;
+        
+        const newOrder = sortConfig.key === column.key && sortConfig.order === 'asc' ? 'desc' : 'asc';
+        onSort(column.key, newOrder);
+    };
+
     return (
         <div className="bg-white rounded-lg shadow overflow-hidden">
             {/* Barra de acciones masivas */}
@@ -181,10 +190,17 @@ export default function TableList({
                                 <th
                                     key={column.key}
                                     scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                    onClick={() => onSort && onSort(column.key)}
+                                    className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${onSort && !column.notSortable ? 'cursor-pointer select-none hover:bg-gray-100' : ''}`}
+                                    onClick={() => handleSort(column)}
                                 >
-                                    {column.label}
+                                    <div className="flex items-center space-x-1">
+                                        <span>{column.label}</span>
+                                        {sortConfig && sortConfig.key === column.key && !column.notSortable && (
+                                            <span className="ml-2">
+                                                {sortConfig.order === 'asc' ? '↑' : '↓'}
+                                            </span>
+                                        )}
+                                    </div>
                                 </th>
                             ))}
                         </tr>

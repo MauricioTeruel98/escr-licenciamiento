@@ -22,6 +22,10 @@ export default function Reportes() {
     const [modalStatus, setModalStatus] = useState('initial');
     const [selectedEmpresa, setSelectedEmpresa] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [sortConfig, setSortConfig] = useState({
+        key: 'id',
+        order: 'desc'
+    });
 
     const columns = [
         {
@@ -115,6 +119,7 @@ export default function Reportes() {
         {
             key: 'actions',
             label: '',
+            notSortable: true,
             render: (item) => (
                 <div className="flex items-center justify-end gap-4">
                     {
@@ -144,9 +149,9 @@ export default function Reportes() {
 
     useEffect(() => {
         fetchEmpresas();
-    }, [pagination.currentPage, pagination.perPage, searchTerm]);
+    }, [pagination.currentPage, pagination.perPage, searchTerm, sortConfig]);
 
-    const fetchEmpresas = async (page = pagination.currentPage, perPage = pagination.perPage, search = searchTerm) => {
+    const fetchEmpresas = async () => {
         if (abortController) {
             abortController.abort();
         }
@@ -158,9 +163,11 @@ export default function Reportes() {
         try {
             const response = await axios.get('/api/empresas-reportes', {
                 params: {
-                    page,
-                    per_page: perPage,
-                    search
+                    page: pagination.currentPage,
+                    per_page: pagination.perPage,
+                    search: searchTerm,
+                    sort_by: sortConfig.key,
+                    sort_order: sortConfig.order
                 },
                 signal: controller.signal
             });
@@ -190,7 +197,7 @@ export default function Reportes() {
 
         const timeout = setTimeout(() => {
             setPagination(prev => ({ ...prev, currentPage: 1 }));
-            fetchEmpresas(1, pagination.perPage, term);
+            fetchEmpresas();
         }, 500);
 
         setSearchTimeout(timeout);
@@ -268,6 +275,10 @@ export default function Reportes() {
         }
     };
 
+    const handleSort = (key, order) => {
+        setSortConfig({ key, order });
+    };
+
     return (
         <SuperAdminLayout>
             <Head title="Reportes" />
@@ -290,7 +301,8 @@ export default function Reportes() {
                     columns={columns}
                     data={empresas}
                     onSearch={handleSearch}
-                    onSort={() => { }}
+                    onSort={handleSort}
+                    sortConfig={sortConfig}
                     pagination={pagination}
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}
