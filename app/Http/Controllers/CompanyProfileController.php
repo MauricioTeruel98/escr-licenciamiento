@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use App\Models\Value;
+use App\Models\EvaluatorAssessment;
+use App\Models\IndicatorAnswerEvaluation;
+use App\Models\Indicator;
+use App\Models\EvaluationValueResult;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CompanyProfileController extends Controller
 {
@@ -331,6 +337,28 @@ class CompanyProfileController extends Controller
             $responseData['provincia_nombre'] = $companyData['provincia'] ?? null;
             $responseData['canton_nombre'] = $companyData['canton'] ?? null;
             $responseData['distrito_nombre'] = $companyData['distrito'] ?? null;
+
+            // Verificar si el usuario es super_admin o evaluador
+            $user = Auth::user();
+            if ($user->role === 'super_admin' || $user->role === 'evaluador') {
+                // Solo regenerar el documento si la empresa ya ha sido evaluada
+                if (in_array($company->estado_eval, ['evaluado', 'evaluacion-calificada'])) {
+                    $documentRegenerated = $this->regenerateEvaluationDocument($company, $user);
+                    if ($documentRegenerated) {
+                        Log::info('Documento de evaluación regenerado exitosamente', [
+                            'company_id' => $company->id,
+                            'user_id' => $user->id,
+                            'role' => $user->role
+                        ]);
+                    } else {
+                        Log::warning('No se pudo regenerar el documento de evaluación', [
+                            'company_id' => $company->id,
+                            'user_id' => $user->id,
+                            'role' => $user->role
+                        ]);
+                    }
+                }
+            }
 
             return response()->json([
                 'success' => true,
@@ -1110,6 +1138,116 @@ class CompanyProfileController extends Controller
                 'success' => false,
                 'message' => 'Error al eliminar la imagen: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    private function regenerateEvaluationDocument($company, $user)
+    {
+        try {
+            // Crear estructura de carpetas para la empresa
+            $companySlug = Str::slug($company->name);
+            $basePath = storage_path('app/public/companies');
+            $companyPath = "{$basePath}/{$company->id}-{$companySlug}/evaluations";
+
+            // Eliminar todos los PDFs anteriores de evaluación
+            if (file_exists($companyPath)) {
+                $files = glob($companyPath . "/evaluation_{$company->id}_{$companySlug}_*.pdf");
+                foreach ($files as $file) {
+                    if (is_file($file)) {
+                        unlink($file);
+                    }
+                }
+            }
+
+            // Obtener todos los valores
+            $allValues = Value::where('is_active', true)
+                ->where('deleted', false)
+                ->where(function ($query) use ($company) {
+                    $query->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })
+                ->get();
+
+            // Obtener las puntuaciones finales
+            $finalScores = EvaluationValueResult::where('company_id', $company->id)
+                ->get()
+                ->keyBy('value_id');
+
+            // Obtener todas las evaluaciones del evaluador para esta empresa
+            $evaluatorAssessments = EvaluatorAssessment::where('company_id', $company->id)
+                ->with(['evaluationQuestion', 'indicator'])
+                ->get()
+                ->groupBy('indicator_id');
+
+            // Obtener todas las respuestas de la empresa
+            $companyAnswers = IndicatorAnswerEvaluation::where('company_id', $company->id)
+                ->with(['evaluationQuestion', 'indicator'])
+                ->get()
+                ->groupBy('indicator_id');
+
+            // Obtener todas las respuestas de autoevaluación
+            $autoEvaluationAnswers = \App\Models\IndicatorAnswer::where('company_id', $company->id)
+                ->with(['indicator'])
+                ->get()
+                ->groupBy('indicator_id');
+
+            // Agrupar indicadores por valor
+            $indicatorsByValue = Indicator::where('is_active', true)
+                ->with(['subcategory.value', 'evaluationQuestions'])
+                ->where('deleted', false)
+                ->where(function ($query) use ($company) {
+                    $query->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })
+                ->get()
+                ->groupBy('subcategory.value.id');
+
+            // Generar nuevo PDF
+            $pdf = Pdf::loadView('pdf/evaluation', [
+                'values' => $allValues,
+                'company' => $company,
+                'evaluador' => $user,
+                'date' => now()->format('d/m/Y'),
+                'finalScores' => $finalScores,
+                'evaluatorAssessments' => $evaluatorAssessments,
+                'companyAnswers' => $companyAnswers,
+                'autoEvaluationAnswers' => $autoEvaluationAnswers,
+                'indicatorsByValue' => $indicatorsByValue
+            ]);
+
+            // Crear carpetas si no existen
+            if (!file_exists($basePath)) {
+                mkdir($basePath, 0755, true);
+            }
+            if (!file_exists($companyPath)) {
+                mkdir($companyPath, 0755, true);
+            }
+
+            // Generar nombre de archivo con timestamp
+            $fileName = "evaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
+            $fullPath = "{$companyPath}/{$fileName}";
+
+            // Guardar PDF
+            $pdf->save($fullPath);
+
+            $finalEvaluationPath = "companies/{$company->id}-{$companySlug}/evaluations/{$fileName}";
+
+            // Actualizar la ruta del documento en la empresa
+            $company->evaluation_document_path = $finalEvaluationPath;
+            $company->save();
+
+            Log::info('PDFs anteriores eliminados y nuevo PDF generado', [
+                'company_id' => $company->id,
+                'new_path' => $finalEvaluationPath
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Error al regenerar el documento de evaluación:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return false;
         }
     }
 }

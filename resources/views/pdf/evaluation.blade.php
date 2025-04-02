@@ -428,6 +428,7 @@
     <p><strong style="font-weight: bold; font-size: 15px;">Razón social:</strong> {{ $company->infoAdicional->nombre_legal ?? 'N/A' }}</p>
     <p><strong style="font-weight: bold; font-size: 15px;">Cédula jurídica:</strong> {{ $company->infoAdicional->cedula_juridica ?? 'N/A' }}</p>
     <p><strong style="font-weight: bold; font-size: 15px;">Descripción:</strong> {{ $company->infoAdicional->descripcion_es ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 15px;">Actividad comercial:</strong> {{ $company->infoAdicional->actividad_comercial ?? 'N/A' }}</p>
     <p><strong style="font-weight: bold; font-size: 15px;">Año de fundación:</strong> {{ $company->infoAdicional->anio_fundacion ?? 'N/A' }}</p>
     <p><strong style="font-weight: bold; font-size: 15px;">Proceso de licenciamiento:</strong> {{ $company->infoAdicional->proceso_licenciamiento ?? 'N/A' }}</p>
     <p><strong style="font-weight: bold; font-size: 15px;">Exporta actualmente:</strong> {{ $company->infoAdicional->es_exportadora ? 'Sí' : 'No' }}</p>
