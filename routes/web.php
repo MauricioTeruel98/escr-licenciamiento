@@ -149,6 +149,7 @@ Route::middleware(['auth', 'verified', EnsureUserHasCompany::class, EnsureCompan
 Route::middleware(['auth', EnsureUserIsEvaluador::class])->group(function () {
     Route::get('/evaluador/reportes', [EvaluadorController::class, 'reportes'])->name('evaluador.reportes');
     Route::get('/api/evaluador/companies', [EvaluadorController::class, 'getCompaniesList']);
+    Route::get('/api/evaluador/companies/list-to-select', [EvaluadorController::class, 'getCompaniesListToSelect']);
     Route::get('/evaluador/dashboard', [EvaluadorController::class, 'dashboard'])->name('evaluador.dashboard');
     Route::get('/evaluador/companies', [EvaluadorController::class, 'companies'])->name('evaluador.companies');
     Route::get('/evaluador/profile', [ProfileController::class, 'edit'])->name('evaluador.profile.edit');

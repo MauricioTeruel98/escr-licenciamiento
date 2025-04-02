@@ -26,6 +26,14 @@ export default function EmpresasEvaluadorIndex() {
         total: 0,
         perPage: 10
     });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [abortController, setAbortController] = useState(null);
+    const [searchTimeout, setSearchTimeout] = useState(null);
+    const [sortConfig, setSortConfig] = useState({
+        key: 'created_at',
+        order: 'desc'
+    });
     const [error, setError] = useState(null);
     const [infoModalOpen, setInfoModalOpen] = useState(false);
 
@@ -90,6 +98,7 @@ export default function EmpresasEvaluadorIndex() {
         {
             key: 'actions',
             label: '',
+            notSortable: true,
             render: (item) => (
                 <div className="flex items-center justify-end gap-5">
                     <div className="flex items-center justify-end">
@@ -118,19 +127,69 @@ export default function EmpresasEvaluadorIndex() {
         }
     ];
 
-    useEffect(() => {
-        const fetchCompanies = async () => {
-            try {
-                const response = await axios.get('/api/evaluador/companies');
-                setCompanies(response.data);
-            } catch (error) {
-                console.error('Error al cargar empresas:', error);
-                setError('Error al cargar las empresas');
-            }
-        };
+    const fetchCompanies = async () => {
+        if (abortController) {
+            abortController.abort();
+        }
 
+        const controller = new AbortController();
+        setAbortController(controller);
+        setIsLoading(true);
+
+        try {
+            const response = await axios.get('/api/evaluador/companies', {
+                params: {
+                    page: pagination.currentPage,
+                    per_page: pagination.perPage,
+                    search: searchTerm,
+                    sort_by: sortConfig.key,
+                    sort_order: sortConfig.order
+                },
+                signal: controller.signal
+            });
+            
+            setCompanies(response.data.data);
+            setPagination({
+                currentPage: response.data.current_page,
+                lastPage: response.data.last_page,
+                total: response.data.total,
+                perPage: response.data.per_page
+            });
+        } catch (error) {
+            if (!axios.isCancel(error)) {
+                console.error('Error al cargar empresas:', error);
+                setNotification({
+                    type: 'error',
+                    message: 'Error al cargar las empresas'
+                });
+            }
+        } finally {
+            setIsLoading(false);
+            setAbortController(null);
+        }
+    };
+
+    useEffect(() => {
         fetchCompanies();
-    }, []);
+    }, [pagination.currentPage, pagination.perPage, searchTerm, sortConfig]);
+
+    const handleSearch = (term) => {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
+        setSearchTerm(term);
+        
+        const timeout = setTimeout(() => {
+            setPagination({...pagination, currentPage: 1});
+        }, 500);
+
+        setSearchTimeout(timeout);
+    };
+
+    const handleSort = (key, order) => {
+        setSortConfig({ key, order });
+    };
 
     const handleCreate = () => {
         setSelectedCompany(null);
@@ -257,19 +316,18 @@ export default function EmpresasEvaluadorIndex() {
                     <TableList
                         columns={columns}
                         data={companies}
+                        onSearch={handleSearch}
+                        onSort={handleSort}
+                        sortConfig={sortConfig}
                         pagination={pagination}
-                        onPageChange={(page) => setPagination({ ...pagination, currentPage: page })}
-                        onPerPageChange={(perPage) => setPagination({ ...pagination, perPage, currentPage: 1 })}
+                        onPageChange={(page) => setPagination({...pagination, currentPage: page})}
+                        onPerPageChange={(perPage) => setPagination({...pagination, perPage, currentPage: 1})}
                         onBulkDelete={handleBulkDelete}
+                        isLoading={isLoading}
                     />
                 </div>
 
-                <CompanyModal
-                    isOpen={modalOpen}
-                    onClose={() => setModalOpen(false)}
-                    onSubmit={handleSubmit}
-                    company={selectedCompany}
-                />
+            
 
                 <DeleteModal
                     isOpen={deleteModalOpen}

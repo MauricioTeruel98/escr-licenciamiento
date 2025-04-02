@@ -256,6 +256,88 @@ class DashboardController extends Controller
                 ];
             });
 
+        // Obtener todos los valores activos con sus resultados
+        $values = Value::where('is_active', true)
+            ->where('deleted', false)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
+            ->with(['subcategories' => function ($query) use ($company) {
+                $query->where('deleted', false)
+                    ->where(function ($q) use ($company) {
+                        $q->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    })
+                    ->with(['indicators' => function ($query) use ($company) {
+                        $query->where('deleted', false)
+                            ->where(function ($q) use ($company) {
+                                $q->whereNull('created_at')
+                                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                            });
+                    }]);
+            }])
+            ->get();
+
+        // Obtener los resultados de autoevaluación para cada valor
+        $valueResults = AutoEvaluationValorResult::where('company_id', $user->company_id)
+            ->get()
+            ->keyBy('value_id');
+
+        // Obtener indicadores homologados
+        $homologatedIndicators = [];
+        if ($certificaciones->count() > 0) {
+            $homologationIds = $certificaciones->pluck('homologation_id')->filter()->toArray();
+            if (!empty($homologationIds)) {
+                $homologatedIndicators = IndicatorHomologation::whereIn('homologation_id', $homologationIds)
+                    ->whereHas('indicator', function ($query) use ($company) {
+                        $query->where('is_active', true)
+                            ->where('deleted', false)
+                            ->where(function ($q) use ($company) {
+                                $q->whereNull('created_at')
+                                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                            });
+                    })
+                    ->pluck('indicator_id')
+                    ->toArray();
+            }
+        }
+
+        // Calcular progreso para cada valor
+        $valuesProgress = $values->map(function ($value) use ($valueResults, $homologatedIndicators) {
+            $totalIndicators = 0;
+            $answeredIndicators = 0;
+            
+            foreach ($value->subcategories as $subcategory) {
+                foreach ($subcategory->indicators as $indicator) {
+                    $totalIndicators++;
+                    if (in_array($indicator->id, $homologatedIndicators)) {
+                        $answeredIndicators++;
+                    }
+                }
+            }
+            
+            $answered = IndicatorAnswer::where('company_id', Auth::id())
+                ->whereHas('indicator', function ($query) use ($value) {
+                    $query->whereHas('subcategory', function ($q) use ($value) {
+                        $q->where('value_id', $value->id);
+                    });
+                })
+                ->count();
+            
+            $answeredIndicators += $answered;
+            
+            return [
+                'id' => $value->id,
+                'name' => $value->name,
+                'minimum_score' => $value->minimum_score,
+                'total_indicators' => $totalIndicators,
+                'answered_indicators' => $answeredIndicators,
+                'progress' => $totalIndicators > 0 ? round(($answeredIndicators / $totalIndicators) * 100) : 0,
+                'result' => $valueResults->get($value->id),
+            ];
+        });
+
         return Inertia::render('Dashboard/Evaluation', [
             'userName' => $user->name,
             'isAdmin' => $isAdmin,
@@ -274,6 +356,7 @@ class DashboardController extends Controller
             'autoEvaluationResult' => $autoEvaluationResult,
             'company' => $company,
             'preguntasDescalificatoriasRechazadas' => $preguntasDescalificatoriasRechazadas,
+            'valuesProgress' => $valuesProgress,
             'flash' => [
                 'error' => session('error'),
                 'success' => session('success')

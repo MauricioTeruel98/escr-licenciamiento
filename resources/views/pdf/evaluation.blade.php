@@ -611,7 +611,7 @@
     @endif
 
     @if ($company->infoAdicional->representante_nombre)
-        <h3>Contacto del Representante Legal o Gerente General</h3>
+        <h3>Contacto del Representante Legal o Gerente General (Presidente o CEO de su organización)</h3>
         <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->representante_nombre ?? 'N/A' }}</p>
         <p><strong>Posición dentro de la organización:</strong>
             {{ $company->infoAdicional->representante_puesto ?? 'N/A' }}</p>
@@ -663,14 +663,14 @@
         <tr>
             <th>Nombre del Organismo Evaluador</th>
             <th>Nombre del Evaluador</th>
-            <th>Cédula</th>
+            {{-- <th>Cédula</th> --}}
             <th>Correo electrónico</th>
             <th>Teléfono</th>
         </tr>
         <tr>
             <td>{{ $evaluador->organismo ?? 'N/A' }}</td>
             <td>{{ $evaluador->name }} {{ $evaluador->lastname }}</td>
-            <td>{{ $evaluador->cedula }}</td>
+            {{-- <td>{{ $evaluador->cedula }}</td> --}}
             <td>{{ $evaluador->email }}</td>
             <td>{{ $evaluador->phone }}</td>
         </tr>
@@ -979,13 +979,11 @@
             <td>
                 <div class="signature-line">
                     <p><strong>REPRESENTANTE DE LA ORGANIZACIÓN</strong></p>
-                    <p>(Nombre, firma y número de cédula)</p>
                 </div>
             </td>
             <td>
                 <div class="signature-line">
                     <p><strong>EVALUADOR</strong></p>
-                    <p>(Nombre, firma y número de cédula)</p>
                 </div>
             </td>
         </tr>

@@ -51,7 +51,7 @@ export default function EvaluadorDashboard({ auth }) {
 
     const fetchCompanies = async () => {
         try {
-            const response = await axios.get('/api/evaluador/companies');
+            const response = await axios.get('/api/evaluador/companies/list-to-select');
             setCompanies(response.data);
         } catch (error) {
             console.error('Error al cargar empresas:', error);

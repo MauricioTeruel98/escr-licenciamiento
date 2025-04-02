@@ -122,7 +122,8 @@ export default function Evaluation({
     failedValues,
     autoEvaluationResult,
     company,
-    preguntasDescalificatoriasRechazadas
+    preguntasDescalificatoriasRechazadas,
+    valuesProgress
 }) {
     const { post } = useForm();
     const { auth, flash } = usePage().props;
@@ -774,6 +775,7 @@ export default function Evaluation({
                                 </div>
 
                                 <div className="md:w-1/3">
+
                                     {/* Mensaje de éxito cuando está apto */}
                                     {status === 'apto' && (
                                         <div className="space-y-4 bg-green-50/50 p-4 rounded-lg">
@@ -820,6 +822,64 @@ export default function Evaluation({
                     }
 
                 </div>
+
+                {/* Progreso de cada valor */}
+                {/* <div className="card bg-white shadow">
+                    <div className="card-body">
+                        <div className="mt-4">
+                            <h3 className="text-lg font-semibold mb-4">Progreso por valor</h3>
+                            <div className="flex justify-between gap-4">
+                                {valuesProgress.map((value) => (
+                                    <div key={value.id} className="bg-white p-4 rounded-lg shadow w-full">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <h4 className="font-medium">{value.name}</h4>
+                                            {value.result ? (
+                                                <span className={`px-2 py-1 rounded text-sm ${value.result.nota >= value.minimum_score
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                    {value.result.nota}%
+                                                </span>
+                                            ) : (
+                                                <Link
+                                                    href={route('indicadores', value.id)}
+                                                    className="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                                                >
+                                                    Completar
+                                                </Link>
+                                            )}
+                                        </div>
+                                        <div className="relative pt-1">
+                                            <div className="flex mb-2 items-center justify-between">
+                                                <div>
+                                                    <span className="text-xs font-semibold inline-block text-green-600">
+                                                        {value.progress}% Completado
+                                                    </span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-xs font-semibold inline-block text-green-600">
+                                                        {value.answered_indicators}/{value.total_indicators} Indicadores
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-green-200">
+                                                <div
+                                                    style={{ width: `${value.progress}%` }}
+                                                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500"
+                                                ></div>
+                                            </div>
+                                        </div>
+                                        {value.result && (
+                                            <div className="text-sm text-gray-600">
+                                                Nota mínima requerida: {value.minimum_score}%
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div> */}
 
                 <div>
                     {

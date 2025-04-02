@@ -19,7 +19,41 @@ class EvaluadorController extends Controller
         return Inertia::render('Evaluador/Evaluations');
     }
 
-    public function getCompaniesList()
+    public function getCompaniesList(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $query = $user->evaluatedCompanies()->withCount('users');
+
+            // Búsqueda
+            if ($request->has('search') && !empty($request->search)) {
+                $searchTerm = $request->search;
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('name', 'like', "%{$searchTerm}%")
+                    ->orWhere('estado_eval', 'like', "%{$searchTerm}%");
+                });
+            }
+
+            // Ordenamiento
+            $sortBy = $request->input('sort_by', 'created_at');
+            $sortOrder = $request->input('sort_order', 'desc');
+            $allowedSortFields = ['name', 'estado_eval', 'created_at'];
+            
+            if (in_array($sortBy, $allowedSortFields)) {
+                $query->orderBy($sortBy, $sortOrder);
+            }
+
+            // Paginación
+            $perPage = $request->input('per_page', 10);
+            $companies = $query->paginate($perPage);
+
+            return response()->json($companies);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener las empresas'], 500);
+        }
+    }
+
+    public function getCompaniesListToSelect()
     {
         try {
             $user = auth()->user();
