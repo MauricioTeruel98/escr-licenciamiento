@@ -1379,6 +1379,12 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         }
     };
 
+    // Agregar una función para validar email
+    const isValidEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
     // Función para manejar cambios en campos de texto
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -1670,6 +1676,23 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
         // Actualizar el estado con el valor validado
         setData(name, valorValidado);
+
+        // Si es un campo de email, validar el formato
+        if (name.includes('email')) {
+            if (value && !isValidEmail(value)) {
+                setErrors(prevErrors => ({
+                    ...prevErrors,
+                    [name]: 'Por favor ingrese un correo electrónico válido'
+                }));
+            } else {
+                // Limpiar el error si el formato es correcto o el campo está vacío
+                setErrors(prevErrors => {
+                    const newErrors = { ...prevErrors };
+                    delete newErrors[name];
+                    return newErrors;
+                });
+            }
+        }
     };
 
     // Función para manejar cambios en campos de URL
@@ -2089,7 +2112,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 )}
             </h1>
             <div className="mx-auto py-6">
-                <form onSubmit={submit} encType="multipart/form-data" className="space-y-8">
+                <form onSubmit={submit} encType="multipart/form-data" className="space-y-8" noValidate>
                     {/* Sección de Información de Empresa */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200" data-seccion="informacion">
                         <button

@@ -41,7 +41,7 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
                     active: url === `/evaluacion/${value.id}`
                 })) : [];
                 setEvaluacionItems(values);
-                
+
                 // Verificar si alguna ruta de evaluación está activa para abrir el dropdown automáticamente
                 const isAnyEvaluacionRouteActive = values.some(item => item.active);
                 if (isAnyEvaluacionRouteActive) {
@@ -67,9 +67,8 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
         <>
             {/* Overlay para móvil */}
             <div
-                className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${
-                    isOpen ? 'block' : 'hidden'
-                }`}
+                className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${isOpen ? 'block' : 'hidden'
+                    }`}
                 onClick={() => setIsOpen(false)}
             />
 
@@ -98,8 +97,8 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
                                 transition-colors duration-200
                                 focus:text-white focus:bg-green-800
                                 active:text-white active:bg-green-800
-                                ${route().current('evaluador.dashboard') 
-                                    ? 'bg-green-800' 
+                                ${route().current('evaluador.dashboard')
+                                    ? 'bg-green-800'
                                     : 'hover:bg-green-800'}
                             `}
                         >
@@ -110,14 +109,33 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
                         </Link>
                     </li>
 
+                    <li className="mb-1">
+                        <Link
+                            href={route('certifications.create')}
+                            className={`
+                                block px-4 py-2 rounded-lg
+                                transition-colors duration-200
+                                focus:text-white focus:bg-green-800
+                                active:text-white active:bg-green-800
+                                ${route().current('certifications.create')
+                                    ? 'bg-green-800'
+                                    : 'hover:bg-green-800'}
+                            `}
+                        >
+                            <div className="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-3 h-5 w-5 icon icon-tabler icons-tabler-outline icon-tabler-certificate"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 15m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M13 17.5v4.5l2 -1.5l2 1.5v-4.5" /><path d="M10 19h-5a2 2 0 0 1 -2 -2v-10c0 -1.1 .9 -2 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -1 1.73" /><path d="M6 9l12 0" /><path d="M6 12l3 0" /><path d="M6 15l2 0" /></svg>
+                                Certificaciones
+                            </div>
+                        </Link>
+                    </li>
+
                     {/* Menú Administrar Evaluación - Solo mostrar si la empresa está autorizada */}
                     {isCompanyAuthorized && activeCompany && (
                         <li className="mb-1">
                             <button
                                 onClick={() => setIsEvaluacionOpen(!isEvaluacionOpen)}
-                                className={`w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800 ${
-                                    url.startsWith('/evaluacion/') ? 'bg-green-800' : ''
-                                }`}
+                                className={`w-full px-4 py-2 flex items-center justify-between hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800 ${url.startsWith('/evaluacion/') ? 'bg-green-800' : ''
+                                    }`}
                             >
                                 <div className="flex items-center">
                                     <ClipboardList className="mr-3 h-5 w-5" />
@@ -139,9 +157,8 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
                                     <li key={index}>
                                         <Link
                                             href={item.route}
-                                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800 ${
-                                                item.active ? 'bg-green-800' : ''
-                                            }`}
+                                            className={`block px-4 py-2 hover:bg-green-800 rounded-lg focus:text-white focus:bg-green-800 active:text-white active:bg-green-800 ${item.active ? 'bg-green-800' : ''
+                                                }`}
                                         >
                                             {item.name}
                                         </Link>
@@ -160,8 +177,8 @@ export default function EvaluadorSidebar({ isOpen, setIsOpen }) {
                                 transition-colors duration-200
                                 focus:text-white focus:bg-green-800
                                 active:text-white active:bg-green-800
-                                ${route().current('evaluador.empresas') 
-                                    ? 'bg-green-800' 
+                                ${route().current('evaluador.empresas')
+                                    ? 'bg-green-800'
                                     : 'hover:bg-green-800'}
                             `}
                         >
