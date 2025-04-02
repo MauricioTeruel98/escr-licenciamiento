@@ -137,7 +137,7 @@ class CompanyController extends Controller
             // Crear estructura de carpetas para la empresa
             $companySlug = Str::slug($company->name);
             $basePath = storage_path('app/public/companies');
-            $companyPath = "{$basePath}/{$company->id}-{$companySlug}/evaluations";
+            $companyPath = "{$basePath}/{$company->id}/evaluations";
 
             // Eliminar todos los PDFs anteriores de evaluación
             if (file_exists($companyPath)) {
@@ -220,7 +220,7 @@ class CompanyController extends Controller
             // Guardar PDF
             $pdf->save($fullPath);
 
-            $finalEvaluationPath = "companies/{$company->id}-{$companySlug}/evaluations/{$fileName}";
+            $finalEvaluationPath = "companies/{$company->id}/evaluations/{$fileName}";
 
             // Actualizar la ruta del documento en la empresa
             $company->evaluation_document_path = $finalEvaluationPath;

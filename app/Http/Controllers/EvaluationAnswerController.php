@@ -145,7 +145,7 @@ class EvaluationAnswerController extends Controller
                             $companySlug = Str::slug($company->name);
                             $fileName = time() . '_' . $file->getClientOriginalName();
                             $path = $file->storeAs(
-                                "companies/{$company->id}-{$companySlug}/evaluation-files",
+                                "companies/{$company->id}/evaluation-files",
                                 $fileName,
                                 'public'
                             );
@@ -270,7 +270,7 @@ class EvaluationAnswerController extends Controller
                     // Crear estructura de carpetas para la empresa
                     $companySlug = Str::slug($company->name);
                     $basePath = storage_path('app/public/companies');
-                    $companyPath = "{$basePath}/{$company->id}-{$companySlug}/evaluations";
+                    $companyPath = "{$basePath}/{$company->id}/evaluations";
 
                     // Crear carpetas si no existen
                     if (!file_exists($basePath)) {
@@ -287,7 +287,7 @@ class EvaluationAnswerController extends Controller
                     // Guardar PDF
                     $pdf->save($fullPath);
 
-                    $finalEvaluationPath = "companies/{$company->id}-{$companySlug}/evaluations/{$fileName}";
+                    $finalEvaluationPath = "companies/{$company->id}/evaluations/{$fileName}";
 
                     $company->evaluation_document_path = $finalEvaluationPath;
                     $company->save();
@@ -560,7 +560,7 @@ class EvaluationAnswerController extends Controller
                                         $companySlug = Str::slug($company->name);
                                         $fileName = time() . '_' . $file->getClientOriginalName();
                                         $path = $file->storeAs(
-                                            "companies/{$company->id}-{$companySlug}/evaluation-files",
+                                            "companies/{$company->id}/evaluation-files",
                                             $fileName,
                                             'public'
                                         );
@@ -628,7 +628,7 @@ class EvaluationAnswerController extends Controller
                             $companySlug = Str::slug($company->name);
                             $fileName = time() . '_' . $file->getClientOriginalName();
                             $path = $file->storeAs(
-                                "companies/{$company->id}-{$companySlug}/evaluation-files",
+                                "companies/{$company->id}/evaluation-files",
                                 $fileName,
                                 'public'
                             );
@@ -1013,7 +1013,7 @@ class EvaluationAnswerController extends Controller
             // Crear estructura de carpetas para la empresa
             $companySlug = Str::slug($company->name);
             $basePath = storage_path('app/public/companies');
-            $companyPath = "{$basePath}/{$company->id}-{$companySlug}/evaluations";
+            $companyPath = "{$basePath}/{$company->id}/evaluations";
 
             // Crear carpetas si no existen
             if (!file_exists($basePath)) {
@@ -1030,7 +1030,7 @@ class EvaluationAnswerController extends Controller
             // Guardar PDF
             $pdf->save($fullPath);
 
-            $finalEvaluationPath = "companies/{$company->id}-{$companySlug}/evaluations/{$fileName}";
+            $finalEvaluationPath = "companies/{$company->id}/evaluations/{$fileName}";
 
             $company->evaluation_document_path = $finalEvaluationPath;
             $company->save();

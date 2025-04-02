@@ -86,7 +86,7 @@ class CertificationController extends Controller
 
                     try {
                         $path = $file->storeAs(
-                            "companies/{$company->id}-{$companySlug}/certifications",
+                            "companies/{$company->id}/certifications",
                             $fileName,
                             'public'
                         );

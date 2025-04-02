@@ -296,7 +296,7 @@ class IndicadorAnswerController extends Controller
                 // Crear estructura de carpetas para la empresa
                 $companySlug = Str::slug($company->name);
                 $basePath = storage_path('app/public/companies');
-                $companyPath = "{$basePath}/{$company->id}-{$companySlug}/autoevaluations";
+                $companyPath = "{$basePath}/{$company->id}/autoevaluations";
 
                 // Crear carpetas si no existen
                 if (!file_exists($basePath)) {
@@ -430,7 +430,7 @@ class IndicadorAnswerController extends Controller
                 // Crear estructura de carpetas para la empresa
                 $companySlug = Str::slug($company->name);
                 $basePath = storage_path('app/public/companies');
-                $companyPath = "{$basePath}/{$company->id}-{$companySlug}/autoevaluations";
+                $companyPath = "{$basePath}/{$company->id}/autoevaluations";
 
                 // Crear carpetas si no existen
                 if (!file_exists($basePath)) {
@@ -441,11 +441,11 @@ class IndicadorAnswerController extends Controller
                 }
 
                 // Generar nombre de archivo con timestamp
-                //$finalEvaluationPath = "companies/{$company->id}-{$companySlug}/evaluations/{$fileName}";
+                //$finalEvaluationPath = "companies/{$company->id}/evaluations/{$fileName}";
                 $fileName = "autoevaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
                 $fullPath = "{$companyPath}/{$fileName}";
 
-                $evaluationPath = "{$company->id}-{$companySlug}";
+                $evaluationPath = "{$company->id}";
 
                 // Guardar PDF
                 $pdf->save($fullPath);
@@ -468,7 +468,7 @@ class IndicadorAnswerController extends Controller
                 }
 
                 //$finalAutoEvaluationPath = "{$evaluationPath}/{$fileName}";
-                $finalAutoEvaluationPath = "companies/{$company->id}-{$companySlug}/autoevaluations/{$fileName}";
+                $finalAutoEvaluationPath = "companies/{$company->id}/autoevaluations/{$fileName}";
 
                 // Actualizar la columna autoeval_ended en la tabla companies
                 $company->update([
@@ -685,7 +685,7 @@ class IndicadorAnswerController extends Controller
                 // Crear estructura de carpetas para la empresa
                 $companySlug = Str::slug($company->name);
                 $basePath = storage_path('app/public/companies');
-                $companyPath = "{$basePath}/{$company->id}-{$companySlug}/autoevaluations";
+                $companyPath = "{$basePath}/{$company->id}/autoevaluations";
 
                 // Crear carpetas si no existen
                 if (!file_exists($basePath)) {

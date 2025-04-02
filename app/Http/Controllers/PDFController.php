@@ -597,7 +597,7 @@ class PDFController extends Controller
                         ]);
 
                         // Crear carpetas si no existen
-                        $evalPath = "companies/{$company->id}-{$companySlug}/evaluations";
+                        $evalPath = "companies/{$company->id}/evaluations";
                         Storage::disk('public')->makeDirectory($evalPath);
 
                         // Generar nombre de archivo con timestamp y marca de borrador
@@ -635,7 +635,7 @@ class PDFController extends Controller
 
                 // Agregar la carpeta de archivos de la empresa
                 try {
-                    $companyFolderPath = "companies/{$company->id}-{$companySlug}";
+                    $companyFolderPath = "companies/{$company->id}";
                     if (Storage::disk('public')->exists($companyFolderPath)) {
                         // Obtener todos los archivos y subcarpetas
                         $files = Storage::disk('public')->allFiles($companyFolderPath);
@@ -742,7 +742,7 @@ class PDFController extends Controller
             
             // Ruta de la carpeta de evaluaciones de la empresa
             $companySlug = Str::slug($company->name);
-            $evalPath = "companies/{$company->id}-{$companySlug}/evaluations";
+            $evalPath = "companies/{$company->id}/evaluations";
             
             // Verificar si existe algún PDF de evaluación
             $pdfExists = Storage::disk('public')->exists($company->evaluation_document_path);
@@ -943,7 +943,7 @@ class PDFController extends Controller
             // Crear estructura de carpetas para la empresa
             $companySlug = Str::slug($company->name);
             $basePath = storage_path('app/public/companies');
-            $companyPath = "{$basePath}/{$company->id}-{$companySlug}/evaluations";
+            $companyPath = "{$basePath}/{$company->id}/evaluations";
 
             // Crear carpetas si no existen
             if (!file_exists($basePath)) {
@@ -961,7 +961,7 @@ class PDFController extends Controller
             $pdf->save($fullPath);
 
             // Actualizar el path del documento en la empresa
-            $evaluationPath = "companies/{$company->id}-{$companySlug}/evaluations/{$fileName}";
+            $evaluationPath = "companies/{$company->id}/evaluations/{$fileName}";
             $company->evaluation_document_path = $evaluationPath;
             $company->save();
 
