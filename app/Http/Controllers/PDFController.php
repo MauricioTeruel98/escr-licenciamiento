@@ -608,8 +608,8 @@ class PDFController extends Controller
                         $pdf->save($fullPath);
 
                         // Actualizar la ruta del documento en la empresa
-                        $company->evaluation_document_path = "{$evalPath}/{$fileName}";
-                        $company->save();
+                        //$company->evaluation_document_path = "{$evalPath}/{$fileName}";
+                        //$company->save();
 
                         // Agregar el PDF borrador al ZIP
                         $pdfContent = file_get_contents($fullPath);
@@ -635,26 +635,70 @@ class PDFController extends Controller
 
                 // Agregar la carpeta de archivos de la empresa
                 try {
-                    $companyFolderPath = "companies/{$company->id}";
-                    if (Storage::disk('public')->exists($companyFolderPath)) {
-                        // Obtener todos los archivos y subcarpetas
-                        $files = Storage::disk('public')->allFiles($companyFolderPath);
+                    $companyId = $company->id;
+                    $baseCompanyPath = "companies/";
+                    
+                    // Obtener todas las carpetas en el directorio companies
+                    $allDirectories = Storage::disk('public')->directories($baseCompanyPath);
+                    
+                    $filesFromIdOnly = [];
+                    $filesFromSlugs = [];
+                    
+                    foreach ($allDirectories as $directory) {
+                        // Obtener solo el nombre de la carpeta (sin el path completo)
+                        $folderName = basename($directory);
                         
-                        foreach ($files as $file) {
+                        // Si la carpeta es exactamente el ID
+                        if ($folderName === (string)$companyId) {
+                            $filesFromIdOnly = Storage::disk('public')->allFiles($directory);
+                            Log::info('Archivos encontrados en carpeta con ID exacto: ' . count($filesFromIdOnly));
+                        }
+                        // Si la carpeta comienza con el ID seguido de un guión
+                        elseif (preg_match("/^{$companyId}-/", $folderName)) {
+                            $filesInThisFolder = Storage::disk('public')->allFiles($directory);
+                            $filesFromSlugs = array_merge($filesFromSlugs, $filesInThisFolder);
+                            Log::info('Archivos encontrados en carpeta con slug ' . $folderName . ': ' . count($filesInThisFolder));
+                        }
+                    }
+                    
+                    // Agregar archivos de la carpeta con solo ID a 'archivos'
+                    if (!empty($filesFromIdOnly)) {
+                        foreach ($filesFromIdOnly as $file) {
                             if (Storage::disk('public')->exists($file)) {
                                 $fileContent = Storage::disk('public')->get($file);
-                                // Reorganizar la estructura de carpetas dentro del ZIP
-                                $newPath = str_replace($companyFolderPath, 'archivos', $file);
+                                $newPath = str_replace("companies/{$companyId}", 'archivos', $file);
                                 $zip->addFromString($newPath, $fileContent);
-                                Log::info('Archivo agregado al ZIP: ' . $newPath);
+                                Log::info('Archivo agregado al ZIP en archivos/: ' . $newPath);
                             }
                         }
-                        Log::info('Carpeta de archivos agregada al ZIP');
+                        Log::info('Total de archivos agregados a archivos/: ' . count($filesFromIdOnly));
+                    }
+                    
+                    // Agregar archivos de las carpetas con slug a 'archivos-old'
+                    if (!empty($filesFromSlugs)) {
+                        foreach ($filesFromSlugs as $file) {
+                            if (Storage::disk('public')->exists($file)) {
+                                $fileContent = Storage::disk('public')->get($file);
+                                // Mantener la estructura de carpetas dentro de archivos-old
+                                $relativePath = str_replace($baseCompanyPath, '', $file);
+                                $newPath = 'archivos-old/' . $relativePath;
+                                $zip->addFromString($newPath, $fileContent);
+                                Log::info('Archivo agregado al ZIP en archivos-old/: ' . $newPath);
+                            }
+                        }
+                        Log::info('Total de archivos agregados a archivos-old/: ' . count($filesFromSlugs));
+                    }
+                    
+                    // Si no se encontraron archivos en ninguna carpeta
+                    if (empty($filesFromIdOnly) && empty($filesFromSlugs)) {
+                        Log::warning('No se encontraron archivos en ninguna carpeta para la empresa ID: ' . $companyId);
                     } else {
-                        Log::warning('No se encontró la carpeta de la empresa: ' . $companyFolderPath);
+                        Log::info('Total de archivos encontrados - ID solo: ' . count($filesFromIdOnly) . 
+                                 ', Con slug: ' . count($filesFromSlugs));
                     }
                 } catch (\Exception $e) {
                     Log::error('Error al agregar carpeta de archivos al ZIP: ' . $e->getMessage());
+                    Log::error('Stack trace: ' . $e->getTraceAsString());
                     // Continuar con la ejecución aunque no se pueda agregar la carpeta
                 }
                 
@@ -812,8 +856,8 @@ class PDFController extends Controller
                 $pdf->save($fullPath);
 
                 // Actualizar la ruta del documento en la empresa
-                $company->evaluation_document_path = "{$evalPath}/{$fileName}";
-                $company->save();
+                //$company->evaluation_document_path = "{$evalPath}/{$fileName}";
+                //$company->save();
 
                 Log::info('PDF borrador generado exitosamente: ' . $fileName);
             }

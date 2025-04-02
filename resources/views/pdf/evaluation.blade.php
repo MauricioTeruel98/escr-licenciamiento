@@ -363,7 +363,8 @@
         <h1>Informe de Evaluación del Protocolo Marca País</h1>
     </header>
 
-    @if (str_contains($company->evaluation_document_path ?? '', 'draft'))
+    {{-- @if (str_contains($company->evaluation_document_path ?? '', 'draft')) --}}
+    @if ($company->estado_eval !== 'evaluacion-calificada' && $company->estado_eval !== 'evaluado')
         <div
             style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100px; color: rgba(128, 128, 128, 0.2); z-index: 1000;">
             BORRADOR
