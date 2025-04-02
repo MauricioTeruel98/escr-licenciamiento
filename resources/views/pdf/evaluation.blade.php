@@ -363,6 +363,13 @@
         <h1>Informe de Evaluación del Protocolo Marca País</h1>
     </header>
 
+    @if (str_contains($company->evaluation_document_path ?? '', 'draft'))
+        <div
+            style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100px; color: rgba(128, 128, 128, 0.2); z-index: 1000;">
+            BORRADOR
+        </div>
+    @endif
+
     <div class="evaluation-status">
         @php
             $hasFailedBindingIndicators = false;
@@ -419,19 +426,28 @@
 
     <div class="evaluation-info">
         <p><strong style="font-weight: bold; font-size: 15px;">Fecha de evaluación:</strong> {{ $date }}</p>
-        <p><strong style="font-weight: bold; font-size: 15px;">Evaluador:</strong> {{ $evaluador->name }} {{ $evaluador->lastname }}</p>
+        <p><strong style="font-weight: bold; font-size: 15px;">Evaluador:</strong> {{ $evaluador->name }}
+            {{ $evaluador->lastname }}</p>
         <p><strong style="font-weight: bold; font-size: 15px;">Correo electrónico:</strong> {{ $evaluador->email }}</p>
     </div>
 
     <h2>Datos de la organización</h2>
-    <p><strong style="font-weight: bold; font-size: 15px;">Nombre comercial:</strong> {{ $company->infoAdicional->nombre_comercial ?? 'N/A' }}</p>
-    <p><strong style="font-weight: bold; font-size: 15px;">Razón social:</strong> {{ $company->infoAdicional->nombre_legal ?? 'N/A' }}</p>
-    <p><strong style="font-weight: bold; font-size: 15px;">Cédula jurídica:</strong> {{ $company->infoAdicional->cedula_juridica ?? 'N/A' }}</p>
-    <p><strong style="font-weight: bold; font-size: 15px;">Descripción:</strong> {{ $company->infoAdicional->descripcion_es ?? 'N/A' }}</p>
-    <p><strong style="font-weight: bold; font-size: 15px;">Actividad comercial:</strong> {{ $company->infoAdicional->actividad_comercial ?? 'N/A' }}</p>
-    <p><strong style="font-weight: bold; font-size: 15px;">Año de fundación:</strong> {{ $company->infoAdicional->anio_fundacion ?? 'N/A' }}</p>
-    <p><strong style="font-weight: bold; font-size: 15px;">Proceso de licenciamiento:</strong> {{ $company->infoAdicional->proceso_licenciamiento ?? 'N/A' }}</p>
-    <p><strong style="font-weight: bold; font-size: 15px;">Exporta actualmente:</strong> {{ $company->infoAdicional->es_exportadora ? 'Sí' : 'No' }}</p>
+    <p><strong style="font-weight: bold; font-size: 15px;">Nombre comercial:</strong>
+        {{ $company->infoAdicional->nombre_comercial ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 15px;">Razón social:</strong>
+        {{ $company->infoAdicional->nombre_legal ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 15px;">Cédula jurídica:</strong>
+        {{ $company->infoAdicional->cedula_juridica ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 15px;">Descripción:</strong>
+        {{ $company->infoAdicional->descripcion_es ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 15px;">Actividad comercial:</strong>
+        {{ $company->infoAdicional->actividad_comercial ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 15px;">Año de fundación:</strong>
+        {{ $company->infoAdicional->anio_fundacion ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 15px;">Proceso de licenciamiento:</strong>
+        {{ $company->infoAdicional->proceso_licenciamiento ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 15px;">Exporta actualmente:</strong>
+        {{ $company->infoAdicional->es_exportadora ? 'Sí' : 'No' }}</p>
     <p><strong style="font-weight: bold; font-size: 15px;">Países de exportación:</strong></p>
     @if ($company->infoAdicional->paises_exportacion && $company->infoAdicional->paises_exportacion != 'N/A')
         @php
@@ -459,8 +475,10 @@
     @endif
 
 
-    <p><strong style="font-weight: bold; font-size: 15px;">Productos/servicios:</strong> {{ $company->infoAdicional->producto_servicio ?? 'N/A' }}</p>
-    <p><strong style="font-weight: bold; font-size: 15px;">Rango de exportaciones:</strong> {{ $company->infoAdicional->rango_exportaciones ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 15px;">Productos/servicios:</strong>
+        {{ $company->infoAdicional->producto_servicio ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 15px;">Rango de exportaciones:</strong>
+        {{ $company->infoAdicional->rango_exportaciones ?? 'N/A' }}</p>
     <p><strong style="font-weight: bold; font-size: 15px;">Total de empleados:</strong>
         {{ $company->infoAdicional->cantidad_hombres + $company->infoAdicional->cantidad_mujeres + $company->infoAdicional->cantidad_otros }}
     </p>
@@ -468,7 +486,8 @@
     <p>- Hombres: {{ $company->infoAdicional->cantidad_hombres ?? 0 }}</p>
     <p>- Mujeres: {{ $company->infoAdicional->cantidad_mujeres ?? 0 }}</p>
     <p>- Otros: {{ $company->infoAdicional->cantidad_otros ?? 0 }}</p>
-    <p><strong style="font-weight: bold; font-size: 15px;">Dirección:</strong> {{ $company->infoAdicional->direccion_empresa ?? 'N/A' }}</p>
+    <p><strong style="font-weight: bold; font-size: 15px;">Dirección:</strong>
+        {{ $company->infoAdicional->direccion_empresa ?? 'N/A' }}</p>
     <p>- Provincia: {{ $company->provincia ?? 'N/A' }}</p>
     <p>- Cantón: {{ $company->canton ?? 'N/A' }}</p>
     <p>- Distrito: {{ $company->distrito ?? 'N/A' }}</p>
@@ -502,7 +521,8 @@
     <h2>Oportunidades de mejora de la organización</h2>
     <p>{{ $company->infoAdicional->oportunidades ?? 'N/A' }}</p>
 
-    <h2>Justificación del alcance, articulo 10 del Reglamento para el uso de la marca país <i>esencial</i> COSTA RICA</h2>
+    <h2>Justificación del alcance, articulo 10 del Reglamento para el uso de la marca país <i>esencial</i> COSTA RICA
+    </h2>
     <p>{{ $company->infoAdicional->justificacion ?? 'N/A' }}</p>
 
     <h2>Datos participantes clave</h2>

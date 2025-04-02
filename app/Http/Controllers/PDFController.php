@@ -537,7 +537,89 @@ class PDFController extends Controller
                         }
                     } catch (\Exception $e) {
                         Log::error('Error al agregar PDF de evaluación al ZIP: ' . $e->getMessage());
-                        // Continuar con la ejecución aunque no se pueda agregar este archivo
+                    }
+                }
+                
+                // Si no se encontró un PDF de evaluación, generar uno en modo borrador
+                if (!$evalPdfFound) {
+                    try {
+                        Log::info('Generando PDF de evaluación en modo borrador');
+                        
+                        // Obtener datos necesarios para generar el PDF
+                        $allValues = Value::where('is_active', true)
+                            ->where('deleted', false)
+                            ->where(function ($query) use ($company) {
+                                $query->whereNull('created_at')
+                                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                            })
+                            ->get();
+
+                        $finalScores = EvaluationValueResult::where('company_id', $company->id)
+                            ->get()
+                            ->keyBy('value_id');
+
+                        $evaluatorAssessments = EvaluatorAssessment::where('company_id', $company->id)
+                            ->with(['evaluationQuestion', 'indicator'])
+                            ->get()
+                            ->groupBy('indicator_id');
+
+                        $companyAnswers = IndicatorAnswerEvaluation::where('company_id', $company->id)
+                            ->with(['evaluationQuestion', 'indicator'])
+                            ->get()
+                            ->groupBy('indicator_id');
+
+                        $autoEvaluationAnswers = IndicatorAnswer::where('company_id', $company->id)
+                            ->with(['indicator'])
+                            ->get()
+                            ->groupBy('indicator_id');
+
+                        $indicatorsByValue = Indicator::where('is_active', true)
+                            ->with(['subcategory.value', 'evaluationQuestions'])
+                            ->where('deleted', false)
+                            ->where(function ($query) use ($company) {
+                                $query->whereNull('created_at')
+                                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                            })
+                            ->get()
+                            ->groupBy('subcategory.value.id');
+
+                        // Generar PDF
+                        $pdf = Pdf::loadView('pdf/evaluation', [
+                            'values' => $allValues,
+                            'company' => $company,
+                            'evaluador' => $user,
+                            'date' => now()->format('d/m/Y'),
+                            'finalScores' => $finalScores,
+                            'evaluatorAssessments' => $evaluatorAssessments,
+                            'companyAnswers' => $companyAnswers,
+                            'autoEvaluationAnswers' => $autoEvaluationAnswers,
+                            'indicatorsByValue' => $indicatorsByValue
+                        ]);
+
+                        // Crear carpetas si no existen
+                        $evalPath = "companies/{$company->id}-{$companySlug}/evaluations";
+                        Storage::disk('public')->makeDirectory($evalPath);
+
+                        // Generar nombre de archivo con timestamp y marca de borrador
+                        $fileName = "evaluation_{$company->id}_{$companySlug}_draft_" . date('Y-m-d_His') . '.pdf';
+                        $fullPath = storage_path("app/public/{$evalPath}/{$fileName}");
+
+                        // Guardar PDF
+                        $pdf->save($fullPath);
+
+                        // Actualizar la ruta del documento en la empresa
+                        $company->evaluation_document_path = "{$evalPath}/{$fileName}";
+                        $company->save();
+
+                        // Agregar el PDF borrador al ZIP
+                        $pdfContent = file_get_contents($fullPath);
+                        $pdfFileName = "evaluacion_{$company->id}_{$companySlug}_borrador.pdf";
+                        $zip->addFromString($pdfFileName, $pdfContent);
+                        Log::info('PDF de evaluación borrador agregado al ZIP: ' . $pdfFileName);
+                        $evalPdfFound = true;
+
+                    } catch (\Exception $e) {
+                        Log::error('Error al generar y agregar PDF de evaluación borrador al ZIP: ' . $e->getMessage());
                     }
                 }
                 
@@ -649,7 +731,7 @@ class PDFController extends Controller
             
             Log::info('Buscando empresa con ID: ' . $companyId);
             
-            $company = Company::find($companyId);
+            $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($companyId);
             
             if (!$company) {
                 Log::error('No se encontró la empresa con ID: ' . $companyId);
@@ -658,47 +740,89 @@ class PDFController extends Controller
             
             Log::info('Empresa encontrada: ' . $company->name);
             
-            // Verificar si la empresa ha completado la evaluación
-            if (!$company->eval_ended && $company->estado_eval !== 'evaluacion-completada' && $company->estado_eval !== 'evaluado') {
-                Log::warning('La empresa no ha completado la evaluación');
-                return redirect()->back()->with('error', 'La empresa aún no ha completado la evaluación.');
-            }
-            
             // Ruta de la carpeta de evaluaciones de la empresa
             $companySlug = Str::slug($company->name);
-            $evalPath = "evaluations/{$company->id}-{$companySlug}";
+            $evalPath = "companies/{$company->id}-{$companySlug}/evaluations";
             
-            Log::info('Ruta de la carpeta de evaluaciones: ' . $evalPath);
+            // Verificar si existe algún PDF de evaluación
+            $pdfExists = Storage::disk('public')->exists($company->evaluation_document_path);
             
-            // Verificar si existe la carpeta
-            if (!Storage::disk('public')->exists($evalPath)) {
-                Log::error('No existe la carpeta de evaluaciones: ' . $evalPath);
-                return redirect()->back()->with('error', 'No se encontraron documentos de evaluación.');
+            if (!$pdfExists) {
+                Log::info('No se encontró PDF existente, generando uno nuevo como borrador');
+                
+                // Obtener datos necesarios para generar el PDF
+                $allValues = Value::where('is_active', true)
+                    ->where('deleted', false)
+                    ->where(function ($query) use ($company) {
+                        $query->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    })
+                    ->get();
+
+                $finalScores = EvaluationValueResult::where('company_id', $companyId)
+                    ->get()
+                    ->keyBy('value_id');
+
+                $evaluatorAssessments = EvaluatorAssessment::where('company_id', $companyId)
+                    ->with(['evaluationQuestion', 'indicator'])
+                    ->get()
+                    ->groupBy('indicator_id');
+
+                $companyAnswers = IndicatorAnswerEvaluation::where('company_id', $companyId)
+                    ->with(['evaluationQuestion', 'indicator'])
+                    ->get()
+                    ->groupBy('indicator_id');
+
+                $autoEvaluationAnswers = IndicatorAnswer::where('company_id', $companyId)
+                    ->with(['indicator'])
+                    ->get()
+                    ->groupBy('indicator_id');
+
+                $indicatorsByValue = Indicator::where('is_active', true)
+                    ->with(['subcategory.value', 'evaluationQuestions'])
+                    ->where('deleted', false)
+                    ->where(function ($query) use ($company) {
+                        $query->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    })
+                    ->get()
+                    ->groupBy('subcategory.value.id');
+
+                // Generar PDF
+                $pdf = Pdf::loadView('pdf/evaluation', [
+                    'values' => $allValues,
+                    'company' => $company,
+                    'evaluador' => $user,
+                    'date' => now()->format('d/m/Y'),
+                    'finalScores' => $finalScores,
+                    'evaluatorAssessments' => $evaluatorAssessments,
+                    'companyAnswers' => $companyAnswers,
+                    'autoEvaluationAnswers' => $autoEvaluationAnswers,
+                    'indicatorsByValue' => $indicatorsByValue
+                ]);
+
+                // Crear carpetas si no existen
+                Storage::disk('public')->makeDirectory($evalPath);
+
+                // Generar nombre de archivo con timestamp y marca de borrador
+                $fileName = "evaluation_{$company->id}_{$companySlug}_draft_" . date('Y-m-d_His') . '.pdf';
+                $fullPath = storage_path("app/public/{$evalPath}/{$fileName}");
+
+                // Guardar PDF
+                $pdf->save($fullPath);
+
+                // Actualizar la ruta del documento en la empresa
+                $company->evaluation_document_path = "{$evalPath}/{$fileName}";
+                $company->save();
+
+                Log::info('PDF borrador generado exitosamente: ' . $fileName);
             }
-            
-            // Obtener el archivo PDF más reciente
-            $pdfFiles = Storage::disk('public')->files($evalPath);
-            
-            if (empty($pdfFiles)) {
-                Log::error('No se encontraron archivos PDF en la carpeta: ' . $evalPath);
-                return redirect()->back()->with('error', 'No se encontraron documentos de evaluación.');
-            }
-            
-            Log::info('Archivos PDF encontrados: ' . implode(', ', $pdfFiles));
-            
-            // Ordenar archivos por fecha de modificación (más reciente primero)
-            usort($pdfFiles, function($a, $b) {
-                return Storage::disk('public')->lastModified($b) - Storage::disk('public')->lastModified($a);
-            });
-            
-            $latestPdf = $pdfFiles[0];
-            Log::info('PDF más reciente: ' . $latestPdf);
-            
+
             // Nombre del archivo para la descarga
             $downloadFileName = "evaluacion_{$company->id}_{$companySlug}.pdf";
             
             // Obtener la ruta completa del archivo
-            $fullPath = Storage::disk('public')->path($latestPdf);
+            $fullPath = storage_path('app/public/' . $company->evaluation_document_path);
             
             // Descargar el archivo
             return response()->download($fullPath, $downloadFileName, [
