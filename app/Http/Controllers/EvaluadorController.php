@@ -118,6 +118,9 @@ class EvaluadorController extends Controller
         $request->validate([
             'puntos_fuertes' => 'required|string',
             'oportunidades' => 'required|string',
+            'tiene_multi_sitio' => 'required|boolean',
+            'cantidad_multi_sitio' => 'required_if:tiene_multi_sitio,true|integer',
+            'aprobo_evaluacion_multi_sitio' => 'required|boolean',
         ]);
 
         $user = auth()->user();
@@ -130,6 +133,9 @@ class EvaluadorController extends Controller
         $company->update([
             'puntos_fuertes' => $request->puntos_fuertes,
             'oportunidades' => $request->oportunidades,
+            'tiene_multi_sitio' => $request->tiene_multi_sitio,
+            'cantidad_multi_sitio' => $request->cantidad_multi_sitio,
+            'aprobo_evaluacion_multi_sitio' => $request->aprobo_evaluacion_multi_sitio,
         ]);
 
         $infoAdicional = InfoAdicionalEmpresa::where('company_id', $company->id)->first();
@@ -137,6 +143,9 @@ class EvaluadorController extends Controller
         $infoAdicional->update([
             'puntos_fuertes' => $request->puntos_fuertes,
             'oportunidades' => $request->oportunidades,
+            'tiene_multi_sitio' => $request->tiene_multi_sitio,
+            'cantidad_multi_sitio' => $request->cantidad_multi_sitio,
+            'aprobo_evaluacion_multi_sitio' => $request->aprobo_evaluacion_multi_sitio,
         ]);
 
         return response()->json(['success' => true]);

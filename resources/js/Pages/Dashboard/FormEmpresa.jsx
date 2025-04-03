@@ -115,7 +115,10 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 imagen_2: p.imagen_2,
                 imagen_3: p.imagen_3
             }))
-            : []
+            : [],
+        tiene_multi_sitio: infoAdicional?.tiene_multi_sitio || false,
+        cantidad_multi_sitio: infoAdicional?.cantidad_multi_sitio || '',
+        aprobo_evaluacion_multi_sitio: infoAdicional?.aprobo_evaluacion_multi_sitio || false,
     });
 
     const [loading, setLoading] = useState(false);
@@ -392,6 +395,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         productos: true,
         logos: true,
         licenciamiento: true,
+        multi_sitio: true
     });
 
     const toggleSeccion = (seccion) => {
@@ -799,8 +803,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
     // Verificar si hay al menos un producto con nombre y descripción
     const tieneProductoValido = data.productos && data.productos.some(
-        producto => producto.nombre?.trim() && producto.descripcion?.trim() && 
-        (producto.imagen || (imagenes.productos && imagenes.productos[data.productos.indexOf(producto)]))
+        producto => producto.nombre?.trim() && producto.descripcion?.trim() &&
+            (producto.imagen || (imagenes.productos && imagenes.productos[data.productos.indexOf(producto)]))
     );
 
     const fotografias = imagenes.fotografias;
@@ -857,8 +861,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
         // Verificar si hay al menos un producto con nombre, descripción e imagen
         const tieneProductoValido = data.productos && data.productos.some(
-            producto => producto.nombre?.trim() && producto.descripcion?.trim() && 
-            (producto.imagen || (imagenes.productos && imagenes.productos[data.productos.indexOf(producto)]))
+            producto => producto.nombre?.trim() && producto.descripcion?.trim() &&
+                (producto.imagen || (imagenes.productos && imagenes.productos[data.productos.indexOf(producto)]))
         );
 
         const fotografias = imagenes.fotografias;
@@ -1084,7 +1088,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             });
             return;
         }
-        
+
         setData('productos', [...data.productos, {
             nombre: '',
             descripcion: '',
@@ -1765,7 +1769,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 // Validar día (no puede ser mayor a 31)
                 const dia = parseInt(valorFormateado.substring(0, 2));
                 const restoDigitos = valorFormateado.substring(2);
-                
+
                 if (dia > 31) {
                     fechaFormateada = '31/' + restoDigitos;
                     setErrors(prevErrors => ({
@@ -1780,7 +1784,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 const dia = valorFormateado.substring(0, 2);
                 const mes = parseInt(valorFormateado.substring(2, 4));
                 const restoDigitos = valorFormateado.substring(4);
-                
+
                 if (mes > 12) {
                     fechaFormateada = dia + '/12/' + restoDigitos;
                     setErrors(prevErrors => ({
@@ -1798,7 +1802,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             const dia = parseInt(valorFormateado.substring(0, 2));
             const mes = parseInt(valorFormateado.substring(2, 4)) - 1; // Meses en JS son 0-11
             const anio = parseInt(valorFormateado.substring(4, 8));
-            
+
             const fechaIngresada = new Date(anio, mes, dia);
             const fechaActual = new Date();
 
@@ -1953,6 +1957,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
     const [notification, setNotification] = useState(null);
     const [modalStatus, setModalStatus] = useState('initial');
     const { auth } = usePage().props;
+    const user = auth.user;
 
     // Función para abrir el modal de confirmación
     const openFinalizarModal = () => {
@@ -2050,8 +2055,8 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
         // Verificar si hay al menos un producto válido
         const tieneProductoValido = data.productos && data.productos.some(
-            producto => producto.nombre?.trim() && producto.descripcion?.trim() && 
-            (producto.imagen || (imagenes.productos && imagenes.productos[data.productos.indexOf(producto)]))
+            producto => producto.nombre?.trim() && producto.descripcion?.trim() &&
+                (producto.imagen || (imagenes.productos && imagenes.productos[data.productos.indexOf(producto)]))
         );
 
         // Crear objeto con todos los campos requeridos
@@ -2760,6 +2765,146 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                             </div>
                         )}
                     </div>
+
+                    {/* Sección de datos complementarios a la función central */}
+                    {user.role === 'evaluador' && (
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <button
+                                type="button"
+                                onClick={() => toggleSeccion('multi_sitio')}
+                                className="w-full p-6 flex justify-between items-center text-left"
+                            >
+                                <h2 className="text-xl font-semibold">Datos complementarios a la función central</h2>
+                                <svg
+                                    className={`w-6 h-6 transform transition-transform ${seccionesExpandidas.multi_sitio ? 'rotate-180' : ''}`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            {seccionesExpandidas.multi_sitio && (
+                                <div className="p-6 pt-0">
+                                    <div className="space-y-6">
+                                        {/* ¿Tiene la organización multi-sitio? */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                ¿Tiene la organización multi-sitio? <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="flex gap-4">
+                                                <label className="inline-flex items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name="tiene_multi_sitio"
+                                                        value="true"
+                                                        checked={data.tiene_multi_sitio === true}
+                                                        onChange={handleChange}
+                                                        className="form-radio text-green-600 focus:ring-green-500"
+                                                    />
+                                                    <span className="ml-2">Sí</span>
+                                                </label>
+                                                <label className="inline-flex items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name="tiene_multi_sitio"
+                                                        value="false"
+                                                        checked={data.tiene_multi_sitio === false}
+                                                        onChange={handleChange}
+                                                        className="form-radio text-green-600 focus:ring-green-500"
+                                                    />
+                                                    <span className="ml-2">No</span>
+                                                </label>
+                                            </div>
+                                            <InputError message={errors.tiene_multi_sitio} />
+                                        </div>
+
+                                        {/* Cantidad de multi-sitio evaluados */}
+                                        {data.tiene_multi_sitio && (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    ¿Cantidad de multi-sitio evaluados? <span className="text-red-500">*</span>
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    value={data.cantidad_multi_sitio}
+                                                    onChange={handleChange}
+                                                    name="cantidad_multi_sitio"
+                                                    min="0"
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                />
+                                                <InputError message={errors.cantidad_multi_sitio} />
+                                            </div>
+                                        )}
+
+                                        {/* ¿La organización ha aprobado la evaluación de los multi-sitio? */}
+                                        {data.tiene_multi_sitio && (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    ¿La organización ha aprobado la evaluación de los multi-sitio? <span className="text-red-500">*</span>
+                                                </label>
+                                                <div className="flex gap-4">
+                                                    <label className="inline-flex items-center">
+                                                        <input
+                                                            type="radio"
+                                                            name="aprobo_evaluacion_multi_sitio"
+                                                            value="true"
+                                                            checked={data.aprobo_evaluacion_multi_sitio === true}
+                                                            onChange={handleChange}
+                                                            className="form-radio text-green-600 focus:ring-green-500"
+                                                        />
+                                                        <span className="ml-2">Sí</span>
+                                                    </label>
+                                                    <label className="inline-flex items-center">
+                                                        <input
+                                                            type="radio"
+                                                            name="aprobo_evaluacion_multi_sitio"
+                                                            value="false"
+                                                            checked={data.aprobo_evaluacion_multi_sitio === false}
+                                                            onChange={handleChange}
+                                                            className="form-radio text-green-600 focus:ring-green-500"
+                                                        />
+                                                        <span className="ml-2">No</span>
+                                                    </label>
+                                                </div>
+                                                <InputError message={errors.aprobo_evaluacion_multi_sitio} />
+                                            </div>
+                                        )}
+
+                                        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                                            <p className="text-sm text-gray-600">
+                                                <strong>Importante:</strong><br />
+                                                En el caso de organizaciones multi-sitio, la función central de la organización debe ser siempre evaluada.
+                                                La evaluación del resto de sitios se debe basar en muestreo e incluir al menos un número igual a la raíz
+                                                cuadrada del total de sitios adicionales a la función central.
+                                            </p>
+                                        </div>
+
+                                        {/* Botón de guardar */}
+                                        <div className="flex mt-6">
+                                            <button
+                                                type="submit"
+                                                disabled={processing || loading}
+                                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800"
+                                            >
+                                                {loading ? (
+                                                    <>
+                                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Procesando...
+                                                    </>
+                                                ) : (
+                                                    'Guardar datos'
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Sección de Logos y Fotografías */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200" data-seccion="logos">

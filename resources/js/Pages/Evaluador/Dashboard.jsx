@@ -23,7 +23,10 @@ export default function EvaluadorDashboard({ auth }) {
     const [isCalificarNuevamenteModalOpen, setIsCalificarNuevamenteModalOpen] = useState(false);
     const [evaluationFields, setEvaluationFields] = useState({
         puntos_fuertes: activeCompany?.puntos_fuertes || '',
-        oportunidades: activeCompany?.oportunidades || ''
+        oportunidades: activeCompany?.oportunidades || '',
+        tiene_multi_sitio: activeCompany?.tiene_multi_sitio || false,
+        cantidad_multi_sitio: activeCompany?.cantidad_multi_sitio || '',
+        aprobo_evaluacion_multi_sitio: activeCompany?.aprobo_evaluacion_multi_sitio || false
     });
 
     useEffect(() => {
@@ -35,10 +38,15 @@ export default function EvaluadorDashboard({ auth }) {
         if (activeCompany) {
             setEvaluationFields({
                 puntos_fuertes: activeCompany.puntos_fuertes || '',
-                oportunidades: activeCompany.oportunidades || ''
+                oportunidades: activeCompany.oportunidades || '',
+                tiene_multi_sitio: activeCompany.tiene_multi_sitio || false,
+                cantidad_multi_sitio: activeCompany.cantidad_multi_sitio || '',
+                aprobo_evaluacion_multi_sitio: activeCompany.aprobo_evaluacion_multi_sitio || false
             });
         }
     }, [activeCompany]);
+
+    console.log(activeCompany)
 
     const filteredCompanies = query === ''
         ? companies
@@ -68,7 +76,10 @@ export default function EvaluadorDashboard({ auth }) {
             if (response.data) {
                 setEvaluationFields({
                     puntos_fuertes: response.data.puntos_fuertes || '',
-                    oportunidades: response.data.oportunidades || ''
+                    oportunidades: response.data.oportunidades || '',
+                    tiene_multi_sitio: response.data.tiene_multi_sitio || false,
+                    cantidad_multi_sitio: response.data.cantidad_multi_sitio || '',
+                    aprobo_evaluacion_multi_sitio: response.data.aprobo_evaluacion_multi_sitio || false
                 });
             }
         } catch (error) {
@@ -111,7 +122,10 @@ export default function EvaluadorDashboard({ auth }) {
 
             await axios.post(route('company.update.evaluation-fields'), {
                 puntos_fuertes: evaluationFields.puntos_fuertes,
-                oportunidades: evaluationFields.oportunidades
+                oportunidades: evaluationFields.oportunidades,
+                tiene_multi_sitio: evaluationFields.tiene_multi_sitio,
+                cantidad_multi_sitio: evaluationFields.cantidad_multi_sitio,
+                aprobo_evaluacion_multi_sitio: evaluationFields.aprobo_evaluacion_multi_sitio
             });
 
             const response = await axios.post(route('indicadores.enviar-evaluacion-calificada'));
@@ -374,35 +388,131 @@ export default function EvaluadorDashboard({ auth }) {
 
                     {
                         (activeCompany && (companyStatusEval === 'evaluacion-calificada' || companyStatusEval === 'evaluacion-desaprobada')) && (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Puntos fuertes de la organización<span className="text-red-500">*</span>
-                                    </label>
-                                    <textarea
-                                        value={evaluationFields.puntos_fuertes}
-                                        onChange={(e) => handleFieldChange('puntos_fuertes', e.target.value)}
-                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                        rows={4}
-                                        maxLength={640}
-                                        placeholder="Ingrese los puntos fuertes de la empresa"
-                                    />
+                            <div className="my-8 bg-white rounded-lg shadow p-6">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Puntos fuertes de la organización<span className="text-red-500">*</span>
+                                        </label>
+                                        <textarea
+                                            value={evaluationFields.puntos_fuertes}
+                                            onChange={(e) => handleFieldChange('puntos_fuertes', e.target.value)}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            rows={4}
+                                            maxLength={640}
+                                            placeholder="Ingrese los puntos fuertes de la empresa"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Oportunidades de mejora de la organización<span className="text-red-500">*</span>
+                                        </label>
+                                        <textarea
+                                            value={evaluationFields.oportunidades}
+                                            onChange={(e) => handleFieldChange('oportunidades', e.target.value)}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                            rows={4}
+                                            maxLength={640}
+                                            placeholder="Ingrese las oportunidades de mejora"
+                                        />
+                                    </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Oportunidades de mejora de la organización<span className="text-red-500">*</span>
-                                    </label>
-                                    <textarea
-                                        value={evaluationFields.oportunidades}
-                                        onChange={(e) => handleFieldChange('oportunidades', e.target.value)}
-                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                        rows={4}
-                                        maxLength={640}
-                                        placeholder="Ingrese las oportunidades de mejora"
-                                    />
+                                    <h3 className="text-lg font-medium text-gray-900 mb-4">Datos complementarios a la función central</h3>
+                                    <div className="space-y-6">
+                                        {/* ¿Tiene la organización multi-sitio? */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                ¿Tiene la organización multi-sitio? <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="flex gap-4">
+                                                <label className="inline-flex items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name="tiene_multi_sitio"
+                                                        value="true"
+                                                        checked={evaluationFields.tiene_multi_sitio === true}
+                                                        onChange={(e) => handleFieldChange('tiene_multi_sitio', e.target.value === 'true')}
+                                                        className="form-radio text-green-600 focus:ring-green-500"
+                                                    />
+                                                    <span className="ml-2">Sí</span>
+                                                </label>
+                                                <label className="inline-flex items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name="tiene_multi_sitio"
+                                                        value="false"
+                                                        checked={evaluationFields.tiene_multi_sitio === false}
+                                                        onChange={(e) => handleFieldChange('tiene_multi_sitio', e.target.value === 'true')}
+                                                        className="form-radio text-green-600 focus:ring-green-500"
+                                                    />
+                                                    <span className="ml-2">No</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        {/* Cantidad de multi-sitio evaluados - Solo se muestra si tiene_multi_sitio es true */}
+                                        {evaluationFields.tiene_multi_sitio && (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    ¿Cantidad de multi-sitio evaluados? <span className="text-red-500">*</span>
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    value={evaluationFields.cantidad_multi_sitio}
+                                                    onChange={(e) => handleFieldChange('cantidad_multi_sitio', e.target.value)}
+                                                    min="0"
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {/* ¿La organización ha aprobado la evaluación de los multi-sitio? - Solo se muestra si tiene_multi_sitio es true */}
+                                        {evaluationFields.tiene_multi_sitio && (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    ¿La organización ha aprobado la evaluación de los multi-sitio? <span className="text-red-500">*</span>
+                                                </label>
+                                                <div className="flex gap-4">
+                                                    <label className="inline-flex items-center">
+                                                        <input
+                                                            type="radio"
+                                                            name="aprobo_evaluacion_multi_sitio"
+                                                            value="true"
+                                                            checked={evaluationFields.aprobo_evaluacion_multi_sitio === true}
+                                                            onChange={(e) => handleFieldChange('aprobo_evaluacion_multi_sitio', e.target.value === 'true')}
+                                                            className="form-radio text-green-600 focus:ring-green-500"
+                                                        />
+                                                        <span className="ml-2">Sí</span>
+                                                    </label>
+                                                    <label className="inline-flex items-center">
+                                                        <input
+                                                            type="radio"
+                                                            name="aprobo_evaluacion_multi_sitio"
+                                                            value="false"
+                                                            checked={evaluationFields.aprobo_evaluacion_multi_sitio === false}
+                                                            onChange={(e) => handleFieldChange('aprobo_evaluacion_multi_sitio', e.target.value === 'true')}
+                                                            className="form-radio text-green-600 focus:ring-green-500"
+                                                        />
+                                                        <span className="ml-2">No</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                                            <p className="text-sm text-gray-600">
+                                                <strong>Importante:</strong><br />
+                                                En el caso de organizaciones multi-sitio, la función central de la organización debe ser siempre evaluada. 
+                                                La evaluación del resto de sitios se debe basar en muestreo e incluir al menos un número igual a la raíz 
+                                                cuadrada del total de sitios adicionales a la función central.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        )}
+                        )
+                    }
 
                     <div className="mb-8 block md:flex items-center justify-between gap-4">
                         <div className="flex flex-col lg:flex-row items-center gap-4">
@@ -481,7 +591,7 @@ export default function EvaluadorDashboard({ auth }) {
 
                                     <button
                                         onClick={openFinalizarEvaluacionModal}
-                                        disabled={isSubmitting || !evaluationFields.puntos_fuertes || !evaluationFields.oportunidades}
+                                        disabled={isSubmitting || !evaluationFields.puntos_fuertes || !evaluationFields.oportunidades || evaluationFields.tiene_multi_sitio && !evaluationFields.cantidad_multi_sitio}
                                         className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-75 disabled:cursor-not-allowed"
                                     >
                                         {isSubmitting ? (

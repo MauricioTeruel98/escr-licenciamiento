@@ -48,6 +48,7 @@ export default function EmpresasEvaluadorIndex() {
         {
             key: 'estado',
             label: 'Estado',
+            notSortable: true,
             render: (item) => {
                 let colorClass = '';
                 let textItem = '';

@@ -83,7 +83,10 @@ class InfoAdicionalEmpresa extends Model
         'certificaciones_paths',
         'puntos_fuertes',
         'justificacion',
-        'oportunidades'
+        'oportunidades',
+        'tiene_multi_sitio',
+        'cantidad_multi_sitio',
+        'aprobo_evaluacion_multi_sitio'
     ];
 
     protected $casts = [
@@ -93,7 +96,10 @@ class InfoAdicionalEmpresa extends Model
         'certificaciones_paths' => 'array',
         'puntos_fuertes' => 'string',
         'justificacion' => 'string',
-        'oportunidades' => 'string'
+        'oportunidades' => 'string',
+        'tiene_multi_sitio' => 'boolean',
+        'cantidad_multi_sitio' => 'integer',
+        'aprobo_evaluacion_multi_sitio' => 'boolean'
     ];
 
     public function company()

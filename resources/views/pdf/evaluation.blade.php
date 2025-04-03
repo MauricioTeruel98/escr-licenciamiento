@@ -568,20 +568,40 @@
         </table>
     @endif
 
-    {{-- <h2>Datos complementarios: función central</h2>
-    <p><strong>Organización multi-sitio:</strong> Sí [ ] No [ ]</p>
+    @if ($company->infoAdicional->tiene_multi_sitio)
+        <h2>Datos complementarios a la función central</h2>
+        <div class="indicator-section">
+            <p><strong>¿Tiene la organización multi-sitio?</strong> 
+                @if($company->infoAdicional->tiene_multi_sitio)
+                    <span class="approved">Sí</span>
+                @else
+                    <span class="">No</span>
+                @endif
+            </p>
 
-    <h3>Emplazamientos Evaluados</h3>
-    <p><strong>Nombre comercial:</strong></p>
-    <p><strong>Dirección:</strong> Provincia Cantón Distrito Dirección</p>
-    <p><strong>Empleados:</strong></p>
-    <p>Hombres <input type="text" size="5"> Mujeres <input type="text" size="5"> Otros <input type="text" size="5"></p> --}}
+            @if($company->infoAdicional->tiene_multi_sitio)
+                <p><strong>Cantidad de multi-sitio evaluados:</strong> 
+                    {{ $company->infoAdicional->cantidad_multi_sitio ?? 'No especificado' }}
+                </p>
 
-    {{-- <h2>Puntos fuertes de la organización:</h2>
-    <p></p>
+                <p><strong>¿La organización ha aprobado la evaluación de los multi-sitio?</strong> 
+                    @if($company->infoAdicional->aprobo_evaluacion_multi_sitio)
+                        <span class="approved">Sí</span>
+                    @else
+                        <span class="">No</span>
+                    @endif
+                </p>
 
-    <h2>Oportunidades de mejora de la organización:</h2>
-    <p></p> --}}
+                <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-600">
+                        <strong>Importante:</strong> En el caso de organizaciones multi-sitio, la función central de la organización debe ser siempre evaluada. 
+                        La evaluación del resto de sitios se debe basar en muestreo e incluir al menos un número igual a la raíz 
+                        cuadrada del total de sitios adicionales a la función central.
+                    </p>
+                </div>
+            @endif
+        </div>
+    @endif
 
     <h2>Datos de contacto</h2>
 
