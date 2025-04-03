@@ -146,13 +146,10 @@ class CompanyManagementController extends Controller
             DB::table('info_adicional_empresas')->where('company_id', $company->id)->delete();
             DB::table('indicator_answers')->where('company_id', $company->id)->delete();
             DB::table('indicator_answers_evaluation')->where('company_id', $company->id)->delete();
-            //DB::table('evaluations')->where('company_id', $company->id)->delete();
-            //DB::table('auto_evaluations')->where('company_id', $company->id)->delete();
             DB::table('company_evaluator')->where('company_id', $company->id)->delete();
             DB::table('evaluator_assessments')->where('company_id', $company->id)->delete();
             //DB::table('users')->where('company_id', $company->id)->delete();
-            //DB::table('company_files')->where('company_id', $company->id)->delete();
-            
+
             // También eliminar archivos físicos si existen
             $this->deleteCompanyFiles($company);
 
@@ -217,12 +214,9 @@ class CompanyManagementController extends Controller
            DB::table('info_adicional_empresas')->whereIn('company_id', $request->ids)->delete();
            DB::table('indicator_answers')->whereIn('company_id', $request->ids)->delete();
            DB::table('indicator_answers_evaluation')->whereIn('company_id', $request->ids)->delete();
-           //DB::table('evaluations')->where('company_id', $company->id)->delete();
-           //DB::table('auto_evaluations')->where('company_id', $company->id)->delete();
            DB::table('company_evaluator')->whereIn('company_id', $request->ids)->delete();
            DB::table('evaluator_assessments')->whereIn('company_id', $request->ids)->delete();
            //DB::table('users')->whereIn('company_id', $request->ids)->delete();
-           //DB::table('company_files')->whereIn('company_id', $request->ids)->delete();
 
             // Eliminar archivos físicos de todas las empresas
             foreach ($request->ids as $companyId) {
@@ -262,7 +256,7 @@ class CompanyManagementController extends Controller
     private function deleteCompanyFiles(Company $company)
     {
         try {
-            $companyPath = "companies/{$company->id}-" . Str::slug($company->name);
+            $companyPath = "companies/{$company->id}";
             
             // Eliminar el directorio completo de la empresa si existe
             if (Storage::disk('public')->exists($companyPath)) {
