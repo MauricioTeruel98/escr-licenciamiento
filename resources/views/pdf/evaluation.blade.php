@@ -568,40 +568,40 @@
         </table>
     @endif
 
-    @if ($company->infoAdicional->tiene_multi_sitio)
-        <h2>Datos complementarios a la función central</h2>
-        <div class="indicator-section">
-            <p><strong>¿Tiene la organización multi-sitio?</strong> 
-                @if($company->infoAdicional->tiene_multi_sitio)
+    <h2>Datos complementarios a la función central</h2>
+    <div class="indicator-section">
+        <p><strong>¿Tiene la organización multi-sitio?</strong>
+            @if ($company->infoAdicional->tiene_multi_sitio)
+                <span class="approved">Sí</span>
+            @else
+                <span class="">No</span>
+            @endif
+        </p>
+
+        @if ($company->infoAdicional->tiene_multi_sitio)
+            <p><strong>Cantidad de multi-sitio evaluados:</strong>
+                {{ $company->infoAdicional->cantidad_multi_sitio ?? 'No especificado' }}
+            </p>
+
+            <p><strong>¿La organización ha aprobado la evaluación de los multi-sitio?</strong>
+                @if ($company->infoAdicional->aprobo_evaluacion_multi_sitio)
                     <span class="approved">Sí</span>
                 @else
                     <span class="">No</span>
                 @endif
             </p>
 
-            @if($company->infoAdicional->tiene_multi_sitio)
-                <p><strong>Cantidad de multi-sitio evaluados:</strong> 
-                    {{ $company->infoAdicional->cantidad_multi_sitio ?? 'No especificado' }}
+            <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                <p class="text-sm text-gray-600">
+                    <strong>Importante:</strong> En el caso de organizaciones multi-sitio, la función central de la
+                    organización debe ser siempre evaluada.
+                    La evaluación del resto de sitios se debe basar en muestreo e incluir al menos un número igual a la
+                    raíz
+                    cuadrada del total de sitios adicionales a la función central.
                 </p>
-
-                <p><strong>¿La organización ha aprobado la evaluación de los multi-sitio?</strong> 
-                    @if($company->infoAdicional->aprobo_evaluacion_multi_sitio)
-                        <span class="approved">Sí</span>
-                    @else
-                        <span class="">No</span>
-                    @endif
-                </p>
-
-                <div class="mt-4 p-4 bg-gray-50 rounded-lg">
-                    <p class="text-sm text-gray-600">
-                        <strong>Importante:</strong> En el caso de organizaciones multi-sitio, la función central de la organización debe ser siempre evaluada. 
-                        La evaluación del resto de sitios se debe basar en muestreo e incluir al menos un número igual a la raíz 
-                        cuadrada del total de sitios adicionales a la función central.
-                    </p>
-                </div>
-            @endif
-        </div>
-    @endif
+            </div>
+        @endif
+    </div>
 
     <h2>Datos de contacto</h2>
 

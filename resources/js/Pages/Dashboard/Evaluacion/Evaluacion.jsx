@@ -1129,33 +1129,40 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                                 fileType: 'Tipo de archivo no permitido. Solo se permiten archivos jpg, jpeg, png, pdf, excel y word.'
                                                             }}
                                                             onFileSelect={(file) => {
-                                                                if (!isEvaluador) {
-                                                                    const currentFiles = answers[question.id]?.files || [];
-                                                                    handleAnswer(
-                                                                        question.id,
-                                                                        answers[question.id]?.value,
-                                                                        answers[question.id]?.description,
-                                                                        [...currentFiles, file]
-                                                                    );
-                                                                }
+                                                                const currentFiles = answers[question.id]?.files || [];
+                                                                handleAnswer(
+                                                                    question.id,
+                                                                    answers[question.id]?.value,
+                                                                    answers[question.id]?.description,
+                                                                    [...currentFiles, file],
+                                                                    answers[question.id]?.evaluator_comment
+                                                                );
                                                             }}
                                                             onFileRemove={async (fileToRemove) => {
-                                                                if (!isEvaluador) {
-                                                                    const currentFiles = answers[question.id]?.files || [];
-                                                                    const updatedFiles = currentFiles.filter(f =>
-                                                                        f.path ? f.path !== fileToRemove.path : f !== fileToRemove
-                                                                    );
+                                                                const currentFiles = answers[question.id]?.files || [];
+                                                                const updatedFiles = currentFiles.filter(f =>
+                                                                    f.path ? f.path !== fileToRemove.path : f !== fileToRemove
+                                                                );
 
-                                                                    handleAnswer(
-                                                                        question.id,
-                                                                        answers[question.id]?.value,
-                                                                        answers[question.id]?.description,
-                                                                        updatedFiles
-                                                                    );
-                                                                }
+                                                                handleAnswer(
+                                                                    question.id,
+                                                                    answers[question.id]?.value,
+                                                                    answers[question.id]?.description,
+                                                                    updatedFiles,
+                                                                    answers[question.id]?.evaluator_comment
+                                                                );
                                                             }}
                                                             certificationPaths={indicator.certification && JSON.parse(indicator.certification?.file_paths)}
-                                                            readOnly={isEvaluador || company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada' || indicator.isHomologated}
+                                                            /*readOnly={
+                                                                !isEvaluador ? 
+                                                                    (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada' || indicator.isHomologated) 
+                                                                    : (company.estado_eval === 'evaluado' || indicator.isHomologated)
+                                                            }*/
+                                                            readOnly={(isEvaluador || isSuperAdmin) 
+                                                                ? (company.estado_eval === 'evaluado' || company.estado_eval 
+=== 'evaluacion-calificada' || indicator.isHomologated)
+                                                                : (company.estado_eval === 'evaluacion-completada' || 
+company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-calificada' || indicator.isHomologated)}
                                                         />
                                                         {validationErrors[`files-${question.id}`] && (
                                                             <p className="mt-1 text-sm text-red-600">

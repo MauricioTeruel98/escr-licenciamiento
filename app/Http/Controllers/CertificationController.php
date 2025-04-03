@@ -99,7 +99,7 @@ class CertificationController extends Controller
                     } catch (\Exception $e) {
                         // Limpiar archivos ya subidos en caso de error
                         foreach ($filePaths as $existingPath) {
-                            Storage::disk('public')->delete($existingPath);
+                            //Storage::disk('public')->delete($existingPath);
                         }
                         throw $e;
                     }
@@ -158,7 +158,7 @@ class CertificationController extends Controller
             // Limpiar archivos en caso de error
             if (!empty($filePaths)) {
                 foreach ($filePaths as $path) {
-                    Storage::disk('public')->delete($path);
+                    //Storage::disk('public')->delete($path);
                 }
             }
 
@@ -211,7 +211,7 @@ class CertificationController extends Controller
                     if ($totalSize > $maxTotalSize) {
                         // Limpiar archivos nuevos en caso de error
                         foreach ($newFiles as $newPath) {
-                            Storage::disk('public')->delete($newPath);
+                            //Storage::disk('public')->delete($newPath);
                         }
                         return response()->json([
                             'error' => 'El tamaño total de los archivos excede el límite permitido de 15MB'
@@ -223,7 +223,7 @@ class CertificationController extends Controller
                             . '.' . $file->getClientOriginalExtension();
 
                         $path = $file->storeAs(
-                            "companies/{$certification->company_id}-{$companySlug}/certifications",
+                            "companies/{$certification->company_id}/certifications",
                             $fileName,
                             'public'
                         );
@@ -236,7 +236,7 @@ class CertificationController extends Controller
                     } catch (\Exception $e) {
                         // Limpiar archivos nuevos en caso de error
                         foreach ($newFiles as $newPath) {
-                            Storage::disk('public')->delete($newPath);
+                            //Storage::disk('public')->delete($newPath);
                         }
                         throw $e;
                     }
@@ -293,9 +293,9 @@ class CertificationController extends Controller
             // Encontrar y eliminar el archivo específico
             if (($key = array_search($filePath, $files)) !== false) {
                 // Eliminar el archivo del storage
-                if (Storage::disk('public')->exists($filePath)) {
+                /*if (Storage::disk('public')->exists($filePath)) {
                     Storage::disk('public')->delete($filePath);
-                }
+                }*/
 
                 // Eliminar la ruta del archivo del array
                 unset($files[$key]);
