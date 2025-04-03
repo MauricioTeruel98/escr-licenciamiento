@@ -465,6 +465,7 @@ export default function EvaluadorDashboard({ auth }) {
                                                     value={evaluationFields.cantidad_multi_sitio}
                                                     onChange={(e) => handleFieldChange('cantidad_multi_sitio', e.target.value)}
                                                     min="0"
+                                                    max="10"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                             </div>

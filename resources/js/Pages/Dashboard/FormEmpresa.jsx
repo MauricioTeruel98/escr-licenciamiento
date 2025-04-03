@@ -2831,6 +2831,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                                     onChange={handleChange}
                                                     name="cantidad_multi_sitio"
                                                     min="0"
+                                                    max="10"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                 />
                                                 <InputError message={errors.cantidad_multi_sitio} />
