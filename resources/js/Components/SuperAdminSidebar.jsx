@@ -38,8 +38,6 @@ export default function SuperAdminSidebar({ isOpen, setIsOpen, navigation = [] }
         }
     }, [url, evaluacionItems, usuariosItems]);
 
-    console.log(auth.company);
-
     return (
         <>
             {/* Overlay para móvil */}

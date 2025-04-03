@@ -24,7 +24,7 @@ export default function ResetPassword({ token, email, tokenExpired }) {
         post(route('password.store'), {
             onFinish: () => reset('password', 'password_confirmation'),
             onError: (errors) => {
-                console.log('Errores de validación:', errors);
+                //console.log('Errores de validación:', errors);
             }
         });
     };

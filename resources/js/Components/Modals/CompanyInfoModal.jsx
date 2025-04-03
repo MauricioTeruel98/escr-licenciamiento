@@ -30,8 +30,6 @@ export default function CompanyInfoModal({ isOpen, onClose, companyId }) {
 
     if (!isOpen) return null;
 
-    console.log(infoAdicional);
-
     return (
         <div className="fixed inset-0 z-50">
             <div className="fixed inset-0 bg-gray-500/20 backdrop-blur-sm transition-opacity"></div>

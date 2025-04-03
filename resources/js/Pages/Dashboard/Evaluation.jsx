@@ -126,7 +126,7 @@ export default function Evaluation({
     valuesProgress
 }) {
     const { post } = useForm();
-    const { auth, flash } = usePage().props;
+    const { auth } = usePage().props;
 
     const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
     const [isFinalizarAutoevaluacionModalOpen, setIsFinalizarAutoevaluacionModalOpen] = useState(false);
@@ -134,25 +134,6 @@ export default function Evaluation({
     const [notification, setNotification] = useState(null);
     const [modalStatus, setModalStatus] = useState('initial');
     const [isFinalizarEvaluacionModalOpen, setIsFinalizarEvaluacionModalOpen] = useState(false);
-
-    useEffect(() => {
-        /*
-        if (flash.error) {
-            console.log('error', flash.error)
-            setNotification({
-                type: 'error',
-                message: flash.error
-            });
-        }
-        if (flash.success) {
-            console.log('success', flash.success)
-            setNotification({
-                type: 'success',
-                message: flash.success
-            });
-        }
-        */
-    }, [flash]);
 
     useEffect(() => {
         history.replaceState(null, '', '/dashboard');

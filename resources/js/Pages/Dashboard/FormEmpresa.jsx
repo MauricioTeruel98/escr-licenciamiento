@@ -816,8 +816,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
     const submit = async (e) => {
         e.preventDefault();
 
-        console.log('submit');
-
         setLoading(true);
         setErrors({});
         setCamposFaltantes([]);
@@ -889,12 +887,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
         // SIN PRODUCTOS
         const formularioCompleto = camposIncompletos.length === 0 && fotografiasLength > 0 && logo;
-
-        //console.log('formularioCompleto', formularioCompleto);
-        //console.log('camposIncompletos', camposIncompletos);
-        //console.log('tieneProductoValido', tieneProductoValido);
-        //console.log('fotografiasLength', fotografiasLength);
-        //console.log('logo', logo);
 
 
         try {
@@ -973,13 +965,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 }
             });
 
-            // Agregar información de depuración para ubicación
-            /*console.log('Enviando datos de ubicación:', {
-                provincia: data.provincia,
-                canton: data.canton,
-                distrito: data.distrito
-            });*/
-
             // Agregar el estado de form_sended basado en la validación
             if (formularioCompleto) {
                 formData.append('autoEvaluationResult', JSON.stringify({
@@ -1022,13 +1007,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
                 // Limpiar errores del cliente si la operación fue exitosa
                 setErrors({});
-
-                // Mostrar información sobre los datos de ubicación guardados
-                /*console.log('Datos de ubicación guardados:', {
-                    provincia: response.data.data.provincia_nombre || response.data.data.provincia,
-                    canton: response.data.data.canton_nombre || response.data.data.canton,
-                    distrito: response.data.data.distrito_nombre || response.data.data.distrito
-                });*/
             } else {
                 // Si hay errores en la respuesta, mostrarlos en los campos correspondientes
                 if (response.data.errors) {
@@ -1119,13 +1097,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                     ...prev,
                     provincias: provinciasOrdenadas
                 }));
-
-                /*console.log('Datos de ubicación cargados:', {
-                    provincias: provinciasOrdenadas.length,
-                    provinciaSeleccionada: data.provincia,
-                    cantonSeleccionado: data.canton,
-                    distritoSeleccionado: data.distrito
-                });*/
             } catch (error) {
                 console.error('Error al cargar lugares:', error);
             }
@@ -1140,12 +1111,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             const provinciaSeleccionada = ubicaciones.provincias.find(p => p.id === data.provincia);
 
             if (provinciaSeleccionada) {
-                /* console.log('Provincia seleccionada:', {
-                     id: provinciaSeleccionada.id,
-                     name: provinciaSeleccionada.name,
-                     cantones: provinciaSeleccionada.cantones?.length || 0
-                 });*/
-
                 setUbicaciones(prev => ({
                     ...prev,
                     cantones: provinciaSeleccionada.cantones || [],
@@ -1157,7 +1122,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
                 // Solo resetear cantón si no existe en la nueva lista de cantones
                 if (data.canton && !provinciaSeleccionada.cantones.some(c => c.id === data.canton)) {
-                    //  console.log('Reseteando cantón porque no existe en la nueva lista de cantones');
                     setData('canton', '');
                     setData('distrito', '');
                 }
@@ -1172,12 +1136,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
             const cantonSeleccionado = provinciaSeleccionada?.cantones.find(c => c.id === data.canton);
 
             if (cantonSeleccionado) {
-                /*console.log('Cantón seleccionado:', {
-                    id: cantonSeleccionado.id,
-                    name: cantonSeleccionado.name,
-                    distritos: cantonSeleccionado.distritos?.length || 0
-                });*/
-
                 setUbicaciones(prev => ({
                     ...prev,
                     distritos: cantonSeleccionado.distritos || []
@@ -1185,7 +1143,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
 
                 // Solo resetear distrito si no existe en la nueva lista de distritos
                 if (data.distrito && !cantonSeleccionado.distritos.some(d => d.id === data.distrito)) {
-                    //console.log('Reseteando distrito porque no existe en la nueva lista de distritos');
                     setData('distrito', '');
                 }
             }
@@ -1197,12 +1154,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
         const initializeLocationData = async () => {
             // Solo ejecutar si tenemos provincia y no tenemos cantones cargados
             if (data.provincia && ubicaciones.provincias.length > 0 && ubicaciones.cantones.length === 0) {
-                /*console.log('Inicializando datos de ubicación con valores existentes:', {
-                    provincia: data.provincia,
-                    canton: data.canton,
-                    distrito: data.distrito
-                });*/
-
                 const provinciaSeleccionada = ubicaciones.provincias.find(p => p.id === data.provincia);
 
                 if (provinciaSeleccionada) {

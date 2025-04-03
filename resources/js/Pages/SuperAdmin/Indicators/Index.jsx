@@ -281,7 +281,7 @@ export default function IndicatorsIndex() {
             if (formData.evaluation_questions && formData.evaluation_questions.length > 0) {
                 const hasEmptyQuestions = formData.evaluation_questions.some(q => !q.trim());
                 if (hasEmptyQuestions) {
-                    console.log('Se han filtrado preguntas vacías');
+                    
                 }
             }
 

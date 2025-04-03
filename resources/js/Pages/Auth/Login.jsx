@@ -81,7 +81,6 @@ export default function Login({ status: initialStatus, canResetPassword }) {
             onError: (errors) => {
                 // Comprueba si el email tiene el campo from_migration en 1
                 axios.get(route('users.check-migration', { email: data.email })).then(response => {
-                    console.log(response.data);
                     if (response.data.from_migration) {
                         // Mostrar mensaje de éxito sobre el envío del email de recuperación
                         if (response.data.status === 'passwords.sent') {
@@ -122,11 +121,8 @@ export default function Login({ status: initialStatus, canResetPassword }) {
                             placeholder="nombre@empresa.com"
                             maxLength={100}
                         />
-                        {
-                            isMigrated && (
-                                <InputError message={errors.email || validationErrors.email} className="mt-2" />
-                            )
-                        }
+                        <InputError message={errors.email || validationErrors.email} className="mt-2" />
+
                     </div>
 
                     <div className="space-y-2">

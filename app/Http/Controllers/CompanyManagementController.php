@@ -136,6 +136,9 @@ class CompanyManagementController extends Controller
             // Iniciar transacción
             DB::beginTransaction();
 
+            // Actualizar el company_id a null para todos los usuarios de esta empresa
+            DB::table('users')->where('company_id', $company->id)->update(['company_id' => null]);
+
             // Eliminar todos los registros relacionados
             DB::table('evaluation_value_results')->where('company_id', $company->id)->delete();
             DB::table('auto_evaluation_result')->where('company_id', $company->id)->delete();
@@ -148,7 +151,6 @@ class CompanyManagementController extends Controller
             DB::table('indicator_answers_evaluation')->where('company_id', $company->id)->delete();
             DB::table('company_evaluator')->where('company_id', $company->id)->delete();
             DB::table('evaluator_assessments')->where('company_id', $company->id)->delete();
-            //DB::table('users')->where('company_id', $company->id)->delete();
 
             // También eliminar archivos físicos si existen
             $this->deleteCompanyFiles($company);
@@ -204,19 +206,21 @@ class CompanyManagementController extends Controller
            // Iniciar transacción
            DB::beginTransaction();
 
-           // Eliminar todos los registros relacionados
-           DB::table('evaluation_value_results')->whereIn('company_id', $request->ids)->delete();
-           DB::table('auto_evaluation_result')->whereIn('company_id', $request->ids)->delete();
-           DB::table('auto_evaluation_valor_result')->whereIn('company_id', $request->ids)->delete();
-           DB::table('auto_evaluation_subcategory_result')->whereIn('company_id', $request->ids)->delete();
-           DB::table('certifications')->whereIn('company_id', $request->ids)->delete();
-           DB::table('company_products')->whereIn('company_id', $request->ids)->delete();
-           DB::table('info_adicional_empresas')->whereIn('company_id', $request->ids)->delete();
-           DB::table('indicator_answers')->whereIn('company_id', $request->ids)->delete();
-           DB::table('indicator_answers_evaluation')->whereIn('company_id', $request->ids)->delete();
-           DB::table('company_evaluator')->whereIn('company_id', $request->ids)->delete();
-           DB::table('evaluator_assessments')->whereIn('company_id', $request->ids)->delete();
-           //DB::table('users')->whereIn('company_id', $request->ids)->delete();
+            // Actualizar el company_id a null para todos los usuarios de estas empresas
+            DB::table('users')->whereIn('company_id', $request->ids)->update(['company_id' => null]);
+
+            // Eliminar todos los registros relacionados
+            DB::table('evaluation_value_results')->whereIn('company_id', $request->ids)->delete();
+            DB::table('auto_evaluation_result')->whereIn('company_id', $request->ids)->delete();
+            DB::table('auto_evaluation_valor_result')->whereIn('company_id', $request->ids)->delete();
+            DB::table('auto_evaluation_subcategory_result')->whereIn('company_id', $request->ids)->delete();
+            DB::table('certifications')->whereIn('company_id', $request->ids)->delete();
+            DB::table('company_products')->whereIn('company_id', $request->ids)->delete();
+            DB::table('info_adicional_empresas')->whereIn('company_id', $request->ids)->delete();
+            DB::table('indicator_answers')->whereIn('company_id', $request->ids)->delete();
+            DB::table('indicator_answers_evaluation')->whereIn('company_id', $request->ids)->delete();
+            DB::table('company_evaluator')->whereIn('company_id', $request->ids)->delete();
+            DB::table('evaluator_assessments')->whereIn('company_id', $request->ids)->delete();
 
             // Eliminar archivos físicos de todas las empresas
             foreach ($request->ids as $companyId) {

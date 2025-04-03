@@ -46,8 +46,6 @@ export default function EvaluadorDashboard({ auth }) {
         }
     }, [activeCompany]);
 
-    console.log(activeCompany)
-
     const filteredCompanies = query === ''
         ? companies
         : companies.filter((company) =>
