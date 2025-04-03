@@ -716,13 +716,12 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                             newAnswers[question.id] = {
                                 value: "1", // Siempre "Sí" para homologados
                                 description: `Homologado por ${indicator.homologation_name}`,
-                                files: [],
-                                /*files: indicator.certification.file_paths ? 
+                                files: indicator.certification.file_paths ? 
                                     JSON.parse(indicator.certification.file_paths).map(path => ({
                                         path: path,
                                         name: path.split('/').pop(),
                                         type: 'application/octet-stream'
-                                    })) : [],*/
+                                    })) : [],
                                 evaluator_comment: ''
                             };
                             hasChanges = true;
