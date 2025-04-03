@@ -13,6 +13,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+/**
+ * Se deja comentado el deleteFile para que no se borren los archivos de las certificaciones, ya que si se eliminan generan un
+ * error en la vista de la evaluación, ya que no encuentra el archivo en cada respuesta de la empresa.
+ * 
+ * @author: Mauricio Teruel
+ * @version: 1.0
+ * @since: 2025-04-03
+ */
 class CertificationController extends Controller
 {
     use AuthorizesRequests;
