@@ -127,11 +127,11 @@ class CompanyManagementController extends Controller
     {
         try {
             // Verificar si tiene usuarios
-            if ($company->users()->count() > 0) {
+            /*if ($company->users()->count() > 0) {
                 return response()->json([
                     'message' => 'No se puede eliminar la empresa ' . $company->name . ' porque tiene usuarios asociados'
                 ], 422);
-            }
+            }*/
 
             // Iniciar transacción
             DB::beginTransaction();
@@ -150,7 +150,7 @@ class CompanyManagementController extends Controller
             //DB::table('auto_evaluations')->where('company_id', $company->id)->delete();
             DB::table('company_evaluator')->where('company_id', $company->id)->delete();
             DB::table('evaluator_assessments')->where('company_id', $company->id)->delete();
-            DB::table('users')->where('company_id', $company->id)->delete();
+            //DB::table('users')->where('company_id', $company->id)->delete();
             //DB::table('company_files')->where('company_id', $company->id)->delete();
             
             // También eliminar archivos físicos si existen
@@ -198,11 +198,11 @@ class CompanyManagementController extends Controller
                 ->pluck('name')
                 ->implode(', ');
 
-            if ($companiesWithUsers > 0) {
+            /*if ($companiesWithUsers > 0) {
                 return response()->json([
                     'message' => 'No se pueden eliminar empresas ' . $companiesWithUsersNames . ' que tienen usuarios asociados'
                 ], 422);
-            }
+            }*/
 
            // Iniciar transacción
            DB::beginTransaction();
@@ -221,7 +221,7 @@ class CompanyManagementController extends Controller
            //DB::table('auto_evaluations')->where('company_id', $company->id)->delete();
            DB::table('company_evaluator')->whereIn('company_id', $request->ids)->delete();
            DB::table('evaluator_assessments')->whereIn('company_id', $request->ids)->delete();
-           DB::table('users')->whereIn('company_id', $request->ids)->delete();
+           //DB::table('users')->whereIn('company_id', $request->ids)->delete();
            //DB::table('company_files')->whereIn('company_id', $request->ids)->delete();
 
             // Eliminar archivos físicos de todas las empresas
