@@ -3,6 +3,11 @@ import { X } from 'lucide-react';
 export default function ApplicationModal({ isOpen, onClose }) {
     if (!isOpen) return null;
 
+    const handleClose = () => {
+        onClose();
+        window.location.href = route('form.empresa');
+    }
+
     return (
         <div className="fixed inset-0 z-50">
             <div className="fixed inset-0 bg-gray-500/20 backdrop-blur-sm transition-opacity"></div>
@@ -13,7 +18,7 @@ export default function ApplicationModal({ isOpen, onClose }) {
                         {/* Header con botón de cerrar */}
                         <div className="absolute right-0 top-0 pr-4 pt-4">
                             <button
-                                onClick={onClose}
+                                onClick={handleClose}
                                 className="text-gray-400 hover:text-gray-500"
                             >
                                 <X className="h-6 w-6" />
@@ -39,7 +44,7 @@ export default function ApplicationModal({ isOpen, onClose }) {
                         <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                             <button
                                 type="button"
-                                onClick={onClose}
+                                onClick={handleClose}
                                 className="inline-flex w-full justify-center rounded-md bg-green-800 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700 sm:ml-3 sm:w-auto"
                             >
                                 Aceptar

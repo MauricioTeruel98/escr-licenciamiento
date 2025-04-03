@@ -505,8 +505,8 @@ export default function EvaluadorDashboard({ auth }) {
                                         <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                                             <p className="text-sm text-gray-600">
                                                 <strong>Importante:</strong><br />
-                                                En el caso de organizaciones multi-sitio, la función central de la organización debe ser siempre evaluada. 
-                                                La evaluación del resto de sitios se debe basar en muestreo e incluir al menos un número igual a la raíz 
+                                                En el caso de organizaciones multi-sitio, la función central de la organización debe ser siempre evaluada.
+                                                La evaluación del resto de sitios se debe basar en muestreo e incluir al menos un número igual a la raíz
                                                 cuadrada del total de sitios adicionales a la función central.
                                             </p>
                                         </div>
@@ -594,9 +594,9 @@ export default function EvaluadorDashboard({ auth }) {
                                     <button
                                         onClick={openFinalizarEvaluacionModal}
                                         disabled={
-                                            isSubmitting || 
-                                            !evaluationFields.puntos_fuertes || 
-                                            !evaluationFields.oportunidades || 
+                                            isSubmitting ||
+                                            !evaluationFields.puntos_fuertes ||
+                                            !evaluationFields.oportunidades ||
                                             (evaluationFields.tiene_multi_sitio && !evaluationFields.cantidad_multi_sitio)
                                         }
                                         className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-75 disabled:cursor-not-allowed"
@@ -618,40 +618,33 @@ export default function EvaluadorDashboard({ auth }) {
                         }
                     </div>
 
-                    <div className="flex flex-col lg:flex-row items-center gap-4">
-                        <div className="w-1/2">
-                            <div className="bg-white rounded-lg shadow p-6">
-                                <h3 className="text-xl font-bold mb-2">Descargar documentación</h3>
-                                <div className="mt-6">
-                                    <a href={route('download.company.documentation')} className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors text-center" target="_blank" rel="noopener noreferrer">
-                                        Descargar
-                                    </a>
+                    {
+                        activeCompany && Object.keys(activeCompany).length > 0 && (
+                            <div className="flex flex-col lg:flex-row items-center gap-4">
+                                <div className="w-1/2">
+                                    <div className="bg-white rounded-lg shadow p-6">
+                                        <h3 className="text-xl font-bold mb-2">Descargar documentación</h3>
+                                        <div className="mt-6">
+                                            <a href={route('download.company.documentation')} className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors text-center" target="_blank" rel="noopener noreferrer">
+                                                Descargar
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                    {/* {activeCompany && companyStatusEval === 'evaluacion-completada' && (
-                                        <a 
-                                            href={route('download.evaluation.pdf', activeCompany.id)} 
-                                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center"
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                        >
-                                            Descargar PDF de evaluación
-                                        </a>
-                                    )} */}
+                                <div className="w-1/2">
+                                    <div className="bg-white rounded-lg shadow p-6">
+                                        <h3 className="text-xl font-bold mb-2">Perfil de empresa</h3>
+                                        <div className="mt-6">
+                                            <Link href={route('company.edit')} className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors">
+                                                Ver Perfil
+                                            </Link>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="w-1/2">
-                            <div className="bg-white rounded-lg shadow p-6">
-                                <h3 className="text-xl font-bold mb-2">Perfil de empresa</h3>
-                                <div className="mt-6">
-                                    <Link href={route('company.edit')} className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors">
-                                        Ver Perfil
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        )
+                    }
                 </div>
             </div>
             <CalificarEvaluacionModal
