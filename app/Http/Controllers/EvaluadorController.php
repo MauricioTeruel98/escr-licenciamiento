@@ -119,7 +119,7 @@ class EvaluadorController extends Controller
             'puntos_fuertes' => 'required|string',
             'oportunidades' => 'required|string',
             'tiene_multi_sitio' => 'required|boolean',
-            'cantidad_multi_sitio' => 'required_if:tiene_multi_sitio,true|integer',
+            'cantidad_multi_sitio' => 'nullable|required_if:tiene_multi_sitio,true|integer',
             'aprobo_evaluacion_multi_sitio' => 'required|boolean',
         ]);
 
@@ -130,11 +130,14 @@ class EvaluadorController extends Controller
             return response()->json(['error' => 'Empresa no encontrada'], 404);
         }
 
+        // Si tiene_multi_sitio es false, establecer cantidad_multi_sitio como null
+        $cantidad_multi_sitio = $request->tiene_multi_sitio ? $request->cantidad_multi_sitio : null;
+
         $company->update([
             'puntos_fuertes' => $request->puntos_fuertes,
             'oportunidades' => $request->oportunidades,
             'tiene_multi_sitio' => $request->tiene_multi_sitio,
-            'cantidad_multi_sitio' => $request->cantidad_multi_sitio,
+            'cantidad_multi_sitio' => $cantidad_multi_sitio,
             'aprobo_evaluacion_multi_sitio' => $request->aprobo_evaluacion_multi_sitio,
         ]);
 
@@ -144,7 +147,7 @@ class EvaluadorController extends Controller
             'puntos_fuertes' => $request->puntos_fuertes,
             'oportunidades' => $request->oportunidades,
             'tiene_multi_sitio' => $request->tiene_multi_sitio,
-            'cantidad_multi_sitio' => $request->cantidad_multi_sitio,
+            'cantidad_multi_sitio' => $cantidad_multi_sitio,
             'aprobo_evaluacion_multi_sitio' => $request->aprobo_evaluacion_multi_sitio,
         ]);
 

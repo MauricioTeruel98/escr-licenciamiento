@@ -120,13 +120,16 @@ export default function EvaluadorDashboard({ auth }) {
             setModalStatus('processing');
             setIsSubmitting(true);
 
-            await axios.post(route('company.update.evaluation-fields'), {
+            // Preparar los datos
+            const evaluationData = {
                 puntos_fuertes: evaluationFields.puntos_fuertes,
                 oportunidades: evaluationFields.oportunidades,
                 tiene_multi_sitio: evaluationFields.tiene_multi_sitio,
-                cantidad_multi_sitio: evaluationFields.cantidad_multi_sitio,
+                cantidad_multi_sitio: evaluationFields.tiene_multi_sitio ? evaluationFields.cantidad_multi_sitio : null,
                 aprobo_evaluacion_multi_sitio: evaluationFields.aprobo_evaluacion_multi_sitio
-            });
+            };
+
+            await axios.post(route('company.update.evaluation-fields'), evaluationData);
 
             const response = await axios.post(route('indicadores.enviar-evaluacion-calificada'));
 
@@ -591,7 +594,12 @@ export default function EvaluadorDashboard({ auth }) {
 
                                     <button
                                         onClick={openFinalizarEvaluacionModal}
-                                        disabled={isSubmitting || !evaluationFields.puntos_fuertes || !evaluationFields.oportunidades || evaluationFields.tiene_multi_sitio && !evaluationFields.cantidad_multi_sitio}
+                                        disabled={
+                                            isSubmitting || 
+                                            !evaluationFields.puntos_fuertes || 
+                                            !evaluationFields.oportunidades || 
+                                            (evaluationFields.tiene_multi_sitio && !evaluationFields.cantidad_multi_sitio)
+                                        }
                                         className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-75 disabled:cursor-not-allowed"
                                     >
                                         {isSubmitting ? (
