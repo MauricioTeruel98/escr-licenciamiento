@@ -97,9 +97,9 @@ class InfoAdicionalEmpresa extends Model
         'puntos_fuertes' => 'string',
         'justificacion' => 'string',
         'oportunidades' => 'string',
-        'tiene_multi_sitio' => 'boolean',
+        'tiene_multi_sitio' => 'integer',
         'cantidad_multi_sitio' => 'integer',
-        'aprobo_evaluacion_multi_sitio' => 'boolean'
+        'aprobo_evaluacion_multi_sitio' => 'integer'
     ];
 
     public function company()

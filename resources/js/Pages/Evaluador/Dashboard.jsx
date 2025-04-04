@@ -39,9 +39,9 @@ export default function EvaluadorDashboard({ auth }) {
             setEvaluationFields({
                 puntos_fuertes: activeCompany.puntos_fuertes || '',
                 oportunidades: activeCompany.oportunidades || '',
-                tiene_multi_sitio: activeCompany.tiene_multi_sitio || false,
+                tiene_multi_sitio: Boolean(activeCompany.tiene_multi_sitio),
                 cantidad_multi_sitio: activeCompany.cantidad_multi_sitio || '',
-                aprobo_evaluacion_multi_sitio: activeCompany.aprobo_evaluacion_multi_sitio || false
+                aprobo_evaluacion_multi_sitio: Boolean(activeCompany.aprobo_evaluacion_multi_sitio)
             });
         }
     }, [activeCompany]);
@@ -75,9 +75,9 @@ export default function EvaluadorDashboard({ auth }) {
                 setEvaluationFields({
                     puntos_fuertes: response.data.puntos_fuertes || '',
                     oportunidades: response.data.oportunidades || '',
-                    tiene_multi_sitio: response.data.tiene_multi_sitio || false,
+                    tiene_multi_sitio: Boolean(response.data.tiene_multi_sitio),
                     cantidad_multi_sitio: response.data.cantidad_multi_sitio || '',
-                    aprobo_evaluacion_multi_sitio: response.data.aprobo_evaluacion_multi_sitio || false
+                    aprobo_evaluacion_multi_sitio: Boolean(response.data.aprobo_evaluacion_multi_sitio)
                 });
             }
         } catch (error) {
@@ -196,7 +196,7 @@ export default function EvaluadorDashboard({ auth }) {
     const handleFieldChange = (field, value) => {
         setEvaluationFields(prev => ({
             ...prev,
-            [field]: value
+            [field]: field === 'cantidad_multi_sitio' ? value : value === 'true'
         }));
     };
 
@@ -433,7 +433,7 @@ export default function EvaluadorDashboard({ auth }) {
                                                         name="tiene_multi_sitio"
                                                         value="true"
                                                         checked={evaluationFields.tiene_multi_sitio === true}
-                                                        onChange={(e) => handleFieldChange('tiene_multi_sitio', e.target.value === 'true')}
+                                                        onChange={(e) => handleFieldChange('tiene_multi_sitio', e.target.value)}
                                                         className="form-radio text-green-600 focus:ring-green-500"
                                                     />
                                                     <span className="ml-2">Sí</span>
@@ -444,7 +444,7 @@ export default function EvaluadorDashboard({ auth }) {
                                                         name="tiene_multi_sitio"
                                                         value="false"
                                                         checked={evaluationFields.tiene_multi_sitio === false}
-                                                        onChange={(e) => handleFieldChange('tiene_multi_sitio', e.target.value === 'true')}
+                                                        onChange={(e) => handleFieldChange('tiene_multi_sitio', e.target.value)}
                                                         className="form-radio text-green-600 focus:ring-green-500"
                                                     />
                                                     <span className="ml-2">No</span>
@@ -482,7 +482,7 @@ export default function EvaluadorDashboard({ auth }) {
                                                             name="aprobo_evaluacion_multi_sitio"
                                                             value="true"
                                                             checked={evaluationFields.aprobo_evaluacion_multi_sitio === true}
-                                                            onChange={(e) => handleFieldChange('aprobo_evaluacion_multi_sitio', e.target.value === 'true')}
+                                                            onChange={(e) => handleFieldChange('aprobo_evaluacion_multi_sitio', e.target.value)}
                                                             className="form-radio text-green-600 focus:ring-green-500"
                                                         />
                                                         <span className="ml-2">Sí</span>
@@ -493,7 +493,7 @@ export default function EvaluadorDashboard({ auth }) {
                                                             name="aprobo_evaluacion_multi_sitio"
                                                             value="false"
                                                             checked={evaluationFields.aprobo_evaluacion_multi_sitio === false}
-                                                            onChange={(e) => handleFieldChange('aprobo_evaluacion_multi_sitio', e.target.value === 'true')}
+                                                            onChange={(e) => handleFieldChange('aprobo_evaluacion_multi_sitio', e.target.value)}
                                                             className="form-radio text-green-600 focus:ring-green-500"
                                                         />
                                                         <span className="ml-2">No</span>

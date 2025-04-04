@@ -39,11 +39,16 @@ class CompanyProfileController extends Controller
 
             // Convertir valores booleanos a 1 o 0
             $allData['recomienda_marca_pais'] = filter_var($allData['recomienda_marca_pais'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+            $allData['tiene_multi_sitio'] = filter_var($allData['tiene_multi_sitio'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+            $allData['aprobo_evaluacion_multi_sitio'] = filter_var($allData['aprobo_evaluacion_multi_sitio'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
 
             // Calcular cantidad_total
             $allData['cantidad_total'] = ($allData['cantidad_hombres'] ?? 0) + 
                                        ($allData['cantidad_mujeres'] ?? 0) + 
                                        ($allData['cantidad_otros'] ?? 0);
+
+            // Asegurarse de que cantidad_multi_sitio sea un entero o null
+            $allData['cantidad_multi_sitio'] = $allData['tiene_multi_sitio'] ? (int)$allData['cantidad_multi_sitio'] : null;
 
             $allData['company_id'] = $companyId;
 
@@ -300,6 +305,9 @@ class CompanyProfileController extends Controller
                 $company->puntos_fuertes = $allData['puntos_fuertes'];
                 $company->justificacion = $allData['justificacion'];
                 $company->oportunidades = $allData['oportunidades'];
+                $company->tiene_multi_sitio = $allData['tiene_multi_sitio'];
+                $company->cantidad_multi_sitio = $allData['cantidad_multi_sitio'];
+                $company->aprobo_evaluacion_multi_sitio = $allData['aprobo_evaluacion_multi_sitio'];
                 $company->save();
             }
 

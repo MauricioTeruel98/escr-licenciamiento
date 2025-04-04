@@ -116,9 +116,9 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 imagen_3: p.imagen_3
             }))
             : [],
-        tiene_multi_sitio: infoAdicional?.tiene_multi_sitio || false,
+        tiene_multi_sitio: infoAdicional?.tiene_multi_sitio ? Boolean(infoAdicional.tiene_multi_sitio) : false,
         cantidad_multi_sitio: infoAdicional?.cantidad_multi_sitio || '',
-        aprobo_evaluacion_multi_sitio: infoAdicional?.aprobo_evaluacion_multi_sitio || false,
+        aprobo_evaluacion_multi_sitio: infoAdicional?.aprobo_evaluacion_multi_sitio ? Boolean(infoAdicional.aprobo_evaluacion_multi_sitio) : false,
     });
 
     const [loading, setLoading] = useState(false);
