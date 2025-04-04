@@ -812,11 +812,11 @@ export default function Evaluation({
                             <div className="card-body">
                                 <div className="">
                                     <h3 className="text-lg font-semibold mb-4">Progreso de la evaluación</h3>
-                                    <div className="flex justify-between gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                         {valuesProgressEvaluacion.map((value) => (
                                             <div key={value.id} className="bg-white p-4 rounded-lg shadow w-full">
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <h4 className="font-medium">{value.name}</h4>
+                                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2">
+                                                    <h4 className="font-medium mb-2 sm:mb-0">{value.name}</h4>
                                                     {value.result ? (
                                                         <span className="text-sm px-3 py-1 rounded bg-green-200 text-green-600">
                                                             Enviado
@@ -832,7 +832,6 @@ export default function Evaluation({
                                                             {value.progress === 100 ? 'Enviar' : 'Completar'}
                                                         </Link>
                                                     )}
-
                                                 </div>
                                                 <div className="relative pt-1">
                                                     <div className="flex mb-2 items-center justify-between">
@@ -890,11 +889,11 @@ export default function Evaluation({
                             <div className="card-body">
                                 <div className="">
                                     <h3 className="text-lg font-semibold mb-4">Progreso de la autoevaluación</h3>
-                                    <div className="flex justify-between gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                         {valuesProgress.map((value) => (
                                             <div key={value.id} className="bg-white p-4 rounded-lg shadow w-full">
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <h4 className="font-medium">{value.name}</h4>
+                                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2">
+                                                    <h4 className="font-medium mb-2 sm:mb-0">{value.name}</h4>
                                                     {value.result ? (
                                                         <span className={`px-2 py-1 rounded text-sm ${value.result.nota >= value.minimum_score
                                                             ? 'bg-green-100 text-green-800'
