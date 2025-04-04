@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AutoEvaluationResult;
+use App\Models\AutoEvaluationValorResult;
 use App\Models\Company;
 use App\Models\Value;
 use App\Models\Indicator;
@@ -209,6 +210,10 @@ class IndicadoresController extends Controller
             'fecha_inicio_auto_evaluacion' => $company->fecha_inicio_auto_evaluacion
         ]);
 
+        $valorEnviado = AutoEvaluationValorResult::where('company_id', $user->company_id)
+            ->where('value_id', $id)
+            ->exists();
+
         return Inertia::render('Dashboard/Indicadores/Indicadores', [
             'valueData' => $value,
             'userName' => $user->name,
@@ -221,7 +226,8 @@ class IndicadoresController extends Controller
             'previouslyHomologatedIndicators' => $previouslyHomologatedIndicators,
             'company' => $company,
             'availableToModifyAutoeval' => $availableToModifyAutoeval,
-            'savedAnswersCount' => $savedAnswersCount
+            'savedAnswersCount' => $savedAnswersCount,
+            'valorEnviado' => $valorEnviado,
         ]);
     }
 }

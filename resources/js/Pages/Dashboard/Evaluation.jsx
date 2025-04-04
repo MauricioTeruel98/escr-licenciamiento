@@ -123,7 +123,8 @@ export default function Evaluation({
     autoEvaluationResult,
     company,
     preguntasDescalificatoriasRechazadas,
-    valuesProgress
+    valuesProgress,
+    valuesProgressEvaluacion
 }) {
     const { post } = useForm();
     const { auth } = usePage().props;
@@ -804,63 +805,166 @@ export default function Evaluation({
 
                 </div>
 
-                {/* Progreso de cada valor */}
-                {/* <div className="card bg-white shadow">
-                    <div className="card-body">
-                        <div className="mt-4">
-                            <h3 className="text-lg font-semibold mb-4">Progreso por valor</h3>
-                            <div className="flex justify-between gap-4">
-                                {valuesProgress.map((value) => (
-                                    <div key={value.id} className="bg-white p-4 rounded-lg shadow w-full">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <h4 className="font-medium">{value.name}</h4>
-                                            {value.result ? (
-                                                <span className={`px-2 py-1 rounded text-sm ${value.result.nota >= value.minimum_score
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-red-100 text-red-800'
-                                                    }`}>
-                                                    {value.result.nota}%
-                                                </span>
-                                            ) : (
-                                                <Link
-                                                    href={route('indicadores', value.id)}
-                                                    className="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-                                                >
-                                                    Completar
-                                                </Link>
-                                            )}
-                                        </div>
-                                        <div className="relative pt-1">
-                                            <div className="flex mb-2 items-center justify-between">
-                                                <div>
-                                                    <span className="text-xs font-semibold inline-block text-green-600">
-                                                        {value.progress}% Completado
-                                                    </span>
+                {/* Progreso por valor - evaluación */}
+                {
+                    (company.estado_eval === "evaluacion" || company.estado_eval === "evaluacion-pendiente") && (
+                        <div className="card bg-white shadow mt-8">
+                            <div className="card-body">
+                                <div className="mt-4">
+                                    <h3 className="text-lg font-semibold mb-4">Progreso por valor</h3>
+                                    <div className="flex justify-between gap-4">
+                                        {valuesProgressEvaluacion.map((value) => (
+                                            <div key={value.id} className="bg-white p-4 rounded-lg shadow w-full">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <h4 className="font-medium">{value.name}</h4>
+                                                    {value.result ? (
+                                                        <span className="text-sm px-3 py-1 rounded bg-green-200 text-green-600">
+                                                            Enviado
+                                                        </span>
+                                                    ) : (
+                                                        <Link
+                                                            href={route('evaluacion', value.id)}
+                                                            className={`text-sm px-3 py-1 rounded ${value.progress === 100
+                                                                ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                                                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                                                                }`}
+                                                        >
+                                                            {value.progress === 100 ? 'Enviar' : 'Completar'}
+                                                        </Link>
+                                                    )}
+
                                                 </div>
-                                                <div className="text-right">
-                                                    <span className="text-xs font-semibold inline-block text-green-600">
-                                                        {value.answered_indicators}/{value.total_indicators} Indicadores
-                                                    </span>
+                                                <div className="relative pt-1">
+                                                    <div className="flex mb-2 items-center justify-between">
+                                                        <div>
+                                                            <span className={`text-xs font-semibold inline-block ${value.result
+                                                                ? 'text-green-600'
+                                                                : value.progress === 100
+                                                                    ? 'text-yellow-600'
+                                                                    : 'text-blue-600'
+                                                                }`}>
+                                                                {value.progress}% Completado
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <span className={`text-xs font-semibold inline-block ${value.result
+                                                                ? 'text-green-600'
+                                                                : value.progress === 100
+                                                                    ? 'text-yellow-600'
+                                                                    : 'text-blue-600'
+                                                                }`}>
+                                                                {value.answered_questions}/{value.total_questions} Preguntas
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className={`overflow-hidden h-2 mb-4 text-xs flex rounded ${value.result
+                                                        ? 'bg-green-200'
+                                                        : value.progress === 100
+                                                            ? 'bg-yellow-200'
+                                                            : 'bg-blue-200'
+                                                        }`}>
+                                                        <div
+                                                            style={{ width: `${value.progress}%` }}
+                                                            className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${value.result
+                                                                ? 'bg-green-500'
+                                                                : value.progress === 100
+                                                                    ? 'bg-yellow-500'
+                                                                    : 'bg-blue-500'
+                                                                }`}
+                                                        ></div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-green-200">
-                                                <div
-                                                    style={{ width: `${value.progress}%` }}
-                                                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500"
-                                                ></div>
-                                            </div>
-                                        </div>
-                                        {value.result && (
-                                            <div className="text-sm text-gray-600">
-                                                Nota mínima requerida: {value.minimum_score}%
-                                            </div>
-                                        )}
+                                        ))}
                                     </div>
-                                ))}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div> */}
+                    )
+                }
+
+                {/* Progreso de cada valor - autoevaluación */}
+                {
+                    company.estado_eval === "auto-evaluacion" || company.estado_eval === "auto-evaluacion-completed" && (
+                        <div className="card bg-white shadow">
+                            <div className="card-body">
+                                <div className="mt-4">
+                                    <h3 className="text-lg font-semibold mb-4">Progreso por valor</h3>
+                                    <div className="flex justify-between gap-4">
+                                        {valuesProgress.map((value) => (
+                                            <div key={value.id} className="bg-white p-4 rounded-lg shadow w-full">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <h4 className="font-medium">{value.name}</h4>
+                                                    {value.result ? (
+                                                        <span className={`px-2 py-1 rounded text-sm ${value.result.nota >= value.minimum_score
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-red-100 text-red-800'
+                                                            }`}>
+                                                            {value.result.nota}%
+                                                        </span>
+                                                    ) : (
+                                                        <Link
+                                                            href={route('indicadores', value.id)}
+                                                            className={`text-sm px-3 py-1 rounded ${value.progress === 100
+                                                                ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                                                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                                                                }`}
+                                                        >
+                                                            {value.progress === 100 ? 'Enviar' : 'Completar'}
+                                                        </Link>
+                                                    )}
+                                                </div>
+                                                <div className="relative pt-1">
+                                                    <div className="flex mb-2 items-center justify-between">
+                                                        <div>
+                                                            <span className={`text-xs font-semibold inline-block ${value.result
+                                                                ? 'text-green-600'
+                                                                : value.progress === 100
+                                                                    ? 'text-yellow-600'
+                                                                    : 'text-blue-600'
+                                                                }`}>
+                                                                {value.progress}% Completado
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <span className={`text-xs font-semibold inline-block ${value.result
+                                                                ? 'text-green-600'
+                                                                : value.progress === 100
+                                                                    ? 'text-yellow-600'
+                                                                    : 'text-blue-600'
+                                                                }`}>
+                                                                {value.answered_indicators}/{value.total_indicators} Indicadores
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className={`overflow-hidden h-2 mb-4 text-xs flex rounded ${value.result
+                                                        ? 'bg-green-200'
+                                                        : value.progress === 100
+                                                            ? 'bg-yellow-200'
+                                                            : 'bg-blue-200'
+                                                        }`}>
+                                                        <div
+                                                            style={{ width: `${value.progress}%` }}
+                                                            className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${value.result
+                                                                ? 'bg-green-500'
+                                                                : value.progress === 100
+                                                                    ? 'bg-yellow-500'
+                                                                    : 'bg-blue-500'
+                                                                }`}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-sm text-gray-600">
+                                                    Nota mínima requerida: {value.minimum_score}%
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
 
                 <div>
                     {

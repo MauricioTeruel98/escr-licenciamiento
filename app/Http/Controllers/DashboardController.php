@@ -19,6 +19,8 @@ use App\Models\Value;
 use App\Models\EvaluationQuestion;
 use App\Models\IndicatorAnswerEvaluation;
 use App\Models\EvaluatorAssessment;
+use App\Models\EvaluationValueResult;
+use App\Models\EvaluationValueResultReference;
 
 class DashboardController extends Controller
 {
@@ -284,6 +286,10 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('value_id');
 
+        $valueEvaluationResults = EvaluationValueResult::where('company_id', $user->company_id)
+            ->get()
+            ->keyBy('value_id');
+
         // Obtener indicadores homologados
         $homologatedIndicators = [];
         if ($certificaciones->count() > 0) {
@@ -303,27 +309,46 @@ class DashboardController extends Controller
             }
         }
 
-        // Calcular progreso para cada valor
-        $valuesProgress = $values->map(function ($value) use ($valueResults, $homologatedIndicators) {
+        // Calcular progreso para cada valor autoevaluación
+        $valuesProgress = $values->map(function ($value) use ($valueResults, $homologatedIndicators, $company) {
             $totalIndicators = 0;
             $answeredIndicators = 0;
+            $answeredIndicatorIds = []; // Array para rastrear indicadores ya contados
             
             foreach ($value->subcategories as $subcategory) {
                 foreach ($subcategory->indicators as $indicator) {
                     $totalIndicators++;
+                    // Verificar si el indicador está homologado y no ha sido contado aún
                     if (in_array($indicator->id, $homologatedIndicators)) {
                         $answeredIndicators++;
+                        $answeredIndicatorIds[] = $indicator->id; // Registrar este indicador como contado
                     }
                 }
             }
             
-            $answered = IndicatorAnswer::where('company_id', Auth::id())
-                ->whereHas('indicator', function ($query) use ($value) {
-                    $query->whereHas('subcategory', function ($q) use ($value) {
-                        $q->where('value_id', $value->id);
-                    });
-                })
-                ->count();
+            // Obtener respuestas de indicadores (Si/No) para esta compañía y valor
+            $answeredQuery = IndicatorAnswer::where('company_id', Auth::user()->company_id)
+                ->whereHas('indicator', function ($query) use ($value, $company) {
+                    $query->where('is_active', true)
+                        ->where('deleted', false)
+                        ->where(function ($q) use ($company) {
+                            $q->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        })
+                        ->whereHas('subcategory', function ($q) use ($value) {
+                            $q->where('value_id', $value->id)
+                                ->where('deleted', false);
+                        });
+                });
+            
+            // Si hay indicadores ya contados, excluirlos de la consulta
+            if (!empty($answeredIndicatorIds)) {
+                $answeredQuery->whereHas('indicator', function($q) use ($answeredIndicatorIds) {
+                    $q->whereNotIn('id', $answeredIndicatorIds);
+                });
+            }
+            
+            $answered = $answeredQuery->count();
             
             $answeredIndicators += $answered;
             
@@ -335,6 +360,79 @@ class DashboardController extends Controller
                 'answered_indicators' => $answeredIndicators,
                 'progress' => $totalIndicators > 0 ? round(($answeredIndicators / $totalIndicators) * 100) : 0,
                 'result' => $valueResults->get($value->id),
+            ];
+        });
+
+        // Calcular progreso para cada valor Evaluación
+        $valuesProgressEvaluacion = $values->map(function ($value) use ($valueEvaluationResults, $homologatedIndicators, $company) {
+            $totalQuestions = 0;
+            $answeredQuestions = 0;
+            $result = EvaluationValueResultReference::where('company_id', Auth::user()->company_id)
+                ->where('value_id', $value->id)
+                ->where('value_completed', true)
+                ->first();
+                
+            // Obtener todos los indicadores para este valor
+            $indicators = Indicator::whereHas('subcategory', function ($query) use ($value) {
+                $query->where('value_id', $value->id)
+                    ->where('deleted', false);
+            })
+            ->where('is_active', true)
+            ->where('deleted', false)
+            ->where(function ($q) use ($company) {
+                $q->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
+            ->get();
+            
+            foreach ($indicators as $indicator) {
+                // Verificar si el indicador tiene respuesta afirmativa
+                $indicatorAnswer = IndicatorAnswer::where('company_id', Auth::user()->company_id)
+                    ->where('indicator_id', $indicator->id)
+                    ->where(function ($query) {
+                        $query->where('answer', '1')
+                            ->orWhere('answer', 'si')
+                            ->orWhere('answer', 'sí')
+                            ->orWhere('answer', 'yes')
+                            ->orWhere('answer', 1)
+                            ->orWhere('answer', true);
+                    })
+                    ->first();
+                
+                // Solo contar preguntas si el indicador tiene respuesta afirmativa
+                if ($indicatorAnswer) {
+                    // Contar preguntas de evaluación para este indicador
+                    $evaluationQuestions = EvaluationQuestion::where('indicator_id', $indicator->id)
+                        ->where('deleted', false)
+                        ->get();
+                    
+                    $totalQuestions += $evaluationQuestions->count();
+                    
+                    // Verificar si el indicador está homologado
+                    $isHomologated = in_array($indicator->id, $homologatedIndicators);
+                    
+                    if ($isHomologated) {
+                        // Si está homologado, todas sus preguntas se consideran respondidas
+                        $answeredQuestions += $evaluationQuestions->count();
+                    } else {
+                        // Contar respuestas de evaluación para este indicador
+                        $answeredCount = IndicatorAnswerEvaluation::where('company_id', Auth::user()->company_id)
+                            ->where('indicator_id', $indicator->id)
+                            ->whereIn('evaluation_question_id', $evaluationQuestions->pluck('id'))
+                            ->count();
+                        
+                        $answeredQuestions += $answeredCount;
+                    }
+                }
+            }
+            
+            return [
+                'id' => $value->id,
+                'name' => $value->name,
+                'total_questions' => $totalQuestions,
+                'answered_questions' => $answeredQuestions,
+                'progress' => $totalQuestions > 0 ? round(($answeredQuestions / $totalQuestions) * 100) : 0,
+                'result' => $result,
             ];
         });
 
@@ -357,6 +455,7 @@ class DashboardController extends Controller
             'company' => $company,
             'preguntasDescalificatoriasRechazadas' => $preguntasDescalificatoriasRechazadas,
             'valuesProgress' => $valuesProgress,
+            'valuesProgressEvaluacion' => $valuesProgressEvaluacion,
             'flash' => [
                 'error' => session('error'),
                 'success' => session('success')

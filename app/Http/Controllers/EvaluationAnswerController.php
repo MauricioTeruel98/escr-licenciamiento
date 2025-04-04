@@ -25,6 +25,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Cache;
 use App\Services\MailService;
+use App\Models\EvaluationValueResultReference;
 
 class EvaluationAnswerController extends Controller
 {
@@ -490,12 +491,12 @@ class EvaluationAnswerController extends Controller
                 // Si es evaluador, guardar la evaluación
                 if ($user->role === 'evaluador') {
                     $evaluationQuestion = EvaluationQuestion::where('id', $questionId)
-                    ->where('deleted', false)
-                    ->where(function ($query) use ($company) {
-                        $query->whereNull('created_at')
-                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
-                    })
-                    ->firstOrFail();
+                        ->where('deleted', false)
+                        ->where(function ($query) use ($company) {
+                            $query->whereNull('created_at')
+                                ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                        })
+                        ->firstOrFail();
 
                     // Guardar o actualizar la evaluación
                     EvaluatorAssessment::updateOrCreate(
@@ -685,12 +686,12 @@ class EvaluationAnswerController extends Controller
 
             // Contar las preguntas asociadas a esos indicadores
             $numeroDePreguntasQueVaAResponderLaEmpresa = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)
-            ->where('deleted', false)
-            ->where(function ($query) use ($company) {
-                $query->whereNull('created_at')
-                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
-            })
-            ->count();
+                ->where('deleted', false)
+                ->where(function ($query) use ($company) {
+                    $query->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })
+                ->count();
 
             $numeroDePreguntasQueRespondioLaEmpresa = IndicatorAnswerEvaluation::where('company_id', $user->company_id)->count();
 
@@ -715,6 +716,62 @@ class EvaluationAnswerController extends Controller
                     'evaluacion-desaprobada' :
                     'evaluacion-calificada';
                 $company->save();
+            }
+
+            /**
+             * Se agrega el registro de la evaluación por valor como referencia,
+             * para que se pueda mostrar el progreso en la dashboard.
+             * Quitarlo si genera algun error.
+             * 
+             * @author: Mauricio Teruel
+             * @date: 2025-04-04
+             */
+
+            // Después de contar las preguntas respondidas, agregar:
+            // Obtener el valor actual del indicador
+            $currentIndicator = Indicator::find($indicatorId);
+            $currentValueId = $currentIndicator->subcategory->value_id;
+
+            // Obtener todos los indicadores del valor actual que la empresa respondió "sí"
+            $indicadoresDelValor = Indicator::whereHas('subcategory', function ($query) use ($currentValueId) {
+                $query->where('value_id', $currentValueId);
+            })
+                ->whereIn('id', $indicatorIds)
+                ->where('is_active', true)
+                ->where('deleted', false)
+                ->where(function ($query) use ($company) {
+                    $query->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })
+                ->pluck('id');
+
+            // Contar preguntas que debe responder para este valor específico
+            $preguntasDelValor = EvaluationQuestion::whereIn('indicator_id', $indicadoresDelValor)
+                ->where('deleted', false)
+                ->where(function ($query) use ($company) {
+                    $query->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })
+                ->count();
+
+            // Contar preguntas respondidas para este valor específico
+            $preguntasRespondidasDelValor = IndicatorAnswerEvaluation::where('company_id', $user->company_id)
+                ->whereIn('indicator_id', $indicadoresDelValor)
+                ->count();
+
+            // Si el número de preguntas respondidas es igual al número de preguntas que debe responder
+            if ($preguntasRespondidasDelValor === $preguntasDelValor && $preguntasDelValor > 0) {
+                // Crear o actualizar el registro en EvaluationValueResultReference
+                EvaluationValueResultReference::updateOrCreate(
+                    [
+                        'company_id' => $user->company_id,
+                        'value_id' => $currentValueId,
+                    ],
+                    [
+                        'value_completed' => true,
+                        'fecha_completado' => now(),
+                    ]
+                );
             }
 
             DB::commit();
@@ -814,7 +871,7 @@ class EvaluationAnswerController extends Controller
     private function calculateValueScore($valueId, $companyId)
     {
         $company = Company::find($companyId);
-        
+
         // Obtener todos los indicadores asociados al valor con el filtro de fecha
         $indicators = Indicator::where('value_id', $valueId)
             ->where('is_active', true)
@@ -972,11 +1029,11 @@ class EvaluationAnswerController extends Controller
                 $query->whereIn('answer', ['1', 'si', 'sí', 'yes', 1, true]);
             })
             ->pluck('indicator_id');
-            
+
         // Agrupar indicadores por valor (solo los que la empresa respondió "sí")
         $indicatorsByValue = Indicator::where('is_active', true)
             ->whereIn('id', $indicatorIds)
-            ->with(['subcategory' => function($query) {
+            ->with(['subcategory' => function ($query) {
                 $query->orderBy('order', 'desc');
             }, 'subcategory.value', 'evaluationQuestions' => function ($query) use ($company) {
                 $query->where(function ($q) use ($company) {
@@ -1068,7 +1125,6 @@ class EvaluationAnswerController extends Controller
                         'user_id' => $superAdminUser->id ?? 'desconocido',
                         'email' => $superAdminUser->email ?? 'desconocido'
                     ]);
-                    
                 }
             }
 
