@@ -87,7 +87,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Intentos</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Error</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                            {{-- <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th> --}}
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
@@ -110,7 +110,7 @@
                                         {{ $mail->error_message ?: 'N/A' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
+                                {{-- <td class="px-6 py-4">
                                     @if($mail->status === 'failed')
                                         <button 
                                             onclick="retryMail({{ $mail->id }})"
@@ -118,7 +118,7 @@
                                             Reintentar
                                         </button>
                                     @endif
-                                </td>
+                                </td> --}}
                             </tr>
                         @endforeach
                     </tbody>
