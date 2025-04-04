@@ -212,7 +212,7 @@ export default function EvaluadorDashboard({ auth, valuesProgressEvaluacion }) {
             <Head title="Dashboard Evaluador" />
 
             <div className="py-4">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="mx-auto sm:px-6 lg:px-8">
                     {/* Mensaje de error de redirección */}
                     {flash.error && (
                         <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4">
