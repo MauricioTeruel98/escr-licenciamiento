@@ -6,12 +6,156 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Company;
 use App\Models\InfoAdicionalEmpresa;
-
+use App\Models\Indicator;
+use App\Models\IndicatorAnswer;
+use App\Models\EvaluationQuestion;
+use App\Models\EvaluationValueResult;
+use Illuminate\Support\Facades\Auth;
+use App\Models\IndicatorHomologation;
+use App\Models\Certification;
+use App\Models\Value;
+use App\Models\EvaluatorAssessment;
 class EvaluadorController extends Controller
 {
     public function dashboard()
     {
-        return Inertia::render('Evaluador/Dashboard');
+        $user = auth()->user();
+        $company = Company::find($user->company_id);
+
+        // Verificar si la compañía existe
+        if (!$company) {
+            return Inertia::render('Evaluador/Dashboard', [
+                'valuesProgressEvaluacion' => [],
+                'error' => 'No se encontró la compañía asociada a este usuario'
+            ]);
+        }
+
+        $certificaciones = Certification::where('company_id', $user->company_id)
+            ->where(function ($query) {
+                $query->whereNull('fecha_expiracion')
+                    ->orWhere('fecha_expiracion', '>=', now()->startOfDay());
+            })
+            ->get();
+
+        // Obtener indicadores homologados
+        $homologatedIndicators = [];
+        if ($certificaciones->count() > 0) {
+            $homologationIds = $certificaciones->pluck('homologation_id')->filter()->toArray();
+            if (!empty($homologationIds)) {
+                $homologatedIndicators = IndicatorHomologation::whereIn('homologation_id', $homologationIds)
+                    ->whereHas('indicator', function ($query) use ($company) {
+                        $query->where('is_active', true)
+                            ->where('deleted', false)
+                            ->where(function ($q) use ($company) {
+                                $q->whereNull('created_at')
+                                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                            });
+                    })
+                    ->pluck('indicator_id')
+                    ->toArray();
+            }
+        }
+        // Obtener todos los valores activos con sus resultados
+        $values = Value::where('is_active', true)
+            ->where('deleted', false)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
+            ->orderBy('name')
+            ->with(['subcategories' => function ($query) use ($company) {
+                $query->where('deleted', false)
+                    ->where(function ($q) use ($company) {
+                        $q->whereNull('created_at')
+                            ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                    })
+                    ->with(['indicators' => function ($query) use ($company) {
+                        $query->where('deleted', false)
+                            ->where(function ($q) use ($company) {
+                                $q->whereNull('created_at')
+                                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                            });
+                    }]);
+            }])
+            ->get();
+        $valueEvaluationResults = EvaluationValueResult::where('company_id', $user->company_id)
+            ->get()
+            ->keyBy('value_id');
+        // Calcular progreso para cada valor Evaluación
+        $valuesProgressEvaluacion = $values->map(function ($value) use ($valueEvaluationResults, $homologatedIndicators, $company) {
+            $totalQuestions = 0;
+            $answeredQuestions = 0;
+            $result = EvaluationValueResult::where('company_id', Auth::user()->company_id)
+                ->where('value_id', $value->id)
+                ->first();
+
+            // Obtener todos los indicadores para este valor
+            $indicators = Indicator::whereHas('subcategory', function ($query) use ($value) {
+                $query->where('value_id', $value->id)
+                    ->where('deleted', false);
+            })
+                ->where('is_active', true)
+                ->where('deleted', false)
+                ->where(function ($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })
+                ->get();
+
+            foreach ($indicators as $indicator) {
+                // Verificar si el indicador tiene respuesta afirmativa
+                $indicatorAnswer = IndicatorAnswer::where('company_id', Auth::user()->company_id)
+                    ->where('indicator_id', $indicator->id)
+                    ->where(function ($query) {
+                        $query->where('answer', '1')
+                            ->orWhere('answer', 'si')
+                            ->orWhere('answer', 'sí')
+                            ->orWhere('answer', 'yes')
+                            ->orWhere('answer', 1)
+                            ->orWhere('answer', true);
+                    })
+                    ->first();
+
+                // Solo contar preguntas si el indicador tiene respuesta afirmativa
+                if ($indicatorAnswer) {
+                    // Contar preguntas de evaluación para este indicador
+                    $evaluationQuestions = EvaluationQuestion::where('indicator_id', $indicator->id)
+                        ->where('deleted', false)
+                        ->get();
+
+                    $totalQuestions += $evaluationQuestions->count();
+
+                    // Verificar si el indicador está homologado
+                    $isHomologated = in_array($indicator->id, $homologatedIndicators);
+
+                    if ($isHomologated) {
+                        // Si está homologado, todas sus preguntas se consideran respondidas
+                        $answeredQuestions += $evaluationQuestions->count();
+                    } else {
+                        // Contar respuestas de evaluación para este indicador
+                        $answeredCount = EvaluatorAssessment::where('company_id', Auth::user()->company_id)
+                            ->where('indicator_id', $indicator->id)
+                            ->whereIn('evaluation_question_id', $evaluationQuestions->pluck('id'))
+                            ->count();
+
+                        $answeredQuestions += $answeredCount;
+                    }
+                }
+            }
+
+            return [
+                'id' => $value->id,
+                'name' => $value->name,
+                'total_questions' => $totalQuestions,
+                'answered_questions' => $answeredQuestions,
+                'progress' => $totalQuestions > 0 ? round(($answeredQuestions / $totalQuestions) * 100) : 0,
+                'result' => $result,
+            ];
+        });
+
+        return Inertia::render('Evaluador/Dashboard', [
+            'valuesProgressEvaluacion' => $valuesProgressEvaluacion
+        ]);
     }
 
     public function evaluations()
@@ -28,9 +172,9 @@ class EvaluadorController extends Controller
             // Búsqueda
             if ($request->has('search') && !empty($request->search)) {
                 $searchTerm = $request->search;
-                $query->where(function($q) use ($searchTerm) {
+                $query->where(function ($q) use ($searchTerm) {
                     $q->where('name', 'like', "%{$searchTerm}%")
-                    ->orWhere('estado_eval', 'like', "%{$searchTerm}%");
+                        ->orWhere('estado_eval', 'like', "%{$searchTerm}%");
                 });
             }
 
@@ -38,7 +182,7 @@ class EvaluadorController extends Controller
             $sortBy = $request->input('sort_by', 'created_at');
             $sortOrder = $request->input('sort_order', 'desc');
             $allowedSortFields = ['name', 'estado_eval', 'created_at'];
-            
+
             if (in_array($sortBy, $allowedSortFields)) {
                 $query->orderBy($sortBy, $sortOrder);
             }
@@ -79,7 +223,7 @@ class EvaluadorController extends Controller
     {
         $companyId = $request->input('company_id');
         $user = auth()->user();
-        
+
         if ($companyId) {
             $company = Company::findOrFail($companyId);
             // Actualizar el company_id del usuario
@@ -161,4 +305,4 @@ class EvaluadorController extends Controller
             'oportunidades' => $company->oportunidades,
         ]);
     }
-} 
+}

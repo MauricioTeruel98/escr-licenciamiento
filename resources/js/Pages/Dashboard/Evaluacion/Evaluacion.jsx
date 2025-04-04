@@ -978,6 +978,54 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                     )}
                 </div>
 
+                {/* Botón de finalizar cuando todas las preguntas están respondidas */}
+                {areAllQuestionsAnswered() && 
+                    !isEvaluador && 
+                    (company.estado_eval === 'evaluacion' || company.estado_eval === 'evaluacion-pendiente' || company.estado_eval === 'evaluacion-desaprobada') && (
+                        <button
+                            onClick={handleFinish}
+                            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        >
+                            <svg 
+                                xmlns="http://www.w3.org/2000/svg" 
+                                className="h-5 w-5 mr-2" 
+                                viewBox="0 0 20 20" 
+                                fill="currentColor"
+                            >
+                                <path 
+                                    fillRule="evenodd" 
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" 
+                                    clipRule="evenodd" 
+                                />
+                            </svg>
+                            Finalizar {valueData.name}
+                        </button>
+                    )}
+
+                {/* Botón de finalizar para evaluadores */}
+                {areAllQuestionsAnswered() && 
+                    isEvaluador && 
+                    (company.estado_eval === 'evaluacion-completada' || company.estado_eval === 'evaluacion-calificada' || company.estado_eval === 'evaluacion-desaprobada') && (
+                        <button
+                            onClick={handleFinish}
+                            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        >
+                            <svg 
+                                xmlns="http://www.w3.org/2000/svg" 
+                                className="h-5 w-5 mr-2" 
+                                viewBox="0 0 20 20" 
+                                fill="currentColor"
+                            >
+                                <path 
+                                    fillRule="evenodd" 
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" 
+                                    clipRule="evenodd" 
+                                />
+                            </svg>
+                            Finalizar {valueData.name}
+                        </button>
+                    )}
+
                 {/* Contenido Principal */}
                 <div className='bg-white shadow rounded-xl p-8'>
                     <div>

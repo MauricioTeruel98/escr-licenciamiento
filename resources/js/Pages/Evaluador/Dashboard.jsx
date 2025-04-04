@@ -8,7 +8,7 @@ import { Combobox, Transition } from '@headlessui/react';
 import { ChevronUpDownIcon, CheckIcon } from '@heroicons/react/20/solid';
 import CalificarEvaluacionModal from '@/Components/Modals/CalificarEvaluacion';
 
-export default function EvaluadorDashboard({ auth }) {
+export default function EvaluadorDashboard({ auth, valuesProgressEvaluacion }) {
     const { flash } = usePage().props;
     const [companies, setCompanies] = useState([]);
     const [selectedCompany, setSelectedCompany] = useState(null);
@@ -194,10 +194,17 @@ export default function EvaluadorDashboard({ auth }) {
     };
 
     const handleFieldChange = (field, value) => {
-        setEvaluationFields(prev => ({
-            ...prev,
-            [field]: field === 'cantidad_multi_sitio' ? value : value === 'true'
-        }));
+        if (['puntos_fuertes', 'oportunidades'].includes(field)) {
+            setEvaluationFields(prev => ({
+                ...prev,
+                [field]: value
+            }));
+        } else {
+            setEvaluationFields(prev => ({
+                ...prev,
+                [field]: field === 'cantidad_multi_sitio' ? value : value === 'true'
+            }));
+        }
     };
 
     return (
@@ -251,6 +258,84 @@ export default function EvaluadorDashboard({ auth }) {
                             </div>
                         </div>
                     )}
+
+                    {/* Progreso por valor - evaluación */}
+                    {
+                        activeCompany && (activeCompany.estado_eval === "evaluacion-completada" || activeCompany.estado_eval === "evaluacion-calificada") && (
+                            <div className="card bg-white shadow my-8">
+                                <div className="card-body">
+                                    <div className="">
+                                        <h3 className="text-lg font-semibold mb-4">Progreso de la calificación</h3>
+                                        <div className="flex justify-between gap-4">
+                                            {valuesProgressEvaluacion.map((value) => (
+                                                <div key={value.id} className="bg-white p-4 rounded-lg shadow w-full">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <h4 className="font-medium">{value.name}</h4>
+                                                        {value.result ? (
+                                                            <span className="text-sm px-3 py-1 rounded bg-green-200 text-green-600">
+                                                                {value.result.nota}%
+                                                            </span>
+                                                        ) : (
+                                                            <Link
+                                                                href={route('evaluacion', value.id)}
+                                                                className={`text-sm px-3 py-1 rounded ${value.progress === 100
+                                                                    ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                                                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                                                    }`}
+                                                            >
+                                                                {value.progress === 100 ? 'Enviar' : 'Completar'}
+                                                            </Link>
+                                                        )}
+
+                                                    </div>
+                                                    <div className="relative pt-1">
+                                                        <div className="flex mb-2 items-center justify-between">
+                                                            <div>
+                                                                <span className={`text-xs font-semibold inline-block ${value.result
+                                                                    ? 'text-green-600'
+                                                                    : value.progress === 100
+                                                                        ? 'text-yellow-600'
+                                                                        : 'text-blue-600'
+                                                                    }`}>
+                                                                    {value.progress}% Completado
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <span className={`text-xs font-semibold inline-block ${value.result
+                                                                    ? 'text-green-600'
+                                                                    : value.progress === 100
+                                                                        ? 'text-yellow-600'
+                                                                        : 'text-blue-600'
+                                                                    }`}>
+                                                                    {value.answered_questions}/{value.total_questions} Preguntas
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className={`overflow-hidden h-2 mb-4 text-xs flex rounded ${value.result
+                                                            ? 'bg-green-200'
+                                                            : value.progress === 100
+                                                                ? 'bg-yellow-200'
+                                                                : 'bg-blue-200'
+                                                            }`}>
+                                                            <div
+                                                                style={{ width: `${value.progress}%` }}
+                                                                className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${value.result
+                                                                    ? 'bg-green-500'
+                                                                    : value.progress === 100
+                                                                        ? 'bg-yellow-500'
+                                                                        : 'bg-blue-500'
+                                                                    }`}
+                                                            ></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
 
                     {/* Mensaje de advertencia cuando la empresa no está autorizada */}
                     {activeCompany && Object.keys(activeCompany).length > 0 && companyStatusEval === 'evaluacion-pendiente' && (
