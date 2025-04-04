@@ -811,7 +811,7 @@ export default function Evaluation({
                         <div className="card bg-white shadow mt-8">
                             <div className="card-body">
                                 <div className="">
-                                    <h3 className="text-lg font-semibold mb-4">Progreso de la calificación</h3>
+                                    <h3 className="text-lg font-semibold mb-4">Progreso de la evaluación</h3>
                                     <div className="flex justify-between gap-4">
                                         {valuesProgressEvaluacion.map((value) => (
                                             <div key={value.id} className="bg-white p-4 rounded-lg shadow w-full">
