@@ -9,6 +9,9 @@ start /b "" "C:\xampp\apache_start.bat"
 timeout /t 2 /nobreak > nul
 start /b "" "C:\xampp\mysql_start.bat"
 
+:: Abre el ejecutable xampp-control.exe
+start "" "C:\xampp\xampp-control.exe"
+
 :: Espera 5 segundos para asegurar que los servicios estén activos
 timeout /t 5 /nobreak > nul
 

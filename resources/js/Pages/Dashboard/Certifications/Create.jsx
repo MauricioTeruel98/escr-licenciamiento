@@ -1380,25 +1380,58 @@ export default function Certifications({ certifications: initialCertifications, 
                                                                             const remaining = 3 - total;
 
                                                                             if (remaining <= 0) {
-                                                                                return 'Límite máximo de archivos alcanzado';
+                                                                                return <span className="text-red-500">Límite máximo de archivos alcanzado</span>;
                                                                             }
                                                                             return `${remaining} archivo${remaining === 1 ? '' : 's'} restante${remaining === 1 ? '' : 's'}`;
                                                                         })()}
                                                                     </span>
                                                                 </div>
-                                                                <div className="flex items-center gap-2">
+                                                                <div 
+                                                                    className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-green-500 transition-colors duration-200 ease-in-out cursor-pointer"
+                                                                    onClick={() => document.querySelector(`#file-input-${cert.id}`).click()}
+                                                                    onDragOver={(e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                    }}
+                                                                    onDrop={(e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        const files = Array.from(e.dataTransfer.files);
+                                                                        handleEditFileChange(cert.id, files);
+                                                                    }}
+                                                                >
                                                                     <input
+                                                                        id={`file-input-${cert.id}`}
                                                                         type="file"
                                                                         onChange={(e) => handleEditFileChange(cert.id, e.target.files)}
                                                                         multiple
                                                                         accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"
-                                                                        className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                                                        className="hidden"
                                                                         disabled={(() => {
                                                                             const currentFiles = JSON.parse(cert.file_paths || '[]');
                                                                             const newFiles = cert.newFiles || [];
                                                                             return (currentFiles.length + newFiles.length) >= 3;
                                                                         })()}
                                                                     />
+                                                                    <div className="flex flex-col items-center text-center">
+                                                                        <div className="flex justify-center items-center">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                                                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                                                                                <path d="M7 9l5 -5l5 5" />
+                                                                                <path d="M12 4l0 12" />
+                                                                            </svg>
+                                                                        </div>
+                                                                        <div className="mt-2 flex text-xs leading-5 text-gray-600">
+                                                                            <label className="relative cursor-pointer rounded-md font-semibold text-green-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-green-600 focus-within:ring-offset-2 hover:text-green-500">
+                                                                                <span>Cargar archivos</span>
+                                                                            </label>
+                                                                            <p className="pl-1">o arrastrar y soltar</p>
+                                                                        </div>
+                                                                        <p className="text-xs leading-5 text-gray-600 mt-1">
+                                                                            JPG, JPEG, PNG, PDF, DOC, DOCX, XLS, XLSX hasta 5MB
+                                                                        </p>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         )}
