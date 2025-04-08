@@ -302,7 +302,7 @@ export default function Register() {
                             <div className="ml-3 text-sm">
                                 <label htmlFor="terms_accepted" className="font-light text-gray-600">
                                     Acepto los <a
-                                        href="/assets/pdfs/Consentimiento informado.pdf"
+                                        href="/storage/pdfs/Consentimiento informado.pdf"
                                         target="_blank"
                                         rel="noopener noreferrer" className="text-green-700 hover:underline"
                                     >términos y condiciones</a> del sitio web

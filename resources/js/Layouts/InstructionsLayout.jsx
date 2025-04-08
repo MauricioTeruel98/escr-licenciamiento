@@ -25,7 +25,7 @@ export default function InstructionsLayout({ children, title }) {
                     {/* Términos y condiciones link */}
                     <div className="text-center mt-4">
                         <a
-                            href="/assets/pdfs/Consentimiento informado.pdf"
+                            href="/storage/pdfs/Consentimiento informado.pdf"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-green-700 hover:text-green-800 underline text-sm"
