@@ -383,7 +383,7 @@ export default function ProductosForm({
                     <div>
                         <div className="flex items-center">
                             <h2 className="text-xl font-semibold">Licencia de producto</h2>
-                            <p className="text-xs text-gray-600 ml-3"><span className="text-red-500">*</span>(Debe subir al menos un producto para poder continuar)</p>
+                            {/* <p className="text-xs text-gray-600 ml-3"><span className="text-red-500">*</span>(Debe subir al menos un producto para poder continuar)</p> */}
                         </div>
                         <p className="text-xs text-gray-600 mt-2">Si su empresa desea utilizar el sello de esencial COSTA RICA en sus productos, complete la siguiente información</p>
                     </div>
