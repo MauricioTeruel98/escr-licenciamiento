@@ -3877,7 +3877,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 </form>
             </div>
 
-            <div className="fixed bottom-16 right-8 z-50">
+            <div className="fixed bottom-8 right-8 z-50">
                 {((data.autoEvaluationResult && data.autoEvaluationResult.form_sended == 1) || (!data.autoEvaluationResult && autoEvaluationResult && autoEvaluationResult.form_sended == 1)) && company.estado_eval == "auto-evaluacion" && (
                     <div className="animate-bounce">
                         <button
