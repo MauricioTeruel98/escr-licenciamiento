@@ -3890,7 +3890,6 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                     </div>
                 )}
             </div>
-            
 
             {/* Sección para finalizar autoevaluación - Fuera del formulario */}
             {((data.autoEvaluationResult && data.autoEvaluationResult.form_sended == 1) || (!data.autoEvaluationResult && autoEvaluationResult && autoEvaluationResult.form_sended == 1)) && company.estado_eval == "auto-evaluacion" && (
