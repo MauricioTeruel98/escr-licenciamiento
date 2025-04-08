@@ -22,6 +22,12 @@ class EvaluadorController extends Controller
         $user = auth()->user();
         $company = Company::find($user->company_id);
 
+        if (!$company->fecha_inicio_auto_evaluacion) {
+            //$company->fecha_inicio_auto_evaluacion = now()->startOfDay();
+            $company->fecha_inicio_auto_evaluacion = $company->created_at;
+            $company->save();
+        }
+
         // Verificar si la compañía existe
         if (!$company) {
             return Inertia::render('Evaluador/Dashboard', [
