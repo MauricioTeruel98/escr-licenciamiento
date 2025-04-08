@@ -39,13 +39,10 @@ class DashboardController extends Controller
         $company = Company::find($companyId);
 
         // Verificar si la empresa ha iniciado su auto-evaluación
-        /*if (!$company->fecha_inicio_auto_evaluacion) {
-            return Inertia::render('Dashboard/Evaluation', [
-                'userName' => $user->name,
-                'isAdmin' => $isAdmin,
-                'error' => 'La empresa no ha iniciado su auto-evaluación'
-            ]);
-        }*/
+        if (!$company->fecha_inicio_auto_evaluacion) {
+            $company->fecha_inicio_auto_evaluacion = $company->created_at;
+            $company->save();
+        }
 
         // Obtener el total de indicadores activos
         $totalIndicadores = Indicator::where('is_active', true)
@@ -315,7 +312,7 @@ class DashboardController extends Controller
             $totalIndicators = 0;
             $answeredIndicators = 0;
             $answeredIndicatorIds = []; // Array para rastrear indicadores ya contados
-            
+
             foreach ($value->subcategories as $subcategory) {
                 foreach ($subcategory->indicators as $indicator) {
                     $totalIndicators++;
@@ -326,7 +323,7 @@ class DashboardController extends Controller
                     }
                 }
             }
-            
+
             // Obtener respuestas de indicadores (Si/No) para esta compañía y valor
             $answeredQuery = IndicatorAnswer::where('company_id', Auth::user()->company_id)
                 ->whereHas('indicator', function ($query) use ($value, $company) {
@@ -341,18 +338,18 @@ class DashboardController extends Controller
                                 ->where('deleted', false);
                         });
                 });
-            
+
             // Si hay indicadores ya contados, excluirlos de la consulta
             if (!empty($answeredIndicatorIds)) {
-                $answeredQuery->whereHas('indicator', function($q) use ($answeredIndicatorIds) {
+                $answeredQuery->whereHas('indicator', function ($q) use ($answeredIndicatorIds) {
                     $q->whereNotIn('id', $answeredIndicatorIds);
                 });
             }
-            
+
             $answered = $answeredQuery->count();
-            
+
             $answeredIndicators += $answered;
-            
+
             return [
                 'id' => $value->id,
                 'name' => $value->name,
@@ -372,20 +369,20 @@ class DashboardController extends Controller
                 ->where('value_id', $value->id)
                 ->where('value_completed', true)
                 ->first();
-                
+
             // Obtener todos los indicadores para este valor
             $indicators = Indicator::whereHas('subcategory', function ($query) use ($value) {
                 $query->where('value_id', $value->id)
                     ->where('deleted', false);
             })
-            ->where('is_active', true)
-            ->where('deleted', false)
-            ->where(function ($q) use ($company) {
-                $q->whereNull('created_at')
-                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
-            })
-            ->get();
-            
+                ->where('is_active', true)
+                ->where('deleted', false)
+                ->where(function ($q) use ($company) {
+                    $q->whereNull('created_at')
+                        ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+                })
+                ->get();
+
             foreach ($indicators as $indicator) {
                 // Verificar si el indicador tiene respuesta afirmativa
                 $indicatorAnswer = IndicatorAnswer::where('company_id', Auth::user()->company_id)
@@ -399,19 +396,19 @@ class DashboardController extends Controller
                             ->orWhere('answer', true);
                     })
                     ->first();
-                
+
                 // Solo contar preguntas si el indicador tiene respuesta afirmativa
                 if ($indicatorAnswer) {
                     // Contar preguntas de evaluación para este indicador
                     $evaluationQuestions = EvaluationQuestion::where('indicator_id', $indicator->id)
                         ->where('deleted', false)
                         ->get();
-                    
+
                     $totalQuestions += $evaluationQuestions->count();
-                    
+
                     // Verificar si el indicador está homologado
                     $isHomologated = in_array($indicator->id, $homologatedIndicators);
-                    
+
                     if ($isHomologated) {
                         // Si está homologado, todas sus preguntas se consideran respondidas
                         $answeredQuestions += $evaluationQuestions->count();
@@ -421,12 +418,12 @@ class DashboardController extends Controller
                             ->where('indicator_id', $indicator->id)
                             ->whereIn('evaluation_question_id', $evaluationQuestions->pluck('id'))
                             ->count();
-                        
+
                         $answeredQuestions += $answeredCount;
                     }
                 }
             }
-            
+
             return [
                 'id' => $value->id,
                 'name' => $value->name,
