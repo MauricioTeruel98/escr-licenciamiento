@@ -38,8 +38,9 @@ class DashboardController extends Controller
 
         $company = Company::find($companyId);
 
-        // Verificar si la empresa ha iniciado su auto-evaluación
-        if (!$company->fecha_inicio_auto_evaluacion) {
+        // Verificar si existe la empresa antes de acceder a sus propiedades
+        if ($company && !$company->fecha_inicio_auto_evaluacion) {
+            //$company->fecha_inicio_auto_evaluacion = now()->startOfDay();
             $company->fecha_inicio_auto_evaluacion = $company->created_at;
             $company->save();
         }

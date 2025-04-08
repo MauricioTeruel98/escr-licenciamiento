@@ -3877,19 +3877,16 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                 </form>
             </div>
 
-            <div className="relative">
+            <div className="fixed bottom-16 right-8 z-50">
                 {((data.autoEvaluationResult && data.autoEvaluationResult.form_sended == 1) || (!data.autoEvaluationResult && autoEvaluationResult && autoEvaluationResult.form_sended == 1)) && company.estado_eval == "auto-evaluacion" && (
-                    <div className="lg:absolute lg:z-40 w-full lg:bottom-12 flex justify-end lg:pr-24">
-                        <div>
-                            {/* Boton para ir hacia la seccion de finalizar, agregale un chevron hacia abajo */}
-                            <button
-                                onClick={() => pasarSiguienteSeccion('productos')}
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-amber-700 hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-800"
-                            >
-                                Ir a finalizar autoevaluación
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M6 9l6 6l6 -6" /></svg>
-                            </button>
-                        </div>
+                    <div className="animate-bounce">
+                        <button
+                            onClick={() => pasarSiguienteSeccion('productos')}
+                            className="inline-flex items-center px-4 py-3 border border-transparent rounded-full text-sm font-medium text-white bg-amber-700 hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-800 transition-all duration-300 ease-in-out shadow-lg"
+                        >
+                            Ir a finalizar autoevaluación
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2 icon icon-tabler icons-tabler-outline icon-tabler-chevron-down"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M6 9l6 6l6 -6" /></svg>
+                        </button>
                     </div>
                 )}
             </div>
