@@ -35,7 +35,7 @@ const FAQSection = () => {
         {
             id: 'faq-1',
             question: '¿En qué consiste la autoevaluación?',
-            answer: 'Esta plataforma está diseñada para que las empresas puedan medir la nota que obtendrían en este momento para aplicar por el proceso de licenciamiento de esencial COSTA RICA.'
+            answer: 'Esta plataforma está diseñada para que las empresas puedan medir la nota que obtendrían en este momento para aplicar por el proceso de licenciamiento de <i>esencial</i> COSTA RICA.'
         },
         {
             id: 'faq-2',
@@ -1189,7 +1189,7 @@ export default function Evaluation({
                             <div className="card-body">
                                 <h2 className="card-title">Sobre la plataforma de autoevaluación</h2>
                                 <p className="text-gray-600">
-                                    Esta plataforma está diseñada para que las empresas puedan medir la nota que obtendrían en este momento para aplicar por el proceso de licenciamiento de esencial COSTA RICA.
+                                    Esta plataforma está diseñada para que las empresas puedan medir la nota que obtendrían en este momento para aplicar por el proceso de licenciamiento de <i>esencial</i> COSTA RICA.
                                 </p>
 
                             </div>

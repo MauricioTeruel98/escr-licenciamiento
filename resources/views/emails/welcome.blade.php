@@ -65,7 +65,7 @@
                 el protocolo de licenciamiento.</p>
 
             <p>Una vez realizado este proceso, según la calificación obtenida, podrá continuar con la etapa de solicitud
-                para formar parte de la comunidad de empresas <i>esenciales</i> Costa Rica.</p>
+                para formar parte de la comunidad de empresas <i>esencial</i> Costa Rica.</p>
 
             {{-- <div style="text-align: center;">
                 <a href="{{ route('login') }}" class="button">Iniciar sesión</a>
