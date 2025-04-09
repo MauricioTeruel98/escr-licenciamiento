@@ -21,8 +21,11 @@ echo.
 :: Inicia PHP Artisan Serve en una nueva ventana
 start cmd /k "echo Servidor PHP Artisan && php artisan serve"
 
-:: Espera 2 segundos
-timeout /t 2 /nobreak > nul
+:: Espera 3 segundos para asegurar que el servidor PHP esté activo
+timeout /t 3 /nobreak > nul
+
+:: Abre la URL en el navegador predeterminado
+start http://127.0.0.1:8000/
 
 :: Inicia NPM Run Dev en una nueva ventana
 start cmd /k "echo Servidor NPM && npm run dev"
