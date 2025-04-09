@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Company;
+use App\Models\Value;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -16,39 +17,109 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class CompaniesMonthlyReport implements FromCollection, WithHeadings, WithMapping, WithTitle, WithStyles, ShouldAutoSize
 {
+    protected $values;
+
+    public function __construct()
+    {
+        $this->values = Value::where('is_active', true)->where('deleted', 0)->get();
+    }
+
     public function collection()
     {
-        return Company::with('infoAdicional')->get();
+        return Company::with([
+            'infoAdicional',
+            'autoEvaluationValorResults',
+            'autoEvaluationResult',
+            'evaluationValueResults',
+            'evaluationValueResultReferences'
+        ])->get();
     }
 
     public function headings(): array
     {
-        return [
+        $baseHeadings = [
             'ID',
             'Nombre',
             'Cédula Jurídica',
-            'Nombre Comercial',
-            'Nombre Legal',
-            'Estado de Evaluación',
-            'Fecha de Registro',
-            'Última Actualización',
+            'Provincia',
+            'Representante Legal',
+            'Estado del Proceso'
         ];
+
+        // Agregar una columna por cada valor
+        foreach ($this->values as $value) {
+            $baseHeadings[] = $value->name;
+        }
+
+        $baseHeadings[] = 'Progreso Total';
+        $baseHeadings[] = 'Nota Final';
+
+        return $baseHeadings;
     }
 
     public function map($company): array
     {
         $infoAdicional = $company->infoAdicional;
+        $isAutoEvaluation = in_array($company->estado_eval, ['auto-evaluacion', 'auto-evaluacion-completed']);
 
-        return [
+        $row = [
             $company->id,
             $company->name,
             $infoAdicional ? $infoAdicional->cedula_juridica : '',
-            $infoAdicional ? $infoAdicional->nombre_comercial : '',
-            $infoAdicional ? $infoAdicional->nombre_legal : '',
-            $company->estado_eval ?? 'N/A',
-            $company->created_at ? $company->created_at->format('d/m/Y') : '',
-            $company->updated_at ? $company->updated_at->format('d/m/Y') : '',
+            $infoAdicional ? $infoAdicional->provincia : '',
+            $infoAdicional ? $infoAdicional->representante_nombre : '',
+            $company->getFormattedStateAttribute()
         ];
+
+        $totalProgress = 0;
+        $totalNota = 0;
+        $countValues = 0;
+
+        // Procesar cada valor
+        foreach ($this->values as $value) {
+            if ($isAutoEvaluation) {
+                $valorResult = $company->autoEvaluationValorResults
+                    ->where('value_id', $value->id)
+                    ->first();
+
+                $progress = $valorResult ? $valorResult->progress : 0;
+                $nota = $valorResult ? $valorResult->nota : 0;
+                $notaMinima = $value->minimum_score;
+            } else {
+                $reference = $company->evaluationValueResultReferences
+                    ->where('value_id', $value->id)
+                    ->first();
+                $valorResult = $company->evaluationValueResults
+                    ->where('value_id', $value->id)
+                    ->first();
+
+                $progress = $reference ? $reference->progress : 0;
+                $nota = $valorResult ? $valorResult->nota : 0;
+                $notaMinima = $value->minimum_score;
+            }
+
+            $row[] = "{$value->name}---Avance: {$progress}%---Nota: {$nota}/{$notaMinima}";
+
+            if ($progress > 0) {
+                $totalProgress += $progress;
+                $totalNota += $nota;
+                $countValues++;
+            }
+        }
+
+        // Calcular promedios
+        $avgProgress = $countValues > 0 ? round($totalProgress / $countValues) : 0;
+        
+        if ($isAutoEvaluation) {
+            $finalNota = $company->autoEvaluationResult ? $company->autoEvaluationResult->nota : 0;
+        } else {
+            $finalNota = $countValues > 0 ? round($totalNota / $countValues) : 0;
+        }
+
+        $row[] = "{$avgProgress}%";
+        $row[] = $finalNota;
+
+        return $row;
     }
 
     public function title(): string

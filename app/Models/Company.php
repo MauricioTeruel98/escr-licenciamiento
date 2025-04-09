@@ -96,6 +96,21 @@ class Company extends Model
         return $this->hasOne(AutoEvaluationResult::class);
     }
 
+    public function autoEvaluationValorResults()
+    {
+        return $this->hasMany(AutoEvaluationValorResult::class);
+    }
+
+    public function evaluationValueResults()
+    {
+        return $this->hasMany(EvaluationValueResult::class);
+    }
+
+    public function evaluationValueResultReferences()
+    {
+        return $this->hasMany(EvaluationValueResultReference::class);
+    }
+
     public function indicatorAnswers()
     {
         return $this->hasMany(\App\Models\IndicatorAnswer::class);
