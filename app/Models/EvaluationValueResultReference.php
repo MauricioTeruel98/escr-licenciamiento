@@ -14,11 +14,13 @@ class EvaluationValueResultReference extends Model
         'value_id',
         'value_completed',
         'fecha_completado',
+        'progress'
     ];
 
     protected $casts = [
         'fecha_completado' => 'datetime',
-        'value_completed' => 'boolean'
+        'value_completed' => 'boolean',
+        'progress' => 'integer'
     ];
 
     public function company(): BelongsTo

@@ -153,6 +153,35 @@ class IndicadorAnswerController extends Controller
             // Calcular y guardar nota final del valor
             $finalScore = round(collect($subcategoryScores)->avg());
 
+            $totalIndicators = 0;
+            $answeredIndicators = 0;
+
+            // Obtener todos los indicadores del valor
+            $indicators = Indicator::whereHas('subcategory', function ($query) use ($request) {
+                $query->where('value_id', $request->value_id);
+            })
+            ->where('is_active', true)
+            ->where('deleted', false)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
+            ->get();
+
+            foreach ($indicators as $indicator) {
+                $totalIndicators++;
+                // Verificar si el indicador tiene respuesta
+                $hasAnswer = IndicatorAnswer::where('company_id', $user->company_id)
+                    ->where('indicator_id', $indicator->id)
+                    ->exists();
+                
+                if ($hasAnswer) {
+                    $answeredIndicators++;
+                }
+            }
+
+            $progress = $totalIndicators > 0 ? round(($answeredIndicators / $totalIndicators) * 100) : 0;
+
             AutoEvaluationValorResult::updateOrCreate(
                 [
                     'company_id' => $user->company_id,
@@ -160,6 +189,7 @@ class IndicadorAnswerController extends Controller
                 ],
                 [
                     'nota' => $finalScore,
+                    'progress' => $progress,
                     'fecha_evaluacion' => now()
                 ]
             );
@@ -779,6 +809,9 @@ class IndicadorAnswerController extends Controller
                 return response()->json(['message' => 'No se recibieron respuestas válidas'], 422);
             }
 
+            // Obtener la empresa y verificar fecha de inicio
+            $company = Company::find($user->company_id);
+            
             // Obtener los indicadores para verificar cuáles son vinculantes y binarios
             $indicators = Indicator::whereIn('id', array_keys($request->answers))
                 ->select('id', 'binding', 'is_binary')
@@ -786,7 +819,6 @@ class IndicadorAnswerController extends Controller
                 ->keyBy('id');
 
             // Obtener las certificaciones válidas de la empresa
-            $company = Company::find($user->company_id);
             $validCertifications = $company->certifications()
                 ->whereRaw('fecha_expiracion > NOW() OR fecha_expiracion IS NULL')
                 ->get();
@@ -848,14 +880,66 @@ class IndicadorAnswerController extends Controller
                 }
             }
 
-            // No recalculamos notas ni actualizamos el estado para guardado parcial
+            // Después de guardar las respuestas, calcular el progreso del valor
+            $totalIndicators = 0;
+            $answeredIndicators = 0;
+
+            // Obtener todos los indicadores del valor
+            $indicators = Indicator::whereHas('subcategory', function ($query) use ($request) {
+                $query->where('value_id', $request->value_id);
+            })
+            ->where('is_active', true)
+            ->where('deleted', false)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('created_at')
+                    ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
+            ->get();
+
+            foreach ($indicators as $indicator) {
+                $totalIndicators++;
+                // Verificar si el indicador tiene respuesta
+                $hasAnswer = IndicatorAnswer::where('company_id', $user->company_id)
+                    ->where('indicator_id', $indicator->id)
+                    ->exists();
+                
+                if ($hasAnswer) {
+                    $answeredIndicators++;
+                }
+            }
+
+            $progress = $totalIndicators > 0 ? round(($answeredIndicators / $totalIndicators) * 100) : 0;
+
+            // Calcular notas por subcategoría si hay respuestas
+            if ($answeredIndicators > 0) {
+                $subcategoryScores = $this->calculateSubcategoryScores($request->value_id, $user->company_id);
+                $finalScore = round(collect($subcategoryScores)->avg());
+            } else {
+                $finalScore = 0;
+            }
+
+            // Actualizar o crear el registro de resultado del valor
+            AutoEvaluationValorResult::updateOrCreate(
+                [
+                    'company_id' => $user->company_id,
+                    'value_id' => $request->value_id,
+                ],
+                [
+                    'nota' => $finalScore,
+                    'progress' => $progress,
+                    'fecha_evaluacion' => now()
+                ]
+            );
+
             DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Respuestas guardadas parcialmente.',
-                'value_id' => $request->value_id
+                'value_id' => $request->value_id,
+                'progress' => $progress
             ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al guardar respuestas parciales:', [

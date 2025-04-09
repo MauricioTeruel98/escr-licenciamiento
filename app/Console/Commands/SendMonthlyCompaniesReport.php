@@ -46,6 +46,10 @@ class SendMonthlyCompaniesReport extends Command
             
             // Obtener todos los super_admin
             $superAdmins = User::where('role', 'super_admin')->get();
+
+            //Solo enviar al usuario admin@admin.com
+            $superAdmins = User::where('email', 'admin@admin.com')->get();
+
             
             if ($superAdmins->isEmpty()) {
                 $this->warn('No se encontraron super administradores para enviar el reporte.');

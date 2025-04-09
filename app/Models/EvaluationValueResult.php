@@ -13,12 +13,14 @@ class EvaluationValueResult extends Model
         'company_id',
         'value_id',
         'nota',
-        'fecha_evaluacion'
+        'fecha_evaluacion',
+        'progress'
     ];
 
     protected $casts = [
         'fecha_evaluacion' => 'datetime',
-        'nota' => 'integer'
+        'nota' => 'integer',
+        'progress' => 'integer'
     ];
 
     public function company(): BelongsTo

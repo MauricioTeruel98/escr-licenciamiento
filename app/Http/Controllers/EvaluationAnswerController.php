@@ -99,7 +99,7 @@ class EvaluationAnswerController extends Controller
                         $valueId = $request->input('value_id');
 
                         // Calcular la puntuación del valor
-                        $valueScore = $this->calculateValueScore($valueId, $user->company_id);
+                        $valueScoreData = $this->calculateValueScore($valueId, $user->company_id);
 
                         // Guardar el resultado en la tabla evaluation_value_result
                         \App\Models\EvaluationValueResult::updateOrCreate(
@@ -108,7 +108,8 @@ class EvaluationAnswerController extends Controller
                                 'value_id' => $valueId,
                             ],
                             [
-                                'nota' => $valueScore,
+                                'nota' => $valueScoreData['score'],
+                                'progress' => $valueScoreData['progress'],
                                 'fecha_evaluacion' => now()
                             ]
                         );
@@ -516,7 +517,7 @@ class EvaluationAnswerController extends Controller
                     $valueId = $request->input('value_id');
 
                     // Calcular la puntuación del valor
-                    $valueScore = $this->calculateValueScore($valueId, $user->company_id);
+                    $valueScoreData = $this->calculateValueScore($valueId, $user->company_id);
 
                     // Guardar el resultado en la tabla evaluation_value_result
                     \App\Models\EvaluationValueResult::updateOrCreate(
@@ -525,7 +526,8 @@ class EvaluationAnswerController extends Controller
                             'value_id' => $valueId,
                         ],
                         [
-                            'nota' => $valueScore,
+                            'nota' => $valueScoreData['score'],
+                            'progress' => $valueScoreData['progress'],
                             'fecha_evaluacion' => now()
                         ]
                     );
@@ -760,7 +762,9 @@ class EvaluationAnswerController extends Controller
                 ->count();
 
             // Si el número de preguntas respondidas es igual al número de preguntas que debe responder
-            if ($preguntasRespondidasDelValor === $preguntasDelValor && $preguntasDelValor > 0) {
+            if ($preguntasDelValor > 0) {
+                $progress = round(($preguntasRespondidasDelValor / $preguntasDelValor) * 100);
+
                 // Crear o actualizar el registro en EvaluationValueResultReference
                 EvaluationValueResultReference::updateOrCreate(
                     [
@@ -768,8 +772,9 @@ class EvaluationAnswerController extends Controller
                         'value_id' => $currentValueId,
                     ],
                     [
-                        'value_completed' => true,
-                        'fecha_completado' => now(),
+                        'progress' => $progress,
+                        'value_completed' => ($preguntasRespondidasDelValor === $preguntasDelValor),
+                        'fecha_completado' => ($preguntasRespondidasDelValor === $preguntasDelValor) ? now() : null,
                     ]
                 );
             }
@@ -883,7 +888,7 @@ class EvaluationAnswerController extends Controller
             ->pluck('id');
 
         if ($indicators->isEmpty()) {
-            return 0;
+            return ['score' => 0, 'progress' => 0];
         }
 
         // Obtener todas las evaluaciones para estos indicadores
@@ -892,15 +897,38 @@ class EvaluationAnswerController extends Controller
             ->get();
 
         if ($evaluations->isEmpty()) {
-            return 0;
+            return ['score' => 0, 'progress' => 0];
         }
+
+        // Obtener los IDs de los indicadores respondidos con "sí"
+        $indicatorIds = IndicatorAnswer::where('company_id', $companyId)
+            ->where(function ($query) {
+                $query->whereIn('answer', ['1', 'si', 'sí', 'yes', 1, true]);
+            })
+            ->pluck('indicator_id'); // Obtener solo los IDs
+
+        // Contar las preguntas asociadas a esos indicadores
+        $numeroDePreguntasQueVaAResponderLaEmpresaPorValor = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)
+        ->where('deleted', false)
+        ->get()
+            ->filter(function ($question) use ($valueId) {
+                $indicatorValueId = Indicator::find($question->indicator_id)->value_id;
+                return $indicatorValueId == $valueId;
+            })
+            ->count();
 
         // Calcular el porcentaje de aprobación
         $totalEvaluations = $evaluations->count();
         $approvedEvaluations = $evaluations->where('approved', true)->count();
 
-        // Calcular y redondear el porcentaje
-        return round(($approvedEvaluations / $totalEvaluations) * 100);
+        // Calcular el progreso basado en cuántas evaluaciones se han completado
+        $totalPossibleEvaluations = EvaluationQuestion::whereIn('indicator_id', $indicators)->count();
+        $progress = $numeroDePreguntasQueVaAResponderLaEmpresaPorValor > 0 ? round(($totalEvaluations / $numeroDePreguntasQueVaAResponderLaEmpresaPorValor) * 100) : 0;
+
+        // Calcular y redondear el porcentaje de aprobación
+        $score = round(($approvedEvaluations / $totalEvaluations) * 100);
+
+        return ['score' => $score, 'progress' => $progress];
     }
 
     /**
