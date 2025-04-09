@@ -35,7 +35,7 @@ const FAQSection = () => {
         {
             id: 'faq-1',
             question: '¿En qué consiste la autoevaluación?',
-            answer: 'Esta plataforma está diseñada para que las empresas puedan medir la nota que obtendrían en este momento para aplicar por el proceso de licenciamiento de <i>esencial</i> COSTA RICA.'
+            answer: <>Esta plataforma está diseñada para que las empresas puedan medir la nota que obtendrían en este momento para aplicar por el proceso de licenciamiento de <i>esencial</i> COSTA RICA.</>
         },
         {
             id: 'faq-2',
