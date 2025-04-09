@@ -4,35 +4,44 @@ namespace App\Exports;
 
 use App\Models\Company;
 use App\Models\Value;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\Exportable;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Illuminate\Support\Facades\DB;
 
-class CompaniesMonthlyReport implements FromCollection, WithHeadings, WithMapping, WithTitle, WithStyles, ShouldAutoSize
+class CompaniesMonthlyReport implements FromQuery, WithHeadings, WithMapping, WithTitle, WithStyles, ShouldAutoSize
 {
+    use Exportable;
+
     protected $values;
 
     public function __construct()
     {
-        $this->values = Value::where('is_active', true)->where('deleted', 0)->get();
+        $this->values = Value::select('id', 'name', 'minimum_score')
+            ->where('is_active', true)
+            ->where('deleted', 0)
+            ->get();
     }
 
-    public function collection()
+    public function query()
     {
-        return Company::with([
-            'infoAdicional',
-            'autoEvaluationValorResults',
-            'autoEvaluationResult',
-            'evaluationValueResults',
-            'evaluationValueResultReferences'
-        ])->get();
+        return Company::query()
+            ->with([
+                'infoAdicional:id,company_id,cedula_juridica,provincia,representante_nombre',
+                'autoEvaluationValorResults:id,company_id,value_id,nota,progress',
+                'autoEvaluationResult:id,company_id,nota',
+                'evaluationValueResults:id,company_id,value_id,nota',
+                'evaluationValueResultReferences:id,company_id,value_id,progress'
+            ])
+            ->orderBy('created_at', 'desc');
     }
 
     public function headings(): array
@@ -46,7 +55,6 @@ class CompaniesMonthlyReport implements FromCollection, WithHeadings, WithMappin
             'Estado del Proceso'
         ];
 
-        // Agregar una columna por cada valor
         foreach ($this->values as $value) {
             $baseHeadings[] = $value->name;
         }
@@ -75,7 +83,6 @@ class CompaniesMonthlyReport implements FromCollection, WithHeadings, WithMappin
         $totalNota = 0;
         $countValues = 0;
 
-        // Procesar cada valor
         foreach ($this->values as $value) {
             if ($isAutoEvaluation) {
                 $valorResult = $company->autoEvaluationValorResults
@@ -84,7 +91,6 @@ class CompaniesMonthlyReport implements FromCollection, WithHeadings, WithMappin
 
                 $progress = $valorResult ? $valorResult->progress : 0;
                 $nota = $valorResult ? $valorResult->nota : 0;
-                $notaMinima = $value->minimum_score;
             } else {
                 $reference = $company->evaluationValueResultReferences
                     ->where('value_id', $value->id)
@@ -95,10 +101,9 @@ class CompaniesMonthlyReport implements FromCollection, WithHeadings, WithMappin
 
                 $progress = $reference ? $reference->progress : 0;
                 $nota = $valorResult ? $valorResult->nota : 0;
-                $notaMinima = $value->minimum_score;
             }
 
-            $row[] = "{$value->name}---Avance: {$progress}%---Nota: {$nota}/{$notaMinima}";
+            $row[] = "{$value->name}---Avance: {$progress}%---Nota: {$nota}/{$value->minimum_score}";
 
             if ($progress > 0) {
                 $totalProgress += $progress;
@@ -107,7 +112,6 @@ class CompaniesMonthlyReport implements FromCollection, WithHeadings, WithMappin
             }
         }
 
-        // Calcular promedios
         $avgProgress = $countValues > 0 ? round($totalProgress / $countValues) : 0;
         
         if ($isAutoEvaluation) {
@@ -129,8 +133,6 @@ class CompaniesMonthlyReport implements FromCollection, WithHeadings, WithMappin
 
     public function styles(Worksheet $sheet)
     {
-        $lastColumn = $sheet->getHighestColumn();
-        
         return [
             1 => [
                 'font' => [

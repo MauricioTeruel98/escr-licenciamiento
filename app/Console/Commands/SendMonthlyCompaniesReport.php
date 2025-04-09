@@ -18,22 +18,26 @@ class SendMonthlyCompaniesReport extends Command
     public function handle()
     {
         try {
+            ini_set('memory_limit', '1024M'); // Aumentar el límite de memoria solo para este proceso
+            
             $this->info('Generando reporte mensual de empresas...');
             
-            // Crear el directorio si no existe
             Storage::makeDirectory('reports');
             
-            // Generar el nombre del archivo con la fecha
             $fileName = 'reporte_empresas_' . Carbon::now()->format('Y_m') . '.xlsx';
             $filePath = 'reports/' . $fileName;
             
             $this->info('Generando archivo en: ' . $filePath);
             
-            // Generar el archivo Excel usando el storage de Laravel
+            // Usar el método store con opciones de escritura en lotes
             Excel::store(
-                new CompaniesMonthlyReport(), 
+                new CompaniesMonthlyReport(),
                 $filePath,
-                'local'
+                'local',
+                \Maatwebsite\Excel\Excel::XLSX,
+                [
+                    'chunk_size' => 100 // Procesar en lotes de 100 registros
+                ]
             );
             
             // Verificar si el archivo se creó correctamente
@@ -45,11 +49,10 @@ class SendMonthlyCompaniesReport extends Command
             $fullPath = Storage::path($filePath);
             
             // Obtener todos los super_admin
-            $superAdmins = User::where('role', 'super_admin')->get();
+            // $superAdmins = User::where('role', 'super_admin')->get();
 
             //Solo enviar al usuario admin@admin.com
-            $superAdmins = User::where('email', 'admin@admin.com')->get();
-
+            $superAdmins = User::where('email', 'mauricioteruel98@gmail.com')->get();
             
             if ($superAdmins->isEmpty()) {
                 $this->warn('No se encontraron super administradores para enviar el reporte.');
@@ -58,7 +61,6 @@ class SendMonthlyCompaniesReport extends Command
             
             $this->info('Enviando emails a ' . $superAdmins->count() . ' administradores...');
             
-            // Obtener el nombre del mes en español
             $meses = [
                 1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
                 5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
@@ -72,7 +74,6 @@ class SendMonthlyCompaniesReport extends Command
             foreach ($superAdmins as $admin) {
                 $this->info('Enviando email a: ' . $admin->email);
                 
-                // Enviar el email
                 Mail::send('emails.monthly-report', [
                     'admin' => $admin,
                     'month' => $fechaReporte
@@ -86,7 +87,6 @@ class SendMonthlyCompaniesReport extends Command
                 });
             }
             
-            // Eliminar el archivo después de enviarlo
             Storage::delete($filePath);
             $this->info('Archivo temporal eliminado.');
             
