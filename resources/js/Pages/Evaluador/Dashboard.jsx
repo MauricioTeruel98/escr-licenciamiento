@@ -266,7 +266,7 @@ export default function EvaluadorDashboard({ auth, valuesProgressEvaluacion }) {
                                 <div className="card-body">
                                     <div className="">
                                         <h3 className="text-lg font-semibold mb-4">Progreso de la calificación</h3>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                             {valuesProgressEvaluacion.map((value) => (
                                                 <div key={value.id} className="bg-white p-4 rounded-lg shadow w-full">
                                                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2">

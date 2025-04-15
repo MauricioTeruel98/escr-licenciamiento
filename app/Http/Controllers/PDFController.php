@@ -21,9 +21,12 @@ use App\Models\EvaluatorAssessment;
 use App\Models\IndicatorAnswerEvaluation;
 use App\Models\IndicatorAnswer;
 use App\Models\Indicator;
+use setasign\Fpdi\Fpdi;
+use Fpdf\Fpdf;
 
 class PDFController extends Controller
 {
+
     public function downloadIndicatorsPDF()
     {
         $values = Value::with(['subcategories.indicators.requisito'])->get();
@@ -31,6 +34,65 @@ class PDFController extends Controller
         $pdf = Pdf::loadView('pdf.indicators', compact('values'));
 
         return $pdf->download('indicadores_licenciamiento.pdf');
+    }
+
+    public function downloadAnexoUnoPDF()
+    {
+        // Obtener la empresa del usuario autenticado
+        $company = Auth::user()->company;
+        
+        // Crear nueva instancia de FPDI
+        $pdf = new Fpdi();
+        
+        // Establecer el archivo fuente
+        $sourcePath = storage_path('app/public/pdfs/anexo_1.pdf');
+        
+        // Verificar si el archivo existe
+        if (!file_exists($sourcePath)) {
+            return redirect()->back()->with('error', 'El archivo PDF base no existe.');
+        }
+        
+        try {
+            $pageCount = $pdf->setSourceFile($sourcePath);
+            
+            // Copiar todas las páginas
+            for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+                // Importar página
+                $templateId = $pdf->importPage($pageNo);
+                
+                // Añadir página
+                $pdf->AddPage();
+                
+                // Usar la página importada
+                $pdf->useTemplate($templateId);
+                
+                // En la página 43, agregar el botón/enlace
+                if ($pageNo === 43 && $company) {
+                    $pdf->SetFont('Helvetica', 'B', 12);
+                    $pdf->SetTextColor(0, 0, 255); // Azul para indicar que es un enlace
+                    
+                    // Posicionar el enlace (ajusta estas coordenadas según necesites)
+                    $x = 60;
+                    $y = 175;
+                    
+                    // Crear el enlace
+                    $documentUrl = url('storage/evaluations/' . $company->evaluation_document_path);
+                    $pdf->Link($x, $y, 150, 20, $documentUrl);
+                    
+                    // Agregar el texto del enlace
+                    $pdf->SetXY($x, $y);
+                    $pdf->Cell(150, 20, '', 0, 0, 'L');
+                }
+            }
+            
+            // Generar el PDF y forzar la descarga
+            return response($pdf->Output('I', 'indicadores_licenciamiento.pdf'))
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'inline; filename="indicadores_licenciamiento.pdf"');
+                
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error al procesar el PDF: ' . $e->getMessage());
+        }
     }
 
     public function downloadCompanyDocumentation(Request $request)

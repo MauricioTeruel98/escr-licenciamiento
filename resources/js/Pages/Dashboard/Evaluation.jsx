@@ -812,7 +812,7 @@ export default function Evaluation({
                             <div className="card-body">
                                 <div className="">
                                     <h3 className="text-lg font-semibold mb-4">Progreso de la evaluación</h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                         {valuesProgressEvaluacion.map((value) => (
                                             <div key={value.id} className="bg-white p-4 rounded-lg shadow w-full">
                                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2">
@@ -889,7 +889,7 @@ export default function Evaluation({
                             <div className="card-body">
                                 <div className="">
                                     <h3 className="text-lg font-semibold mb-4">Progreso de la autoevaluación</h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                         {valuesProgress.map((value) => (
                                             <div key={value.id} className="bg-white p-4 rounded-lg shadow w-full">
                                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2">
@@ -1014,14 +1014,11 @@ export default function Evaluation({
                     <div className="card-body">
                         <h2 className="card-title">Estos son los pasos para licenciarse</h2>
                     </div>
-                    <div className="card-body">
-                        <div className='flex flex-col md:flex-row items-start justify-between w-full px-8 gap-4'>
+                    <div className="card-body overflow-x-auto">
+                        <div className='flex flex-row items-start justify-between w-full px-8 gap-4 min-w-max'>
                             <div className='flex flex-col items-center gap-2 text-green-700'>
                                 <img src="/assets/img/icons-home/check.png" alt="Check" />
-                                <h2 className='w-[80%] text-center'>Verificar</h2>
-                            </div>
-                            <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                <CircleArrowDown />
+                                <h2 className='w-[80%] text-center min-w-[140px]'>Verificar</h2>
                             </div>
                             <div className='hidden md:block' style={{ color: '#157f3d' }}>
                                 <CircleArrowRight />
@@ -1030,18 +1027,12 @@ export default function Evaluation({
                                 <img src="/assets/img/icons-home/list.png" alt="List" />
                                 <h2 className='w-[80%] text-center'>Autoevaluación rápida</h2>
                             </div>
-                            <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                <CircleArrowDown />
-                            </div>
                             <div className='hidden md:block' style={{ color: '#157f3d' }}>
                                 <CircleArrowRight />
                             </div>
                             <div className='flex flex-col items-center gap-2 text-green-700'>
                                 <img src="/assets/img/icons-home/archive.png" alt="Archive" />
                                 <h2 className='w-[80%] text-center'>Consultar los requisitos</h2>
-                            </div>
-                            <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                <CircleArrowDown />
                             </div>
                             <div className='hidden md:block' style={{ color: '#157f3d' }}>
                                 <CircleArrowRight />
@@ -1050,18 +1041,12 @@ export default function Evaluation({
                                 <img src="/assets/img/icons-home/calendar.png" alt="Calendar" />
                                 <h2 className='w-[80%] text-center'>Pedir una cita de certificación</h2>
                             </div>
-                            <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                <CircleArrowDown />
-                            </div>
                             <div className='hidden md:block' style={{ color: '#157f3d' }}>
                                 <CircleArrowRight />
                             </div>
                             <div className='flex flex-col items-center gap-2 text-green-700'>
                                 <img src="/assets/img/icons-home/doc.png" alt="Doc" />
                                 <h2 className='w-[80%] text-center'>Enviar los documentos</h2>
-                            </div>
-                            <div className='md:hidden' style={{ color: '#157f3d' }}>
-                                <CircleArrowDown />
                             </div>
                             <div className='hidden md:block' style={{ color: '#157f3d' }}>
                                 <CircleArrowRight />
