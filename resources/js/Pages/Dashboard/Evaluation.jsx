@@ -1018,7 +1018,7 @@ export default function Evaluation({
                         <div className='flex flex-col md:flex-row items-start justify-between w-full px-8 gap-4'>
                             <div className='flex flex-col items-center gap-2 text-green-700'>
                                 <img src="/assets/img/icons-home/check.png" alt="Check" />
-                                <h2 className='w-[80%] text-center'>Evaluación</h2>
+                                <h2 className='w-[80%] text-center'>Verificar</h2>
                             </div>
                             <div className='md:hidden' style={{ color: '#157f3d' }}>
                                 <CircleArrowDown />
