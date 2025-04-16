@@ -1,3 +1,101 @@
+# Sistema de Licenciamiento ESCR
+
+## 🚀 Configuración Inicial
+
+### Requisitos Previos
+El proyecto está desarrollado con:
+- Laravel
+- Inertia.js
+- React.js
+
+### Pasos de Instalación
+
+1. **Instalar Dependencias**
+   ```bash
+   npm install
+   composer install
+   ```
+
+2. **Configuración del Entorno**
+   - Crear archivo `.env`
+   - Copiar contenido de `.env.example` a `.env`
+   - Configurar variables de entorno según tu entorno local
+   - Generar key:
+     ```bash
+     php artisan key:generate
+     ```
+
+3. **Configuración de Base de Datos**
+   - Crear base de datos MySQL
+   - Importar archivo `db_limpia.sql`
+   - Ejecutar migraciones:
+     ```bash
+     php artisan migrate
+     ```
+
+4. **Configuración Adicional**
+   ```bash
+   # Limpiar caché
+   php artisan optimize:clear
+
+   # Crear enlace simbólico de storage
+   php artisan storage:link
+   ```
+
+5. **Archivos Requeridos**
+   Copiar en `storage/app/public`:
+   - `lugares.json`
+   - `paises.json`
+
+## 🏃‍♂️ Ejecutar el Proyecto
+
+1. **Iniciar Servidor Laravel**
+   ```bash
+   php artisan serve
+   ```
+
+2. **Iniciar Servidor de Desarrollo**
+   ```bash
+   npm run dev
+   ```
+
+3. Acceder a través del localhost
+
+## 📦 Despliegue en Producción
+
+1. **Generar Build**
+   ```bash
+   npm run build
+   ```
+   > Nota: Los archivos de vistas se generarán en la carpeta `public`
+
+2. **Gestión de Caché**
+   ```bash
+   # Limpiar caché
+   php artisan optimize:clear
+
+   # Setear caché
+   php artisan optimize
+   ```
+
+## 👥 Roles del Sistema
+
+| Rol | Descripción |
+|-----|-------------|
+| **super_admin** | - Control de elementos en procesos de licenciamiento<br>- Acceso a panel de administración de todas las empresas |
+| **admin** | Gestión de procesos de licenciamiento, autoevaluación y evaluación |
+| **user** | Participación en procesos de licenciamiento, autoevaluación y evaluación |
+| **evaluador** | Evaluación de procesos una vez finalizados por la empresa |
+
+### Nota sobre Roles
+Las funcionalidades pueden variar según el rol del usuario. Verificar en el código las condiciones específicas para roles de evaluador, admin o super_admin.
+
+### Rutas
+Las rutas y sus correspondientes vistas/acciones se encuentran definidas en `routes/web.php`:
+- GET: Renderización de vistas
+- POST/PUT/DELETE: Ejecución de acciones
+
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
