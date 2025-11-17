@@ -30,7 +30,7 @@ flowchart LR
 
     subgraph Frontend / Inertia + React
         UI[Componentes React
-        (Tailwind + DaisyUI)]
+        Tailwind + DaisyUI]
         AX[Axios + Ziggy]
     end
 
@@ -42,8 +42,8 @@ flowchart LR
     end
 
     subgraph Persistencia
-        DB[(MySQL)]
-        FS[(Storage público/privado)]
+        DB[MySQL]
+        FS[Storage público/privado]
     end
 
     U --> UI --> AX --> CTR
