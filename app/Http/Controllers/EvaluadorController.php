@@ -15,6 +15,26 @@ use App\Models\IndicatorHomologation;
 use App\Models\Certification;
 use App\Models\Value;
 use App\Models\EvaluatorAssessment;
+
+/**
+ * Controlador de Evaluador
+ * 
+ * Gestiona las funcionalidades específicas del evaluador.
+ * 
+ * Rutas:
+ * - GET /evaluador/dashboard
+ * - GET /evaluador/evaluations
+ * - GET /api/evaluador/companies
+ * - POST /api/evaluador/switch-company
+ * - GET /evaluador/reportes
+ * 
+ * Funcionalidades:
+ * 1. Dashboard del evaluador
+ * 2. Gestión de empresas asignadas
+ * 3. Calificación de evaluaciones
+ * 4. Generación de reportes
+ * 5. Actualización de campos de evaluación
+ */
 class EvaluadorController extends Controller
 {
     public function dashboard()

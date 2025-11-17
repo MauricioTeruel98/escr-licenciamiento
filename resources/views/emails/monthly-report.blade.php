@@ -1,87 +1,52 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            padding: 0;
-            margin: 0;
-            color: #333;
-            line-height: 1.6;
-        }
+@extends('layouts.email')
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+@section('head')
+<!-- ID invisible: {{ uniqid() }} -->
+<meta name="message-id" content="{{ uniqid() }}">
+<meta name="in-reply-to" content="{{ uniqid() }}">
+<meta name="references" content="{{ uniqid() }}">
+@endsection
 
-        .header {
-            background-color: #15803d;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 8px 8px 0 0;
-        }
+@section('title')
+Reporte Mensual de Empresas - {{ $month }}
+@endsection
 
-        .content {
-            background-color: #ffffff;
-            padding: 30px;
-            border: 1px solid #e5e7eb;
-            border-radius: 0 0 8px 8px;
-        }
+@section('content')
+<p style="color: #333 !important;">Estimado(a) {{ $admin->name }},</p>
 
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            color: #6b7280;
-            font-size: 0.875rem;
-        }
+<p style="color: #333 !important;">Adjunto encontrará los reportes mensuales correspondientes al mes de {{ $month }}:</p>
 
-        ul {
-            padding-left: 20px;
-        }
+<h3 style="color: #333 !important;">1. Reporte de Empresas</h3>
+<p style="color: #333 !important;">Este reporte incluye la siguiente información para cada empresa:</p>
+<ul>
+    <li style="color: #333 !important;">ID y Nombre de la empresa</li>
+    <li style="color: #333 !important;">Cédula Jurídica</li>
+    <li style="color: #333 !important;">Provincia</li>
+    <li style="color: #333 !important;">Nombre del Representante Legal</li>
+    <li style="color: #333 !important;">Estado actual del proceso de licenciamiento</li>
+    <li style="color: #333 !important;">Detalle por cada valor evaluado:
+        <ul>
+            <li style="color: #333 !important;">Porcentaje de avance</li>
+            <li style="color: #333 !important;">Nota obtenida y nota mínima requerida</li>
+        </ul>
+    </li>
+    <li style="color: #333 !important;">Progreso total del proceso</li>
+    <li style="color: #333 !important;">Nota final</li>
+</ul>
 
-        li {
-            margin-bottom: 8px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Reporte Mensual de Empresas - {{ $month }}</h1>
-        </div>
+@if(isset($hasUsersReport) && $hasUsersReport)
+<h3 style="color: #333 !important;">2. Reporte de Usuarios y Empresas</h3>
+<p style="color: #333 !important;">Este reporte incluye información detallada de usuarios y sus empresas asociadas:</p>
+<ul>
+    <li style="color: #333 !important;">Información del usuario (ID, nombre, apellidos, cédula, email, teléfono)</li>
+    <li style="color: #333 !important;">Referencias y organismo</li>
+    <li style="color: #333 !important;">Estado de la empresa</li>
+    <li style="color: #333 !important;">Información completa de la empresa (sector, provincia, cantón, cédula jurídica)</li>
+    <li style="color: #333 !important;">Datos de contacto y representación legal</li>
+    <li style="color: #333 !important;">Información de exportación</li>
+</ul>
+@endif
 
-        <div class="content">
-            <p>Estimado(a) {{ $admin->name }},</p>
-            
-            <p>Adjunto encontrará el reporte mensual de todas las empresas registradas en la plataforma correspondiente al mes de {{ $month }}. El reporte incluye la siguiente información para cada empresa:</p>
-            
-            <ul>
-                <li>ID y Nombre de la empresa</li>
-                <li>Cédula Jurídica</li>
-                <li>Provincia</li>
-                <li>Nombre del Representante Legal</li>
-                <li>Estado actual del proceso de licenciamiento</li>
-                <li>Detalle por cada valor evaluado:
-                    <ul>
-                        <li>Porcentaje de avance</li>
-                        <li>Nota obtenida y nota mínima requerida</li>
-                    </ul>
-                </li>
-                <li>Progreso total del proceso</li>
-                <li>Nota final</li>
-            </ul>
-
-            
-        </div>
-
-        <div class="footer">
-            <p>Este es un correo automático generado por el sistema de licenciamiento corporativo de la marca país <i>esencial</i> Costa Rica.</p>
-        </div>
-    </div>
-</body>
-</html> 
+<p style="color: #333 !important;">Saludos cordiales,<br>
+Equipo de Licenciamiento</p>
+@endsection

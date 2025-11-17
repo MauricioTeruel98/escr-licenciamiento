@@ -52,7 +52,7 @@ class PasswordResetLinkController extends Controller
             $status = Password::broker()->sendResetLink(
                 $request->only('email'),
                 function($user, $token) {
-                    $notification = new \App\Notifications\CustomResetPasswordNotification($token);
+                    $notification = new \App\Mail\CustomResetPasswordNotification($token);
                     $this->mailService->handlePasswordReset($user->email, $notification);
                 }
             );

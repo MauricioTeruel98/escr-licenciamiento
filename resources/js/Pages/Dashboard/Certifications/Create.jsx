@@ -7,6 +7,38 @@ import { es } from 'date-fns/locale';
 import axios from 'axios';
 import Toast from '@/Components/Toast';
 
+/**
+ * Componente de Creación y Gestión de Certificaciones
+ * 
+ * Este componente maneja la creación y gestión de certificaciones de la empresa.
+ * 
+ * Rutas involucradas:
+ * - GET /certifications/create - Muestra el formulario (route: certifications.create)
+ * - POST /certifications - Crea una nueva certificación (route: certifications.store)
+ * - PUT /certifications/{id} - Actualiza una certificación (route: certifications.update)
+ * - DELETE /certifications/{id} - Elimina una certificación (route: certifications.destroy)
+ * - DELETE /certifications/{id}/files - Elimina un archivo de una certificación
+ * 
+ * Funcionalidades principales:
+ * 1. Formulario de creación de certificaciones
+ *    - Búsqueda y selección de certificación homologada
+ *    - Fechas de obtención y expiración
+ *    - Organismo certificador
+ *    - Carga de archivos de evidencia
+ * 
+ * 2. Gestión de certificaciones existentes
+ *    - Listado de certificaciones
+ *    - Edición de certificaciones
+ *    - Eliminación de certificaciones
+ *    - Gestión de archivos adjuntos
+ * 
+ * 3. Validaciones implementadas:
+ *    - Fechas válidas y coherentes
+ *    - Límite de archivos (máximo 3)
+ *    - Tipos de archivo permitidos
+ *    - Tamaño máximo de archivos
+ */
+
 // Componente Modal de confirmación
 const ConfirmModal = ({ isOpen, onClose, onConfirm, certName }) => {
     if (!isOpen) return null;

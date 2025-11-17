@@ -11,12 +11,13 @@ class NewAccessRequestNotification extends Notification
     use Queueable;
 
     protected $requestingUser;
-
+    protected $company;
     public $subject = 'Nueva solicitud de acceso';
 
-    public function __construct($requestingUser)
+    public function __construct($requestingUser, $company)
     {
         $this->requestingUser = $requestingUser;
+        $this->company = $company;
     }
 
     public function via($notifiable)
@@ -29,7 +30,8 @@ class NewAccessRequestNotification extends Notification
         return (new MailMessage)
             ->subject('Nueva Solicitud de Acceso')
             ->view('emails.new-access-request', [
-                'requestingUser' => $this->requestingUser
+                'requestingUser' => $this->requestingUser,
+                'company' => $this->company
             ]);
     }
 } 

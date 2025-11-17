@@ -89,6 +89,8 @@ class CompanyExport implements FromCollection, WithHeadings, WithMapping, WithTi
             'Contacto Representante - Teléfono',
             'Contacto Representante - Celular',
             'Estado de Evaluación',
+            'Status',
+            'Fecha de Vencimiento',
             'Fecha de Registro',
             'Última Actualización',
         ];
@@ -102,7 +104,7 @@ class CompanyExport implements FromCollection, WithHeadings, WithMapping, WithTi
         return [
             $company->id,
             $company->name,
-            $infoAdicional ? $infoAdicional->cedula_juridica : '',
+            $company->legal_id, // La cédula jurídica está en el campo legal_id de la tabla companies
             $infoAdicional ? $infoAdicional->nombre_comercial : '',
             $infoAdicional ? $infoAdicional->nombre_legal : '',
             $company->phone,
@@ -156,6 +158,8 @@ class CompanyExport implements FromCollection, WithHeadings, WithMapping, WithTi
             $infoAdicional ? $infoAdicional->representante_telefono : '',
             $infoAdicional ? $infoAdicional->representante_celular : '',
             $company->getFormattedStateAttribute(),
+            $company->status,
+            $company->fecha_vencimiento ? $company->fecha_vencimiento->format('d/m/Y') : '',
             $company->created_at->format('d/m/Y'),
             $company->updated_at->format('d/m/Y'),
         ];

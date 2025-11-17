@@ -6,6 +6,27 @@ import IndicatorIndex from '@/Components/IndicatorIndex';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
 
+/**
+ * Componente de Auto-evaluación
+ * 
+ * Este componente maneja el proceso de auto-evaluación de la empresa.
+ * 
+ * Rutas involucradas:
+ * - GET /indicadores/{id} - Muestra los indicadores de un valor (route: indicadores)
+ * - POST /indicadores/store-answers - Almacena respuestas de indicadores (route: indicadores.store-answers)
+ * - POST /indicadores/save-partial-answers - Guarda respuestas parciales (route: indicadores.save-partial-answers)
+ * - POST /indicadores/finalizar-autoevaluacion - Finaliza la auto-evaluación (route: indicadores.finalizar-autoevaluacion)
+ * 
+ * Funcionalidades principales:
+ * 1. Visualización de indicadores por valor
+ * 2. Gestión de respuestas (Sí/No)
+ * 3. Manejo de indicadores homologados
+ * 4. Cálculo automático de puntaje
+ * 5. Validación de indicadores vinculantes
+ * 6. Guardado automático de respuestas
+ * 7. Control de progreso
+ */
+
 export default function Indicadores({
     valueData,
     userName,
@@ -43,6 +64,7 @@ export default function Indicadores({
     const autoEvalCompleted = useMemo(() => company.estado_eval === 'auto-evaluacion-completed', [company.estado_eval]);
 
     const subcategories = valueData.subcategories;
+    const EXCLUDED_INDICATOR_IDS = useMemo(() => new Set([141, 142]), []);
     const isLastSubcategory = currentSubcategoryIndex === subcategories.length - 1;
 
     // Transformación de datos memoizada
@@ -60,22 +82,24 @@ export default function Indicadores({
                 const indicatorsInThisValue = cert.indicators.filter(indicator =>
                     valueData.subcategories.some(subcategory =>
                         subcategory.indicators.some(i => i.id === indicator.id)
-                    )
+                    ) && !EXCLUDED_INDICATOR_IDS.has(indicator.id)
                 );
                 return total + indicatorsInThisValue.length;
             }, 0),
-        [homologatedIndicators, valueData]);
+        [homologatedIndicators, valueData, EXCLUDED_INDICATOR_IDS]);
 
     // Lista memoizada de IDs de indicadores homologados
     const homologatedIndicatorsIds = useMemo(() => {
         const ids = [];
         Object.values(homologatedIndicators).forEach(cert => {
             cert.indicators.forEach(indicator => {
-                ids.push(indicator.id);
+                if (!EXCLUDED_INDICATOR_IDS.has(indicator.id)) {
+                    ids.push(indicator.id);
+                }
             });
         });
         return ids;
-    }, [homologatedIndicators]);
+    }, [homologatedIndicators, EXCLUDED_INDICATOR_IDS]);
 
     // Función para verificar respuestas vinculantes
     const checkBindingAnswers = useCallback((currentAnswers) => {
@@ -83,6 +107,7 @@ export default function Indicadores({
 
         subcategories.forEach(subcategory => {
             subcategory.indicators.forEach(indicator => {
+                if (EXCLUDED_INDICATOR_IDS.has(indicator.id)) return;
                 if (indicator.binding && currentAnswers[indicator.id] === "0") {
                     failedIndicators.push({
                         id: indicator.id,
@@ -95,7 +120,7 @@ export default function Indicadores({
 
         setFailedBindingIndicators(failedIndicators);
         setBindingWarning(failedIndicators.length > 0);
-    }, [subcategories]);
+    }, [subcategories, EXCLUDED_INDICATOR_IDS]);
 
     // Función para calcular puntaje actual
     const calculateCurrentScore = useCallback((currentAnswers) => {
@@ -108,6 +133,7 @@ export default function Indicadores({
 
         valueData.subcategories.forEach(subcategory => {
             subcategory.indicators.forEach(indicator => {
+                if (EXCLUDED_INDICATOR_IDS.has(indicator.id)) return;
                 totalIndicators++;
 
                 // Verificar si el indicador está homologado o respondido positivamente
@@ -120,7 +146,7 @@ export default function Indicadores({
         if (totalIndicators === 0) return 0;
 
         return Math.round((positiveAnswers / totalIndicators) * 100);
-    }, [valueData, homologatedIndicatorsIds]);
+    }, [valueData, homologatedIndicatorsIds, EXCLUDED_INDICATOR_IDS]);
 
     // Función optimizada para responder preguntas
     const handleAnswer = useCallback((indicatorId, answer, isBinding) => {
@@ -193,6 +219,7 @@ export default function Indicadores({
 
         valueData.subcategories.forEach(subcategory => {
             subcategory.indicators.forEach(indicator => {
+                if (EXCLUDED_INDICATOR_IDS.has(indicator.id)) return;
                 totalQuestions++;
 
                 if (homologatedIndicatorsIds.includes(indicator.id) || answers[indicator.id] !== undefined) {
@@ -207,16 +234,18 @@ export default function Indicadores({
         }
 
         return totalQuestions === answeredQuestions;
-    }, [valueData, homologatedIndicatorsIds, answers]);
+    }, [valueData, homologatedIndicatorsIds, answers, EXCLUDED_INDICATOR_IDS]);
 
     // Verificar si las preguntas de la subcategoría actual están respondidas
     const areCurrentSubcategoryQuestionsAnswered = useCallback(() => {
         const currentSubcategory = subcategories[currentSubcategoryIndex];
 
-        return currentSubcategory.indicators.every(indicator =>
-            homologatedIndicatorsIds.includes(indicator.id) || answers[indicator.id] !== undefined
-        );
-    }, [subcategories, currentSubcategoryIndex, homologatedIndicatorsIds, answers]);
+        return currentSubcategory.indicators
+            .filter(indicator => !EXCLUDED_INDICATOR_IDS.has(indicator.id))
+            .every(indicator =>
+                homologatedIndicatorsIds.includes(indicator.id) || answers[indicator.id] !== undefined
+            );
+    }, [subcategories, currentSubcategoryIndex, homologatedIndicatorsIds, answers, EXCLUDED_INDICATOR_IDS]);
 
     // Función para guardar respuestas parciales
     const savePartialAnswers = useCallback(async () => {
@@ -618,6 +647,35 @@ export default function Indicadores({
                                 // Verificar si el indicador estaba homologado pero ya no lo está
                                 const wasHomologated = previouslyHomologatedIndicators.includes(indicator.id);
 
+                                if (EXCLUDED_INDICATOR_IDS.has(indicator.id)) {
+                                    return (
+                                        <div key={indicator.id} className="opacity-100">
+                                            <div className="flex items-start gap-2">
+                                                <IndicatorIndex
+                                                    code={indicator.name}
+                                                    question={indicator.self_evaluation_question}
+                                                    onAnswer={(answer) => handleAnswer(indicator.id, answer, indicator.binding)}
+                                                    value={answers[indicator.id] || ''}
+                                                    isBinding={indicator.binding}
+                                                    homologation={homologation ? homologation.certification_name : null}
+                                                    guide={indicator.guide}
+                                                    autoeval_ended={company.autoeval_ended}
+                                                    availableToModifyAutoeval={availableToModifyAutoeval}
+                                                    isBinary={indicator.is_binary}
+                                                    justification={justifications[indicator.id] || ''}
+                                                    onJustificationChange={(text) => handleJustificationChange(indicator.id, text)}
+                                                    isExporter={isExporter}
+                                                    wasHomologated={wasHomologated}
+                                                    autoEvalCompleted={autoEvalCompleted}
+                                                    isHomologated={homologation ? true : false}
+                                                />
+                                            </div>
+                                            {/* <div className="text-xs text-gray-500 mt-1">Este indicador no afecta el cálculo.</div> */}
+                                            <div className="divider"></div>
+                                        </div>
+                                    );
+                                }
+
                                 return (
                                     <div key={indicator.id}>
                                         <div className="flex items-start gap-2">
@@ -645,7 +703,7 @@ export default function Indicadores({
                                                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                                 </svg>
-                                                Indicador descalificatório
+                                                Indicador descalificatorio
                                             </div>
                                         )}
                                         <div className="divider"></div>

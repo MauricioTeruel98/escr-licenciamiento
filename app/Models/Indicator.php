@@ -6,9 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\LogsActions;
 
 class Indicator extends Model
 {
+    use LogsActions;
+
     protected $fillable = [
         'name',
         'binding',

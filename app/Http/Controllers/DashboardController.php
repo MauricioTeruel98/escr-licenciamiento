@@ -33,6 +33,7 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $isAdmin = $user->role === 'admin';
+        $isSuperAdmin = $user->role === 'super_admin';
 
         $companyId = $user->company_id;
 
@@ -57,7 +58,7 @@ class DashboardController extends Controller
         //Resultados de la autoevaluación
         $autoEvaluationResult = AutoEvaluationResult::where('company_id', $user->company_id)->first();
 
-        // Obtener el número de respuestas de la empresa
+        // Obtener el número de respuestas válidas de la empresa (no nulas o vacías)
         $indicadoresRespondidos = IndicatorAnswer::whereHas('indicator', function ($query) use ($company) {
             $query->where('is_active', true)
                 ->where(function ($q) use ($company) {
@@ -66,13 +67,17 @@ class DashboardController extends Controller
                 });
         })
             ->where('company_id', $user->company_id)
+            ->whereNotNull('answer')
+            ->where('answer', '!=', '')
             ->count();
 
         // Calcular el porcentaje de progreso
         $progreso = $totalIndicadores > 0 ? round(($indicadoresRespondidos / $totalIndicadores) * 100) : 0;
 
-        // Obtener los IDs de los indicadores respondidos con "sí"
+        // Obtener los IDs de los indicadores respondidos con "sí" (solo respuestas válidas)
         $indicatorIds = IndicatorAnswer::where('company_id', $user->company_id)
+            ->whereNotNull('answer')
+            ->where('answer', '!=', '')
             ->whereHas('indicator', function ($query) use ($company) {
                 $query->where(function ($q) use ($company) {
                     $q->whereNull('created_at')
@@ -225,7 +230,7 @@ class DashboardController extends Controller
         }
 
         $pendingRequests = [];
-        if ($isAdmin) {
+        if ($isAdmin || $isSuperAdmin) {
             $pendingRequests = User::where('company_id', $user->company_id)
                 ->where('status', 'pending')
                 ->select('id', 'name', 'email', 'created_at')
@@ -326,7 +331,10 @@ class DashboardController extends Controller
             }
 
             // Obtener respuestas de indicadores (Si/No) para esta compañía y valor
+            // Solo contar indicadores que tienen una respuesta válida (no nula o vacía)
             $answeredQuery = IndicatorAnswer::where('company_id', Auth::user()->company_id)
+                ->whereNotNull('answer')
+                ->where('answer', '!=', '')
                 ->whereHas('indicator', function ($query) use ($value, $company) {
                     $query->where('is_active', true)
                         ->where('deleted', false)
@@ -351,13 +359,21 @@ class DashboardController extends Controller
 
             $answeredIndicators += $answered;
 
+            // Calcular el progreso, pero asegurar que nunca sea 100% si no todos los indicadores están respondidos
+            $progress = $totalIndicators > 0 ? round(($answeredIndicators / $totalIndicators) * 100) : 0;
+            
+            // Si el progreso es 100% pero no todos los indicadores están respondidos, ajustar a 99%
+            if ($progress === 100 && $answeredIndicators < $totalIndicators) {
+                $progress = 99;
+            }
+
             return [
                 'id' => $value->id,
                 'name' => $value->name,
                 'minimum_score' => $value->minimum_score,
                 'total_indicators' => $totalIndicators,
                 'answered_indicators' => $answeredIndicators,
-                'progress' => $totalIndicators > 0 ? round(($answeredIndicators / $totalIndicators) * 100) : 0,
+                'progress' => $progress,
                 'result' => $valueResults->get($value->id),
             ];
         });
@@ -438,6 +454,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard/Evaluation', [
             'userName' => $user->name,
             'isAdmin' => $isAdmin,
+            'isSuperAdmin' => $isSuperAdmin,
             'pendingRequests' => $pendingRequests,
             'totalIndicadores' => $totalIndicadores,
             'indicadoresRespondidos' => $indicadoresRespondidos,

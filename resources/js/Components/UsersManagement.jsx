@@ -731,6 +731,8 @@ export default function UsersManagement() {
                 <Toast
                     message={toastMessage}
                     onClose={() => setShowToast(false)}
+                    duration={toastMessage.includes('Contraseña generada') ? 30000 : 3000}
+                    highlightPassword={toastMessage.includes('Contraseña generada')}
                 />
             )}
 

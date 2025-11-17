@@ -11,13 +11,31 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Support\Facades\Notification;
-use App\Notifications\NewAccessRequest;
-use App\Notifications\AccessRequestApproved;
-use App\Notifications\AccessRequestRejected;
-use App\Notifications\AccessRequestPendingNotification;
-use App\Notifications\NewAccessRequestNotification;
+use App\Mail\NewAccessRequest;
+use App\Mail\AccessRequestApproved;
+use App\Mail\AccessRequestRejected;
+use App\Mail\AccessRequestPendingNotification;
+use App\Mail\NewAccessRequestNotification;
+use App\Mail\WelcomeNotificationSuperAdmin;
 use App\Services\MailService;
 
+/**
+ * Controlador de Autenticación de Empresa
+ * 
+ * Este controlador maneja toda la lógica relacionada con empresas.
+ * Procesos:
+ * 1. Verificación de cédula jurídica
+ * 2. Registro de nueva empresa
+ * 3. Solicitud de acceso a empresa existente
+ * 4. Aprobación/Rechazo de solicitudes de acceso
+ * 
+ * Funcionalidades:
+ * - Validación de datos de empresa
+ * - Creación de empresa
+ * - Asignación de roles de usuario
+ * - Manejo de notificaciones
+ * - Gestión de sesiones
+ */
 class CompanyAuthController extends Controller
 {
     protected $mailService;
@@ -157,7 +175,7 @@ class CompanyAuthController extends Controller
 
             if ($adminUser) {
                 try {
-                    $notification = new NewAccessRequestNotification($user);
+                    $notification = new NewAccessRequestNotification($user, $company);
                     $this->mailService->send($adminUser->email, $notification);
                 } catch (\Exception $e) {
                     Log::error('Error al enviar la notificación de solicitud de acceso pendiente al administrador: ' . $e->getMessage());
@@ -184,8 +202,28 @@ class CompanyAuthController extends Controller
     public function approveAccess(Request $request, User $user)
     {
         try {
-            if (!Auth::user()->role === 'admin' && !Auth::user()->role === 'super_admin') {
+            Log::info('Intento de aprobación de acceso', [
+                'user_id' => $user->id,
+                'admin_role' => Auth::user()->role,
+                'admin_id' => Auth::user()->id
+            ]);
+
+            if (!(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')) {
+                Log::warning('Intento de aprobación sin permisos', [
+                    'user_role' => Auth::user()->role,
+                    'user_id' => Auth::user()->id
+                ]);
                 throw new \Exception('No tiene permisos para realizar esta acción');
+            }
+
+            $company = Company::findOrFail($user->company_id);
+
+            // Enviar notificación al usuario solicitante
+            try {
+                $notification = new AccessRequestApproved($company);
+                $this->mailService->send($user->email, $notification);
+            } catch (\Exception $e) {
+                Log::error('Error al enviar la notificación de solicitud de acceso aprobada: ' . $e->getMessage());
             }
 
             $user->status = 'approved';
@@ -200,8 +238,28 @@ class CompanyAuthController extends Controller
     public function rejectAccess(Request $request, User $user)
     {
         try {
-            if (!Auth::user()->role === 'admin' && !Auth::user()->role === 'super_admin') {
+            Log::info('Intento de rechazo de acceso', [
+                'user_id' => $user->id,
+                'admin_role' => Auth::user()->role,
+                'admin_id' => Auth::user()->id
+            ]);
+
+            if (!(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')) {
+                Log::warning('Intento de rechazo sin permisos', [
+                    'user_role' => Auth::user()->role,
+                    'user_id' => Auth::user()->id
+                ]);
                 throw new \Exception('No tiene permisos para realizar esta acción');
+            }
+
+            $company = Company::findOrFail($user->company_id);
+
+            // Enviar notificación al usuario solicitante
+            try {
+                $notification = new AccessRequestRejected($company);
+                $this->mailService->send($user->email, $notification);
+            } catch (\Exception $e) {
+                Log::error('Error al enviar la notificación de solicitud de acceso rechazada: ' . $e->getMessage());
             }
 
             $user->status = 'rejected';
@@ -270,6 +328,16 @@ class CompanyAuthController extends Controller
             $user->role = 'admin';
             $user->status = 'approved';
             $user->save();
+
+            $superadminuser = User::where('role', 'super_admin')->get();
+            foreach ($superadminuser as $superadmin) {
+                try {
+                    $welcomeNotification = new WelcomeNotificationSuperAdmin($company);
+                    $this->mailService->send($superadmin->email, $welcomeNotification);
+                } catch (\Exception $e) {
+                    Log::error('Error al enviar la notificación de bienvenida al superadmin: ' . $e->getMessage());
+                }
+            }
 
             // Limpiar la sesión
             session()->forget('legal_id');

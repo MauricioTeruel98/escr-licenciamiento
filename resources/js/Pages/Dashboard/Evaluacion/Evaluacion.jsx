@@ -7,6 +7,30 @@ import axios from 'axios';
 import { router, usePage } from '@inertiajs/react';
 import EvaluacionProcessing from '@/Components/Modals/EvaluacionProcessing';
 
+/**
+ * Componente de Evaluación
+ * 
+ * Este componente maneja el proceso de evaluación detallada de indicadores.
+ * 
+ * Rutas involucradas:
+ * - GET /evaluacion/{value_id} - Muestra el formulario de evaluación (route: evaluacion)
+ * - POST /evaluacion/store-answers - Almacena respuestas (route: evaluacion.store-answers)
+ * - POST /evaluacion/store-answers-by-indicator - Guarda respuestas por indicador (route: evaluacion.store-answers-by-indicator)
+ * - POST /evaluacion/calificar-nuevamente - Permite reevaluar (route: evaluacion.calificar-nuevamente)
+ * 
+ * Funcionalidades:
+ * 1. Vista de preguntas desglosadas por indicador
+ * 2. Manejo de respuestas (Sí/No)
+ * 3. Gestión de archivos de evidencia
+ * 4. Homologación automática
+ * 5. Calificación por evaluador
+ * 6. Cálculo de puntajes
+ * 
+ * Roles:
+ * - Empresa: Responde preguntas y sube evidencias
+ * - Evaluador: Califica respuestas y evidencias
+ */
+
 export default function Evaluacion({ valueData, userName, savedAnswers, isEvaluador = false, isSuperAdmin = false, progress, totalSteps, value_id, company, numeroDePreguntasQueVaAResponderLaEmpresa, numeroDePreguntasQueRespondioLaEmpresa, numeroDePreguntasQueClificoElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluador, numeroDePreguntasQueClificoPositivamenteElEvaluadorPorValor, numeroDePreguntasQueVaAResponderLaEmpresaPorValor, numeroDePreguntasQueRespondioLaEmpresaPorValor, validCertifications, totalHomologatedIndicators }) {
     const { auth } = usePage().props;
     const [currentSubcategoryIndex, setCurrentSubcategoryIndex] = useState(0);
@@ -1062,7 +1086,7 @@ export default function Evaluacion({ valueData, userName, savedAnswers, isEvalua
                                                         <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                                         </svg>
-                                                        Indicador descalificatório
+                                                        Indicador descalificatorio
                                                     </span>
                                                 )}
                                                 {indicator.isHomologated && (
@@ -1239,7 +1263,7 @@ company.estado_eval === 'evaluado' || company.estado_eval === 'evaluacion-califi
                                                             </label>
                                                             {indicator.binding && (
                                                                 <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-red-700 ml-2">
-                                                                    Este indicador es descalificatório, en el caso de no aprobarlo la empresa no podrá licenciarse.
+                                                                    Este indicador es descalificatorio, en el caso de no aprobarlo la empresa no podrá licenciarse.
                                                                 </span>
                                                             )}
                                                         </div>

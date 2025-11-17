@@ -23,7 +23,7 @@ class AutoEvaluationComplete extends Mailable
     public function build()
     {
         return $this->view('emails.autoevaluationcomplete')
-                    ->subject('Autoevaluación completada de la empresa ' . $this->company->name)
+                    ->subject('Fin de la Autoevaluación ' . $this->company->name)
                     ->with([
                         'company' => $this->company
                     ]);

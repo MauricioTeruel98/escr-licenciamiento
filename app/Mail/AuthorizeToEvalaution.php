@@ -22,7 +22,7 @@ class AuthorizeToEvalaution extends Mailable
     public function build()
     {
         return $this->view('emails.authorize_to_evaluation')
-                    ->subject('Autorización para Evaluación')
+                    ->subject('Inicio del Proceso de Evaluación')
                     ->with([
                         'user' => $this->company->users->where('role', 'admin')->first(),
                         'companyName' => $this->company->name

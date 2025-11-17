@@ -27,7 +27,7 @@ class EvaluationCompletedNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Evaluación completada')
+            ->subject('Evaluación Completada')
             ->view('emails.evaluation_completed', [
                 'user' => $this->user,
                 'companyName' => $this->companyName

@@ -30,7 +30,9 @@ class UserManagementController extends Controller
             // Para admin de empresa, filtrar por la empresa del usuario autenticado
             $companyId = Auth::user()->company_id;
             $query->where('company_id', $companyId)
-                  ->where('role', '!=', 'super_admin');
+                  ->where('role', '!=', 'super_admin')
+                  ->where('role', '!=', 'evaluador')
+                  ->where('id', '!=', Auth::id());
         }
 
         if ($request->has('search')) {

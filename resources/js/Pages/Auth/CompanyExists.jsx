@@ -2,6 +2,20 @@ import { useForm } from '@inertiajs/react';
 import ImageLayout from '@/Layouts/ImageLayout';
 import { AlertTriangle } from 'lucide-react';
 
+/**
+ * Componente de Empresa Existente
+ * 
+ * Este componente se muestra cuando se intenta registrar una empresa que ya existe.
+ * Proceso:
+ * 1. Muestra mensaje informativo
+ * 2. Ofrece opciones:
+ *    - Solicitar acceso a la empresa existente
+ *    - Regresar a la página anterior
+ * 3. En caso de solicitar acceso:
+ *    - Se envía notificación al administrador
+ *    - Se marca al usuario como pendiente
+ */
+
 export default function CompanyExists() {
     const { post, processing } = useForm();
 

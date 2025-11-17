@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\Indicator;
+use App\Models\IndicatorAnswer;
+use App\Models\EvaluationQuestion;
+use App\Models\IndicatorAnswerEvaluation;
 use Illuminate\Http\Request;
 
 class ProgresosController extends Controller
@@ -87,17 +91,53 @@ class ProgresosController extends Controller
         $companies = $query->paginate($perPage);
 
         return response()->json($companies->through(function ($company) {
-            // Calcular el progreso
+            // Calcular el progreso real replicando la lógica del dashboard
             $progress = 0;
 
             if ($company->autoEvaluationResult) {
-                if (in_array($company->estado_eval, ['evaluacion', 'evaluacion-completada'])) {
-                    $progress = $company->indicator_answers_evaluation_count > 0 
-                        ? min(100, ($company->indicator_answers_evaluation_count / 20) * 100) 
+                // Estados que representan fase de evaluación (no autoevaluación)
+                $estadosEvaluacion = [
+                    'evaluacion',
+                    'evaluacion-pendiente',
+                    'evaluacion-completada',
+                    'evaluacion-calificada',
+                    'evaluado',
+                    'evaluacion-desaprobada',
+                ];
+
+                if (in_array($company->estado_eval, $estadosEvaluacion)) {
+                    // Progreso en EVALUACIÓN: preguntas respondidas / preguntas que debe responder
+                    // Primero obtener los indicadores que la empresa respondió afirmativamente (solo respuestas válidas)
+                    $indicatorIds = IndicatorAnswer::where('company_id', $company->id)
+                        ->whereNotNull('answer')
+                        ->where('answer', '!=', '')
+                        ->whereIn('answer', ['1', 'si', 'sí', 'yes', 1, true])
+                        ->pluck('indicator_id');
+                    
+                    // Calcular el total de preguntas de evaluación basadas en esos indicadores
+                    $totalQuestions = 0;
+                    if ($indicatorIds->count() > 0) {
+                        $totalQuestions = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)
+                            ->where('deleted', false)
+                            ->count();
+                    }
+                    
+                    // Contar las preguntas que ya respondió la empresa
+                    $answeredQuestions = IndicatorAnswerEvaluation::where('company_id', $company->id)->count();
+                    
+                    $progress = $totalQuestions > 0
+                        ? round(($answeredQuestions / $totalQuestions) * 100)
                         : 0;
                 } else {
-                    $progress = $company->indicator_answers_count > 0 
-                        ? min(100, ($company->indicator_answers_count / 12) * 100) 
+                    // Progreso en AUTOEVALUACIÓN: usar el conteo de respuestas de indicadores
+                    $totalIndicadores = Indicator::where('is_active', true)
+                        ->where('deleted', false)
+                        ->count();
+
+                    $indicadoresRespondidos = $company->indicator_answers_count;
+
+                    $progress = $totalIndicadores > 0
+                        ? round(($indicadoresRespondidos / $totalIndicadores) * 100)
                         : 0;
                 }
             }

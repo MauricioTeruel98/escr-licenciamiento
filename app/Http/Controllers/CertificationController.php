@@ -14,8 +14,38 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
- * Se deja comentado el deleteFile para que no se borren los archivos de las certificaciones, ya que si se eliminan generan un
- * error en la vista de la evaluación, ya que no encuentra el archivo en cada respuesta de la empresa.
+ * Controlador para la gestión de Certificaciones
+ * 
+ * Este controlador maneja todas las operaciones relacionadas con certificaciones.
+ * 
+ * Rutas y métodos:
+ * 1. GET /certifications/create -> create()
+ *    - Muestra el formulario de creación
+ *    - Carga certificaciones disponibles para homologación
+ * 
+ * 2. POST /certifications -> store()
+ *    - Valida y almacena nueva certificación
+ *    - Procesa y almacena archivos adjuntos
+ *    - Calcula indicadores homologados
+ * 
+ * 3. PUT /certifications/{id} -> update()
+ *    - Actualiza datos de certificación existente
+ *    - Gestiona archivos adjuntos
+ * 
+ * 4. DELETE /certifications/{id} -> destroy()
+ *    - Elimina certificación y archivos asociados
+ * 
+ * 5. DELETE /certifications/{id}/files -> deleteFile()
+ *    - Elimina archivo específico de una certificación
+ * 
+ * Validaciones y restricciones:
+ * - Archivos: máximo 3 por certificación, 5MB por archivo
+ * - Tipos permitidos: jpg, jpeg, png, pdf, doc, docx, xls, xlsx
+ * - Tamaño total máximo: 15MB
+ * - Fechas: expiración debe ser posterior a obtención
+ * 
+ * Se deja comentado el deleteFile para que no se borren los archivos de las certificaciones, ya que si se eliminan generan 
+ * un error en la vista de la evaluación, ya que no encuentra el archivo en cada respuesta de la empresa.
  * 
  * @author: Mauricio Teruel
  * @version: 1.0

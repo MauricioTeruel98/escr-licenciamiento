@@ -9,8 +9,12 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use App\Traits\ControllerLogsActions;
+
 class CompanyManagementController extends Controller
 {
+    use ControllerLogsActions;
+
     public function index(Request $request)
     {
         $allowedSortColumns = [
@@ -75,6 +79,9 @@ class CompanyManagementController extends Controller
 
         $company = Company::create($validated);
 
+        // Registrar la acción
+        $this->logAction('create', $company, null, $validated);
+
         return response()->json([
             'message' => 'Empresa creada exitosamente',
             'company' => $company
@@ -95,7 +102,13 @@ class CompanyManagementController extends Controller
             'is_exporter' => 'boolean'
         ]);
 
+        // Guardar los datos antiguos antes de la actualización
+        $oldData = $company->toArray();
+        
         $company->update($validated);
+
+        // Registrar la acción
+        $this->logAction('update', $company, $oldData, $validated);
 
         return response()->json([
             'message' => 'Empresa actualizada exitosamente',
@@ -133,6 +146,9 @@ class CompanyManagementController extends Controller
                 ], 422);
             }*/
 
+            // Guardar los datos antes de eliminar
+            $oldData = $company->toArray();
+
             // Iniciar transacción
             DB::beginTransaction();
 
@@ -140,6 +156,7 @@ class CompanyManagementController extends Controller
             DB::table('users')->where('company_id', $company->id)->update(['company_id' => null]);
 
             // Eliminar todos los registros relacionados
+            DB::table('evaluation_value_result_reference')->where('company_id', $company->id)->delete();
             DB::table('evaluation_value_results')->where('company_id', $company->id)->delete();
             DB::table('auto_evaluation_result')->where('company_id', $company->id)->delete();
             DB::table('auto_evaluation_valor_result')->where('company_id', $company->id)->delete();
@@ -157,6 +174,9 @@ class CompanyManagementController extends Controller
 
             // Finalmente eliminar la empresa
             $company->delete();
+
+            // Registrar la acción
+            $this->logAction('delete', $company, $oldData, null);
 
             DB::commit();
 
@@ -187,29 +207,17 @@ class CompanyManagementController extends Controller
         ]);
 
         try {
-            // Verificar empresas con usuarios
-            $companiesWithUsers = Company::whereIn('id', $request->ids)
-                ->has('users')
-                ->count();
-
-            $companiesWithUsersNames = Company::whereIn('id', $request->ids)
-                ->has('users')
-                ->pluck('name')
-                ->implode(', ');
-
-            /*if ($companiesWithUsers > 0) {
-                return response()->json([
-                    'message' => 'No se pueden eliminar empresas ' . $companiesWithUsersNames . ' que tienen usuarios asociados'
-                ], 422);
-            }*/
-
-           // Iniciar transacción
-           DB::beginTransaction();
+            // Obtener las empresas antes de eliminarlas
+            $companies = Company::whereIn('id', $request->ids)->get();
+            
+            // Iniciar transacción
+            DB::beginTransaction();
 
             // Actualizar el company_id a null para todos los usuarios de estas empresas
             DB::table('users')->whereIn('company_id', $request->ids)->update(['company_id' => null]);
 
             // Eliminar todos los registros relacionados
+            DB::table('evaluation_value_result_reference')->whereIn('company_id', $request->ids)->delete();
             DB::table('evaluation_value_results')->whereIn('company_id', $request->ids)->delete();
             DB::table('auto_evaluation_result')->whereIn('company_id', $request->ids)->delete();
             DB::table('auto_evaluation_valor_result')->whereIn('company_id', $request->ids)->delete();
@@ -228,6 +236,11 @@ class CompanyManagementController extends Controller
                 if ($company) {
                     $this->deleteCompanyFiles($company);
                 }
+            }
+
+            // Registrar la acción para cada empresa
+            foreach ($companies as $company) {
+                $this->logAction('delete', $company, $company->toArray(), null);
             }
 
             // Eliminar las empresas

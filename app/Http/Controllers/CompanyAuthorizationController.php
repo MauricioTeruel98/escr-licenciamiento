@@ -37,14 +37,18 @@ class CompanyAuthorizationController extends Controller
 
         $company->save();
 
-        $adminUser = User::where('company_id', $company->id)->where('role', 'admin')->first();
+        // Obtener todos los usuarios de la empresa
+        $companyUsers = User::where('company_id', $company->id)->where('status', 'approved')->get();
 
-        try {
-            $mail = new \App\Mail\AuthorizeToEvalaution($company);
-            $this->mailService->send($adminUser->email, $mail);
-        } catch (\Exception $e) {
-            // Log the error or handle it as needed, but continue execution
-            Log::error('Error al enviar el correo de autorización: ' . $e->getMessage());
+        foreach ($companyUsers as $user) {
+            try {
+                $mail = new \App\Mail\AuthorizeToEvalaution($company);
+                // Enviar el correo a todos los usuarios de la empresa
+                $this->mailService->send($user->email, $mail);
+            } catch (\Exception $e) {
+                // Log the error or handle it as needed, but continue execution
+                Log::error('Error al enviar el correo de autorización: ' . $e->getMessage());
+            }
         }
 
         return response()->json(['message' => 'Empresa autorizada exitosamente']);

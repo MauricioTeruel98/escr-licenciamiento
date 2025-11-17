@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\LogsActions;
 
 class Company extends Model
 {
@@ -36,7 +37,8 @@ class Company extends Model
         'oportunidades',
         'tiene_multi_sitio',
         'cantidad_multi_sitio',
-        'aprobo_evaluacion_multi_sitio'
+        'aprobo_evaluacion_multi_sitio',
+        'fecha_vencimiento'
     ];
 
     protected $casts = [
@@ -45,6 +47,7 @@ class Company extends Model
         'fecha_calificacion_evaluador' => 'datetime',
         'fecha_inicio_auto_evaluacion' => 'datetime',
         'fecha_inicio_evaluacion' => 'datetime',
+        'fecha_vencimiento' => 'date',
         'puntos_fuertes' => 'string',
         'justificacion' => 'string',
         'oportunidades' => 'string',
@@ -152,5 +155,41 @@ class Company extends Model
     {
         return $this->belongsToMany(User::class, 'company_evaluator', 'company_id', 'user_id')
                     ->select(['users.id', 'users.name', 'users.email']);
+    }
+
+    /**
+     * Obtiene el status de la empresa basado en su estado de evaluación y fecha de vencimiento
+     */
+    public function getStatusAttribute()
+    {
+        // Si tiene fecha de vencimiento y ya pasó, está en renovación
+        if ($this->fecha_vencimiento && $this->fecha_vencimiento < now()->toDateString()) {
+            return 'En renovación';
+        }
+
+        // Verificar si la empresa ha comenzado la autoevaluación
+        // mirando si tiene registros en la tabla indicator_answers
+        $hasIndicatorAnswers = $this->indicatorAnswers()->exists();
+
+        // Si no tiene respuestas de indicadores, es nueva (no ha comenzado autoevaluación)
+        if (!$hasIndicatorAnswers) {
+            return 'Nueva';
+        }
+
+        // Si ya tiene respuestas de indicadores o está en algún estado de evaluación, está en evaluación
+        if ($hasIndicatorAnswers || in_array($this->estado_eval, [
+            'auto-evaluacion',
+            'auto-evaluacion-completed',
+            'evaluacion-pendiente',
+            'evaluacion',
+            'evaluacion-completada',
+            'evaluado',
+            'evaluacion-calificada'
+        ])) {
+            return 'En evaluación';
+        }
+
+        // Por defecto es nueva
+        return 'Nueva';
     }
 } 

@@ -13,6 +13,21 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Controlador de Indicadores
+ * 
+ * Gestiona la visualización y carga de indicadores para auto-evaluación.
+ * 
+ * Rutas:
+ * - GET /indicadores/{id}
+ * 
+ * Funcionalidades:
+ * 1. Carga de indicadores según fecha de registro
+ * 2. Filtrado de certificaciones válidas
+ * 3. Procesamiento de homologaciones
+ * 4. Cálculo de puntajes
+ * 5. Validación de estado de auto-evaluación
+ */
 class IndicadoresController extends Controller
 {
     public function index($id)

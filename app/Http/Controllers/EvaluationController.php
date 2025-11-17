@@ -17,6 +17,23 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Controlador de Evaluación
+ * 
+ * Gestiona la visualización y carga de evaluaciones.
+ * 
+ * Rutas:
+ * - GET /evaluacion/{value_id}
+ * - GET /api/evaluation/indicators
+ * - POST /evaluation/send-application
+ * 
+ * Funcionalidades:
+ * 1. Carga de preguntas por indicador
+ * 2. Filtrado por fecha de registro
+ * 3. Procesamiento de homologaciones
+ * 4. Cálculo de progreso
+ * 5. Gestión de estados
+ */
 class EvaluationController extends Controller
 {
     public function index($value_id)

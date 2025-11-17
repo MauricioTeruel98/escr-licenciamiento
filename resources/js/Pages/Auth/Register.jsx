@@ -4,6 +4,23 @@ import { Head, useForm } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import InstructionsLayout from "@/Layouts/InstructionsLayout";
 
+/**
+ * Componente de Registro de Usuario
+ * 
+ * Este componente maneja el registro inicial de usuarios en el sistema.
+ * Proceso:
+ * 1. Validación de campos del formulario (nombre, apellido, email, contraseña)
+ * 2. Validación de términos y condiciones
+ * 3. Envío de datos al servidor para crear el usuario
+ * 4. Redirección a la página de ingreso de cédula jurídica
+ * 
+ * Validaciones implementadas:
+ * - Nombres y apellidos: solo letras, espacios y acentos
+ * - Email: formato válido sin espacios ni caracteres especiales
+ * - Contraseña: mínimo 8 caracteres, sin espacios ni comillas
+ * - Términos y condiciones: obligatorio aceptar
+ */
+
 export default function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);

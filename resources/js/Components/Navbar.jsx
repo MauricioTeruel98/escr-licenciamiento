@@ -49,6 +49,25 @@ export default function Navbar({ userName, onMenuClick }) {
         window.location.reload();
     };
 
+    const handleManualClick = (manualPath) => {
+        window.open(`/storage/pdfs/${manualPath}`, '_blank');
+    };
+
+    const getManualPath = () => {
+        switch (auth.user.role) {
+            case 'super_admin':
+                return 'Manual de Usuario Licenciamiento esencial Costa Rica - Super admin.pdf';
+            case 'admin':
+                return 'Manual de Usuario Licenciamiento esencial Costa Rica - Administrador empresa.pdf';
+            case 'evaluador':
+                return 'Manual de Usuario Licenciamiento esencial Costa Rica - Evaluador.pdf';
+            case 'user':
+                return 'Manual de Usuario Licenciamiento esencial Costa Rica  - Usuarios .pdf';
+            default:
+                return null;
+        }
+    };
+
     // Función para obtener las iniciales del nombre
     const getInitials = (name) => {
         if (!name) return '';
@@ -81,8 +100,14 @@ export default function Navbar({ userName, onMenuClick }) {
                     </Link>
                 </div>
                 <div className="flex-none gap-2 pe-5">
+                    <div className="tooltip tooltip-bottom" data-tip="Manual de usuario">
+                        <button onClick={() => handleManualClick(getManualPath())} tabIndex={0} role="button" className="btn btn-ghost bg-green-800 hover:bg-green-900 text-white rounded-full relative shadow-md" style={{ height: '40px', minHeight: '40px' }}>
+                            <p className="text-md">Manual de usuario</p>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-info-circle h-6 w-6 text-white"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
+                        </button>
+                    </div>
                     {(auth.user.role === 'admin' || auth.user.role === 'super_admin') && (
-                        <div className="dropdown dropdown-end">
+                        <div className="dropdown dropdown-end tooltip tooltip-bottom" data-tip="Solicitudes pendientes">
                             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle relative">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />

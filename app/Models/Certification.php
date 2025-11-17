@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\LogsActions;
 
 class Certification extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActions;
 
     protected $fillable = [
         'company_id',

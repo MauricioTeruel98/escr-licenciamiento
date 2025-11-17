@@ -3,6 +3,24 @@ import { useForm, router } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import ImageLayout from '@/Layouts/ImageLayout';
 
+/**
+ * Componente de Registro de Empresa
+ * 
+ * Este componente maneja el registro de una nueva empresa en el sistema.
+ * Proceso:
+ * 1. Carga de datos de la empresa (nombre, sitio web, sector, etc.)
+ * 2. Validación de todos los campos
+ * 3. Verificación de que el usuario no tenga empresa asignada
+ * 4. Creación de la empresa y asignación como administrador
+ * 
+ * Validaciones:
+ * - Todos los campos son obligatorios
+ * - Formato específico para cada tipo de campo
+ * - La empresa debe ser exportadora
+ * - Validación de URL del sitio web
+ * - Validación de números telefónicos
+ */
+
 export default function CompanyRegister({ legalId, provincias, hasCompany }) {
 
     const { data, setData, post, processing, errors } = useForm({

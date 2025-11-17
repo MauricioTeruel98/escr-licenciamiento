@@ -1,68 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            padding: 0;
-            margin: 0;
-            color: #333;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            background-color: #15803d;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 8px 8px 0 0;
-        }
-        .content {
-            background-color: #ffffff;
-            padding: 30px;
-            border: 1px solid #e5e7eb;
-            border-radius: 0 0 8px 8px;
-        }
-        .button {
-            display: inline-block;
-            background-color: #15803d;
-            color: white;
-            padding: 12px 24px;
-            text-decoration: none;
-            border-radius: 6px;
-            margin: 20px 0;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            color: #6b7280;
-            font-size: 0.875rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>¡Autorización para Evaluación!</h1>
-        </div>
-        
-        <div class="content">
-            <p>Hola {{$company->name}}</p>
-            <p>Tu empresa está autorizada para realizar la Evaluación.</p>
+@extends('layouts.email')
 
-            <p>Para continuar, ingrese a la plataforma y complete su evaluación.</p>
-            <a href="{{ url('/dashboard') }}" class="button">Ir a la plataforma</a>
-        </div>
-        
-        <div class="footer">
-            <p>Este es un correo automático, por favor no responder.</p>
-        </div>
-    </div>
-</body>
-</html> 
+@section('head')
+<!-- ID invisible: {{ uniqid() }} -->
+<meta name="message-id" content="{{ uniqid() }}">
+<meta name="in-reply-to" content="{{ uniqid() }}">
+<meta name="references" content="{{ uniqid() }}">
+@endsection
+
+@section('title')
+Inicio del Proceso de Evaluación
+@endsection
+
+@section('content')
+<p style="color: #333 !important;">A partir de este momento, su empresa está autorizada para completar el formulario de evaluación, lo que le permite continuar con el proceso de licenciamiento <i>esencial</i> Costa Rica.</p>
+
+<p style="color: #333 !important;">Una vez completado este formulario, y según la calificación obtenida, podrá avanzar a la siguiente etapa de la evaluación.</p>
+@endsection 

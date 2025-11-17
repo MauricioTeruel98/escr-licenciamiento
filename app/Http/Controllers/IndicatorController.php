@@ -8,6 +8,19 @@ use App\Models\Subcategory;
 use App\Models\AvailableCertification;
 use Illuminate\Http\Request;
 
+/**
+ * Controlador de Indicadores
+ * 
+ * Gestión de los indicadores
+ * Solo de acceso para superadmin
+ * 
+ * Se implementa un borrado lógico, para que no genere problemas a las empresas que ya hayan respondido los indicadores
+ * o preguntas de indicadores que ya hayan sido respondidas, ya que si se eliminan fisicamente
+ * las empresas verán un error en la aplicación
+ * 
+ * 
+*/
+
 class IndicatorController extends Controller
 {
     public function index(Request $request)

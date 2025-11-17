@@ -16,8 +16,14 @@ class AvailableCertificationController extends Controller
             $query->where('nombre', 'like', "%{$searchTerm}%");
         }
 
-        $certifications = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Si se solicita paginación, devolver paginado
+        if ($request->has('per_page') || $request->has('page')) {
+            $certifications = $query->orderBy('created_at', 'desc')->paginate($request->per_page ?? 10);
+            return response()->json($certifications);
+        }
 
+        // Si no se solicita paginación, devolver array simple
+        $certifications = $query->orderBy('nombre', 'asc')->get();
         return response()->json($certifications);
     }
 

@@ -3201,7 +3201,7 @@ export default function CompanyProfile({ userName, infoAdicional, autoEvaluation
                                             rows={4}
                                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-50 ${isEmptyField('razon_licenciamiento_en') ? 'border-red-500' : 'border-gray-300'
                                                 }`}
-                                            placeholder="Answer"
+                                            placeholder="Respuesta"
                                             maxLength={240}
                                             style={{ resize: 'vertical', minHeight: '150px', maxHeight: '400px' }}
                                         />

@@ -24,6 +24,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [companySearchTerm, setCompanySearchTerm] = useState('');
     const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const roles = [
         { id: 'user', name: 'Usuario' },
@@ -82,18 +83,17 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setErrors({});
+        setIsSubmitting(true);
 
         // Validaciones básicas
         let newErrors = {};
         if (!formData.name.trim()) newErrors.name = 'El nombre es requerido';
         if (!formData.lastname.trim()) newErrors.lastname = 'El apellido es requerido';
         if (!formData.email.trim()) newErrors.email = 'El email es requerido';
-        if (formData.role !== 'evaluador' && !formData.company_id) newErrors.company_id = 'La empresa es requerida';
-        if (!formData.puesto.trim()) newErrors.puesto = 'El puesto es requerido';
-        if (!formData.phone.trim()) newErrors.phone = 'El teléfono es requerido';
+        // Los campos puesto, teléfono y empresa ya no son obligatorios
         
         // Validar contraseña solo en creación o si se está intentando cambiar
         if (!user || formData.password) {
@@ -107,6 +107,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
+            setIsSubmitting(false);
             return;
         }
 
@@ -115,14 +116,13 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
             assigned_companies: formData.role === 'evaluador' ? assignedCompanies : []
         };
         
-        // Enviar datos y manejar errores del servidor
-        const serverErrors = onSubmit(submitData);
-        if (serverErrors) {
-            Promise.resolve(serverErrors).then(errors => {
-                if (errors) {
-                    setErrors(errors);
-                }
-            });
+        try {
+            const serverErrors = await onSubmit(submitData);
+            if (serverErrors) {
+                setErrors(serverErrors);
+            }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -227,7 +227,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {/* Puesto */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Puesto <span className="text-red-500">*</span>
+                                        Puesto
                                     </label>
                                     <input
                                         type="text"
@@ -236,7 +236,6 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                         className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm ${
                                             errors.puesto ? 'border-red-300' : ''
                                         }`}
-                                        required
                                     />
                                     {errors.puesto && (
                                         <p className="mt-1 text-sm text-red-600">{errors.puesto}</p>
@@ -246,7 +245,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {/* Teléfono */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Teléfono <span className="text-red-500">*</span>
+                                        Teléfono
                                     </label>
                                     <input
                                         type="tel"
@@ -255,7 +254,6 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                         className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm ${
                                             errors.phone ? 'border-red-300' : ''
                                         }`}
-                                        required
                                     />
                                     {errors.phone && (
                                         <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
@@ -308,7 +306,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {formData.role !== 'evaluador' && (
                                     <div className="relative">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Empresa <span className="text-red-500">*</span>
+                                            Empresa
                                         </label>
                                         <div className="relative">
                                             <input
@@ -441,7 +439,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 {formData.role === 'evaluador' && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Empresas asignadas para evaluar <span className="text-red-500">*</span>
+                                            Empresas asignadas para evaluar
                                         </label>
                                         
                                         {/* Buscador de empresas */}
@@ -532,12 +530,6 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                                 </div>
                                             </div>
                                         )}
-                                        
-                                        {assignedCompanies.length === 0 && (
-                                            <p className="mt-1 text-sm text-red-600">
-                                                Debe seleccionar al menos una empresa para evaluar
-                                            </p>
-                                        )}
                                     </div>
                                 )}
                             </div>
@@ -546,15 +538,27 @@ export default function UserModal({ isOpen, onClose, onSubmit, user = null }) {
                                 <button
                                     type="button"
                                     onClick={handleClose}
-                                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                    disabled={isSubmitting}
+                                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
-                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                    disabled={isSubmitting}
+                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
                                 >
-                                    {user ? 'Guardar cambios' : 'Crear usuario'}
+                                    {isSubmitting ? (
+                                        <>
+                                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Procesando...
+                                        </>
+                                    ) : (
+                                        user ? 'Guardar cambios' : 'Crear usuario'
+                                    )}
                                 </button>
                             </div>
                         </form>

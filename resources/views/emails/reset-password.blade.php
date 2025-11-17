@@ -1,82 +1,27 @@
-<!DOCTYPE html>
-<html>
+@extends('layouts.email')
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            padding: 0;
-            margin: 0;
-            color: #333;
-            line-height: 1.6;
-        }
+@section('head')
+<!-- ID invisible: {{ uniqid() }} -->
+<meta name="message-id" content="{{ uniqid() }}">
+<meta name="in-reply-to" content="{{ uniqid() }}">
+<meta name="references" content="{{ uniqid() }}">
+@endsection
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+@section('title')
+    Restablecer Contraseña
+@endsection
 
-        .header {
-            background-color: #15803d;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 8px 8px 0 0;
-        }
+@section('content')
+    <p style="color: #333 !important;">Se ha recibido una solicitud para el restablecimiento de la contraseña.</p>
 
-        .content {
-            background-color: #ffffff;
-            padding: 30px;
-            border: 1px solid #e5e7eb;
-            border-radius: 0 0 8px 8px;
-        }
+    <p style="color: #333 !important;">El enlace para restablecer la contraseña estará disponible por un periodo de 60 minutos.</p>
 
-        .button {
-            display: inline-block;
-            background-color: #15803d;
-            color: white;
-            padding: 12px 24px;
-            text-decoration: none;
-            border-radius: 6px;
-            margin: 20px 0;
-        }
+    <p style="color: #333 !important;">En caso de no haber realizado esta solicitud, hacer caso omiso a este mensaje.</p>
 
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            color: #6b7280;
-            font-size: 0.875rem;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Restablecer contraseña del perfil de su empresa</h1>
-        </div>
-
-        <div class="content">
-            <p>Hemos recibido una solicitud de restablecimiento de contraseña para el perfil de su empresa dentro de la
-                plataforma de licenciamiento corporativo de la marca país <i>esencial</i> Costa Rica.</p>
-
-            <div style="text-align: center;">
-                <a href="{{ $resetUrl }}" class="button">Restablecer Contraseña</a>
-            </div>
-
-            <p>Este enlace de restablecimiento de contraseña expirará en 60 minutos.</p>
-
-            <p>Si no solicitó ningún restablecimiento de contraseña, por favor hacer caso omiso a esta información.</p>
-        </div>
-
-        <div class="footer">
-            <p>Si tienes problemas para hacer clic en el botón "Restablecer Contraseña", copia y pega esta URL en tu
-                navegador web: {{ $resetUrl }}</p>
-        </div>
+    <div style="text-align: center;">
+        <a href="{{ $resetUrl }}" class="" style="color: #15803d !important;">Restablecer Contraseña</a>
     </div>
-</body>
 
-</html>
+    <p style="color: #333 !important;">Si se presentan inconvenientes al hacer clic en el botón puede copiar y pegar la URL proporcionada directamente en el
+        navegador. <span style="color: #15803d !important;">{{ $resetUrl }}</span></p>
+@endsection

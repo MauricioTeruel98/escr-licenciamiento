@@ -27,7 +27,7 @@ class EvaluationCalificatedNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Evaluación calificada')
+            ->subject('Evaluación Aprobada')
             ->view('emails.evaluation_calificated', [
                 'user' => $this->user,
                 'companyName' => $this->companyName

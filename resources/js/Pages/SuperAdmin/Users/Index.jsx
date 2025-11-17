@@ -267,6 +267,7 @@ export default function UsersIndex() {
                 setModalOpen(false);
                 fetchUsers();
             }
+            return null; // Indicar éxito
         } catch (error) {
             console.error('Error:', error);
             
@@ -279,6 +280,7 @@ export default function UsersIndex() {
                     type: 'error',
                     message: error.response?.data?.message || 'Error al guardar el usuario'
                 });
+                return { general: 'Error al procesar la solicitud' };
             }
         }
     };

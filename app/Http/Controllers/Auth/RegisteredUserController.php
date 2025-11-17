@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Notifications\WelcomeNotification;
+use App\Mail\WelcomeNotification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +16,23 @@ use Inertia\Inertia;
 use Inertia\Response;
 use App\Services\MailService;
 
+/**
+ * Controlador de Registro de Usuarios
+ * 
+ * Este controlador maneja la lógica del registro de usuarios en el sistema.
+ * Proceso:
+ * 1. Validación de datos del usuario
+ * 2. Creación del usuario en la base de datos
+ * 3. Envío de notificación de bienvenida
+ * 4. Autenticación del usuario
+ * 5. Redirección a la página de cédula jurídica
+ * 
+ * Validaciones:
+ * - Nombres y apellidos: solo letras y espacios
+ * - Email: formato válido y único
+ * - Contraseña: reglas de seguridad
+ * - Términos y condiciones: obligatorio
+ */
 class RegisteredUserController extends Controller
 {
     protected $mailService;

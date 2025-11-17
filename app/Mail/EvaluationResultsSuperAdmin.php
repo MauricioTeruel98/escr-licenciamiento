@@ -22,14 +22,14 @@ class EvaluationResultsSuperAdmin extends Mailable
 
     public function build()
     {
-        return $this->view('emails.evaluation_calificated_super_admin')
-                    ->subject('Resultados de la Evaluación')
+        return $this->view('emails.evaluation_calificated')
+                    ->subject('Evaluación Aprobada')
                     ->with([
                         'user' => $this->company->users->where('role', 'admin')->first(),
                         'companyName' => $this->company->name
                     ])
                     ->attach($this->pdfPath, [
-                        'as' => 'resultados_evaluacion.pdf',
+                        'as' => 'Formulario de solicitud de licencia e informe de evaluación - Resultados.pdf',
                         'mime' => 'application/pdf',
                     ]);
     }

@@ -109,6 +109,7 @@ export default function Evaluation({
     userName,
     pendingRequests,
     isAdmin,
+    isSuperAdmin,
     totalIndicadores,
     indicadoresRespondidos,
     indicadoresHomologados,
@@ -262,7 +263,7 @@ export default function Evaluation({
 
     // Componente para las solicitudes pendientes
     const PendingRequestsAlert = () => {
-        if (!isAdmin || !pendingRequests || pendingRequests.length === 0) return null;
+        if ((!isAdmin && !isSuperAdmin) || !pendingRequests || pendingRequests.length === 0) return null;
 
         return (
             <div className="card bg-white shadow mb-8">
@@ -890,74 +891,92 @@ export default function Evaluation({
                                 <div className="">
                                     <h3 className="text-lg font-semibold mb-4">Progreso de la autoevaluación</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                        {valuesProgress.map((value) => (
-                                            <div key={value.id} className="bg-white p-4 rounded-lg shadow w-full">
-                                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2">
-                                                    <h4 className="font-medium mb-2 sm:mb-0">{value.name}</h4>
-                                                    {value.result ? (
-                                                        <span className={`px-2 py-1 rounded text-sm ${value.result.nota >= value.minimum_score
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-red-100 text-red-800'
-                                                            }`}>
-                                                            {value.result.nota}%
-                                                        </span>
-                                                    ) : (
-                                                        <Link
-                                                            href={route('indicadores', value.id)}
-                                                            className={`text-sm px-3 py-1 rounded ${value.progress === 100
-                                                                ? 'bg-yellow-600 text-white hover:bg-yellow-700'
-                                                                : 'bg-blue-600 text-white hover:bg-blue-700'
-                                                                }`}
-                                                        >
-                                                            {value.progress === 100 ? 'Enviar' : 'Completar'}
-                                                        </Link>
-                                                    )}
-                                                </div>
-                                                <div className="relative pt-1">
-                                                    <div className="flex mb-2 items-center justify-between">
-                                                        <div>
-                                                            <span className={`text-xs font-semibold inline-block ${value.result
-                                                                ? 'text-green-600'
-                                                                : value.progress === 100
-                                                                    ? 'text-yellow-600'
-                                                                    : 'text-blue-600'
-                                                                }`}>
-                                                                {value.progress}% Completado
-                                                            </span>
+                                        {valuesProgress.map((value) => {
+                                            // Determinar si el valor está completo y si la nota es suficiente
+                                            const estaCompleto = value.result?.progress === 100;
+                                            const notaSuficiente = value.result?.nota >= value.minimum_score;
+                                            const barraRoja = estaCompleto && !notaSuficiente;
+
+                                            // Colores para la barra y textos
+                                            let colorTexto, colorBarra, colorBarraInterna;
+                                            if (barraRoja) {
+                                                colorTexto = 'text-red-600';
+                                                colorBarra = 'bg-red-200';
+                                                colorBarraInterna = 'bg-red-500';
+                                            } else if (estaCompleto && notaSuficiente) {
+                                                colorTexto = 'text-green-600';
+                                                colorBarra = 'bg-green-200';
+                                                colorBarraInterna = 'bg-green-500';
+                                            } else if (value.progress === 100) {
+                                                colorTexto = 'text-yellow-600';
+                                                colorBarra = 'bg-yellow-200';
+                                                colorBarraInterna = 'bg-yellow-500';
+                                            } else {
+                                                colorTexto = 'text-blue-600';
+                                                colorBarra = 'bg-blue-200';
+                                                colorBarraInterna = 'bg-blue-500';
+                                            }
+
+                                            return (
+                                                <div key={value.id} className="bg-white p-4 rounded-lg shadow w-full">
+                                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2">
+                                                        <h4 className="font-medium mb-2 sm:mb-0">{value.name}</h4>
+                                                        {console.log(value.result?.progress)}
+                                                        {estaCompleto ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`px-2 py-1 rounded text-sm ${notaSuficiente
+                                                                    ? 'bg-green-100 text-green-800'
+                                                                    : 'bg-red-100 text-red-800'
+                                                                    }`}>
+                                                                    {value.result.nota}
+                                                                </span>
+                                                                {!notaSuficiente && (
+                                                                    <Link
+                                                                        href={route('indicadores', value.id)}
+                                                                        className="text-sm px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700"
+                                                                    >
+                                                                        Revisar
+                                                                    </Link>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <Link
+                                                                href={route('indicadores', value.id)}
+                                                                className={`text-sm px-3 py-1 rounded ${value.progress === 100
+                                                                    ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                                                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                                                    }`}
+                                                            >
+                                                                {value.progress === 100 ? 'Enviar' : 'Completar'}
+                                                            </Link>
+                                                        )}
+                                                    </div>
+                                                    <div className="relative pt-1">
+                                                        <div className="flex mb-2 items-center justify-between">
+                                                            <div>
+                                                                <span className={`text-xs font-semibold inline-block ${colorTexto}`}>
+                                                                    {value.progress}% Completado
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <span className={`text-xs font-semibold inline-block ${colorTexto}`}>
+                                                                    {value.answered_indicators}/{value.total_indicators} Indicadores
+                                                                </span>
+                                                            </div>
                                                         </div>
-                                                        <div className="text-right">
-                                                            <span className={`text-xs font-semibold inline-block ${value.result
-                                                                ? 'text-green-600'
-                                                                : value.progress === 100
-                                                                    ? 'text-yellow-600'
-                                                                    : 'text-blue-600'
-                                                                }`}>
-                                                                {value.answered_indicators}/{value.total_indicators} Indicadores
-                                                            </span>
+                                                        <div className={`overflow-hidden h-2 mb-4 text-xs flex rounded ${colorBarra}`}>
+                                                            <div
+                                                                style={{ width: `${value.progress}%` }}
+                                                                className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${colorBarraInterna}`}
+                                                            ></div>
                                                         </div>
                                                     </div>
-                                                    <div className={`overflow-hidden h-2 mb-4 text-xs flex rounded ${value.result
-                                                        ? 'bg-green-200'
-                                                        : value.progress === 100
-                                                            ? 'bg-yellow-200'
-                                                            : 'bg-blue-200'
-                                                        }`}>
-                                                        <div
-                                                            style={{ width: `${value.progress}%` }}
-                                                            className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${value.result
-                                                                ? 'bg-green-500'
-                                                                : value.progress === 100
-                                                                    ? 'bg-yellow-500'
-                                                                    : 'bg-blue-500'
-                                                                }`}
-                                                        ></div>
+                                                    <div className="text-sm text-gray-600">
+                                                        Nota mínima requerida: {value.minimum_score}%
                                                     </div>
                                                 </div>
-                                                <div className="text-sm text-gray-600">
-                                                    Nota mínima requerida: {value.minimum_score}%
-                                                </div>
-                                            </div>
-                                        ))}
+                                            )
+                                        })}
                                     </div>
                                 </div>
                             </div>
@@ -1133,12 +1152,12 @@ export default function Evaluation({
                         {/* Botón para descargar PDF de indicadores */}
                         <div className="card bg-white shadow">
                             <div className="card-body">
-                                <h2 className="card-title">Descargar Indicadores</h2>
+                                {/* <h2 className="card-title mb-4"></h2> */}
                                 <button
                                     onClick={handleDownloadPDF}
-                                    className="inline-block px-4 py-2 mt-4 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                                    className="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                                 >
-                                    Descargar PDF de Indicadores
+                                    Descargar Protocolo de evaluación
                                 </button>
                             </div>
                         </div>

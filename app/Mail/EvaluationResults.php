@@ -13,7 +13,7 @@ class EvaluationResults extends Mailable
 
     protected $pdfPath;
     public $company;
-    public $subject = 'Resultados de Evaluación';
+    public $subject = 'Evaluación Aprobada';
 
     public function __construct($pdfPath, $company)
     {
@@ -28,10 +28,6 @@ class EvaluationResults extends Mailable
                     ->with([
                         'user' => $this->company->users->where('role', 'admin')->first(),
                         'companyName' => $this->company->name
-                    ])
-                    ->attach($this->pdfPath, [
-                        'as' => 'resultados_evaluacion.pdf',
-                        'mime' => 'application/pdf',
                     ]);
     }
 } 

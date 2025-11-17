@@ -1,71 +1,22 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evaluación calificada</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            background-color: #157f3d;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 5px 5px 0 0;
-        }
-        .content {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 0 0 5px 5px;
-            border: 1px solid #ddd;
-        }
-        h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-        p {
-            margin-bottom: 15px;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            color: #6b7280;
-            font-size: 0.875rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Evaluación calificada</h1>
-        </div>
-        
-        <div class="content">
-            <p>Hola {{ $user->name }},</p>
-            
-            <p>La evaluación de la empresa <strong>{{ $companyName }}</strong> ha sido calificada exitosamente.</p>
+@extends('layouts.email')
 
-            <p>Adjunto encontrarás el informe detallado de la evaluación con los resultados obtenidos en cada valor del Protocolo Marca País.</p>
-            
-            <p>Por favor, revisa el documento PDF adjunto para ver los detalles completos de la evaluación.</p>
-            
-            <p>Gracias por tu participación en el proceso de evaluación.</p>
-        </div>
-        
-        <div class="footer">
-            <p>Este es un correo automático, por favor no responder.</p>
-        </div>
-    </div>
-</body>
-</html> 
+@section('head')
+<!-- ID invisible: {{ uniqid() }} -->
+<meta name="message-id" content="{{ uniqid() }}">
+<meta name="in-reply-to" content="{{ uniqid() }}">
+<meta name="references" content="{{ uniqid() }}">
+@endsection
+
+@section('title')
+Evaluación Aprobada
+@endsection
+
+@section('content')
+<p style="color: #333 !important;">Nos complace informarle que su empresa <strong>{{ $companyName }}</strong> ha aprobado la evaluación realizada por el organismo certificador, como parte del proceso de licenciamiento de la Marca País <i>esencial</i> Costa Rica.</p>
+
+<p style="color: #333 !important;">Como siguiente paso, deberá coordinar junto con el organismo certificador la firma y entrega del informe de evaluación, así como de los documentos requeridos por la Marca.</p>
+
+<p style="color: #333 !important;">Una vez completado este paso, los documentos deberán ser enviados para su revisión y aprobación final al correo: <a href="mailto:licenciasmarcapais@procomer.com" style="color: #15803d !important;">licenciasmarcapais@procomer.com</a>, con el fin de proceder con el otorgamiento oficial del licenciamiento.</p>
+
+<p style="color: #333 !important;">Agradecemos su interés en formar parte de la Marca País <i>esencial</i> Costa Rica.</p>
+@endsection 

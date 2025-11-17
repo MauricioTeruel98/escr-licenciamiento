@@ -24,9 +24,29 @@ use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\MailService;
 
+/**
+ * Controlador de Respuestas de Indicadores
+ * 
+ * Gestiona el almacenamiento y procesamiento de respuestas.
+ * 
+ * Rutas:
+ * - POST /indicadores/store-answers
+ * - POST /indicadores/save-partial-answers
+ * - POST /indicadores/finalizar-autoevaluacion
+ * 
+ * Funcionalidades:
+ * 1. Almacenamiento de respuestas
+ * 2. Validación de indicadores vinculantes
+ * 3. Cálculo de puntajes por subcategoría
+ * 4. Generación de resultados finales
+ * 5. Envío de notificaciones
+ */
 class IndicadorAnswerController extends Controller
 {
     protected $mailService;
+    
+    // Indicadores que no deben participar en cálculos (subcategoría, valor, progreso, estado)
+    protected $excludedIndicatorIds = [141, 142];
 
     public function __construct(MailService $mailService)
     {
@@ -150,8 +170,8 @@ class IndicadorAnswerController extends Controller
                 );
             }
 
-            // Calcular y guardar nota final del valor
-            $finalScore = round(collect($subcategoryScores)->avg());
+            // Calcular y guardar nota final del valor (ponderado por número de indicadores)
+            $finalScore = $this->calculateValueScoreWeighted($request->value_id, $user->company_id);
 
             $totalIndicators = 0;
             $answeredIndicators = 0;
@@ -162,6 +182,7 @@ class IndicadorAnswerController extends Controller
             })
             ->where('is_active', true)
             ->where('deleted', false)
+            ->whereNotIn('id', $this->excludedIndicatorIds)
             ->where(function ($query) use ($company) {
                 $query->whereNull('created_at')
                     ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
@@ -170,9 +191,11 @@ class IndicadorAnswerController extends Controller
 
             foreach ($indicators as $indicator) {
                 $totalIndicators++;
-                // Verificar si el indicador tiene respuesta
+                // Verificar si el indicador tiene respuesta válida (no nula o vacía)
                 $hasAnswer = IndicatorAnswer::where('company_id', $user->company_id)
                     ->where('indicator_id', $indicator->id)
+                    ->whereNotNull('answer')
+                    ->where('answer', '!=', '')
                     ->exists();
                 
                 if ($hasAnswer) {
@@ -180,7 +203,13 @@ class IndicadorAnswerController extends Controller
                 }
             }
 
+            // Calcular el progreso, pero asegurar que nunca sea 100% si no todos los indicadores están respondidos
             $progress = $totalIndicators > 0 ? round(($answeredIndicators / $totalIndicators) * 100) : 0;
+            
+            // Si el progreso es 100% pero no todos los indicadores están respondidos, ajustar a 99%
+            if ($progress === 100 && $answeredIndicators < $totalIndicators) {
+                $progress = 99;
+            }
 
             AutoEvaluationValorResult::updateOrCreate(
                 [
@@ -197,6 +226,7 @@ class IndicadorAnswerController extends Controller
             // Verificar estado de la autoevaluación
             $totalIndicators = Indicator::where('is_active', true)
                 ->where('deleted', false)
+                ->whereNotIn('id', $this->excludedIndicatorIds)
                 ->where(function ($query) use ($company) {
                     $query->whereNull('created_at')
                         ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
@@ -204,6 +234,9 @@ class IndicadorAnswerController extends Controller
                 ->count();
 
             $answeredIndicators = IndicatorAnswer::where('company_id', $user->company_id)
+                ->whereNotNull('answer')
+                ->where('answer', '!=', '')
+                ->whereNotIn('indicator_id', $this->excludedIndicatorIds)
                 ->whereHas('indicator', function ($query) use ($company) {
                     $query->where('is_active', true)
                         ->where('deleted', false)
@@ -218,6 +251,7 @@ class IndicadorAnswerController extends Controller
             $hasFailedBindingQuestions = IndicatorAnswer::where('company_id', $user->company_id)
                 ->where('is_binding', true)
                 ->where('answer', 0)
+                ->whereNotIn('indicator_id', $this->excludedIndicatorIds)
                 ->exists();
 
             // Verificar notas mínimas por valor
@@ -347,8 +381,19 @@ class IndicadorAnswerController extends Controller
                 $admin = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
                 Mail::to($admin->email)->send(new AutoEvaluationResults($fullPath, $user->company));
 
-                $superadminuser = User::where('role', 'super_admin')->first();
-                Mail::to($superadminuser->email)->send(new AutoEvaluationComplete($fullPath, $user->company));
+                $superAdminUsers = User::where('role', 'super_admin')->get();
+                foreach ($superAdminUsers as $superAdmin) {
+                    try {
+                        $mail = new AutoEvaluationComplete($fullPath, $user->company);
+                        $this->mailService->send($superAdmin->email, $mail);
+                    } catch (\Exception $e) {
+                        Log::error('Error al enviar el correo de autoevaluación completada al superadmin:', [
+                            'error' => $e->getMessage(),
+                            'user_id' => $superAdmin->id,
+                            'email' => $superAdmin->email
+                        ]);
+                    }
+                }
 
                 // Actualizar la columna autoeval_ended en la tabla companies
                 $company->update(['autoeval_ended' => true]);
@@ -480,21 +525,29 @@ class IndicadorAnswerController extends Controller
                 // Guardar PDF
                 $pdf->save($fullPath);
 
-                // Enviar email con PDF al usuario administrador de la empresa
-                $admin = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
-                try {
-                    $mail = new \App\Mail\AutoEvaluationResults($fullPath, $company);
-                    $this->mailService->send($admin->email, $mail);
-                } catch (\Exception $e) {
-                    Log::error('Error al enviar el correo de resultados de evaluación: ' . $e->getMessage());
+                // Enviar email con PDF a todos los usuarios de la empresa
+                $companyUsers = User::where('company_id', $user->company_id)->where('status', 'approved')->get();
+                foreach ($companyUsers as $companyUser) {
+                    try {
+                        $mail = new \App\Mail\AutoEvaluationResults($fullPath, $company);
+                        $this->mailService->send($companyUser->email, $mail);
+                    } catch (\Exception $e) {
+                        Log::error('Error al enviar el correo de resultados de evaluación al usuario ' . $companyUser->email . ': ' . $e->getMessage());
+                    }
                 }
 
-                $superadminuser = User::where('role', 'super_admin')->first();
-                try {
-                    $mail = new \App\Mail\AutoEvaluationComplete($fullPath, $company);
-                    $this->mailService->send($superadminuser->email, $mail);
-                } catch (\Exception $e) {
-                    Log::error('Error al enviar el correo de resultados de evaluación al superadmin: ' . $e->getMessage());
+                $superAdminUsers = User::where('role', 'super_admin')->get();
+                foreach ($superAdminUsers as $superAdmin) {
+                    try {
+                        $mail = new \App\Mail\AutoEvaluationComplete($fullPath, $company);
+                        $this->mailService->send($superAdmin->email, $mail);
+                    } catch (\Exception $e) {
+                        Log::error('Error al enviar el correo de resultados de evaluación al superadmin:', [
+                            'error' => $e->getMessage(),
+                            'user_id' => $superAdmin->id,
+                            'email' => $superAdmin->email
+                        ]);
+                    }
                 }
 
                 //$finalAutoEvaluationPath = "{$evaluationPath}/{$fileName}";
@@ -534,6 +587,8 @@ class IndicadorAnswerController extends Controller
             return [];
         }
 
+        $excludedIds = $this->excludedIndicatorIds;
+
         // Obtener las certificaciones válidas de la empresa
         $validCertifications = $company->certifications()
             ->whereRaw('fecha_expiracion > NOW() OR fecha_expiracion IS NULL')
@@ -550,44 +605,143 @@ class IndicadorAnswerController extends Controller
                 ->toArray();
         }
 
-        // Obtener todas las respuestas más recientes para los indicadores del valor
-        $answers = DB::table('indicator_answers as ia')
-            ->join('indicators as i', 'ia.indicator_id', '=', 'i.id')
+        // 1) Obtener todos los indicadores válidos del valor (denominador)
+        $indicators = DB::table('indicators as i')
             ->join('subcategories as s', 'i.subcategory_id', '=', 's.id')
-            ->where('ia.company_id', $companyId)
             ->where('s.value_id', $valueId)
             ->where('i.deleted', false)
             ->where('s.deleted', false)
+            ->where('i.is_active', true)
+            ->whereNotIn('i.id', $excludedIds)
             ->where(function ($query) use ($company) {
                 $query->whereNull('i.created_at')
                     ->orWhere('i.created_at', '<=', $company->fecha_inicio_auto_evaluacion);
             })
-            ->select('s.id as subcategory_id', 'ia.answer', 'i.id as indicator_id')
-            ->orderBy('ia.updated_at', 'desc')
+            ->select('s.id as subcategory_id', 'i.id as indicator_id')
             ->get();
 
-        // Agrupar por subcategoría y calcular porcentaje
+        if ($indicators->isEmpty()) {
+            return [];
+        }
+
+        $indicatorIds = $indicators->pluck('indicator_id')->toArray();
+
+        // 2) Obtener respuestas para esos indicadores de esta empresa
+        $answers = DB::table('indicator_answers')
+            ->where('company_id', $companyId)
+            ->whereIn('indicator_id', $indicatorIds)
+            ->select('indicator_id', 'answer')
+            ->get()
+            ->keyBy('indicator_id');
+
+        // 3) Construir totales y positivos por subcategoría
         $scores = [];
-        foreach ($answers as $answer) {
-            if (!isset($scores[$answer->subcategory_id])) {
-                $scores[$answer->subcategory_id] = [
+        foreach ($indicators as $row) {
+            $subcategoryId = $row->subcategory_id;
+            $indicatorId = $row->indicator_id;
+
+            if (!isset($scores[$subcategoryId])) {
+                $scores[$subcategoryId] = [
                     'total' => 0,
                     'positive' => 0
                 ];
             }
-            $scores[$answer->subcategory_id]['total']++;
 
-            // Si el indicador está homologado, contar como respuesta positiva (1)
-            if ($answer->answer == 1 || in_array($answer->indicator_id, $homologatedIndicators)) {
-                $scores[$answer->subcategory_id]['positive']++;
+            $scores[$subcategoryId]['total']++;
+
+            $answerRow = $answers->get($indicatorId);
+            $isPositive = in_array($indicatorId, $homologatedIndicators) || ($answerRow && (string)$answerRow->answer === '1');
+            if ($isPositive) {
+                $scores[$subcategoryId]['positive']++;
             }
         }
 
-        // Calcular porcentaje por subcategoría
+        // 4) Calcular porcentaje por subcategoría (0 si no hay indicadores válidos)
         return array_map(function ($subcategoryStats) {
             if ($subcategoryStats['total'] === 0) return 0;
             return round(($subcategoryStats['positive'] / $subcategoryStats['total']) * 100);
         }, $scores);
+    }
+
+    /**
+     * Calcula la nota del valor ponderando por número de indicadores por subcategoría.
+     */
+    private function calculateValueScoreWeighted(int $valueId, int $companyId): int
+    {
+        $company = Company::find($companyId);
+        if (!$company->fecha_inicio_auto_evaluacion) {
+            return 0;
+        }
+
+        $excludedIds = $this->excludedIndicatorIds;
+
+        // Denominador por subcategoría: cantidad de indicadores válidos
+        $subcatTotals = DB::table('indicators as i')
+            ->join('subcategories as s', 'i.subcategory_id', '=', 's.id')
+            ->where('s.value_id', $valueId)
+            ->where('i.deleted', false)
+            ->where('s.deleted', false)
+            ->where('i.is_active', true)
+            ->whereNotIn('i.id', $excludedIds)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('i.created_at')
+                    ->orWhere('i.created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
+            ->groupBy('s.id')
+            ->pluck(DB::raw('count(*)'), 's.id');
+
+        if ($subcatTotals->isEmpty()) {
+            return 0;
+        }
+
+        // Positivos por subcategoría (respuestas Sí u homologadas)
+        $validCertifications = $company->certifications()
+            ->whereRaw('fecha_expiracion > NOW() OR fecha_expiracion IS NULL')
+            ->get();
+        $homologationIds = $validCertifications->pluck('homologation_id')->filter();
+        $homologated = [];
+        if ($homologationIds->count() > 0) {
+            $homologated = IndicatorHomologation::whereIn('homologation_id', $homologationIds)
+                ->pluck('indicator_id')
+                ->toArray();
+        }
+
+        $indicators = DB::table('indicators as i')
+            ->join('subcategories as s', 'i.subcategory_id', '=', 's.id')
+            ->where('s.value_id', $valueId)
+            ->where('i.deleted', false)
+            ->where('s.deleted', false)
+            ->where('i.is_active', true)
+            ->whereNotIn('i.id', $excludedIds)
+            ->where(function ($query) use ($company) {
+                $query->whereNull('i.created_at')
+                    ->orWhere('i.created_at', '<=', $company->fecha_inicio_auto_evaluacion);
+            })
+            ->select('s.id as subcategory_id', 'i.id as indicator_id')
+            ->get();
+
+        $answers = DB::table('indicator_answers')
+            ->where('company_id', $companyId)
+            ->whereIn('indicator_id', $indicators->pluck('indicator_id'))
+            ->select('indicator_id', 'answer')
+            ->get()
+            ->keyBy('indicator_id');
+
+        $subcatPositives = [];
+        foreach ($indicators as $row) {
+            $subId = $row->subcategory_id;
+            $indId = $row->indicator_id;
+            $isPositive = in_array($indId, $homologated) || (($answers->get($indId)->answer ?? null) == 1);
+            if ($isPositive) {
+                $subcatPositives[$subId] = ($subcatPositives[$subId] ?? 0) + 1;
+            }
+        }
+
+        // Nota ponderada: (sumatoria de positivos) / (sumatoria de totales) * 100
+        $sumPos = array_sum($subcatPositives);
+        $sumTot = array_sum($subcatTotals->toArray());
+        if ($sumTot === 0) return 0;
+        return (int) round(($sumPos / $sumTot) * 100);
     }
 
     /**
@@ -615,6 +769,7 @@ class IndicadorAnswerController extends Controller
 
         $numeroDeIndicadoresAResponderLaEmpresa = Indicator::where('is_active', true)
             ->where('deleted', false)
+            ->whereNotIn('id', $this->excludedIndicatorIds)
             ->where(function ($query) use ($company) {
                 $query->whereNull('created_at')
                     ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
@@ -622,6 +777,7 @@ class IndicadorAnswerController extends Controller
             ->count();
 
         $numeroDeIndicadoresRespondidos = IndicatorAnswer::where('company_id', $companyId)
+            ->whereNotIn('indicator_id', $this->excludedIndicatorIds)
             ->whereHas('indicator', function ($query) use ($company) {
                 $query->where('is_active', true)
                     ->where('deleted', false)
@@ -741,12 +897,18 @@ class IndicadorAnswerController extends Controller
                     Log::error('Error al enviar el correo de resultados de evaluación: ' . $e->getMessage());
                 }
 
-                $superadminuser = User::where('role', 'super_admin')->first();
-                try {
-                    $mail = new \App\Mail\AutoEvaluationComplete($fullPath, $company);
-                    $this->mailService->send($superadminuser->email, $mail);
-                } catch (\Exception $e) {
-                    Log::error('Error al enviar el correo de resultados de evaluación al superadmin: ' . $e->getMessage());
+                $superAdminUsers = User::where('role', 'super_admin')->get();
+                foreach ($superAdminUsers as $superAdmin) {
+                    try {
+                        $mail = new \App\Mail\AutoEvaluationComplete($fullPath, $company);
+                        $this->mailService->send($superAdmin->email, $mail);
+                    } catch (\Exception $e) {
+                        Log::error('Error al enviar el correo de resultados de evaluación al superadmin:', [
+                            'error' => $e->getMessage(),
+                            'user_id' => $superAdmin->id,
+                            'email' => $superAdmin->email
+                        ]);
+                    }
                 }
 
                 // Actualizar la columna autoeval_ended en la tabla companies
@@ -890,6 +1052,7 @@ class IndicadorAnswerController extends Controller
             })
             ->where('is_active', true)
             ->where('deleted', false)
+            ->whereNotIn('id', $this->excludedIndicatorIds)
             ->where(function ($query) use ($company) {
                 $query->whereNull('created_at')
                     ->orWhere('created_at', '<=', $company->fecha_inicio_auto_evaluacion);
@@ -910,13 +1073,9 @@ class IndicadorAnswerController extends Controller
 
             $progress = $totalIndicators > 0 ? round(($answeredIndicators / $totalIndicators) * 100) : 0;
 
-            // Calcular notas por subcategoría si hay respuestas
-            if ($answeredIndicators > 0) {
-                $subcategoryScores = $this->calculateSubcategoryScores($request->value_id, $user->company_id);
-                $finalScore = round(collect($subcategoryScores)->avg());
-            } else {
-                $finalScore = 0;
-            }
+            // Calcular notas por subcategoría y nota final ponderada
+            $subcategoryScores = $this->calculateSubcategoryScores($request->value_id, $user->company_id);
+            $finalScore = $this->calculateValueScoreWeighted($request->value_id, $user->company_id);
 
             // Actualizar o crear el registro de resultado del valor
             AutoEvaluationValorResult::updateOrCreate(

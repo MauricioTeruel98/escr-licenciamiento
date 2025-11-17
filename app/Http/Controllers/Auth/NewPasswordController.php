@@ -14,9 +14,19 @@ use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Services\MailService;
+use Illuminate\Support\Facades\Log;
+use App\Mail\PasswordRestart;
 
 class NewPasswordController extends Controller
 {
+
+    protected $mailService;
+
+    public function __construct(MailService $mailService)
+    {
+        $this->mailService = $mailService;
+    }
     /**
      * Display the password reset view.
      *
@@ -25,28 +35,28 @@ class NewPasswordController extends Controller
     public function create(Request $request)
     {
         $token = $request->route('token');
-        
+
         // Primero intenta obtener el email de la sesión, si no está disponible, usa el del request
         $email = session('password_reset_email', $request->email);
-        
+
         // Si no hay un email en la sesión ni en el request, redirigir a la página de solicitud de restablecimiento
         if (!$email) {
             return redirect()->route('password.request')
                 ->with('error', 'Por razones de seguridad, debe iniciar el proceso de restablecimiento de contraseña desde el principio.');
         }
-        
+
         // Verificar si el token existe y no ha expirado
         $tokenRecord = DB::table(config('auth.passwords.users.table'))
             ->where('email', $email)
             ->first();
-            
+
         $tokenExpired = false;
-        
+
         // Si no se encuentra el token o ha expirado
         if (!$tokenRecord || (now()->subMinutes(config('auth.passwords.users.expire'))->isAfter($tokenRecord->created_at))) {
             $tokenExpired = true;
         }
-        
+
         return Inertia::render('Auth/ResetPassword', [
             'email' => $email,
             'token' => $token,
@@ -73,7 +83,7 @@ class NewPasswordController extends Controller
 
         // Obtener el email de la sesión para mayor seguridad
         $email = session('password_reset_email');
-        
+
         // Si no hay un email en la sesión, devolver un error
         if (!$email) {
             throw ValidationException::withMessages([
@@ -85,7 +95,7 @@ class NewPasswordController extends Controller
         $tokenRecord = DB::table(config('auth.passwords.users.table'))
             ->where('email', $email)
             ->first();
-            
+
         // Si no se encuentra el token o ha expirado
         if (!$tokenRecord || (now()->subMinutes(config('auth.passwords.users.expire'))->isAfter($tokenRecord->created_at))) {
             throw ValidationException::withMessages([
@@ -113,10 +123,10 @@ class NewPasswordController extends Controller
                 ])->save();
 
                 event(new PasswordReset($user));
-                
+
                 // Limpiar la sesión después de un restablecimiento exitoso
                 session()->forget('password_reset_email');
-                
+
                 // Marcar al usuario como migrado si corresponde
                 if ($user->from_migration) {
                     $user->from_migration = 0;
@@ -124,6 +134,14 @@ class NewPasswordController extends Controller
                 }
             }
         );
+
+        // Enviar notificación al usuario solicitante
+        try {
+            $notification = new PasswordRestart();
+            $this->mailService->send($email, $notification);
+        } catch (\Exception $e) {
+            Log::error('Error al enviar la notificación de contraseña restablecida: ' . $e->getMessage());
+        }
 
         // If the password was successfully reset, we will redirect the user back to
         // the application's home authenticated view. If there is an error we can

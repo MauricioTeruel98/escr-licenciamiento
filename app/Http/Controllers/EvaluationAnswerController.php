@@ -11,10 +11,10 @@ use App\Models\IndicatorAnswerEvaluation;
 use App\Models\Indicator;
 use Illuminate\Support\Facades\Storage;
 use App\Models\EvaluatorAssessment;
-use App\Notifications\EvaluationCompletedNotification;
-use App\Notifications\EvaluationCompletedNotificationSuperAdmin;
-use App\Notifications\EvaluationCalificatedNotification;
-use App\Notifications\EvaluationCalificatedNotificationSuperAdmin;
+use App\Mail\EvaluationCompletedNotification;
+use App\Mail\EvaluationCompletedNotificationSuperAdmin;
+use App\Mail\EvaluationCalificatedNotification;
+use App\Mail\EvaluationCalificatedNotificationSuperAdmin;
 use App\Models\User;
 use App\Models\Value;
 use App\Models\EvaluationValueResult;
@@ -26,6 +26,27 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Cache;
 use App\Services\MailService;
 use App\Models\EvaluationValueResultReference;
+
+/**
+ * Controlador de Respuestas de Evaluación
+ * 
+ * Gestiona el almacenamiento y procesamiento de respuestas de evaluación.
+ * 
+ * Rutas:
+ * - POST /evaluacion/store-answers
+ * - POST /evaluacion/store-answers-by-indicator
+ * - POST /evaluacion/calificar-nuevamente
+ * - POST /evaluacion/enviar-evaluacion-completada
+ * - POST /evaluacion/enviar-evaluacion-calificada
+ * 
+ * Funcionalidades:
+ * 1. Almacenamiento de respuestas y evidencias
+ * 2. Validación de archivos
+ * 3. Procesamiento de homologaciones
+ * 4. Cálculo de puntajes
+ * 5. Generación de reportes PDF
+ * 6. Envío de notificaciones
+ */
 
 class EvaluationAnswerController extends Controller
 {
@@ -206,7 +227,7 @@ class EvaluationAnswerController extends Controller
             // Enviar notificación al completar la evaluación
             if ($isLastValue) {
                 $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
-                $superAdminUser = User::where('role', 'super_admin')->first();
+                $superAdminUsers = User::where('role', 'super_admin')->get();
 
                 // Si el usuario es evaluador y es el último valor, generar PDF con los resultados
                 if ($user->role === 'evaluador') {
@@ -283,7 +304,7 @@ class EvaluationAnswerController extends Controller
                     }
 
                     // Generar nombre de archivo con timestamp
-                    $fileName = "evaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
+                    $fileName = "Formulario de solicitud de licencia e informe de evaluacion - Resultados - {$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
                     $fullPath = "{$companyPath}/{$fileName}";
 
                     // Guardar PDF
@@ -304,13 +325,15 @@ class EvaluationAnswerController extends Controller
                         }
                     }
 
-                    // Enviar email con PDF al superadmin
-                    if ($superAdminUser) {
-                        try {
-                            $mail = new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company);
-                            $this->mailService->send($superAdminUser->email, $mail);
-                        } catch (\Exception $e) {
-                            Log::error('Error al enviar el correo de resultados de evaluación al superadmin: ' . $e->getMessage());
+                    // Enviar email con PDF a superadmins
+                    if ($superAdminUsers->isNotEmpty()) {
+                        foreach ($superAdminUsers as $superAdmin) {
+                            try {
+                                $mail = new EvaluationCompletedNotificationSuperAdmin($user, $company->name);
+                                $this->mailService->send($superAdmin->email, $mail);
+                            } catch (\Exception $e) {
+                                Log::error('Error al enviar la notificación de evaluación completada al superadmin: ' . $e->getMessage());
+                            }
                         }
                     }
 
@@ -324,7 +347,7 @@ class EvaluationAnswerController extends Controller
                 // Verificar si ya se enviaron las notificaciones para evitar duplicados
                 if (!$this->notificationsAlreadySent($user->company_id, $request->value_id, 'evaluacion-completada')) {
                     $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
-                    $superAdminUser = User::where('role', 'super_admin')->first();
+                    $superAdminUsers = User::where('role', 'super_admin')->get();
 
                     if ($adminUser) {
                         try {
@@ -334,15 +357,18 @@ class EvaluationAnswerController extends Controller
                             Log::error('Error al enviar la notificación de evaluación completada al administrador: ' . $e->getMessage());
                         }
                     }
-                    if ($superAdminUser) {
-                        try {
-                            $mail = new EvaluationCompletedNotificationSuperAdmin($user, $company->name);
-                            $this->mailService->send($superAdminUser->email, $mail);
-                        } catch (\Exception $e) {
-                            Log::error('Error al enviar la notificación de evaluación completada al superadmin: ' . $e->getMessage());
+
+                    // Enviar email con PDF a superadmins
+                    if ($superAdminUsers->isNotEmpty()) {
+                        foreach ($superAdminUsers as $superAdmin) {
+                            try {
+                                $mail = new EvaluationCompletedNotificationSuperAdmin($user, $company->name);
+                                $this->mailService->send($superAdmin->email, $mail);
+                            } catch (\Exception $e) {
+                                Log::error('Error al enviar la notificación de evaluación completada al superadmin: ' . $e->getMessage());
+                            }
                         }
                     }
-
                     // Registrar que se enviaron las notificaciones
                     $this->markNotificationsAsSent($user->company_id, $request->value_id, 'evaluacion-completada');
 
@@ -714,6 +740,48 @@ class EvaluationAnswerController extends Controller
                 // Verificar si hay indicadores vinculantes no aprobados
                 $hasFailedBindingIndicators = $this->hasFailedBindingIndicators($user->company_id);
 
+                if ($hasFailedBindingIndicators) {
+                    // Verificar si ya se enviaron los correos usando cache
+                    $cacheKey = 'evaluation_desapproved_emails_sent_' . $user->company_id;
+                    if (!Cache::has($cacheKey)) {
+                        // Enviar correo a super_admins
+                        $superAdminUsers = User::whereIn('role', ['super_admin'])->get();
+                        foreach ($superAdminUsers as $superAdmin) {
+                            try {
+                                $mail = new \App\Mail\EvaluationDesapproved($company);
+                                $this->mailService->send($superAdmin->email, $mail);
+                            } catch (\Exception $e) {
+                                Log::error('Error al enviar el email de evaluación calificada al super_admin: ' . $e->getMessage());
+                            }
+                        }
+
+                        // Enviar correo al evaluador
+                        $evaluadorUser = User::where('role', 'evaluador')->first();
+                        if ($evaluadorUser) {
+                            try {
+                                $mail = new \App\Mail\EvaluationDesapproved($company);
+                                $this->mailService->send($evaluadorUser->email, $mail);
+                            } catch (\Exception $e) {
+                                Log::error('Error al enviar el email de evaluación calificada al evaluador: ' . $e->getMessage());
+                            }
+                        }
+
+                        // Enviar correo a los usuarios de la empresa
+                        $companyUsers = $company->users;
+                        foreach ($companyUsers as $companyUser) {
+                            try {
+                                $mail = new \App\Mail\EvaluationDesapproved($company);
+                                $this->mailService->send($companyUser->email, $mail);
+                            } catch (\Exception $e) {
+                                Log::error('Error al enviar el email de evaluación calificada al usuario de la empresa: ' . $e->getMessage());
+                            }
+                        }
+
+                        // Guardar en cache que ya se enviaron los correos
+                        Cache::put($cacheKey, true, now()->addDays(1));
+                    }
+                }
+
                 $company->estado_eval = $hasFailedBindingIndicators ?
                     'evaluacion-desaprobada' :
                     'evaluacion-calificada';
@@ -900,8 +968,10 @@ class EvaluationAnswerController extends Controller
             return ['score' => 0, 'progress' => 0];
         }
 
-        // Obtener los IDs de los indicadores respondidos con "sí"
+        // Obtener los IDs de los indicadores respondidos con "sí" (solo respuestas válidas)
         $indicatorIds = IndicatorAnswer::where('company_id', $companyId)
+            ->whereNotNull('answer')
+            ->where('answer', '!=', '')
             ->where(function ($query) {
                 $query->whereIn('answer', ['1', 'si', 'sí', 'yes', 1, true]);
             })
@@ -909,8 +979,8 @@ class EvaluationAnswerController extends Controller
 
         // Contar las preguntas asociadas a esos indicadores
         $numeroDePreguntasQueVaAResponderLaEmpresaPorValor = EvaluationQuestion::whereIn('indicator_id', $indicatorIds)
-        ->where('deleted', false)
-        ->get()
+            ->where('deleted', false)
+            ->get()
             ->filter(function ($question) use ($valueId) {
                 $indicatorValueId = Indicator::find($question->indicator_id)->value_id;
                 return $indicatorValueId == $valueId;
@@ -970,25 +1040,30 @@ class EvaluationAnswerController extends Controller
         $user = Auth::user();
         $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
 
-        $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
-        $superAdminUser = User::where('role', 'super_admin')->first();
+        $companyUsers = User::where('company_id', $user->company_id)->where('status', 'approved')->get();
+        $superAdminUsers = User::where('role', 'super_admin')->get();
 
         // Verificar si ya se enviaron las notificaciones para evitar duplicados
         if (!$this->notificationsAlreadySent($user->company_id, $request->value_id ?? null, 'evaluacion-completada')) {
-            if ($adminUser) {
+            // Enviar notificación a todos los usuarios de la empresa
+            foreach ($companyUsers as $companyUser) {
                 try {
                     $mail = new EvaluationCompletedNotification($user, $company->name);
-                    $this->mailService->send($adminUser->email, $mail);
+                    $this->mailService->send($companyUser->email, $mail);
                 } catch (\Exception $e) {
-                    Log::error('Error al enviar la notificación de evaluación completada al administrador: ' . $e->getMessage());
+                    Log::error('Error al enviar la notificación de evaluación completada al usuario ' . $companyUser->email . ': ' . $e->getMessage());
                 }
             }
-            if ($superAdminUser) {
-                try {
-                    $mail = new EvaluationCompletedNotificationSuperAdmin($user, $company->name);
-                    $this->mailService->send($superAdminUser->email, $mail);
-                } catch (\Exception $e) {
-                    Log::error('Error al enviar la notificación de evaluación completada al superadmin: ' . $e->getMessage());
+
+            // Enviar notificación a superadmins
+            if ($superAdminUsers->isNotEmpty()) {
+                foreach ($superAdminUsers as $superAdmin) {
+                    try {
+                        $mail = new EvaluationCompletedNotificationSuperAdmin($user, $company->name);
+                        $this->mailService->send($superAdmin->email, $mail);
+                    } catch (\Exception $e) {
+                        Log::error('Error al enviar la notificación de evaluación completada al superadmin: ' . $e->getMessage());
+                    }
                 }
             }
 
@@ -1017,7 +1092,7 @@ class EvaluationAnswerController extends Controller
         $company = Company::with(['infoAdicional', 'users', 'certifications'])->find($user->company_id);
 
         $adminUser = User::where('company_id', $user->company_id)->where('role', 'admin')->first();
-        $superAdminUser = User::where('role', 'super_admin')->first();
+        $superAdminUsers = User::where('role', 'super_admin')->get();
         $evaluadorUser = User::where('company_id', $user->company_id)->where('role', 'evaluador')->first();
         // Obtener todos los valores
         $allValues = Value::where('is_active', true)
@@ -1109,7 +1184,7 @@ class EvaluationAnswerController extends Controller
             }
 
             // Generar nombre de archivo con timestamp
-            $fileName = "evaluation_{$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
+            $fileName = "Formulario de solicitud de licencia e informe de evaluacion - Resultados - {$company->id}_{$companySlug}_" . date('Y-m-d_His') . '.pdf';
             $fullPath = "{$companyPath}/{$fileName}";
 
             // Guardar PDF
@@ -1132,27 +1207,76 @@ class EvaluationAnswerController extends Controller
             }
             */
 
-            // Enviar email con PDF al evaluador
-            if ($evaluadorUser) {
-                try {
-                    $mail = new \App\Mail\EvaluationResults($fullPath, $company);
-                    $this->mailService->send($evaluadorUser->email, $mail);
-                } catch (\Exception $e) {
-                    Log::error('Error al enviar el email de evaluación calificada al administrador: ' . $e->getMessage());
+            if ($hasFailedBindingIndicators) {
+                // Enviar correo a super_admins
+                $superAdminUsers = User::whereIn('role', ['super_admin'])->get();
+                foreach ($superAdminUsers as $superAdmin) {
+                    try {
+                        $mail = new \App\Mail\EvaluationDesapproved($company);
+                        $this->mailService->send($superAdmin->email, $mail);
+                    } catch (\Exception $e) {
+                        Log::error('Error al enviar el email de evaluación calificada al super_admin: ' . $e->getMessage());
+                    }
                 }
-            }
 
-            // Enviar email con PDF al superadmin
-            if ($superAdminUser) {
-                try {
-                    $mail = new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company);
-                    $this->mailService->send($superAdminUser->email, $mail);
-                } catch (\Exception $e) {
-                    Log::error('Error al enviar el email de evaluación calificada al superadmin', [
-                        'error' => $e->getMessage(),
-                        'user_id' => $superAdminUser->id ?? 'desconocido',
-                        'email' => $superAdminUser->email ?? 'desconocido'
-                    ]);
+                // Enviar correo al evaluador
+                $evaluadorUser = User::where('role', 'evaluador')->first();
+                if ($evaluadorUser) {
+                    try {
+                        $mail = new \App\Mail\EvaluationDesapproved($company);
+                        $this->mailService->send($evaluadorUser->email, $mail);
+                    } catch (\Exception $e) {
+                        Log::error('Error al enviar el email de evaluación calificada al evaluador: ' . $e->getMessage());
+                    }
+                }
+
+                // Enviar correo a los usuarios de la empresa
+                $companyUsers = $company->users;
+                foreach ($companyUsers as $companyUser) {
+                    try {
+                        $mail = new \App\Mail\EvaluationDesapproved($company);
+                        $this->mailService->send($companyUser->email, $mail);
+                    } catch (\Exception $e) {
+                        Log::error('Error al enviar el email de evaluación calificada al usuario de la empresa: ' . $e->getMessage());
+                    }
+                }
+            } else {
+
+                // Enviar email con PDF al administrador de la empresa
+                if ($adminUser) {
+                    try {
+                        $mail = new \App\Mail\EvaluationResults($fullPath, $company);
+                        $this->mailService->send($adminUser->email, $mail);
+                    } catch (\Exception $e) {
+                        Log::error('Error al enviar el email de evaluación calificada al administrador: ' . $e->getMessage());
+                    }
+                }
+
+                // Enviar email con PDF al administrador de la empresa
+                if ($evaluadorUser) {
+                    try {
+                        $mail = new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company);
+                        $this->mailService->send($evaluadorUser->email, $mail);
+                    } catch (\Exception $e) {
+                        Log::error('Error al enviar el email de evaluación calificada al evaluador: ' . $e->getMessage());
+                    }
+                }
+
+                // Enviar email con PDF a superadmins y evaluador
+                $superAdminUsers = User::whereIn('role', ['super_admin'])->get();
+
+                foreach ($superAdminUsers as $user) {
+                    try {
+                        $mail = new \App\Mail\EvaluationResultsSuperAdmin($fullPath, $company);
+                        $this->mailService->send($user->email, $mail);
+                    } catch (\Exception $e) {
+                        Log::error('Error al enviar el email de evaluación calificada', [
+                            'error' => $e->getMessage(),
+                            'user_id' => $user->id ?? 'desconocido',
+                            'email' => $user->email ?? 'desconocido',
+                            'role' => $user->role ?? 'desconocido'
+                        ]);
+                    }
                 }
             }
 

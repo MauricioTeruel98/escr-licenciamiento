@@ -2,9 +2,9 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informe de Evaluación</title>
+    <title>Formulario de solicitud de licencia e informe de evaluación</title>
     <style>
         @font-face {
             font-family: 'Poppins';
@@ -448,7 +448,7 @@
     <p><strong style="font-weight: bold; font-size: 15px;">Proceso de licenciamiento:</strong>
         {{ $company->infoAdicional->proceso_licenciamiento ?? 'N/A' }}</p>
     <p><strong style="font-weight: bold; font-size: 15px;">Exporta actualmente:</strong>
-        {{ $company->infoAdicional->es_exportadora ? 'Sí' : 'No' }}</p>
+        {{ $company->is_exporter ? 'Sí' : 'No' }}</p>
     <p><strong style="font-weight: bold; font-size: 15px;">Países de exportación:</strong></p>
     @if ($company->infoAdicional->paises_exportacion && $company->infoAdicional->paises_exportacion != 'N/A')
         @php
@@ -516,15 +516,21 @@
         @endforeach
     </table>
 
-    <h2>Puntos fuertes de la organización</h2>
-    <p>{{ $company->infoAdicional->puntos_fuertes ?? 'N/A' }}</p>
+    <div style="border: 1px solid #ccc; border-radius: 8px; background: #fcfdff; margin-top: 10px; padding: 10px !important;">
+        <h2 style="color: #157f3d; margin: 3px !important;">Justificación del alcance, articulo 10 del Reglamento para el uso de la marca país <i>esencial</i> COSTA RICA
+        </h2>
+        <p>{{ $company->infoAdicional->justificacion ?? 'N/A' }}</p>
+    </div>
 
-    <h2>Oportunidades de mejora de la organización</h2>
-    <p>{{ $company->infoAdicional->oportunidades ?? 'N/A' }}</p>
+    <div style="border: 1px solid #ccc; border-radius: 8px; background: #fcfdff; margin-top: 10px; padding: 10px !important;">
+        <h2 style="color: #157f3d; margin: 3px !important;">Puntos fuertes de la organización</h2>
+        <p>{{ $company->infoAdicional->puntos_fuertes ?? 'N/A' }}</p>
+    </div>
 
-    <h2>Justificación del alcance, articulo 10 del Reglamento para el uso de la marca país <i>esencial</i> COSTA RICA
-    </h2>
-    <p>{{ $company->infoAdicional->justificacion ?? 'N/A' }}</p>
+    <div style="border: 1px solid #ccc; border-radius: 8px; background: #fcfdff; margin-top: 10px; padding: 10px !important;">
+        <h2 style="color: #157f3d; margin: 3px !important;">Oportunidades de mejora de la organización</h2>
+        <p>{{ $company->infoAdicional->oportunidades ?? 'N/A' }}</p>
+    </div>
 
     <h2>Datos participantes clave</h2>
     <table>
@@ -535,36 +541,40 @@
             <th>Teléfono</th>
             <th>Rol</th>
         </tr>
-        @foreach ($company->users as $user)
-            @if ($user->role !== 'evaluador' && $user->role !== 'super_admin')
-                <tr>
-                    <td>{{ $user->name }}</td>
-                    <td>{{ $user->lastname }}</td>
-                    <td>{{ $user->email }}</td>
-                    <td>{{ $user->phone }}</td>
-                    <td>{{ $user->role == 'admin' ? 'Administrador' : 'Usuario' }}</td>
-                </tr>
-            @endif
-        @endforeach
+        @if ($company->users->isNotEmpty())
+            @foreach ($company->users as $user)
+                @if ($user->role !== 'evaluador' && $user->role !== 'super_admin')
+                    <tr>
+                        <td>{{ $user->name }}</td>
+                        <td>{{ $user->lastname }}</td>
+                        <td>{{ $user->email }}</td>
+                        <td>{{ $user->phone }}</td>
+                        <td>{{ $user->role == 'admin' ? 'Administrador' : 'Usuario' }}</td>
+                    </tr>
+                @endif
+            @endforeach
+        @endif
     </table>
 
     @if ($company->certifications->isNotEmpty())
         <h2>Certificaciones vigentes</h2>
         <table>
             <tr>
-                <th>Certificación</th>
-                <th>Fecha de obtención</th>
-                <th>Fecha de vencimiento</th>
-                <th>Organismo certificador</th>
+                <th style="width: 45%;">Certificación</th>
+                <th style="width: 15%;">Fecha de obtención</th>
+                <th style="width: 15%;">Fecha de vencimiento</th>
+                <th style="width: 25%;">Organismo certificador</th>
             </tr>
-            @foreach ($company->certifications as $certification)
-                <tr>
-                    <td>{{ $certification->nombre }}</td>
-                    <td>{{ $certification->fecha_obtencion->format('d/m/Y') }}</td>
-                    <td>{{ $certification->fecha_expiracion->format('d/m/Y') }}</td>
-                    <td>{{ $certification->organismo_certificador }}</td>
-                </tr>
-            @endforeach
+            @if ($company->certifications->isNotEmpty())
+                @foreach ($company->certifications as $certification)
+                    <tr>
+                        <td style="width: 45%;">{{ $certification->nombre }}</td>
+                        <td style="width: 15%;">{{ $certification->fecha_obtencion->format('d/m/Y') }}</td>
+                        <td style="width: 15%;">{{ $certification->fecha_expiracion->format('d/m/Y') }}</td>
+                        <td style="width: 25%;">{{ $certification->organismo_certificador }}</td>
+                    </tr>
+                @endforeach
+            @endif
         </table>
     @endif
 
@@ -618,6 +628,8 @@
         </p>
     @endif
 
+    <div style="height: 1px; width: 100%; background-color: #ccc; margin-top: 10px; margin-bottom: 10px;"></div>
+
     @if ($company->infoAdicional->asignado_proceso_nombre)
         <h3>Contacto asignado para el proceso de licenciamiento de la Marca País</h3>
         <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->asignado_proceso_nombre ?? 'N/A' }}</p>
@@ -629,6 +641,8 @@
             <strong>Celular:</strong> {{ $company->infoAdicional->asignado_proceso_celular ?? 'N/A' }}
         </p>
     @endif
+
+    <div style="height: 1px; width: 100%; background-color: #ccc; margin-top: 10px; margin-bottom: 10px;"></div>
 
     @if ($company->infoAdicional->representante_nombre)
         <h3>Contacto del Representante Legal o Gerente General (Presidente o CEO de su organización)</h3>
@@ -642,6 +656,8 @@
         </p>
     @endif
 
+    <div style="height: 1px; width: 100%; background-color: #ccc; margin-top: 10px; margin-bottom: 10px;"></div>
+
     @if ($company->infoAdicional->vocero_nombre)
         <h3>Contacto Vocero de la empresa</h3>
         <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->vocero_nombre ?? 'N/A' }}</p>
@@ -652,6 +668,8 @@
             <strong>Celular:</strong> {{ $company->infoAdicional->vocero_celular ?? 'N/A' }}
         </p>
     @endif
+
+    <div style="height: 1px; width: 100%; background-color: #ccc; margin-top: 10px; margin-bottom: 10px;"></div>
 
     @if ($company->infoAdicional->mercadeo_nombre)
         <h3>Contacto de su área de Mercadeo</h3>
@@ -665,6 +683,8 @@
         </p>
     @endif
 
+    <div style="height: 1px; width: 100%; background-color: #ccc; margin-top: 10px; margin-bottom: 10px;"></div>
+
     @if ($company->infoAdicional->micrositio_nombre)
         <h3>Contacto Micrositio en web esencial</h3>
         <p><strong>Nombre del contacto:</strong> {{ $company->infoAdicional->micrositio_nombre ?? 'N/A' }}</p>
@@ -677,6 +697,8 @@
             {{ $company->infoAdicional->micrositio_celular ?? 'N/A' }}
         </p>
     @endif
+
+    <div style="page-break-after: always;"></div>
 
     <h2>Datos del equipo evaluador</h2>
     <table>
@@ -728,7 +750,7 @@
                     <div class="auto-evaluation-section">
                         <h5>Autoevaluación @if ($indicator->binding)
                                 <span class="descalificatorio">
-                                    Indicador descalificatório
+                                    Indicador descalificatorio
                                 </span>
                             @endif
                         </h5>
@@ -769,42 +791,27 @@
 
                     <h5>Evaluación @if ($indicator->binding)
                             <span class="descalificatorio">
-                                Indicador descalificatório
+                                Indicador descalificatorio
                             </span>
                         @endif
                     </h5>
                     <table>
                         <tr>
-                            <th>Pregunta</th>
-                            {{-- <th>Respuesta</th> --}}
-                            <th>Cumple</th>
-                            <th>Justificación</th>
+                            <th style="width: 40%;">Pregunta</th>
+                            <th style="width: 10%;">Cumple</th>
+                            <th style="width: 50%;">Justificación</th>
                         </tr>
                         @foreach ($indicator->evaluationQuestions as $question)
                             <tr>
-                                <td>{{ $question->question }}</td>
-                                {{-- <td>
-                                    @if (isset($companyAnswers[$indicator->id]))
-                                        @foreach ($companyAnswers[$indicator->id] as $answer)
-                                            @if ($answer->evaluation_question_id == $question->id)
-                                                <p>{{ $answer->answer == 1 ? 'Sí' : 'No' }}</p>
-                                            @endif
-                                        @endforeach
-                                    @else
-                                        <p>Sin respuesta</p>
-                                    @endif
-                                </td> --}}
-                                <td class="">
+                                <td style="width: 40%;">{{ $question->question }}</td>
+                                <td style="width: 10%;" class="">
                                     @if (isset($evaluatorAssessments[$indicator->id]))
                                         @foreach ($evaluatorAssessments[$indicator->id] as $assessment)
                                             @if ($assessment->evaluation_question_id == $question->id)
                                                 @if ($assessment->approved)
                                                     <span class="approved">Sí</span>
-                                                    {{-- <p>Comentario del evaluador: {{ $assessment->comment }}</p> --}}
                                                 @else
                                                     <span class="not-approved">No</span>
-                                                    {{-- <p><strong>Comentario del evaluador:</strong>
-                                                        {{ $assessment->comment }}</p> --}}
                                                 @endif
                                             @endif
                                         @endforeach
@@ -812,7 +819,7 @@
                                         <span>No evaluado</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td style="width: 50%;">
                                     @if (isset($evaluatorAssessments[$indicator->id]))
                                         @foreach ($evaluatorAssessments[$indicator->id] as $assessment)
                                             @if ($assessment->evaluation_question_id == $question->id)

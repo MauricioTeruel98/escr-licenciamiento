@@ -487,7 +487,7 @@ export default function IndicatorModal({
                                         {/* Vinculante */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Descalificatório
+                                                Descalificatorio
                                             </label>
                                             <Switch
                                                 checked={formData.binding}
@@ -495,7 +495,7 @@ export default function IndicatorModal({
                                                 label={formData.binding ? 'Sí' : 'No'}
                                             />
                                             <p className="mt-1 text-sm text-gray-500">
-                                                Indica si este indicador es descalificatório para la evaluación
+                                                Indica si este indicador es descalificatorio para la evaluación
                                             </p>
                                         </div>
 

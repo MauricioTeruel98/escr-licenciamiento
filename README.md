@@ -1,4 +1,4 @@
-# Sistema de Licenciamiento ESCR
+# Sistema de Licenciamiento Esencial Costa Rica
 
 ## 🚀 Configuración Inicial
 
@@ -47,6 +47,13 @@ El proyecto está desarrollado con:
    - `lugares.json`
    - `paises.json`
 
+6. **Archivos PDF Requeridos**
+   - Crear carpeta `pdfs` dentro de `storage/app/public`
+   - Descargar y copiar los archivos PDF del siguiente enlace:
+     [Google Drive - PDFs](https://drive.google.com/drive/folders/1Y9bHk_PDz66lR3cjh7-nCOTEFQFSv9u0?usp=drive_link)
+   - Pegar los archivos dentro de la carpeta `storage/app/public/pdfs`
+
+
 ## 🏃‍♂️ Ejecutar el Proyecto
 
 1. **Iniciar Servidor Laravel**
@@ -68,7 +75,6 @@ El proyecto está desarrollado con:
 - **Contraseña**: password
 
 Este usuario tiene acceso de super administrador.
-
 
 ## 📦 Despliegue en Producción
 

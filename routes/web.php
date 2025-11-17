@@ -41,6 +41,10 @@ use App\Http\Middleware\EnsureUserHasNoCompany;
 use App\Http\Controllers\ImportController;
 use App\Http\Middleware\EnsureApplicationSended;
 use App\Http\Controllers\MailLogController;
+use App\Http\Controllers\MonthlyReportController;
+use App\Http\Middleware\EnsureUserIsAdminOrSuperAdmin;
+use App\Http\Controllers\CompanyExpirationController;
+
 // Ruta principal
 Route::get('/', function () {
     if (Auth::check()) {
@@ -182,6 +186,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/super/homologations', [SuperAdminController::class, 'homologations'])->name('super.homologations');
     Route::get('/super/indicators', [SuperAdminController::class, 'indicators'])->name('super.indicators');
     Route::get('/super/importaciones', [ImportController::class, 'index'])->name('super.importaciones');
+    Route::get('/super/company-expiration', [CompanyExpirationController::class, 'index'])->name('super.company-expiration');
 
     Route::get('/api/subcategories', [SubcategoryController::class, 'index']);
     Route::post('/api/subcategories', [SubcategoryController::class, 'store']);
@@ -257,6 +262,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::put('/api/certifications/{certification}', [CertificationManagementController::class, 'update']);
     Route::delete('/api/certifications/{certification}', [CertificationManagementController::class, 'destroy']);
     Route::post('/api/certifications/bulk-delete', [CertificationManagementController::class, 'bulkDelete']);
+    Route::get('/api/available-certifications', [AvailableCertificationController::class, 'index']);
 
     // Ruta para la vista
     Route::get('/super/certifications', [SuperAdminController::class, 'certifications'])->name('super.certifications');
@@ -268,7 +274,7 @@ Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
         ->name('companies.authorize-exporter');
 });
 
-Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {
+Route::middleware(['auth', EnsureUserIsAdminOrSuperAdmin::class])->group(function () {
     Route::post('/approve-user/{user}', [CompanyAuthController::class, 'approveAccess'])
         ->name('user.approve');
     Route::post('/reject-user/{user}', [CompanyAuthController::class, 'rejectAccess'])
@@ -294,6 +300,8 @@ Route::get('/api/values/{value}/subcategories', [IndicatorController::class, 'ge
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
     Route::get('/api/companies/list', [SuperAdminCompanyController::class, 'getCompaniesList']);
     Route::post('/api/super/switch-company', [SuperAdminCompanyController::class, 'switchCompany']);
+    Route::post('/api/company-expiration/upload', [CompanyExpirationController::class, 'uploadExcel']);
+    Route::get('/api/company-expiration/stats', [CompanyExpirationController::class, 'getCompaniesStats']);
 });
 
 Route::middleware(['auth', EnsureUserIsSuperAdmin::class])->group(function () {
@@ -369,11 +377,17 @@ Route::middleware(['auth'])->group(function () {
         ->name('indicadores.enviar-evaluacion-calificada');
 });
 
+Route::get('/generar-pdf-limpio', [PDFController::class, 'generarPDFLimpio'])
+->name('generar-pdf-limpiado');
+
+Route::get('/generar-word-limpio', [PDFController::class, 'generarWordLimpio'])
+->name('generar-word-limpiado');
+
 Route::get('/api/lugares', function () {
     return response()->file(storage_path('app/public/lugares.json'));
 })->name('api.lugares');
 
-Route::get('/download-indicators-pdf', [PDFController::class, 'downloadIndicatorsPDF'])
+Route::get('/protocolo-descargable', [PDFController::class, 'downloadAnexoUnoPDF'])
     ->name('download.indicators.pdf')
     ->middleware(['auth']);
 
@@ -418,5 +432,14 @@ Route::delete('certifications/{certification}/files', [CertificationController::
 Route::post('/regenerate-evaluation-pdf/{companyId}', [PDFController::class, 'regenerateEvaluationPDF'])
     ->name('regenerate.evaluation.pdf')
     ->middleware(['auth', EnsureUserIsSuperAdmin::class]);
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/reports', [MonthlyReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/{report}/download', [MonthlyReportController::class, 'download'])->name('reports.download');
+});
+
+Route::get('/protocolo-descargable-estandar', [PDFController::class, 'downloadAnexoUnoEstandarPDF'])
+    ->name('download.indicators.estandar.pdf')
+    ->middleware(['auth']);
 
 require __DIR__ . '/auth.php';

@@ -1,14 +1,14 @@
 {
     "poppins": {
-        "normal": "C:\\xampp\\htdocs\\escr-licenciamiento\\storage\\fonts\/poppins_normal_c758fc50c4732559c05430e882d2ff01",
-        "bold": "poppins_bold_d6add0d7bc450357c0fb1192810ef7ea"
+        "normal": "C:\\xampp\\htdocs\\licenciamiento\\storage\\fonts\/poppins_normal_5af02f93eaee8c6aed47c2fb0228cdba",
+        "bold": "poppins_bold_ea4be70e9d72272f465503f1c333760f"
     },
     "montserrat": {
-        "normal": "C:\\xampp\\htdocs\\escr-licenciamiento\\storage\\fonts\/montserrat_normal_43a57bdb576c08d94b23dc51f31407bb",
-        "bold": "montserrat_bold_954172a6ed9cb8d39426ea7e893c10f8"
+        "normal": "C:\\xampp\\htdocs\\licenciamiento\\storage\\fonts\/montserrat_normal_f96fb9f804fc7ee49f750023abc5db58",
+        "bold": "montserrat_bold_2ccc42b2e56668fc985121680d78f7ff"
     },
     "gotham": {
-        "normal": "C:\\xampp\\htdocs\\escr-licenciamiento\\storage\\fonts\/gotham_normal_418cd8e676317ddcc9aa3ddd59c4efe7",
-        "bold": "gotham_bold_5c698f3e0bfb23763ab106c384f16481"
+        "normal": "C:\\xampp\\htdocs\\licenciamiento\\storage\\fonts\/gotham_normal_31308d8d10074d6ca953dd47e4d65bde",
+        "bold": "gotham_bold_457aad0df3fadf2647dad0140fd15881"
     }
 }

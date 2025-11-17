@@ -184,7 +184,7 @@
                             <td>
                                 {{ $indicator->name }}
                                 @if($indicator->binding)
-                                    <span class="binding">(Descalificatório)</span>
+                                    <span class="binding">(Descalificatorio)</span>
                                 @endif
                             </td>
                             <td>

@@ -19,7 +19,15 @@ class TestMail extends Mailable
 
     public function build()
     {
-        return $this->markdown('emails.test')
-            ->subject($this->subject);
+        $messageId = time() . '.' . uniqid() . '@procomer.com';
+
+        return $this->view('emails.test')
+            ->subject($this->subject)
+            ->withSwiftMessage(function ($message) use ($messageId) {
+                $message->getHeaders()
+                    ->addTextHeader('Message-ID', '<' . $messageId . '>')
+                    ->remove('References')
+                    ->remove('In-Reply-To');
+            });
     }
 } 

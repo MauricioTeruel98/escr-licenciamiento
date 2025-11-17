@@ -36,6 +36,11 @@ export default function CertificationsIndex() {
             render: (item) => item.company?.name || '-'
         },
         { 
+            key: 'organismo_certificador', 
+            label: 'Organismo Certificador',
+            render: (item) => item.organismo_certificador || '-'
+        },
+        { 
             key: 'fecha_obtencion', 
             label: 'Fecha de Obtención',
             render: (item) => new Date(item.fecha_obtencion).toLocaleDateString()
@@ -45,11 +50,11 @@ export default function CertificationsIndex() {
             label: 'Fecha de Expiración',
             render: (item) => new Date(item.fecha_expiracion).toLocaleDateString()
         },
-        { 
-            key: 'indicadores', 
-            label: 'Indicadores',
-            render: (item) => item.indicadores || 0
-        },
+        // { 
+        //     key: 'indicadores', 
+        //     label: 'Indicadores',
+        //     render: (item) => item.indicadores || 0
+        // },
         {
             key: 'actions',
             label: 'Acciones',
@@ -172,13 +177,33 @@ export default function CertificationsIndex() {
     const handleSubmit = async (formData) => {
         try {
             if (selectedCertification) {
-                await axios.put(`/api/certifications/${selectedCertification.id}`, formData);
+                // Para actualización, enviar como JSON sin archivos
+                const jsonData = {
+                    nombre: formData.get('nombre'),
+                    fecha_obtencion: formData.get('fecha_obtencion'),
+                    fecha_expiracion: formData.get('fecha_expiracion'),
+                    indicadores: parseInt(formData.get('indicadores')),
+                    company_id: parseInt(formData.get('company_id')),
+                    homologation_id: parseInt(formData.get('homologation_id')),
+                    organismo_certificador: formData.get('organismo_certificador')
+                };
+                
+                await axios.put(`/api/certifications/${selectedCertification.id}`, jsonData, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
                 setNotification({
                     type: 'success',
                     message: 'Certificación actualizada exitosamente'
                 });
             } else {
-                await axios.post('/api/certifications', formData);
+                // Para creación, enviar como FormData con archivos
+                await axios.post('/api/certifications', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
                 setNotification({
                     type: 'success',
                     message: 'Certificación creada exitosamente'
@@ -190,7 +215,7 @@ export default function CertificationsIndex() {
             console.error('Error:', error);
             setNotification({
                 type: 'error',
-                message: error.response?.data?.message || 'Error al procesar la solicitud'
+                message: error.response?.data?.error || error.response?.data?.message || 'Error al procesar la solicitud'
             });
         }
     };

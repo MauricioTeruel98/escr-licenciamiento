@@ -1,17 +1,32 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle, X } from 'lucide-react';
 
-export default function Toast({ message, type = 'success', onClose }) {
+export default function Toast({ message, type = 'success', onClose, duration = 3000, highlightPassword = false }) {
     const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsVisible(false);
             onClose?.();
-        }, 3000);
+        }, duration);
 
         return () => clearTimeout(timer);
-    }, [onClose]);
+    }, [onClose, duration]);
+
+    // Función para resaltar la contraseña si corresponde
+    const renderMessage = () => {
+        if (highlightPassword && message.includes('Contraseña generada:')) {
+            const [before, after] = message.split('Contraseña generada:');
+            return (
+                <>
+                    {before}
+                    Contraseña generada:
+                    <strong className="font-bold"> {after.trim()}</strong>
+                </>
+            );
+        }
+        return message;
+    };
 
     if (!isVisible) return null;
 
@@ -21,8 +36,8 @@ export default function Toast({ message, type = 'success', onClose }) {
                 type === 'success' ? 'border-green-500' : 'border-red-500'
             }`}>
                 <CheckCircle className="h-8 w-8 text-green-500" />
-                <p className="text-lg font-medium text-gray-900">
-                    {message}
+                <p className="text-lg text-gray-900">
+                    {renderMessage()}
                 </p>
                 <button
                     onClick={() => {

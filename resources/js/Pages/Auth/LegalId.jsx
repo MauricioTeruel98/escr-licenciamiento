@@ -3,6 +3,24 @@ import { Head, useForm } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import ImageLayout from "@/Layouts/ImageLayout";
 
+/**
+ * Componente de Verificación de Cédula Jurídica
+ * 
+ * Este componente maneja la verificación de la cédula jurídica de la empresa.
+ * Proceso:
+ * 1. Ingreso de cédula jurídica
+ * 2. Validación del formato (solo números, máximo 12 dígitos)
+ * 3. Verificación en el servidor si la empresa existe
+ * 4. Redirección según resultado:
+ *    - Si existe: a CompanyExists
+ *    - Si no existe: a CompanyRegister
+ * 
+ * Validaciones:
+ * - Solo números permitidos
+ * - Máximo 12 dígitos
+ * - No permite caracteres especiales
+ */
+
 export default function LegalId() {
     const { data, setData, post, processing, errors } = useForm({
         legal_id: '',

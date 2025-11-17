@@ -1,5 +1,30 @@
 import React, { useEffect } from 'react';
 
+/**
+ * Componente de Indicador Individual
+ * 
+ * Este componente maneja la visualización y respuesta de un indicador específico.
+ * 
+ * Características:
+ * 1. Manejo de indicadores homologados
+ *    - Muestra certificación que homologa
+ *    - Bloquea edición
+ *    - Establece valor automático "Sí"
+ * 
+ * 2. Indicadores vinculantes
+ *    - Muestra advertencia de descalificación
+ *    - Valida respuesta negativa
+ * 
+ * 3. Justificaciones
+ *    - Requeridas para respuestas "Sí"
+ *    - Automáticas para homologaciones
+ * 
+ * 4. Estados especiales
+ *    - Homologado
+ *    - Descalificatorio
+ *    - Certificación vencida
+ */
+
 export default function IndicatorIndex({ code, question, onAnswer, value, isBinding, homologation, guide, autoeval_ended, availableToModifyAutoeval, isBinary, justification = '', onJustificationChange, isExporter = true, wasHomologated = false, autoEvalCompleted, isHomologated = false }) {
     const handleChange = (e) => {
         const selectedValue = e.target.value;
@@ -69,7 +94,7 @@ export default function IndicatorIndex({ code, question, onAnswer, value, isBind
                         </span>
                         {isBinding && (
                             <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 ml-2">
-                                Descalificatório
+                                Descalificatorio
                             </span>
                         )}
                         {homologation && (
