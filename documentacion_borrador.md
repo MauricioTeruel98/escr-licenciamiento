@@ -28,7 +28,7 @@ flowchart LR
         U[Usuarios finales]
     end
 
-    subgraph Frontend (Inertia + React)
+    subgraph Frontend / Inertia + React
         UI[Componentes React
         (Tailwind + DaisyUI)]
         AX[Axios + Ziggy]
