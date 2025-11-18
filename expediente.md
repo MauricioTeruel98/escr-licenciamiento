@@ -26,38 +26,6 @@ Link al [Repositorio de GitHub](https://github.com/buzzcostarica/licenciamiento)
 6. Enlace de almacenamiento `php artisan storage:link`, espacio para JSON de ubicaciones geograficas y repositorio de PDFs institucionales.
 
 ## 3. Arquitectura Técnica y Diagrama
-// Diagrama comentado:
-// 
-// ```mermaid
-// flowchart LR
-//     subgraph Cliente
-//         U[Usuarios finales]
-//     end
-// 
-//     subgraph Frontend Inertia + React
-//         UI[Componentes React Tailwind + DaisyUI]
-//         AX[Axios + Ziggy]
-//     end
-// 
-//     subgraph Servidor Laravel
-//         MW[Middleware de Seguridad]
-//         CTR[Controladores HTTP]
-//         SRV[Servicios/Repositorios]
-//         JOB[Jobs/Queues]
-//     end
-// 
-//     subgraph Persistencia
-//         DB[MySQL]
-//         FS[Storage público/privado]
-//     end
-// 
-//     U --> UI --> AX --> CTR
-//     CTR --> MW
-//     MW --> CTR --> SRV --> DB
-//     SRV --> FS
-//     CTR --> JOB --> DB
-// ```
-
 ```mermaid
 graph TD
     subgraph Cliente - Navegador
