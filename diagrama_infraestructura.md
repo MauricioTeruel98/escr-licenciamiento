@@ -11,12 +11,12 @@ Este documento resume la arquitectura de software del sistema y muestra cómo se
 ## Diagrama (Mermaid)
 ```mermaid
 graph TD
-    subgraph Cliente (Navegador)
+    subgraph Cliente - Navegador
         A[React Components<br/>Inertia Pages]
     end
 
     subgraph Servidor Laravel
-        B[Routes (web.php, api.php)]
+        B[Routes - web.php, api.php]
         C[Middleware
 - auth / verified
 - EnsureUserHasCompany
@@ -40,11 +40,11 @@ graph TD
     end
 
     subgraph Persistencia y Archivos
-        G[(MySQL
+        G[MySQL
 Tablas: users, companies,
 indicators, evaluations,
-certifications, archivos)]
-        H[(Storage / S3 compatible)
+certifications, archivos]
+        H[Storage / S3 compatible
 - Logos
 - Evidencias (2-15 MB)
 - PDFs generados
