@@ -26,62 +26,56 @@ Link al [Repositorio de GitHub](https://github.com/buzzcostarica/licenciamiento)
 6. Enlace de almacenamiento `php artisan storage:link`, espacio para JSON de ubicaciones geograficas y repositorio de PDFs institucionales.
 
 ## 3. Arquitectura Técnica y Diagrama
-```mermaid
-graph TD
-    subgraph Cliente - Navegador
-        A[React Components<br/>Inertia Pages]
-    end
-
-    subgraph Servidor Laravel
-        B[Routes - web.php, api.php]
-        C[Middleware
+```flowchart LR
+ subgraph subGraph0["Cliente - Navegador"]
+        A["React Components<br>Inertia Pages"]
+  end
+ subgraph subGraph1["Servidor Laravel"]
+        B["Routes - web.php, api.php"]
+        C["Middleware
 - auth / verified
 - EnsureUserHasCompany
 - EnsureUserIsAdmin/ SuperAdmin/ Evaluador
 - EnsureCompanyIsAuthorized
-- EnsureApplicationSended]
-        D[Controladores
+- EnsureApplicationSended"]
+        D["Controladores
 - Registro & Auth
 - CompanyAuthController
 - Dashboard & Evaluador
 - Indicadores & Evaluation
 - CertificationsController
 - ReportController
-- PDFController]
-        E[Servicios & Jobs
+- PDFController"]
+        E["Servicios & Jobs
 - Validaciones
 - Homologaciones
 - Cálculo de puntajes
-- Manejo de archivos]
-        F[Modelos & Eloquent ORM]
-    end
-
-    subgraph Persistencia y Archivos
-        G[MySQL
+- Manejo de archivos"]
+        F["Modelos & Eloquent ORM"]
+  end
+ subgraph subGraph2["Persistencia y Archivos"]
+        G["MySQL
 Tablas: users, companies,
 indicators, evaluations,
-certifications, archivos]
-        H[Storage
+certifications, archivos"]
+        H["Storage
 - Logos
 - Evidencias / 2-15 MB
 - PDFs generados
-- JSON de catálogos]
-    end
-
-    subgraph Integraciones
-        I[APIs Públicas
-- /api/provincias
-- Listas de certificaciones
-- JSON lugares/paises]
-        J[Servicios de Descarga PDF]
-    end
-
-    A -->|Solicitudes Inertia| B
-    B --> C --> D --> E --> F --> G
-    E --> H
-    D -->|Respuestas JSON/HTML| A
-    D --> J
-    D --> I
+- JSON de ubicaciones geograficas (Provincias, Cantones y Distritos)"]
+  end
+ subgraph Integraciones["Integraciones"]
+    direction TB
+        J["Servicios de Descarga PDF"]
+  end
+    A -- Solicitudes Inertia --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F & H
+    F --> G
+    D -- Respuestas JSON/HTML --> A
+    D -- Solicita generación PDF --> J
 ```
 
 ## Detalle por Módulo Funcional
