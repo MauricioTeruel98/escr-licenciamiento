@@ -92,7 +92,7 @@ graph TD
 Tablas: users, companies,
 indicators, evaluations,
 certifications, archivos]
-        H[Storage / S3 compatible
+        H[Storage
 - Logos
 - Evidencias / 2-15 MB
 - PDFs generados
