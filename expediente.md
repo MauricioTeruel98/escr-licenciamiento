@@ -147,18 +147,21 @@ php artisan optimize:clear
 php artisan optimize
 ```
 
-### 7.2 Operación diaria
+### 7.2 Despliegue y mantenimiento
+- Construir assets con `npm run build`.
+- Comprimir los archivos en .zip y luego cargarlos dentro de public_html del servidor.
+> **⚠️ Importante:** No subir ni sobrescribir el archivo `.env` del servidor durante la carga; si lo haces, se sobreescribe la configuración de variables sensibles que ya estén definidas en producción.
+- Descomprimir el .zip
+- Abrir terminal y ejecutar comandos.
+- Ejecutar `php artisan optimize:clear` para limpiar caches, y luego `php artisan optimize` para configurar todas las caches de vistas, rutas, etc
+- Revisar logs (`storage/logs`, Laravel Pail) y limpiar archivos temporales.
+
+### 7.3 Operación diaria
 1. **Autenticación**: Iniciar sesión con el super administrador inicial (`admin@admin.com` / `password`) y actualizar las credenciales inmediatamente en ambientes reales.
 2. **Gestión de Roles**: Utilizar el panel `/super/users` para asignar roles y estados siguiendo la tabla descrita en el README. Gestionar roles y permisos desde el panel de super administración (usuarios, empresas, indicadores, valores, certificaciones).
 3. **Registro de Empresas**: Seguir el flujo documentado en `docs/registro.md` para onboarding de nuevas organizaciones y verificación de cédulas.
 4. **Autoevaluación y Evaluación**: Supervisar dashboards, habilitar formularios de empresa sólo cuando `application_sended`=1 y la empresa esté autorizada. Evaluadores acceden a `/evaluador/dashboard` para revisar empresas asignadas, responder reevaluaciones, calificar y, si es necesario, solicitar recalificaciones mediante `/api/evaluacion/calificar-nuevamente`.
 5. **Reportes y Documentos**: Generar reportes desde `/super/reportes` y respaldar archivos producidos por DOMPDF/Excel para el expediente institucional. Exportar reportes PDF/Word/Excel oficiales desde los paneles administrativos, archivándolos según las políticas de TI.
-
-### 7.3 Despliegue y mantenimiento
-- Construir assets con `npm run build`, limpiar cachés (`php artisan optimize:clear`) y regenerarlos (`php artisan optimize`) antes de publicar.
-- Programar respaldos periódicos de la base MySQL y del almacenamiento `storage/app`.
-- Ejecutar `php artisan config:cache`, `route:cache` y `view:cache` tras desplegar.
-- Revisar logs (`storage/logs`, Laravel Pail) y limpiar archivos temporales.
 
 ## 8. Detalle de Procesos Clave
 ### 8.1 Registro de usuario y empresa
