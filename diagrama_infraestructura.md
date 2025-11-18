@@ -46,7 +46,7 @@ indicators, evaluations,
 certifications, archivos]
         H[Storage / S3 compatible
 - Logos
-- Evidencias (2-15 MB)
+- Evidencias / 2-15 MB
 - PDFs generados
 - JSON de catálogos]
     end
