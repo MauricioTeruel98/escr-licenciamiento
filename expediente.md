@@ -56,6 +56,65 @@ flowchart LR
     CTR --> JOB --> DB
 ```
 
+## Diagrama (Mermaid)
+```mermaid
+graph TD
+    subgraph Cliente - Navegador
+        A[React Components<br/>Inertia Pages]
+    end
+
+    subgraph Servidor Laravel
+        B[Routes - web.php, api.php]
+        C[Middleware
+- auth / verified
+- EnsureUserHasCompany
+- EnsureUserIsAdmin/ SuperAdmin/ Evaluador
+- EnsureCompanyIsAuthorized
+- EnsureApplicationSended]
+        D[Controladores
+- Registro & Auth
+- CompanyAuthController
+- Dashboard & Evaluador
+- Indicadores & Evaluation
+- CertificationsController
+- ReportController
+- PDFController]
+        E[Servicios & Jobs
+- Validaciones
+- Homologaciones
+- Cálculo de puntajes
+- Manejo de archivos]
+        F[Modelos & Eloquent ORM]
+    end
+
+    subgraph Persistencia y Archivos
+        G[MySQL
+Tablas: users, companies,
+indicators, evaluations,
+certifications, archivos]
+        H[Storage / S3 compatible
+- Logos
+- Evidencias / 2-15 MB
+- PDFs generados
+- JSON de catálogos]
+    end
+
+    subgraph Integraciones
+        I[APIs Públicas
+- /api/provincias
+- Listas de certificaciones
+- JSON lugares/paises]
+        J[Servicios de Descarga PDF]
+    end
+
+    A -->|Solicitudes Inertia| B
+    B --> C --> D --> E --> F --> G
+    E --> H
+    D -->|Respuestas JSON/HTML| A
+    D --> J
+    D --> I
+```
+
 ### Descripción técnica
 1. **Front-end Inertia** renderiza vistas dinámicas (dashboard, formularios, paneles) manteniendo los beneficios de Laravel SSR; Ziggy proporciona rutas firmadas y Axios gestiona solicitudes protegidas por Sanctum/CSRF.
 2. **Back-end Laravel** organiza el dominio mediante controladores definidos en `routes/web.php` (`CompanyAuthController`, `DashboardController`, `IndicadoresController`, `EvaluationController`, `CertificationController`, `SuperAdminController`, etc.) que orquestan módulos de autenticación, certificaciones, autoevaluaciones, evaluaciones, reportes, cada uno detrás de middleware de rol y estado empresarial. Servicios y colas manejan tareas pesadas como generación de reportes.
