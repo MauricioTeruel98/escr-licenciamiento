@@ -100,6 +100,53 @@ flowchart LR
 4. Limpiar cachés, crear el enlace de almacenamiento (`php artisan storage:link`) y poblar JSON de ubicaciones geograficas y PDFs requeridos en `storage/app/public/pdfs`.
 5. Levantar servidores de desarrollo (`php artisan serve`, `npm run dev`) o construir para producción (`npm run build`, `php artisan optimize`).
 
+#### 7.1.1 Guía detallada de instalación
+**Requisitos previos**
+- Laravel, Inertia.js y React.js con sus toolchains vigentes.
+- Node.js (para `npm install`/`npm run dev`) y Composer.
+
+**Instalación de dependencias**
+```
+npm install
+composer install
+```
+
+**Configuración del entorno**
+- Crear `.env` a partir de `.env.example`.
+- Configurar variables (DB, mail, storage, claves externas).
+- Generar clave de la aplicación:
+```
+php artisan key:generate
+```
+
+**Base de datos**
+- Crear la base en MySQL.
+- Importar `db_limpia.sql`.
+- Ejecutar migraciones:
+```
+php artisan migrate
+```
+
+**Configuraciones adicionales**
+```
+php artisan optimize:clear
+php artisan storage:link
+```
+- Copiar `lugares.json` y `paises.json` a `storage/app/public`.
+
+**Ejecución en desarrollo**
+```
+php artisan serve
+npm run dev
+```
+
+**Despliegue**
+```
+npm run build
+php artisan optimize:clear
+php artisan optimize
+```
+
 ### 7.2 Operación diaria
 1. **Autenticación**: Iniciar sesión con el super administrador inicial (`admin@admin.com` / `password`) y actualizar las credenciales inmediatamente en ambientes reales.
 2. **Gestión de Roles**: Utilizar el panel `/super/users` para asignar roles y estados siguiendo la tabla descrita en el README. Gestionar roles y permisos desde el panel de super administración (usuarios, empresas, indicadores, valores, certificaciones).
