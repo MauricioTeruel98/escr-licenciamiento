@@ -26,37 +26,38 @@ Link al [Repositorio de GitHub](https://github.com/buzzcostarica/licenciamiento)
 6. Enlace de almacenamiento `php artisan storage:link`, espacio para JSON de ubicaciones geograficas y repositorio de PDFs institucionales.
 
 ## 3. Arquitectura Técnica y Diagrama
-```mermaid
-flowchart LR
-    subgraph Cliente
-        U[Usuarios finales]
-    end
+// Diagrama comentado:
+// 
+// ```mermaid
+// flowchart LR
+//     subgraph Cliente
+//         U[Usuarios finales]
+//     end
+// 
+//     subgraph Frontend Inertia + React
+//         UI[Componentes React Tailwind + DaisyUI]
+//         AX[Axios + Ziggy]
+//     end
+// 
+//     subgraph Servidor Laravel
+//         MW[Middleware de Seguridad]
+//         CTR[Controladores HTTP]
+//         SRV[Servicios/Repositorios]
+//         JOB[Jobs/Queues]
+//     end
+// 
+//     subgraph Persistencia
+//         DB[MySQL]
+//         FS[Storage público/privado]
+//     end
+// 
+//     U --> UI --> AX --> CTR
+//     CTR --> MW
+//     MW --> CTR --> SRV --> DB
+//     SRV --> FS
+//     CTR --> JOB --> DB
+// ```
 
-    subgraph Frontend Inertia + React
-        UI[Componentes React Tailwind + DaisyUI]
-        AX[Axios + Ziggy]
-    end
-
-    subgraph Servidor Laravel
-        MW[Middleware de Seguridad]
-        CTR[Controladores HTTP]
-        SRV[Servicios/Repositorios]
-        JOB[Jobs/Queues]
-    end
-
-    subgraph Persistencia
-        DB[MySQL]
-        FS[Storage público/privado]
-    end
-
-    U --> UI --> AX --> CTR
-    CTR --> MW
-    MW --> CTR --> SRV --> DB
-    SRV --> FS
-    CTR --> JOB --> DB
-```
-
-## Diagrama (Mermaid)
 ```mermaid
 graph TD
     subgraph Cliente - Navegador
@@ -114,6 +115,19 @@ certifications, archivos]
     D --> J
     D --> I
 ```
+
+## Detalle por Módulo Funcional
+
+| Módulo | Flujo principal | Componentes claves |
+|--------|-----------------|--------------------|
+| **Registro** | Captura datos de usuario, valida cédula jurídica y asigna empresa. | Rutas `register`, controladores de registro + `CompanyAuthController`, middleware `auth`, validaciones descritas en `docs/registro.md`. |
+| **Formulario de Empresa** | Captura información corporativa, logos, productos, certificaciones previas. | Componentes React con manejadores `handleChange`, `uploadLogo`, etc. (`docs/formulario-empresa.md`), almacenamiento en `storage/app/public`. |
+| **Autoevaluación** | Empresa responde indicadores agrupados por valores, con homologación por certificaciones. | Controladores `IndicadoresController`, procesos descritos en `docs/auto-evaluacion.md`, guardado parcial y final. |
+| **Evaluación** | Evaluador responde preguntas derivadas de indicadores aprobados, adjunta evidencias. | `EvaluationController`, flujos de archivos (2MB/archivo, 15MB/pregunta) y homologaciones (`docs/evaluacion.md`). |
+| **Certificaciones** | Gestión CRUD de certificaciones homologables. | `CertificationsController` (rutas `certifications.*`), middleware de empresa (`docs/certificaciones.md`). |
+| **Super Admin** | Dashboard global, gestión de usuarios/empresas, reportes. | `SuperAdminController`, `UsersManagementSuperAdminController`, `CompanyManagementController`, `ReportController`, rutas `/super/*`. |
+| **Evaluador** | Cambia empresa activa, revisa indicadores y evaluaciones. | `EvaluadorController`, APIs `/api/evaluador/*`. |
+| **Reportes/PDF** | Generación y descarga de PDFs, exportación autorizada. | `PDFController`, `ReportController`, almacenamiento en `storage/app/public/pdfs`. |
 
 ### Descripción técnica
 1. **Front-end Inertia** renderiza vistas dinámicas (dashboard, formularios, paneles) manteniendo los beneficios de Laravel SSR; Ziggy proporciona rutas firmadas y Axios gestiona solicitudes protegidas por Sanctum/CSRF.
