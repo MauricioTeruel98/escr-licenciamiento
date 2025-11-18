@@ -13,8 +13,8 @@ Link al [Repositorio de GitHub](https://github.com/buzzcostarica/licenciamiento)
 | Capa | Tecnologías y paquetes | Uso principal |
 | --- | --- | --- |
 | Backend | PHP 8.2, Laravel 11, Sanctum, Breeze, Filament, Inertia Laravel, Barryvdh DOMPDF, PHPWord, Maatwebsite Excel, FPDF/FPDI | API REST + SSR, autenticación basada en tokens/sesiones, panel administrativo Filament, generación de PDFs/Word/Excel, exportación documental |
-| Frontend | React 18, Inertia.js, Vite 5, Tailwind CSS 3, DaisyUI, HeadlessUI, Axios, @dnd-kit, Heroicons, Lucide, React Datepicker | SPA híbrida conectada al router de Laravel, componentes responsivos, formularios complejos, drag & drop para indicadores y catálogos, comunicación protegida con Laravel |
-| Datos | MySQL (importación inicial `db_limpia.sql`), archivos JSON (`lugares.json`, `paises.json`), repositorio documental en `storage/app/public/pdfs` | Persistencia transaccional, catálogos geográficos y almacenamiento seguro de expedientes |
+| Frontend | React 18, Inertia.js, Vite 5, Tailwind CSS 3, DaisyUI, HeadlessUI, Axios, Heroicons, Lucide, React Datepicker | SPA híbrida conectada al router de Laravel, componentes responsivos, formularios complejos, drag & drop para indicadores, comunicación protegida con Laravel |
+| Datos | MySQL (importación inicial `db_limpia.sql`), archivos JSON (`lugares.json`, `paises.json`), repositorio documental en `storage/app/public/pdfs` | Persistencia transaccional |
 | Environment | Composer, npm, Vite, Artisan (`serve`, `migrate`, `queue`, `optimize`), `concurrently` | Instalación, build, ejecución paralela de servidor Laravel, colas, pail logs y compilación Vite en desarrollo |
 
 ### Requerimientos de infraestructura
@@ -23,7 +23,7 @@ Link al [Repositorio de GitHub](https://github.com/buzzcostarica/licenciamiento)
 3. Motor MySQL configurado (`db_limpia.sql`) y las migraciones vigentes.
 4. Variables en `.env` (APP_KEY, credenciales de DB, drivers de mail y colas, claves de almacenamiento y servicios externos).
 5. Acceso a almacenamiento local para enlazar `storage/app/public`, alojar JSON y PDFs.
-6. Enlace de almacenamiento `php artisan storage:link`, espacio para catálogos JSON y repositorio de PDFs institucionales.
+6. Enlace de almacenamiento `php artisan storage:link`, espacio para JSON de ubicaciones geograficas y repositorio de PDFs institucionales.
 
 ## 3. Arquitectura Técnica y Diagrama
 ```mermaid
@@ -58,7 +58,7 @@ flowchart LR
 
 ### Descripción técnica
 1. **Front-end Inertia** renderiza vistas dinámicas (dashboard, formularios, paneles) manteniendo los beneficios de Laravel SSR; Ziggy proporciona rutas firmadas y Axios gestiona solicitudes protegidas por Sanctum/CSRF.
-2. **Back-end Laravel** organiza el dominio mediante controladores definidos en `routes/web.php` (`CompanyAuthController`, `DashboardController`, `IndicadoresController`, `EvaluationController`, `CertificationController`, `SuperAdminController`, etc.) que orquestan módulos de autenticación, certificaciones, autoevaluaciones, evaluaciones, reportes y catálogos, cada uno detrás de middleware de rol y estado empresarial. Servicios y colas manejan tareas pesadas como generación de reportes.
+2. **Back-end Laravel** organiza el dominio mediante controladores definidos en `routes/web.php` (`CompanyAuthController`, `DashboardController`, `IndicadoresController`, `EvaluationController`, `CertificationController`, `SuperAdminController`, etc.) que orquestan módulos de autenticación, certificaciones, autoevaluaciones, evaluaciones, reportes, cada uno detrás de middleware de rol y estado empresarial. Servicios y colas manejan tareas pesadas como generación de reportes.
 3. **Seguridad por middleware**: `auth`, `verified`, `EnsureUserHasCompany`, `EnsureCompanyIsAuthorized`, `EnsureApplicationSended`, `EnsureUserIsSuperAdmin`, `EnsureUserIsEvaluador` y variantes específicas controlan rol, estado de empresa y pasos previos antes de liberar vistas o APIs. Rutas agrupadas aseguran que cada módulo herede autenticación, verificación de email y asociación de empresa.
 4. **Persistencia y archivos**: MySQL almacena usuarios, empresas, indicadores, certificaciones y evidencias en tablas transaccionales; `storage/app/public` resguarda logos, fotografías, PDFs, Word y Excel generados. Los paquetes DOMPDF/FPDI/PHPWord generan expedientes descargables.
 
@@ -70,7 +70,7 @@ flowchart LR
 | Dashboard y Autoevaluación | `/dashboard`, `GET /indicadores/{id}`, `POST /indicadores/store-answers`, `POST /indicadores/finalizar-autoevaluacion`, `DashboardController`, `IndicadoresController` | Presenta el progreso de cumplimiento y cuestionarios. Los indicadores permiten guardar respuestas parciales, finalizar autoevaluaciones y verificar estado antes de enviar la solicitud formal. Presenta indicadores por valores, soporta homologaciones, guardado automático y bloqueo tras finalización |
 | Evaluación formal | `GET /evaluacion/{value_id}`, `POST /evaluacion/store-answers`, `POST /evaluacion/enviar-evaluacion-calificada`, `EvaluationController` | Solo accesible si la empresa completó la autoevaluación y está autorizada; procesa envíos finales y manejo de archivos adjuntos para cada indicador. Desglosa preguntas derivadas de indicadores aprobados, maneja evidencias y calificaciones de evaluadores |
 | Gestión de certificaciones | `GET /certifications/create`, `POST /certifications`, `PUT/DELETE /certifications/{id}` | Permite crear, editar y eliminar certificaciones homologables con restricciones de archivos y vigencias |
-| Paneles administrativos | `/dashboard`, `/evaluador/*`, `/super/*`, `EvaluadorController`, `SuperAdminController` y controladores auxiliares, APIs asociadas | Ofrecen visión de progreso, asignación de empresas, administración de catálogos (valores, subcategorías, requisitos), usuarios, empresas, certificaciones, importaciones y fechas de expiración mediante vistas específicas y APIs REST internas. Gestiona empresas asignadas, reportes y reevaluaciones, incluyendo cambiar de empresa activa y actualizar campos de evaluación |
+| Paneles administrativos | `/dashboard`, `/evaluador/*`, `/super/*`, `EvaluadorController`, `SuperAdminController` y controladores auxiliares, APIs asociadas | Ofrecen visión de progreso, asignación de empresas, administración de valores, subcategorías, requisitos, usuarios, empresas, certificaciones, importaciones y fechas de expiración mediante vistas específicas y APIs REST internas. Gestiona empresas asignadas, reportes y reevaluaciones, incluyendo cambiar de empresa activa y actualizar campos de evaluación |
 | Reportes y Documentos | Controladores `ReportController`, `PDFController`, `MonthlyReportController` | Generación de reportes gerenciales, actas en PDF y listados mensuales apoyados en bibliotecas DOMPDF, Excel y Word. Generan expedientes PDF, Word y Excel para Dirección de TI y seguimiento operativo |
 
 ## 5. Requerimientos Funcionales Clave
@@ -86,10 +86,10 @@ flowchart LR
 
 ## 6. Seguridad, Controles y Protección
 1. **Autenticación y sesiones:** Laravel Breeze/Sanctum brindan autenticación basada en sesiones/SPA con protección CSRF, revocación de tokens y hashing seguro (`bcrypt/argon`). Se configuran expiraciones, limpieza de sesiones inactivas y recuperación de contraseñas verificando correo electrónico.
-2. **Control de acceso y roles:** Middlewares (`auth`, `verified`, `EnsureUserHasCompany`, `EnsureCompanyIsAuthorized`, `EnsureApplicationSended`, `EnsureUserIsSuperAdmin`, `EnsureUserIsEvaluador`) aplican restricciones por rol, estado de empresa y pasos previos. Super administradores gestionan catálogos y usuarios; evaluadores solo ven empresas asignadas; administradores corporativos editan datos antes de la evaluación; usuarios regulares consultan su progreso.
+2. **Control de acceso y roles:** Middlewares (`auth`, `verified`, `EnsureUserHasCompany`, `EnsureCompanyIsAuthorized`, `EnsureApplicationSended`, `EnsureUserIsSuperAdmin`, `EnsureUserIsEvaluador`) aplican restricciones por rol, estado de empresa y pasos previos. Super administradores gestionan componentes y usuarios; evaluadores solo ven empresas asignadas; administradores corporativos editan datos antes de la evaluación; usuarios regulares consultan su progreso.
 3. **Validación e integridad de datos:** Formularios aplican sanitización, validaciones de formato/longitud/fecha y restricciones de archivos para impedir datos inconsistentes o inyecciones. Los procesos críticos utilizan transacciones y rollback ante errores.
 4. **Protección de flujos críticos:** El acceso al formulario empresarial depende del envío de autoevaluación y de la autorización del estado empresarial; las evaluaciones no pueden calificarse sin cumplir requisitos previos. Certificaciones duplicadas y reprocesos no autorizados se bloquean automáticamente.
-5. **Gestión documental y respaldo:** Archivos se almacenan en `storage/app/public` mediante `php artisan storage:link`, con permisos restringidos, compresión y firma de URLs cuando se exponen externamente. Se mantienen políticas de respaldo para la base de datos, catálogos JSON y almacenamiento de expedientes.
+5. **Gestión documental y respaldo:** Archivos se almacenan en `storage/app/public` mediante `php artisan storage:link`, con permisos restringidos, compresión y firma de URLs cuando se exponen externamente. Se mantienen políticas de respaldo para la base de datos, JSON de ubicaciones geograficas y almacenamiento de expedientes.
 6. **Auditoría, trazabilidad y monitoreo:** Laravel Pail y los logs nativos registran eventos, cambios de estado y errores. Notificaciones automáticas documentan aprobaciones, rechazos y reevaluaciones, aportando evidencia para el departamento de TI.
 
 ## 7. Manuales Operativos
@@ -97,12 +97,12 @@ flowchart LR
 1. Clonar el repositorio y ejecutar `composer install` y `npm install`.
 2. Configurar `.env`, generar `APP_KEY`, definir credenciales de base de datos, correos y servicios externos.
 3. Importar la base inicial (`db_limpia.sql`) y ejecutar las migraciones vigentes.
-4. Limpiar cachés, crear el enlace de almacenamiento (`php artisan storage:link`) y poblar catálogos JSON y PDFs requeridos en `storage/app/public/pdfs`.
+4. Limpiar cachés, crear el enlace de almacenamiento (`php artisan storage:link`) y poblar JSON de ubicaciones geograficas y PDFs requeridos en `storage/app/public/pdfs`.
 5. Levantar servidores de desarrollo (`php artisan serve`, `npm run dev`) o construir para producción (`npm run build`, `php artisan optimize`).
 
 ### 7.2 Operación diaria
 1. **Autenticación**: Iniciar sesión con el super administrador inicial (`admin@admin.com` / `password`) y actualizar las credenciales inmediatamente en ambientes reales.
-2. **Gestión de Roles**: Utilizar el panel `/super/users` para asignar roles y estados siguiendo la tabla descrita en el README. Gestionar roles y permisos desde el panel de super administración (usuarios, empresas, indicadores, valores, certificaciones, importaciones de catálogos).
+2. **Gestión de Roles**: Utilizar el panel `/super/users` para asignar roles y estados siguiendo la tabla descrita en el README. Gestionar roles y permisos desde el panel de super administración (usuarios, empresas, indicadores, valores, certificaciones).
 3. **Registro de Empresas**: Seguir el flujo documentado en `docs/registro.md` para onboarding de nuevas organizaciones y verificación de cédulas.
 4. **Autoevaluación y Evaluación**: Supervisar dashboards, habilitar formularios de empresa sólo cuando `application_sended`=1 y la empresa esté autorizada. Evaluadores acceden a `/evaluador/dashboard` para revisar empresas asignadas, responder reevaluaciones, calificar y, si es necesario, solicitar recalificaciones mediante `/api/evaluacion/calificar-nuevamente`.
 5. **Reportes y Documentos**: Generar reportes desde `/super/reportes` y respaldar archivos producidos por DOMPDF/Excel para el expediente institucional. Exportar reportes PDF/Word/Excel oficiales desde los paneles administrativos, archivándolos según las políticas de TI.
@@ -183,7 +183,7 @@ Puntaje = (Respuestas "Sí" + Indicadores Homologados) / Total de Indicadores * 
 - Requisitos: nota mínima por valor, todos los descalificatorios en "Sí" y homologaciones contadas como "Sí".
 
 #### Formulario adicional y documentación
-- Información general, contactos, operaciones y anexos (logo, fotos, certificaciones, catálogo de productos) deben estar completos para finalizar.
+- Información general, contactos, operaciones y anexos (logo, fotos, certificaciones, catálogo de productos de la empresa) deben estar completos para finalizar.
 
 #### Finalización del proceso
 1. Verificación de completitud.
@@ -289,7 +289,7 @@ Puntaje = (Preguntas Aprobadas / Total de Preguntas a Responder) * 100
 | `README.md` | Guías de instalación, despliegue, roles y rutas esenciales. | Raíz del repositorio. |
 | `docs/registro.md` | Detalle del flujo de registro, validaciones, seguridad y notificaciones. | `docs/` |
 | `db_limpia.sql` | Estructura inicial de base de datos y datos semilla para licenciamiento. | Raíz. |
-| `lugares.json` / `paises.json` | Catálogos requeridos para formularios y reportes. | Raíz (copiar a storage). |
+| `lugares.json` / `paises.json` | JSON de ubicaciones geograficas, requeridos para formularios y reportes. | Raíz (copiar a storage). |
 | `storage/app/public/pdfs` | Plantillas institucionales (anexos, formatos oficiales). | Directorio de almacenamiento. |
 | `composer.json` | Definición de dependencias PHP y scripts de desarrollo. | Raíz. |
 | `package.json` | Definición de dependencias Node.js y scripts de build. | Raíz. |
