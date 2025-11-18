@@ -102,7 +102,8 @@ flowchart LR
 
 #### 7.1.1 Guía detallada de instalación
 **Requisitos previos**
-- Laravel, Inertia.js y React.js con sus toolchains vigentes.
+- PHP 8.2 +.
+- MySQL
 - Node.js (para `npm install`/`npm run dev`) y Composer.
 
 **Instalación de dependencias**
