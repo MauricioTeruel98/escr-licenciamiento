@@ -10,64 +10,6 @@ Este documento resume la arquitectura de software del sistema y muestra cómo se
 
 ## Diagrama (Mermaid)
 ```mermaid
-graph TD
-    subgraph Cliente - Navegador
-        A[React Components<br/>Inertia Pages]
-    end
-
-    subgraph Servidor Laravel
-        B[Routes - web.php, api.php]
-        C[Middleware
-- auth / verified
-- EnsureUserHasCompany
-- EnsureUserIsAdmin/ SuperAdmin/ Evaluador
-- EnsureCompanyIsAuthorized
-- EnsureApplicationSended]
-        D[Controladores
-- Registro & Auth
-- CompanyAuthController
-- Dashboard & Evaluador
-- Indicadores & Evaluation
-- CertificationsController
-- ReportController
-- PDFController]
-        E[Servicios & Jobs
-- Validaciones
-- Homologaciones
-- Cálculo de puntajes
-- Manejo de archivos]
-        F[Modelos & Eloquent ORM]
-    end
-
-    subgraph Persistencia y Archivos
-        G[MySQL
-Tablas: users, companies,
-indicators, evaluations,
-certifications, archivos]
-        H[Storage
-- Logos
-- Evidencias / 2-15 MB
-- PDFs generados
-- JSON de catálogos]
-    end
-
-    subgraph Integraciones
-        I[APIs Públicas
-- /api/provincias
-- Listas de certificaciones
-- JSON lugares/paises]
-        J[Servicios de Descarga PDF]
-    end
-
-    A -->|Solicitudes Inertia| B
-    B --> C --> D --> E --> F --> G
-    E --> H
-    D -->|Respuestas JSON/HTML| A
-    D --> J
-    D --> I
-```
-
-```mermaid
 flowchart LR
  subgraph subGraph0["Cliente - Navegador"]
         A["React Components<br>Inertia Pages"]
