@@ -84,7 +84,15 @@ flowchart LR
 8. **Reportes**: Emisión de reportes mensuales automático mediante comando con cron jobs. Descarga manual de reportes por empresa. Emisión de reporte de evaluación.
 9. **Notificaciones y comunicación**: Envío automático de confirmaciones de registro, solicitudes, finalizaciones de autoevaluación, evaluaciones completadas, calificaciones emitidas, avisos de solicitud y flujos de aprobación.
 
-## 6. Seguridad, Controles y Protección
+## 6. Requerimientos No Funcionales
+- **Disponibilidad:** Separación front/back permite escalar horizontalmente servicios Laravel y React, apoyados por colas para operaciones costosas según la carga de evaluaciones.
+- **Rendimiento:** Uso de Vite y lazy loading optimiza tiempos de carga
+- **Usabilidad:** Componentes React + Tailwind garantizan formularios responsivos; DaisyUI y HeadlessUI aportan accesibilidad y feedback inmediato.
+- **Seguridad:** Hashing seguro de contraseñas (bcrypt/argon administrado por Laravel), protección CSRF, middleware específicos y validaciones server-side/sanitización.
+- **Interoperabilidad:** Exportación a PDF/Excel/Word y catálogos JSON facilita la entrega de expedientes regulatorios y permite compartir resultados con TI y entes externos.
+- **Mantenibilidad:** PSR-4 autoloading, formateo con Laravel Pint y scripts `php artisan optimize`/`optimize:clear` estandarizan despliegues repetibles.
+
+## 7. Seguridad, Controles y Protección
 1. **Autenticación y sesiones:** Laravel Breeze/Sanctum brindan autenticación basada en sesiones/SPA con protección CSRF, revocación de tokens y hashing seguro (`bcrypt/argon`). Se configuran expiraciones, limpieza de sesiones inactivas y recuperación de contraseñas verificando correo electrónico.
 2. **Control de acceso y roles:** Middlewares (`auth`, `verified`, `EnsureUserHasCompany`, `EnsureCompanyIsAuthorized`, `EnsureApplicationSended`, `EnsureUserIsSuperAdmin`, `EnsureUserIsEvaluador`) aplican restricciones por rol, estado de empresa y pasos previos. Super administradores gestionan catálogos y usuarios; evaluadores solo ven empresas asignadas; administradores corporativos editan datos antes de la evaluación; usuarios regulares consultan su progreso.
 3. **Validación e integridad de datos:** Formularios aplican sanitización, validaciones de formato/longitud/fecha y restricciones de archivos para impedir datos inconsistentes o inyecciones. Los procesos críticos utilizan transacciones y rollback ante errores.
@@ -92,29 +100,29 @@ flowchart LR
 5. **Gestión documental y respaldo:** Archivos se almacenan en `storage/app/public` mediante `php artisan storage:link`, con permisos restringidos, compresión y firma de URLs cuando se exponen externamente. Se mantienen políticas de respaldo para la base de datos, catálogos JSON y almacenamiento de expedientes.
 6. **Auditoría, trazabilidad y monitoreo:** Laravel Pail y los logs nativos registran eventos, cambios de estado y errores. Notificaciones automáticas documentan aprobaciones, rechazos y reevaluaciones, aportando evidencia para el departamento de TI.
 
-## 7. Manuales Operativos
-### 7.1 Instalación y configuración
+## 8. Manuales Operativos
+### 8.1 Instalación y configuración
 1. Clonar el repositorio y ejecutar `composer install` y `npm install`.
 2. Configurar `.env`, generar `APP_KEY`, definir credenciales de base de datos, correos y servicios externos.
 3. Importar la base inicial (`db_limpia.sql`) y ejecutar las migraciones vigentes.
 4. Limpiar cachés, crear el enlace de almacenamiento (`php artisan storage:link`) y poblar catálogos JSON y PDFs requeridos en `storage/app/public/pdfs`.
 5. Levantar servidores de desarrollo (`php artisan serve`, `npm run dev`) o construir para producción (`npm run build`, `php artisan optimize`).
 
-### 7.2 Operación diaria
+### 8.2 Operación diaria
 1. **Autenticación**: Iniciar sesión con el super administrador inicial (`admin@admin.com` / `password`) y actualizar las credenciales inmediatamente en ambientes reales.
 2. **Gestión de Roles**: Utilizar el panel `/super/users` para asignar roles y estados siguiendo la tabla descrita en el README. Gestionar roles y permisos desde el panel de super administración (usuarios, empresas, indicadores, valores, certificaciones, importaciones de catálogos).
 3. **Registro de Empresas**: Seguir el flujo documentado en `docs/registro.md` para onboarding de nuevas organizaciones y verificación de cédulas.
 4. **Autoevaluación y Evaluación**: Supervisar dashboards, habilitar formularios de empresa sólo cuando `application_sended`=1 y la empresa esté autorizada. Evaluadores acceden a `/evaluador/dashboard` para revisar empresas asignadas, responder reevaluaciones, calificar y, si es necesario, solicitar recalificaciones mediante `/api/evaluacion/calificar-nuevamente`.
 5. **Reportes y Documentos**: Generar reportes desde `/super/reportes` y respaldar archivos producidos por DOMPDF/Excel para el expediente institucional. Exportar reportes PDF/Word/Excel oficiales desde los paneles administrativos, archivándolos según las políticas de TI.
 
-### 7.3 Despliegue y mantenimiento
+### 8.3 Despliegue y mantenimiento
 - Construir assets con `npm run build`, limpiar cachés (`php artisan optimize:clear`) y regenerarlos (`php artisan optimize`) antes de publicar.
 - Programar respaldos periódicos de la base MySQL y del almacenamiento `storage/app`.
 - Ejecutar `php artisan config:cache`, `route:cache` y `view:cache` tras desplegar.
 - Revisar logs (`storage/logs`, Laravel Pail) y limpiar archivos temporales.
 
-## 8. Detalle de Procesos Clave
-### 8.1 Registro de usuario y empresa
+## 9. Detalle de Procesos Clave
+### 9.1 Registro de usuario y empresa
 #### Formulario de registro
 - Campos: nombre y apellido (solo letras/espacios), email válido, contraseña ≥8 caracteres y aceptación de términos.
 - Validaciones: formato correcto, email único, robustez de contraseña y confirmación de términos.
@@ -141,7 +149,7 @@ flowchart LR
 - Correos de bienvenida, solicitudes de acceso, avisos al administrador y confirmaciones de aprobación/rechazo.
 - Sanitización de inputs, validación de roles, limpieza de sesiones y middleware de autenticación protegen el flujo.
 
-### 8.2 Formulario empresarial
+### 9.2 Formulario empresarial
 #### Funciones principales
 - **Manejo de estado y datos:** `handleChange`, `handleURLChange`, `handleAnioFundacionChange`, `handlePaisesChange`.
 - **Validaciones:** `validarCampo`, `isValidEmail`, `obtenerLimitesEmpleados` para rangos de personal.
@@ -163,7 +171,7 @@ flowchart LR
 - Capacidad de guardado parcial y bloqueo tras finalizar autoevaluación.
 - Edición posterior solo mediante intervención de evaluadores o super administradores.
 
-### 8.3 Proceso de autoevaluación
+### 9.3 Proceso de autoevaluación
 #### Inicio
 - Registro de fecha de inicio para congelar el conjunto de indicadores; nuevos indicadores no afectan evaluaciones en curso.
 - Verificación de certificaciones vigentes y homologación automática (respuestas "Sí" no editables mientras la certificación esté activa).
@@ -204,7 +212,7 @@ Puntaje = (Respuestas "Sí" + Indicadores Homologados) / Total de Indicadores * 
 - Seguridad basada en autenticación, verificación de pertenencia a empresa, control de edición y validaciones de formatos/fechas/archivos.
 - Notificaciones por guardado automático, certificaciones próximas a vencer, finalización y aprobaciones/rechazos.
 
-### 8.4 Proceso de evaluación
+### 9.4 Proceso de evaluación
 #### Requisitos previos
 - Autoevaluación completada, indicadores respondidos con "Sí", formulario empresarial completo y empresa exportadora o autorizada.
 
@@ -258,7 +266,7 @@ Puntaje = (Preguntas Aprobadas / Total de Preguntas a Responder) * 100
 - Estadísticas de progreso, puntajes, indicadores críticos y homologaciones.
 - Notificaciones por evaluación completada, calificación, aprobación/rechazo y cambios de estado.
 
-### 8.5 Gestión de certificaciones (contenido completo)
+### 9.5 Gestión de certificaciones (contenido completo)
 #### Rutas
 - Visualización: `GET /certifications/create` (lista existente + formulario), protegido con `auth`, `verified`, `EnsureUserHasCompany`.
 - Creación: `POST /certifications` con las mismas protecciones.
@@ -283,7 +291,7 @@ Puntaje = (Preguntas Aprobadas / Total de Preguntas a Responder) * 100
 - Registro de errores en logs.
 - Autenticación obligatoria, verificación de email, pertenencia a empresa, sanitización de inputs y protección contra desbordamientos de archivos.
 
-## 9. Expediente y Referencias Cruzadas
+## 10. Expediente y Referencias Cruzadas
 | Documento | Contenido | Ubicación |
 | --- | --- | --- |
 | `README.md` | Guías de instalación, despliegue, roles y rutas esenciales. | Raíz del repositorio. |
