@@ -67,7 +67,8 @@ certifications, archivos]
     D --> I
 ```
 
-```flowchart LR
+```mermaid
+flowchart LR
  subgraph subGraph0["Cliente - Navegador"]
         A["React Components<br>Inertia Pages"]
   end

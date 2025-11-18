@@ -26,7 +26,8 @@ Link al [Repositorio de GitHub](https://github.com/buzzcostarica/licenciamiento)
 6. Enlace de almacenamiento `php artisan storage:link`, espacio para JSON de ubicaciones geograficas y repositorio de PDFs institucionales.
 
 ## 3. Arquitectura Técnica y Diagrama
-```flowchart LR
+```mermaid
+flowchart LR
  subgraph subGraph0["Cliente - Navegador"]
         A["React Components<br>Inertia Pages"]
   end
